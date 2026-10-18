@@ -171,6 +171,11 @@ class Gauge(QWidget):
         self.update()
 
     def _ring_color(self, value):
+        if theme.mode() == 'black_glass_gold':
+            if self.semantic == 'score':
+                return '#f3cd79' if value is None or value >= 86 else (
+                    '#dfb963' if value >= 66 else '#bb8c45')
+            return theme.level_color(value)
         if self.semantic == 'score':
             if value is None or value >= 86:
                 return theme.accent()
