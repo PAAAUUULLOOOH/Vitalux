@@ -1,5 +1,12 @@
 # Vitalux – Changes
 
+## [v0.9.4.5] - 2026-10-18
+- Added power-saving Qt Raster CPU mode: cached static backgrounds and a slower optional Sparkle animation.
+- Removed the standalone Qt Quick option; experimental Wayland/X11 GPU modes remain available.
+- Black Glass disables personal accent colors and related controls without removing saved colors or built-in accents.
+- Updated concise README, built-in guide, and English translations.
+
+
 ## [v0.9.4.4] - 2026-10-18
 - Fixed the repeated “restart pending” state for Wayland/OpenGL, Wayland/Vulkan, and X11/OpenGL by reporting the active backend correctly.
 - Graphics preflight no longer opens a visible small Qt Quick test window.
