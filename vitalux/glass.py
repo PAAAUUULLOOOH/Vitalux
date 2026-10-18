@@ -62,7 +62,7 @@ class _AmbientSceneCore:
         self._composed_key = None
         style = backdrops.resolve(settings.get('background_style', 'theme_default'),
                                   theme.mode())
-        active = style in backdrops.ANIMATED_PRESETS
+        active = style in backdrops.ANIMATED_PRESETS and theme.mode() != 'holographic'
         if active and not self._wallpaper_timer.isActive():
             self._wallpaper_timer.start()
         elif not active:
@@ -172,6 +172,15 @@ class _AmbientSceneCore:
         sampled the un-tinted original. Light wallpapers with Glass therefore
         gave three incompatible colors. Compose once and share that result.
         """
+        if theme.mode() == 'holographic':
+            # No wallpaper blur, compositing, glass sampling or animation.
+            key = ('holographic', self.size(), theme.accent())
+            if key != self._composed_key or self._composed_sharp.isNull():
+                from .holographic import scene_pixmap
+                self._composed_sharp = scene_pixmap(self.size(), theme.accent())
+                self._composed_soft = self._composed_sharp
+                self._composed_key = key
+            return
         style = backdrops.resolve(settings.get('background_style', 'theme_default'),
                                   theme.mode())
         if style == 'minimal' and theme.mode() == 'minimal':
@@ -399,6 +408,10 @@ def paint_rim(p, rect, radius, *, active=False, compact=False):
 
 def paint_glass_body(p, widget, rect, radius, *, strong=False, compact=False, active=False):
     """Frosted materials sample a shared blurred backdrop; Dark/Light stay opaque."""
+    if theme.mode() == "holographic":
+        from .holographic import paint_panel
+        paint_panel(p, rect, theme.accent(), strong=strong, compact=compact, active=active)
+        return
     if theme.mode() == "minimal":
         # No frosted backdrop, rounded paths, gradients or specular passes.
         p.fillRect(rect, QColor(theme.CARD))
@@ -508,6 +521,12 @@ class GlassSidebar(QFrame):
         palette so it remains related to the cards and the scene.
         """
         p = QPainter(self)
+        if theme.mode() == "holographic":
+            from .holographic import paint_sidebar
+            p.setRenderHint(QPainter.Antialiasing)
+            paint_sidebar(p, QRectF(self.rect()), theme.accent())
+            p.end()
+            return
         style = backdrops.resolve(settings.get('background_style', 'theme_default'),
                                   theme.mode())
         matching = style == theme.mode()

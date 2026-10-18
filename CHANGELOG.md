@@ -12,3 +12,7 @@ Alle bisher enthaltenen Funktionen sind Bestandteil dieses Neustarts.
 - Grafik-Monitoring bleibt rein lesend; kompakter Akzentfarben-Selector, anpassbare Designs, Übersetzungen und lokale Berichte bleiben erhalten.
 - Fehlerprotokollierung, aktualisierte Messwertverläufe und bestehende Wiederherstellungsmechanismen aus dem vorherigen Entwicklungsstand übernommen.
 - Release-Workflow für die Erstveröffentlichung aus gesicherter Laufzeit und für alle folgenden Releases angepasst; keine automatische Veröffentlichung bei Änderungen am Quellcode.
+
+### In Entwicklung – Holographic
+- Neues natives Farbschema **Holographic**: undurchsichtige, individuell gezeichnete HUD-Panels, technische Sidebar, Gitter-Hintergrund und angepasste Diagramme, Anzeigen, Navigation sowie Bedienelemente.
+- Holographic verzichtet vollständig auf Glas- und Unschärfeeffekte, auch bei OpenGL und Qt Quick. Standard bleibt Glass mit Vitalux-Blau.

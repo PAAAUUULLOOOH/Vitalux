@@ -5,7 +5,7 @@ from PySide6.QtGui import QBrush, QColor, QConicalGradient, QFont, QLinearGradie
 from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget, QGraphicsDropShadowEffect
 from .ui_locale import QLabel, QPushButton, QComboBox, QCheckBox, paint_check_indicator
 
-from . import theme, motion
+from . import theme, motion, holographic
 from .glass import GlassSurface, paint_glass_body, rgba
 from .i18n import tr
 
@@ -225,6 +225,8 @@ class Gauge(QWidget):
             grad.setColorAt(1, QColor(theme.level_color(v)))
             p.setPen(QPen(QBrush(grad), pen_w, Qt.SolidLine, Qt.RoundCap))
             p.drawArc(rect, 225 * 16, int(-270 * 16 * v / 100))
+        if theme.mode() == 'holographic':
+            holographic.paint_gauge_ticks(p, rect, theme.accent())
         font = QFont(self.font())
         font.setPixelSize(int(side * 0.22))
         font.setBold(True)
@@ -362,21 +364,26 @@ class HistoryGraph(QWidget):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
         outer = QRectF(self.rect()).adjusted(2, 2, -2, -2)
-        bg = QLinearGradient(outer.topLeft(), outer.bottomLeft())
-        if theme.mode() == "light":
-            bg.setColorAt(0, QColor(255,255,255,115))
-            bg.setColorAt(1, QColor(255,255,255,45))
-            border = QColor(180,197,220,110)
+        if theme.mode() == "holographic":
+            holographic.paint_chart_frame(p, outer, theme.accent())
         else:
-            bg.setColorAt(0, QColor(255,255,255,18))
-            bg.setColorAt(1, QColor(255,255,255,6))
-            border = QColor(111,148,205,45)
-        p.setPen(QPen(border, 1))
-        p.setBrush(QBrush(bg))
-        p.drawRoundedRect(outer, 14, 14)
+            bg = QLinearGradient(outer.topLeft(), outer.bottomLeft())
+            if theme.mode() == "light":
+                bg.setColorAt(0, QColor(255,255,255,115))
+                bg.setColorAt(1, QColor(255,255,255,45))
+                border = QColor(180,197,220,110)
+            else:
+                bg.setColorAt(0, QColor(255,255,255,18))
+                bg.setColorAt(1, QColor(255,255,255,6))
+                border = QColor(111,148,205,45)
+            p.setPen(QPen(border, 1))
+            p.setBrush(QBrush(bg))
+            p.drawRoundedRect(outer, 14, 14)
         r = outer.adjusted(9, 12, -66, -33)
         if r.width() <= 8 or r.height() <= 8:
             return
+        if theme.mode() == 'holographic':
+            holographic.paint_chart_grid(p, r, theme.accent())
         largest = max((max((float(v or 0) for v in values), default=0) for values, _ in self.series), default=0)
         if self.mode == "rate":
             # Round up to a human-friendly rate limit; retain some padding.
@@ -796,7 +803,9 @@ class NavButton(_SoftHover, QPushButton):
         hovered = hover_amount > .01
         # Keep the selected card stable; idle hover lighting fades in with a
         # low-alpha brush, rather than forcing a glass redraw every tick.
-        if checked:
+        if theme.mode() == 'holographic':
+            holographic.paint_nav(p, r, theme.accent(), selected=checked, hovered=hovered)
+        elif checked:
             paint_glass_body(p, self, r, 11, compact=True, active=True)
         else:
             idle = QColor(218, 243, 255, 7) if theme.mode() != 'light' else QColor(40, 65, 90, 6)
@@ -847,7 +856,10 @@ class NavButton(_SoftHover, QPushButton):
         aura = QColor(color); aura.setAlpha(43 if checked else 10)
         p.setPen(Qt.NoPen)
         p.setBrush(aura)
-        p.drawRoundedRect(QRectF(cx-12, cy-12, 24, 24), 7, 7)
+        if theme.mode() == "holographic":
+            p.drawRect(QRectF(cx-12, cy-12, 24, 24))
+        else:
+            p.drawRoundedRect(QRectF(cx-12, cy-12, 24, 24), 7, 7)
         if self.glow:
             intensity = 0.5 + 0.5 * math.sin(self._phase)
             ring = theme.accent_qcolor(int(75 + 105 * intensity))
@@ -965,6 +977,10 @@ class SidebarToggle(_SoftHover, QPushButton):
             border = rgba(206, 209, 216, round(57 + 39 * hover_amount))
             ink = QColor(theme.blend(theme.accent(), theme.MUTED, hover_amount))
             ink.setAlpha(round(186 + 36 * hover_amount))
+        elif mode == 'holographic':
+            fill = QColor("#0a2638")
+            border = QColor(theme.BORDER)
+            ink = QColor(theme.accent() if hovered or focused else theme.MUTED)
         elif mode == 'light':
             # Light deliberately uses a solid, pale button with a visible
             # graphite chevron, rather than transparent frosted navy.
@@ -995,7 +1011,10 @@ class SidebarToggle(_SoftHover, QPushButton):
 
         p.setBrush(QBrush(fill))
         p.setPen(QPen(border, 1.15 if focused else .85 if mode in ('glass', 'black_glass') else 1.0))
-        p.drawRoundedRect(rect, 9, 9)
+        if mode == 'holographic':
+            p.drawRect(rect)
+        else:
+            p.drawRoundedRect(rect, 9, 9)
 
         if mode in ('glass', 'black_glass'):
             # A short, low-opacity specular reflection replaces a harsh

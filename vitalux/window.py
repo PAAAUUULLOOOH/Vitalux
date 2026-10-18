@@ -663,7 +663,7 @@ class MainWindow(QMainWindow):
         for card in self.findChildren(GlassSurface):
             fx = card.graphicsEffect()
             if isinstance(fx, QGraphicsDropShadowEffect):
-                fx.setEnabled(not minimal and not self._is_scrolling_card(card))
+                fx.setEnabled(not minimal and theme.mode() != "holographic" and not self._is_scrolling_card(card))
         for gauge in self.findChildren(Gauge):
             if minimal:
                 gauge._animate.stop()

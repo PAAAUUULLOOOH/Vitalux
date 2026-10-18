@@ -173,7 +173,7 @@ class PreferencesPage(Page):
         self.window = window
         look = Card('Erscheinungsbild')
         self.mode = QComboBox()
-        for title, value in [('Dark', 'dark'), ('Light', 'light'), ('Glass', 'glass'), ('Black Glass', 'black_glass'), ('Minimalistisch', 'minimal')]:
+        for title, value in [('Dark', 'dark'), ('Light', 'light'), ('Glass', 'glass'), ('Black Glass', 'black_glass'), ('Holographic', 'holographic'), ('Minimalistisch', 'minimal')]:
             self.mode.addItem(title, value)
         self.mode.setCurrentIndex(max(0, self.mode.findData(theme.mode())))
         self.mode.currentIndexChanged.connect(self.change_mode)
@@ -190,6 +190,7 @@ class PreferencesPage(Page):
             'light': 'Light · Helle, gut lesbare Karten ohne Glaseffekt.',
             'glass': 'Glass · Halbtransparente Panels mit Lichtreflexen und weichgezeichnetem Hintergrund.',
             'black_glass': 'Black Glass · Tiefschwarze Glasflächen mit dezenten Reflexionen und silbernen Kanten.',
+            'holographic': 'Holographic · Eigenständige, undurchsichtige Sci-Fi-HUD-Oberfläche mit leuchtenden Konturen, technischen Kacheln und Diagrammen – ohne Glas.',
             'minimal': 'Minimalistisch · Einfache Flächen ohne Glas, Schatten und dekorative Animationen. Spart Zeichenaufwand.',
         }
         self.theme_note.setText(tr(self.mode_notes.get(theme.mode(), self.mode_notes['dark'])))
