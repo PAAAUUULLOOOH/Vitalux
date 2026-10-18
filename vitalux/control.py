@@ -189,7 +189,7 @@ class PreferencesPage(Page):
             'dark': 'Dark · Kontrastreiche, ruhige Flächen ohne Glasunschärfe.',
             'light': 'Light · Helle, gut lesbare Karten ohne Glaseffekt.',
             'glass': 'Glass · Halbtransparente Panels mit Lichtreflexen und weichgezeichnetem Hintergrund.',
-            'black_glass': 'Black Glass · Tiefschwarze Glasflächen mit dezenten Reflexionen und silbernen Kanten.',
+            'black_glass': 'Black Glass · Tiefschwarze Glasflächen mit dezenten Reflexionen und silbernen Kanten. Eigene Akzentfarben sind hier gesperrt.',
             'black_glass_gold': 'Black Glass Gold · Tiefschwarze Glasflächen, festes helles Gold für Logo, Diagramme, Anzeigen, Icons und Rahmen. Akzentfarben sind deaktiviert.',
             'holographic': 'Holographic · Eigenständige, undurchsichtige Sci-Fi-HUD-Oberfläche mit leuchtenden Konturen, technischen Kacheln und Diagrammen – ohne Glas.',
             'minimal': 'Minimalistisch · Einfache Flächen ohne Glas, Schatten und dekorative Animationen. Spart Zeichenaufwand.',
@@ -337,15 +337,15 @@ class PreferencesPage(Page):
         self.render_combo = QComboBox()
         for backend in renderer.CHOICES:
             self.render_combo.addItem(renderer.DESCRIPTIONS[backend], backend)
-        selected_renderer = settings.get('render_backend', renderer.SOFTWARE)
+        selected_renderer = renderer.desired()
         self.render_combo.setCurrentIndex(max(0, self.render_combo.findData(selected_renderer)))
         self.render_combo.currentIndexChanged.connect(self.change_renderer)
         render_row.addWidget(self.render_combo)
         render_row.addStretch(1)
         render_card.body.addLayout(render_row)
         render_card.body.addWidget(label(
-            'Qt Quick rendert den Hintergrund über den GPU-Scene-Graph (OpenGL oder Vulkan). '
-            'Wayland und X11 sind Fenster-Backends; Diagramme und Qt-Widgets bleiben CPU-gerendert.',
+            'Qt Raster nutzt CPU-Zeichnung mit zwischengespeicherten Hintergründen und reduziert nur die Funkeln-Animation. '
+            'Wayland und X11 bleiben experimentelle GPU-Modi; Diagramme und Qt-Widgets nutzen weiter die CPU.',
             'muted', wrap=True))
         render_card.body.addWidget(label(
             'Für den Wechsel Jetzt neu starten klicken. Wayland setzt eine Wayland-Sitzung, '
@@ -443,6 +443,8 @@ class PreferencesPage(Page):
         selected = self.render_combo.currentData()
         if selected != active:
             status = tr('Rendering-Wechsel vorgemerkt – bitte Vitalux neu starten.')
+        elif active == renderer.QT_RASTER:
+            status = tr('Aktiv: Qt Raster (Energiesparmodus)')
         elif active == renderer.OPENGL:
             status = tr('Aktiv: OpenGL-GPU-Rendering (experimentell)')
         elif active in renderer.QUICK_MODES:
@@ -546,6 +548,9 @@ class PreferencesPage(Page):
     def change_accent(self, val):
         if theme.mode() == 'black_glass_gold' or not self.accent_combo.isEnabled():
             return
+        if theme.mode() == 'black_glass' and any(
+                item['color'] == val for item in self.custom_accents):
+            return
         if not val or (wallpaper_accents.is_wallpaper_accent(val)
                        and not wallpaper_accents.available()):
             return
@@ -590,10 +595,20 @@ class PreferencesPage(Page):
 
     def _sync_custom_accent_actions(self):
         gold = theme.mode() == 'black_glass_gold'
+        custom_locked = theme.mode() in ('black_glass', 'black_glass_gold')
         self.accent_combo.setEnabled(not gold)
-        self.custom_accent_button.setEnabled(not gold)
-        self.edit_custom_accent_button.setEnabled(not gold)
-        self.remove_custom_accent_button.setEnabled(not gold)
+        self.custom_accent_button.setEnabled(not custom_locked)
+        self.edit_custom_accent_button.setEnabled(not custom_locked)
+        self.remove_custom_accent_button.setEnabled(not custom_locked)
+        # In Black Glass individual accent entries are grayed out like
+        # the unavailable automatic wallpaper accent; presets still work.
+        model = self.accent_combo.model()
+        for i in range(self.accent_combo.count()):
+            if any(item['color'] == self.accent_combo.itemData(i)
+                   for item in self.custom_accents):
+                entry = model.item(i)
+                if entry is not None:
+                    entry.setEnabled(not custom_locked)
         # A shortened combo must not hide the selected custom color's name.
         self.accent_combo.setToolTip(self.accent_combo.currentText())
         selected = self.accent_combo.currentData()
@@ -617,6 +632,8 @@ class PreferencesPage(Page):
 
     def edit_custom_accent(self):
         """Edit name and/or color of the selected saved accent, keeping its slot."""
+        if theme.mode() in ('black_glass', 'black_glass_gold'):
+            return
         combo = self.accent_combo
         index = combo.currentIndex()
         original_color = combo.currentData()
@@ -656,6 +673,8 @@ class PreferencesPage(Page):
         self.change_accent(new_color)
 
     def remove_custom_accent(self):
+        if theme.mode() in ('black_glass', 'black_glass_gold'):
+            return
         value = self.accent_combo.currentData()
         if (value in self.PRESET_COLORS
                 or not any(item['color'] == value for item in self.custom_accents)):
@@ -670,6 +689,8 @@ class PreferencesPage(Page):
         self._sync_custom_accent_actions()
 
     def custom_accent(self, combo):
+        if theme.mode() in ('black_glass', 'black_glass_gold'):
+            return
         color = QColorDialog.getColor(QColor(theme.accent()), self, tr('Akzentfarbe wählen'))
         if not color.isValid():
             return
