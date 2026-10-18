@@ -26,9 +26,16 @@ def run():
             assert len(renderer.CHOICES) == 6
             assert len(set(renderer.CHOICES)) == 6
             assert renderer.DESCRIPTIONS[renderer.SOFTWARE].startswith('CPU')
+            assert renderer.DESCRIPTIONS[renderer.QT_RASTER].startswith('Qt Raster')
+            assert renderer.LEGACY_QTQUICK not in renderer.CHOICES
+            settings.set('render_backend', renderer.LEGACY_QTQUICK)
+            assert renderer.desired() == renderer.QT_RASTER
+            assert settings.get('render_backend') == renderer.QT_RASTER
+            assert renderer.prepare_start() == renderer.QT_RASTER
+            assert not settings.get('gpu_boot_pending', False)
+            settings.set('render_backend', renderer.SOFTWARE)
             for choice, platform, rhi in (
-                (renderer.QTQUICK, None, 'opengl'),
-                (renderer.WAYLAND_OPENGL, 'wayland', 'opengl'),
+                 (renderer.WAYLAND_OPENGL, 'wayland', 'opengl'),
                 (renderer.WAYLAND_VULKAN, 'wayland', 'vulkan'),
                 (renderer.X11_OPENGL, 'xcb', 'opengl'),
             ):
