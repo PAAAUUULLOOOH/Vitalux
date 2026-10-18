@@ -12,7 +12,6 @@ is intentionally not imported. All previously implemented features remain.
 - Kept crash logs, optimized telemetry history, the native Qt interface and existing recovery mechanisms.
 - Updated GitHub workflow for initial release from an archived runtime and subsequent releases; no automatic release on ordinary code changes.
 
-### In development – Holographic
 - New native **Holographic** theme with opaque custom-drawn HUD cards, technical sidebar, grid backdrop, custom charts, gauges, navigation and controls.
 - No glass or frosted blur effects in Holographic, including OpenGL and Qt Quick. Glass with Vitalux Blue remains the default.
 

@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   build-and-release:
-    if: github.event_name == 'workflow_dispatch' || github.event.head_commit.message == 'release: publish Vitalux v0.9.4.0'
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'release: publish Vitalux v0.9.4.0')
     runs-on: ubuntu-24.04
     timeout-minutes: 50
     steps:
