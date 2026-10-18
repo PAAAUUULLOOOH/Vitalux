@@ -8,7 +8,7 @@ import os
 import subprocess
 import sys
 
-from . import settings
+from . import settings, eco
 
 SOFTWARE = 'software'
 QT_RASTER = 'qt_raster'
@@ -35,6 +35,8 @@ _saved_environment = {}
 
 
 def desired():
+    if eco.enabled():
+        return SOFTWARE  # No GPU surface or Qt Quick pipeline in Ultra Eco.
     forced = os.environ.get('VITALUX_RENDERER', '').strip().lower()
     if forced == LEGACY_QTQUICK:
         return QT_RASTER
