@@ -6,7 +6,7 @@ never overwritten. Disabling the toggle restores every previous preference.
 from . import settings
 
 KEY = 'ultra_eco'
-SAMPLE_INTERVAL = 5
+SAMPLE_INTERVAL = 10
 
 
 def enabled():
