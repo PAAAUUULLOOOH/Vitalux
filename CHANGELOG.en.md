@@ -1,5 +1,12 @@
 # Vitalux – Changes
 
+## [v0.9.4.6] - 2026-10-18
+- Added an Ultra Eco on/off switch under Performance & energy with an extremely simple flat skin: no glass, shadows, wallpapers or animation.
+- Ultra Eco uses CPU raster rendering, five-second monitoring and reduced redraw work.
+- Turning it off restores the previous theme, accents, wallpapers, animations, polling interval and saved renderer.
+- Updated the compact README, built-in guide and localized texts.
+
+
 ## [v0.9.4.5] - 2026-10-18
 - Added power-saving Qt Raster CPU mode: cached static backgrounds and a slower optional Sparkle animation.
 - Removed the standalone Qt Quick option; experimental Wayland/X11 GPU modes remain available.
