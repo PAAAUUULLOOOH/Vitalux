@@ -6,7 +6,7 @@ from PySide6.QtGui import QRegion, QAction
 from PySide6.QtWidgets import (QApplication, QButtonGroup, QFrame, QHBoxLayout, QMainWindow, QScrollArea, QStackedWidget, QVBoxLayout, QWidget, QSystemTrayIcon, QGraphicsDropShadowEffect, QMenu)
 from .ui_locale import QPushButton, retranslate_widgets
 
-from . import APP_NAME, __version__, i18n, sensors, settings, theme, motion
+from . import APP_NAME, __version__, i18n, sensors, settings, theme, motion, eco
 from .i18n import tr
 from .pages import CpuPage, DiskPage, GpuPage, MemoryPage, NetworkPage, OverviewPage, SystemPage
 from .pages_extra import InfoPage, UpdatePage
@@ -29,7 +29,7 @@ class Sampler(QThread):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.interval = int(settings.get('interval', 1) or 1)
+        self.interval = eco.interval()
         self._last_error = None
 
     def run(self):
@@ -329,16 +329,17 @@ class MainWindow(QMainWindow):
 
     def _sync_glow(self):
         on = self.manager.available and bool(self.manager.latest)
+        animated = on and not eco.enabled()
         version = self.manager.latest if on else ''
         if self.update_btn is not None:
-            self.update_btn.set_glow(on)
+            self.update_btn.set_glow(animated)
             self.update_btn.set_update_version('v' + version if on else '')
             # No hover hints: the version is directly visible in the sidebar.
             self.update_btn.setToolTip('')
         if hasattr(self, 'pulse_core'):
-            self.pulse_core.set_update_available(on)
+            self.pulse_core.set_update_available(animated)
         if hasattr(self, '_tray_glow'):
-            self._tray_glow.set_active(on)
+            self._tray_glow.set_active(animated)
         if self._tray is not None:
             self._tray_update_action.setVisible(on)
             if on:
@@ -376,7 +377,7 @@ class MainWindow(QMainWindow):
                 return
 
     def set_interval(self, val):
-        val = max(1, min(5, int(val)))
+        val = eco.SAMPLE_INTERVAL if eco.enabled() else max(1, min(5, int(val)))
         self.sampler.interval = val
         for _, page in self.pages:
             for attr in ('graph', 'graph_load', 'graph_net', 'io_graph'):
@@ -642,9 +643,9 @@ class MainWindow(QMainWindow):
 
     def apply_appearance(self):
         """Restyle in-place; keep selected page, benchmark worker and scroll intact."""
-        theme.set_mode(settings.get('theme', 'glass'))
+        theme.set_mode(eco.theme_name())
         user_accent = settings.get('accent', '#4f8cff')
-        theme.set_accent(resolve_accent(user_accent, self.distro['color']))
+        theme.set_accent('#4f8cff' if eco.enabled() else resolve_accent(user_accent, self.distro['color']))
         QApplication.instance().setStyleSheet(theme.stylesheet())
         self.brand_mark.setPixmap(wordmark_pixmap(200, 42))
         self.pulse_core.sync_theme()
@@ -653,11 +654,16 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(current_icon)
         if not self._tray_glow.active:
             self._tray.setIcon(current_icon)
+        self._sync_glow()  # Stop/restart all logo, sidebar and tray pulses.
         self._tray_glow.refresh()
         self._tray_preview.retheme()
         sync_installed_icon()
         minimal = theme.mode() == 'minimal'
         self.centralWidget().set_low_power(minimal)
+        if eco.enabled():
+            self.set_interval(eco.SAMPLE_INTERVAL)
+        else:
+            self.set_interval(eco.interval())
         # Disabling graphics effects (rather than removing them) retains the
         # original glass shadows when switching back to Glass/Dark/Light.
         for card in self.findChildren(GlassSurface):
