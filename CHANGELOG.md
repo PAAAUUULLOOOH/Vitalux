@@ -1,5 +1,12 @@
 # Vitalux – Änderungen
 
+## [v0.9.4.5] - 2026-10-18
+- Qt Raster als sparsamen CPU-Render-Modus ergänzt: statische Hintergründe bleiben zwischengespeichert; die optionale Funkeln-Animation zeichnet seltener neu.
+- Eigenständigen Qt-Quick-Modus aus der Auswahl entfernt. Die experimentellen Wayland-/X11-GPU-Modi bleiben erhalten.
+- Im Farbschema Black Glass sind eigene Akzentfarben und deren Aktionen ausgegraut; Standardfarben und gespeicherte eigene Farben bleiben erhalten.
+- Kompakte README, integrierte Anleitung und englische Übersetzungen aktualisiert.
+
+
 ## [v0.9.4.4] - 2026-10-18
 - Endlosschleife bei „Neustart vorgemerkt“ für Wayland-OpenGL, Wayland-Vulkan und X11-OpenGL behoben: Vitalux erkennt nun das tatsächlich aktive Rendering-Profil.
 - Qt-Quick-Kompatibilitätstest öffnet kein sichtbares kleines Testfenster mehr.
