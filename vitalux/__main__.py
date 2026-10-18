@@ -9,7 +9,7 @@ from . import APP_NAME, distro, i18n, sensors, settings, theme, diagnostics, hov
 from .logo import load_logo
 from .brand import app_icon
 from .wallpaper_accents import resolve_accent
-from . import renderer
+from . import renderer, eco
 from .update_manager import UpdateManager
 
 
@@ -35,15 +35,15 @@ def main():
     i18n.set_lang(lang)
     info = distro.info()
     requested_theme = settings.get('theme', 'glass')
-    theme.set_mode(requested_theme)
-    if requested_theme != theme.mode():
+    theme.set_mode('minimal' if eco.enabled() else requested_theme)
+    if not eco.enabled() and requested_theme != theme.mode():
         settings.set('theme', theme.mode())  # Migrate removed/unknown themes to Glass.
     user_accent = settings.get('accent', '#4f8cff')  # Vitalux Blue for new installs.
     from . import wallpaper_accents
     effective_accent = wallpaper_accents.effective_selection(user_accent)
     if effective_accent != user_accent:
         settings.set('accent', effective_accent)
-    theme.set_accent(resolve_accent(effective_accent, info['color']))
+    theme.set_accent('#4f8cff' if eco.enabled() else resolve_accent(effective_accent, info['color']))
     app.setStyleSheet(theme.stylesheet())
     logo = load_logo(info, 96)
     app.setWindowIcon(app_icon())
