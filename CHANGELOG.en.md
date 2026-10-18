@@ -1,5 +1,12 @@
 # Vitalux – Changes
 
+## [v0.9.4.7] - 2026-10-19
+- Black Glass Gold: fixed the RAM chart-series label, legends and load/status ring colors to use the gold palette from the initial frame.
+- Ultra Eco: added a dedicated Restart now button for manual CPU/previous-GPU renderer switching instead of restarting automatically on toggle.
+- Lower Eco overhead: 10-second sampling, no hidden-window chart repaints, and fewer logo updates.
+- Updated the compact README, built-in guide and localized strings.
+
+
 ## [v0.9.4.6] - 2026-10-18
 - Added an Ultra Eco on/off switch under Performance & energy with an extremely simple flat skin: no glass, shadows, wallpapers or animation.
 - Ultra Eco uses CPU raster rendering, five-second monitoring and reduced redraw work.
