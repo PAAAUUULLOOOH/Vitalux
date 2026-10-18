@@ -732,3 +732,19 @@ EN_MORE.update({
     "Gemeinsamer Verlauf der Auslastung. Zeitraum und Datenreihen frei wählbar.": "Combined load history with selectable time window and visible series.",
     "Unterschiedliche Grafikkarten – Messungen nicht direkt vergleichbar.": "Different graphics cards – readings are not directly comparable."
 })
+
+
+// Graphics backends (v0.9.4.3).
+EN_MORE.update({
+    "Qt Quick · OpenGL (experimentell)": "Qt Quick · OpenGL (experimental)",
+    "Wayland · OpenGL (experimentell)": "Wayland · OpenGL (experimental)",
+    "Wayland · Vulkan (experimentell)": "Wayland · Vulkan (experimental)",
+    "X11 · OpenGL (experimentell)": "X11 · OpenGL (experimental)",
+    "Aktiv: ": "Active: ",
+    "Qt Quick rendert den Hintergrund über den GPU-Scene-Graph (OpenGL oder Vulkan). Wayland und X11 sind Fenster-Backends; Diagramme und Qt-Widgets bleiben CPU-gerendert.":
+        "Qt Quick renders the backdrop using the GPU scene graph (OpenGL or Vulkan). Wayland and X11 are window-system backends; charts and Qt widgets still use CPU rendering.",
+    "Für den Wechsel Jetzt neu starten klicken. Wayland setzt eine Wayland-Sitzung, X11 einen X-Server voraus. Ein fehlgeschlagener GPU-Start wird auf CPU zurückgesetzt.":
+        "Select Restart now to switch. Wayland needs an active Wayland session and X11 needs an X server. Failed GPU starts revert to CPU.",
+    "Unter Grafik-Rendering kannst du CPU, OpenGL, Qt Quick sowie experimentelle Wayland-OpenGL-, Wayland-Vulkan- und X11-OpenGL-Modi wählen. Nach Jetzt neu starten prüft Vitalux die GPU-Unterstützung und schaltet bei Problemen auf CPU zurück.":
+        "In Graphics rendering choose CPU, OpenGL, Qt Quick, or experimental Wayland/OpenGL, Wayland/Vulkan and X11/OpenGL modes. Restart now tests the GPU and falls back to CPU if needed."
+})
