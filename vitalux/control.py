@@ -340,11 +340,15 @@ class PreferencesPage(Page):
         eco_card.body.addWidget(self.eco_toggle)
         eco_card.body.addWidget(label(
             'Sehr einfache, flache Oberfläche ohne Glas, Schatten, Hintergrundbilder, '
-            'Funkeln oder Übergangsanimationen. CPU-Rendering und 5 Sekunden '
+            'Funkeln oder Übergangsanimationen. CPU-Rendering und 10 Sekunden '
             'Messintervall sparen Zeichen- und Abfragearbeit. Ausschalten stellt '
             'deine bisherigen Einstellungen wieder her.', 'muted', wrap=True))
         self.eco_status = label('', 'muted', wrap=True)
         eco_card.body.addWidget(self.eco_status)
+        self.eco_restart_button = QPushButton('Jetzt neu starten')
+        self.eco_restart_button.setObjectName('primaryBtn')
+        self.eco_restart_button.clicked.connect(self.restart_for_eco)
+        eco_card.body.addWidget(self.eco_restart_button, 0, Qt.AlignLeft)
         self.content.addWidget(eco_card)
 
         render_card = Card('Grafik-Rendering')
@@ -353,7 +357,9 @@ class PreferencesPage(Page):
         self.render_combo = QComboBox()
         for backend in renderer.CHOICES:
             self.render_combo.addItem(tr(renderer.DESCRIPTIONS[backend]), backend)
-        selected_renderer = renderer.desired()
+        selected_renderer = settings.get('render_backend', renderer.SOFTWARE)
+        if selected_renderer not in renderer.CHOICES:
+            selected_renderer = renderer.SOFTWARE
         self.render_combo.setCurrentIndex(max(0, self.render_combo.findData(selected_renderer)))
         self.render_combo.currentIndexChanged.connect(self.change_renderer)
         render_row.addWidget(self.render_combo)
@@ -456,10 +462,15 @@ class PreferencesPage(Page):
 
     def _refresh_renderer_status(self):
         active = getattr(self.window, 'render_backend_active', renderer.SOFTWARE)
+        pending = renderer.desired() != active
         if eco.enabled():
-            self.render_status.setText(tr('Ultra Eco: CPU-Rendering erzwungen; gespeicherter Renderer bleibt erhalten.'))
+            self.render_status.setText(tr(
+                'Ultra Eco wartet auf Neustart für CPU-Rendering.'
+                if pending else 'Ultra Eco: CPU-Rendering aktiv.'))
             self.render_restart_button.setVisible(False)
+            self.eco_restart_button.setVisible(True)
             return
+        self.eco_restart_button.setVisible(pending)
         selected = self.render_combo.currentData()
         if selected != active:
             status = tr('Rendering-Wechsel vorgemerkt – bitte Vitalux neu starten.')
@@ -494,8 +505,14 @@ class PreferencesPage(Page):
             QMessageBox.warning(self, 'Vitalux',
                 tr('Vitalux kann wegen eines laufenden Vorgangs gerade nicht neu starten.'))
 
+    def restart_for_eco(self):
+        """Apply CPU or previously saved GPU graphics with a safe full restart."""
+        if not self.window.restart_for_renderer():
+            QMessageBox.warning(self, 'Vitalux',
+                tr('Vitalux kann wegen eines laufenden Vorgangs gerade nicht neu starten.'))
+
     def toggle_ultra_eco(self, enabled):
-        """Switch the primitive skin live, restarting only for GPU <-> CPU."""
+        """Apply appearance live, but wait for user-initiated graphics restart."""
         enabled = bool(enabled)
         old = eco.enabled()
         if enabled == old:
@@ -505,19 +522,12 @@ class PreferencesPage(Page):
             self.eco_toggle.setChecked(old)
             self.eco_toggle.blockSignals(False)
             return
+        # No automatic application close: the user clicks the adjacent
+        # restart button when an incompatible GPU/CPU host must be swapped.
         self.window.apply_appearance()
         self.window.set_interval(eco.interval())
-        self.refresh_appearance()  # Update disabled controls also in lightweight hosts.
+        self.refresh_appearance()
         self._refresh_restore_button()
-        if renderer.desired() != self.window.render_backend_active:
-            # A Qt GPU window cannot be replaced safely without a restart.
-            if not self.window.restart_for_renderer():
-                settings.set(eco.KEY, old)
-                self.window.apply_appearance()
-                self.window.set_interval(eco.interval())
-                self.refresh_appearance()
-                QMessageBox.warning(self, 'Vitalux',
-                    tr('Ultra Eco kann während eines laufenden Vorgangs nicht wechseln.'))
 
     def _set_preference(self, key, value):
         settings.set(key, value)
@@ -579,6 +589,7 @@ class PreferencesPage(Page):
             box.blockSignals(False)
         self.window.set_interval(eco.interval())
         self.window.apply_appearance()
+        self.refresh_appearance()
         self._refresh_restore_button()
 
     def refresh_appearance(self):
@@ -586,8 +597,16 @@ class PreferencesPage(Page):
         self.eco_toggle.blockSignals(True)
         self.eco_toggle.setChecked(ultra)
         self.eco_toggle.blockSignals(False)
-        self.eco_status.setText(tr('Ultra Eco aktiv: alle Effekte aus, einfache Darstellung und 5 Sekunden Messintervall.')
-                                if ultra else '')
+        active_backend = getattr(self.window, 'render_backend_active', renderer.SOFTWARE)
+        pending_switch = renderer.desired() != active_backend
+        if ultra:
+            status = ('Ultra Eco vorgemerkt – bitte Jetzt neu starten klicken.'
+                      if pending_switch else
+                      'Ultra Eco aktiv: alle Effekte aus, einfache Darstellung und 10 Sekunden Messintervall.')
+        else:
+            status = ('Ultra Eco deaktiviert – bitte Jetzt neu starten klicken.'
+                      if pending_switch else '')
+        self.eco_status.setText(tr(status))
         self.mode.setEnabled(not ultra)
         self.background_combo.setEnabled(not ultra)
         self.custom_background_area.setEnabled(not ultra)
@@ -595,6 +614,12 @@ class PreferencesPage(Page):
         self.accent_combo.setEnabled(not ultra and theme.mode() != 'black_glass_gold')
         self.interval.setEnabled(not ultra)
         self.render_combo.setEnabled(not ultra)
+        # Show the remembered renderer after leaving Ultra Eco.
+        saved = settings.get('render_backend', renderer.SOFTWARE)
+        if saved in renderer.CHOICES and self.render_combo.currentData() != saved:
+            self.render_combo.blockSignals(True)
+            self.render_combo.setCurrentIndex(self.render_combo.findData(saved))
+            self.render_combo.blockSignals(False)
         self.eco_toggle.setEnabled(True)
         for i in range(self.render_combo.count()):
             backend = self.render_combo.itemData(i)
