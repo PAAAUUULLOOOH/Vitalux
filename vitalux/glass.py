@@ -258,6 +258,17 @@ class AmbientScene(_AmbientSceneCore, QWidget):
         self._paint_background()
 
 
+class EfficientRasterScene(AmbientScene):
+    """Reuse QWidget/QPainter cached backdrops and refresh optional sparkle less.
+
+    Static wallpapers remain pixel-identical. Only decorative sparkle updates
+    use 500 instead of 250 ms; sampling, charts and alerts are unchanged.
+    """
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._wallpaper_timer.setInterval(500)
+
+
 if QOpenGLWidget is not None:
     class AcceleratedAmbientScene(_AmbientSceneCore, QOpenGLWidget):
         """Experimental GL-backed background with OpenGL compositing.
@@ -294,6 +305,10 @@ def create_ambient_scene():
             except (RuntimeError, OSError):
                 pass
         renderer.fallback()
+    if renderer.desired() == renderer.QT_RASTER:
+        scene = EfficientRasterScene()
+        scene.render_backend = renderer.QT_RASTER
+        return scene
     scene = AmbientScene()
     scene.render_backend = renderer.SOFTWARE
     return scene
