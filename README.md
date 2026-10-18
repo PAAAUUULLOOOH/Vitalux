@@ -135,7 +135,7 @@ Unter **Einstellungen → Grafik-Rendering** lassen sich sechs Modi auswählen:
 | **Wayland · Vulkan** | Native Wayland-Fenster mit Vulkan-Scene-Graph (experimentell) |
 | **X11 · OpenGL** | X11-/XWayland-Fenster mit OpenGL-Scene-Graph (experimentell) |
 
-**Jetzt neu starten** aktiviert die Auswahl. Die Qt-Widgets, Bedienelemente und Diagramme werden weiterhin überwiegend über die CPU gezeichnet; ein schnelleres Bild ist nicht garantiert. Vulkan setzt passende Treiber und Qt-Unterstützung voraus, Wayland eine aktive Wayland-Sitzung und X11 ein erreichbares X-Display. Vor dem Start wird das gewählte Qt-Quick-GPU-Backend in einem separaten Prozess getestet. Bei Inkompatibilität oder einem erkannten Startabsturz kehrt Vitalux zum **CPU-Modus** zurück.
+**Jetzt neu starten** aktiviert die Auswahl. Die Qt-Widgets, Bedienelemente und Diagramme werden weiterhin überwiegend über die CPU gezeichnet; ein schnelleres Bild ist nicht garantiert. Vulkan setzt passende Treiber und Qt-Unterstützung voraus, Wayland eine aktive Wayland-Sitzung und X11 ein erreichbares X-Display. Vor dem Start wird das gewählte Qt-Quick-GPU-Backend in einem **unsichtbaren** separaten Prozess getestet. Bei Inkompatibilität oder einem erkannten Startabsturz kehrt Vitalux zum **CPU-Modus** zurück.
 
 **Notfallstart (portable ZIP):**
 
