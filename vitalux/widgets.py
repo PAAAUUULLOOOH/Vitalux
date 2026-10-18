@@ -579,8 +579,10 @@ class ChartPanel(QWidget):
         controls.addWidget(self.time_range)
         self.toggles = []
         self.live_labels = []
-        for name, color in zip(self.series_names, self.colors):
-            cb = ChartSeriesCheckBox(name, color)
+        for idx, name in enumerate(self.series_names):
+            # Apply the current theme immediately. The old initial color
+            # leaked teal into the RAM legend on Black Glass Gold until retheme().
+            cb = ChartSeriesCheckBox(name, self._palette_color(idx))
             cb.setChecked(True)
             cb.toggled.connect(self._update)
             controls.addWidget(cb)
