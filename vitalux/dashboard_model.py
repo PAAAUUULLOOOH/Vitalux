@@ -5,7 +5,7 @@ TITLES = {
     'hero':'Distribution & Systemdaten', 'cpu':'Prozessor', 'gpu':'Grafik',
     'ram':'Arbeitsspeicher', 'disk':'System-Laufwerk',
     'graph_load':'Auslastung', 'graph_net':'Netzwerk-Verlauf',
-    'network':'Netzwerk', 'drives':'Laufwerke',
+    'health':'Systemzustand', 'network':'Netzwerk', 'drives':'Laufwerke',
 }
 ORDER = tuple(TITLES)
 # 12-column native widths and all non-hero sizes stay unchanged. The
@@ -17,11 +17,11 @@ DEFAULT = {
     'cpu': (0,8,3,8), 'gpu': (3,8,3,8),
     'ram': (6,8,3,8), 'disk': (9,8,3,8),
     'graph_load': (0,16,6,11), 'graph_net': (6,16,6,11),
-    'network': (0,27,6,8), 'drives': (6,27,6,8),
+    'health': (0,27,3,8), 'network': (3,27,4,8), 'drives': (7,27,5,8),
 }
 MINSPAN = {'hero': (6,8), 'cpu': (3,6), 'gpu': (3,6), 'ram': (3,6),
            'disk': (3,6), 'graph_load': (4,7), 'graph_net': (4,7),
-           'network': (4,5), 'drives': (4,5)}
+           'health': (3,6), 'network': (4,5), 'drives': (4,5)}
 PITCH = 35
 GAP = 14
 

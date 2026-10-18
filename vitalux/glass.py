@@ -358,6 +358,19 @@ def paint_rim(p, rect, radius, *, active=False, compact=False):
         p.drawPath(outer)
         p.setPen(QPen(rgba(255, 229, 153, 103 if active else 52), 3.0))
         p.drawPath(outer)
+        inset = rect.adjusted(2.4, 2.4, -2.4, -2.4)
+        if inset.width() > 12 and inset.height() > 12:
+            p.setPen(QPen(rgba(255, 239, 207, 44), 0.9))
+            p.drawPath(rounded(inset, max(2, radius - 2.4)))
+        highlight = QLinearGradient(rect.left(), 0, rect.right(), 0)
+        highlight.setColorAt(0, rgba(255, 255, 255, 0))
+        highlight.setColorAt(.22, rgba(255, 245, 221, 118))
+        highlight.setColorAt(.58, rgba(252, 214, 143, 44))
+        highlight.setColorAt(1, rgba(255, 255, 255, 0))
+        p.setPen(QPen(QBrush(highlight), 1.2, Qt.SolidLine, Qt.RoundCap))
+        pad = min(radius + 8, rect.width() * .2)
+        p.drawLine(QPointF(rect.left()+pad, rect.top()+1.2),
+                   QPointF(rect.right()-pad, rect.top()+1.2))
         return
     if theme.mode() in ('black_glass', 'black_glass_gold'):
         # Neutral silver rather than the cyan/violet outline of regular Glass.

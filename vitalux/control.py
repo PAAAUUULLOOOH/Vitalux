@@ -206,6 +206,8 @@ class PreferencesPage(Page):
         stored = settings.get('accent', '#4f8cff')
         if wallpaper_accents.is_legacy_accent(stored):
             stored = wallpaper_accents.AUTO
+        stored = wallpaper_accents.effective_selection(stored)
+        if stored != settings.get('accent', '#4f8cff'):
             settings.set('accent', stored)
         if accent.findData(stored) < 0 and QColor(str(stored)).isValid():
             # Migrate the unnamed color from earlier Vitalux installations.
@@ -545,9 +547,18 @@ class PreferencesPage(Page):
     def change_accent(self, val):
         if theme.mode() == 'black_glass_gold' or not self.accent_combo.isEnabled():
             return
-        if not val:
+        if not val or (wallpaper_accents.is_wallpaper_accent(val)
+                       and not wallpaper_accents.available()):
             return
-        settings.set('accent', val)
+        if val == wallpaper_accents.AUTO:
+            current = settings.get('accent', '#4f8cff')
+            if not wallpaper_accents.is_wallpaper_accent(current):
+                settings.set_many({'accent_before_wallpaper_auto': current,
+                                   'accent': val})
+            else:
+                settings.set('accent', val)
+        else:
+            settings.set('accent', val)
         index = self.accent_combo.findData(val)
         if index >= 0 and self.accent_combo.currentIndex() != index:
             self.accent_combo.blockSignals(True)
@@ -691,8 +702,30 @@ class PreferencesPage(Page):
         self.background_image_combo.blockSignals(False)
         self.sync_background_controls()
 
+    def _sync_wallpaper_accent_option(self):
+        """Disable only wallpaper-auto when no valid personal image is selected."""
+        index = self.accent_combo.findData(wallpaper_accents.AUTO)
+        if index < 0:
+            return
+        enabled = wallpaper_accents.available()
+        item = self.accent_combo.model().item(index)
+        if item is not None:
+            item.setEnabled(enabled)
+        self.accent_combo.setItemData(index, tr('Nur mit eigenem Hintergrundbild verfügbar')
+                                      if not enabled else
+                                      tr('Akzentfarbe aus dem eigenen Hintergrundbild'),
+                                      Qt.ToolTipRole)
+        chosen = settings.get('accent', '#4f8cff')
+        if wallpaper_accents.is_wallpaper_accent(chosen) and not enabled:
+            fallback = wallpaper_accents.manual_fallback()
+            settings.set('accent', fallback)
+            self.accent_combo.blockSignals(True)
+            self.accent_combo.setCurrentIndex(max(0, self.accent_combo.findData(fallback)))
+            self.accent_combo.blockSignals(False)
+
     def sync_background_controls(self):
         custom = self.background_combo.currentData() == 'custom_image'
+        self._sync_wallpaper_accent_option()
         self.custom_background_area.setVisible(custom)
         count = self.background_image_combo.count()
         self.remove_background_button.setEnabled(count > 0)

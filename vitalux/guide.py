@@ -28,7 +28,7 @@ SLIDES = [
     (
         "Die Live-Übersicht",
         "Auf der Startseite sind die wichtigsten Informationen als Kacheln zusammengefasst.",
-        "Du siehst unter anderem Prozessor, Grafik, RAM und Systemlaufwerk.",
+        "Du siehst unter anderem Prozessor, Grafik, RAM, Systemlaufwerk und den Systemzustand.",
         "Diagramme zeigen, wie sich die Auslastung im Zeitverlauf verändert.",
         "Unter „Layout bearbeiten“ verschiebst du Kacheln; große Lücken schließen sich automatisch, die Abstände bleiben gleich.",
         "overview",
@@ -78,7 +78,7 @@ SLIDES = [
         "Standardmäßig startet Vitalux mit Glass und Vitalux Blau. Gespeicherte persönliche Einstellungen bleiben erhalten.",
         "Wähle einen von 14 integrierten Hintergründen oder importiere eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
         "Du kannst in Grafik-Rendering direkt zwischen CPU, OpenGL und Qt Quick wählen. Bei der neuen Qt-Quick-Option wird der Hintergrund über den GPU-Scene-Graph angezeigt; Diagramme und Bedienelemente bleiben zunächst Qt-Widgets. Der Button Jetzt neu starten wendet die Auswahl kontrolliert an.",
-        "Du kannst 5 Farbschemas, 14 Hintergrundeinstellungen und 9 Akzentoptionen kombinieren: 5 × 14 × 9 = 630 Auswahlkombinationen, davon 560 mit festen Akzentfarben. Nur selbst erstellte Akzentfarben sind bearbeitbar und löschbar.",
+        "Sieben Farbschemata stehen zur Wahl. Black Glass Gold hat einen festen Goldakzent; Holographic ist ein eigenes HUD ohne Glas. Hintergrundfarbe automatisch ist nur mit ausgewähltem eigenem Hintergrundbild verfügbar.",
         "settings",
     ),
     (

@@ -59,6 +59,55 @@ def _vram_text(g):
     return None
 
 
+def _system_state(sample):
+    """Score based only on available readings; not a hardware diagnosis."""
+    cpu = sample.get("cpu", {}) or {}
+    ram = sample.get("ram", {}) or {}
+    gpus = sample.get("gpus", []) or []
+    disks = sample.get("disks", []) or []
+    gpu = gpus[0] if gpus else {}
+    root = next((x for x in disks if x.get("mount") == "/"), disks[0] if disks else {}) or {}
+    score = 100.0
+    issues = []
+
+    def penalty_linear(value, warn, crit, maximum):
+        if value is None or value <= warn:
+            return 0.0
+        if value >= crit:
+            return float(maximum)
+        return (float(value) - warn) / max(1.0, crit - warn) * maximum
+
+    def add_issue(amount, text):
+        nonlocal score
+        if amount > 0:
+            score -= amount
+            issues.append((amount, text))
+
+    cpu_temp, gpu_temp, hotspot = cpu.get("temp"), gpu.get("temp"), gpu.get("hotspot")
+    ram_percent, disk_percent = ram.get("percent"), root.get("percent")
+    add_issue(penalty_linear(cpu_temp, 72, 92, 28), f"CPU {cpu_temp:.0f} °C" if cpu_temp is not None else "")
+    add_issue(penalty_linear(gpu_temp, 70, 88, 24), f"GPU {gpu_temp:.0f} °C" if gpu_temp is not None else "")
+    add_issue(penalty_linear(hotspot, 88, 102, 10), f"GPU-Hotspot {hotspot:.0f} °C" if hotspot is not None else "")
+    add_issue(penalty_linear(ram_percent, 78, 95, 15), f"RAM {ram_percent:.0f} %" if ram_percent is not None else "")
+    add_issue(penalty_linear(disk_percent, 84, 97, 9), f"Systemlaufwerk {disk_percent:.0f} %" if disk_percent is not None else "")
+    cpu_usage, gpu_usage = cpu.get("usage"), gpu.get("usage")
+    if cpu_usage is not None and cpu_temp is not None and cpu_usage >= 92 and cpu_temp >= 82:
+        add_issue(6, tr('Prozessor aktuell stark ausgelastet'))
+    if gpu_usage is not None and gpu_temp is not None and gpu_usage >= 95 and gpu_temp >= 80:
+        add_issue(6, tr('Grafikkarte aktuell stark ausgelastet'))
+    if not any(value is not None for value in (cpu_temp, gpu_temp, ram_percent, disk_percent)):
+        return None, tr('Beobachten'), tr('Noch nicht genügend Sensordaten')
+    score = max(18, min(100, round(score)))
+    issue = max(issues, key=lambda item: item[0])[1] if issues else ''
+    if score >= 90:
+        return score, tr('Sehr gut'), tr('Alles im grünen Bereich')
+    if score >= 76:
+        return score, tr('Stabil'), issue or tr('Leichte Last, aber unkritisch')
+    if score >= 58:
+        return score, tr('Beobachten'), issue or tr('Einzelne Werte im Blick behalten')
+    return score, tr('Auffällig'), issue or tr('Mehrere Werte prüfen')
+
+
 # ------------------------------------------------------------------ Übersicht
 class OverviewPage(Page):
     def __init__(self, distro, logo):
@@ -117,6 +166,7 @@ class OverviewPage(Page):
         # its unusually long name cannot squeeze the GPU ring.
         self.g_cpu, self.g_gpu = GaugeCard("Prozessor"), GaugeCard("Grafik", compact_caption=True)
         self.g_ram, self.g_disk = GaugeCard("Arbeitsspeicher"), GaugeCard("System-Laufwerk")
+        self.g_health = GaugeCard("Systemzustand", gauge_semantic='score')
         c1, c2 = Card("Auslastung"), Card("Netzwerk-Verlauf")
         self.graph_load = ChartPanel(['CPU', 'GPU', 'RAM'], [theme.accent(), theme.secondary_accent(), theme.TEAL])
         self.graph_net = ChartPanel(['Download', 'Upload'], [theme.accent(), theme.secondary_accent()], mode='rate')
@@ -181,7 +231,7 @@ class OverviewPage(Page):
             ('hero',head), ('cpu',self.g_cpu), ('gpu',self.g_gpu),
             ('ram',self.g_ram), ('disk',self.g_disk),
             ('graph_load',c1), ('graph_net',c2),
-            ('network',net), ('drives',self.disks_card),
+            ('health',self.g_health), ('network',net), ('drives',self.disks_card),
         ):
             self.board.register(key,widget)
         self.content.addWidget(self.board)
@@ -371,6 +421,10 @@ class OverviewPage(Page):
         root = next((x for x in disks if x["mount"] == "/"), disks[0] if disks else None)
         if root:
             self.g_disk.set(root["percent"], f"{fmt_bytes(root['used'])} / {fmt_bytes(root['total'])}")
+
+        score, state, detail = _system_state(d)
+        self.g_health.set(score, f"{state}\n{detail}",
+                          text=f"{score:.0f}" if score is not None else "–")
 
         self.graph_load.set_series([(h["cpu"], theme.accent()), (h["gpu"], theme.secondary_accent()), (h["ram"], theme.TEAL)])
         self.graph_net.set_series([(h["net_down"], theme.accent()), (h["net_up"], theme.secondary_accent())])

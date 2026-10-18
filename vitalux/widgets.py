@@ -159,11 +159,25 @@ class Gauge(QWidget):
         self._render_value = None
         self._target = None
         self.text = None
+        self.semantic = 'load'
         self._animate = QTimer(self)
         self._animate.setInterval(25)
         self._animate.timeout.connect(self._tick)
         self.setMinimumSize(130, 130)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+    def set_semantic(self, semantic):
+        self.semantic = semantic or 'load'
+        self.update()
+
+    def _ring_color(self, value):
+        if self.semantic == 'score':
+            if value is None or value >= 86:
+                return theme.accent()
+            if value >= 66:
+                return theme.WARN
+            return theme.CRIT
+        return theme.level_color(value)
 
     def set(self, value, text=None):
         self.text = text
@@ -215,14 +229,15 @@ class Gauge(QWidget):
         p.drawArc(rect, 225 * 16, -270 * 16)
         if self._render_value is not None:
             v = max(0.0, min(100.0, self._render_value))
-            glow = QColor(theme.level_color(v))
+            ring_color = self._ring_color(v)
+            glow = QColor(ring_color)
             glow.setAlpha(35)
             p.setPen(QPen(glow, pen_w * 1.75, Qt.SolidLine, Qt.RoundCap))
             p.drawArc(rect, 225 * 16, int(-270 * 16 * v / 100))
             grad = QConicalGradient(rect.center(), 90)
-            grad.setColorAt(0, QColor(theme.level_color(v)))
+            grad.setColorAt(0, QColor(ring_color))
             grad.setColorAt(0.7, QColor(theme.secondary_accent()))
-            grad.setColorAt(1, QColor(theme.level_color(v)))
+            grad.setColorAt(1, QColor(ring_color))
             p.setPen(QPen(QBrush(grad), pen_w, Qt.SolidLine, Qt.RoundCap))
             p.drawArc(rect, 225 * 16, int(-270 * 16 * v / 100))
         if theme.mode() == 'holographic':
@@ -267,12 +282,13 @@ class GaugeCaption(QLabel):
 
 
 class GaugeBox(QWidget):
-    def __init__(self, title=None, compact_caption=False):
+    def __init__(self, title=None, compact_caption=False, gauge_semantic='load'):
         super().__init__()
         lay = QVBoxLayout(self)
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(6)
         self.gauge = Gauge()
+        self.gauge.set_semantic(gauge_semantic)
         lay.addWidget(self.gauge, 1)
         if title:
             lay.addWidget(label(title, "gaugeTitle", Qt.AlignHCenter))
@@ -288,9 +304,9 @@ class GaugeBox(QWidget):
 
 
 class GaugeCard(Card):
-    def __init__(self, title, compact_caption=False):
+    def __init__(self, title, compact_caption=False, gauge_semantic='load'):
         super().__init__(title)
-        self.box = GaugeBox(compact_caption=compact_caption)
+        self.box = GaugeBox(compact_caption=compact_caption, gauge_semantic=gauge_semantic)
         self.body.addWidget(self.box)
 
     def set(self, value, sub="", text=None):

@@ -39,7 +39,11 @@ def main():
     if requested_theme != theme.mode():
         settings.set('theme', theme.mode())  # Migrate removed/unknown themes to Glass.
     user_accent = settings.get('accent', '#4f8cff')  # Vitalux Blue for new installs.
-    theme.set_accent(resolve_accent(user_accent, info['color']))
+    from . import wallpaper_accents
+    effective_accent = wallpaper_accents.effective_selection(user_accent)
+    if effective_accent != user_accent:
+        settings.set('accent', effective_accent)
+    theme.set_accent(resolve_accent(effective_accent, info['color']))
     app.setStyleSheet(theme.stylesheet())
     logo = load_logo(info, 96)
     app.setWindowIcon(app_icon())

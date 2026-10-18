@@ -23,6 +23,25 @@ def is_wallpaper_accent(value):
     return value == AUTO or is_legacy_accent(value)
 
 
+def available():
+    """Use wallpaper accent only with an actually selected imported image."""
+    return (settings.get('background_style', 'theme_default') == 'custom_image'
+            and user_background.image_path(
+                settings.get('custom_background_selected', '')) is not None)
+
+
+def manual_fallback():
+    """Restore the previous accent if the custom wallpaper is deselected."""
+    previous = settings.get('accent_before_wallpaper_auto', '#4f8cff')
+    return previous if previous == 'auto' or QColor(str(previous)).isValid() else '#4f8cff'
+
+
+def effective_selection(stored):
+    if is_wallpaper_accent(stored) and not available():
+        return manual_fallback()
+    return stored
+
+
 def suggestions():
     selected_style = settings.get('background_style', 'theme_default')
     style = backdrops.resolve(selected_style, theme.mode())
@@ -111,6 +130,7 @@ def _sample(style, filename, fit, stamp, theme_mode):
 
 
 def resolve_accent(stored, distro_color='#4f8cff'):
+    stored = effective_selection(stored)
     if stored == 'auto':
         return distro_color
     if is_wallpaper_accent(stored):
