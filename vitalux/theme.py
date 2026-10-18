@@ -305,6 +305,7 @@ QLabel#benchmarkResultWrite { color: $SECONDARY; }
 
 
 def stylesheet():
+    from . import eco
     base = accent()
     pal = _THEMES[_mode]
     light = _mode == "light"
@@ -323,4 +324,16 @@ def stylesheet():
     )
     if _mode == "black_glass_gold":
         return qss + _BLACK_GLASS_GOLD_QSS.substitute(ACCENT=base)
+    if eco.enabled():
+        # Intentionally primitive Qt widgets: no rounded cards, light effects,
+        # shadow treatments or decorative surfaces. All selectors are native.
+        qss += """
+        QWidget#root, QFrame#glassNavRail, QScrollArea, QStackedWidget {
+            background-color: #111315;
+        }
+        QPushButton, QComboBox, QLineEdit, QSpinBox, QTextEdit,
+        QListWidget, QToolButton, QProgressBar, QFrame#alertThresholdField {
+            border-radius: 0px; }
+        QPushButton:hover, QToolButton:hover { background-color: #222528; }
+        """
     return qss + (_HOLOGRAPHIC_QSS.substitute(ACCENT=base) if _mode == "holographic" else "")
