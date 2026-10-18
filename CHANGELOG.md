@@ -1,5 +1,12 @@
 # Vitalux – Änderungen
 
+## [v0.9.4.7] - 2026-10-19
+- Black Glass Gold: RAM-Beschriftung in der Auslastungsgrafik sowie weitere Diagramm-Legenden und Auslastungsringe direkt beim Aufbau an die Goldpalette angepasst.
+- Ultra Eco: eigener Button „Jetzt neu starten“ zum bewussten Wechsel zwischen CPU- und vorherigem GPU-Renderer statt automatischem Neustart beim Umschalten.
+- Ultra Eco sparsamer: Messintervall auf 10 Sekunden erhöht, unnötige Diagramm-Aktualisierungen bei verborgenem Fenster und Logo-Neuzeichnungen vermieden.
+- Kompakte README, integrierte Anleitung und Übersetzungen auf den aktuellen Stand gebracht.
+
+
 ## [v0.9.4.6] - 2026-10-18
 - Ultra Eco als Ein-/Aus-Schalter unter „Leistung & Energie“ ergänzt: besonders primitiver, flacher Skin ohne Glas, Schatten, Hintergrundbilder und Animationen.
 - CPU-Rendering statt GPU, 5 Sekunden Abfrageintervall und reduzierte Zeichenarbeit im Ultra-Eco-Modus.
