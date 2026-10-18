@@ -280,7 +280,7 @@ def create_ambient_scene():
             try:
                 from .quick_scene import QuickAmbientScene
                 scene = QuickAmbientScene()
-                scene.render_backend = renderer.QTQUICK
+                scene.render_backend = renderer.desired()  # Preserve the actual Wayland/X11 + RHI profile.
                 return scene
             except (ImportError, RuntimeError, OSError) as exc:
                 print('Vitalux: Qt Quick konnte nicht initialisiert werden:', exc)
