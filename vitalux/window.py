@@ -631,6 +631,10 @@ class MainWindow(QMainWindow):
     def _refresh_visible_page(self):
         if self.last_sample is None or not self.pages:
             return
+        # While hidden in the tray, keep collecting data and checking alarms,
+        # but skip all widget/chart paints until the window is shown again.
+        if eco.enabled() and (not self.isVisible() or self.isMinimized()):
+            return
         page = self.pages[self.stack.currentIndex()][1]
         try:
             page.refresh(self.last_sample, self.hist)
@@ -753,7 +757,8 @@ class MainWindow(QMainWindow):
                 self._tray_preview.update_sample(d)
         # Native, lightweight branding animation driven by the real CPU sample.
         cpu_pct = d.get("cpu", {}).get("usage", 0.0)
-        self.pulse_core.set_cpu_load(cpu_pct)
+        if not eco.enabled():
+            self.pulse_core.set_cpu_load(cpu_pct)
         h = self.hist
         g = d["gpus"][0] if d["gpus"] else None
         h["cpu"].append(d["cpu"]["usage"])
@@ -824,6 +829,8 @@ class MainWindow(QMainWindow):
             self.showMaximized()
         else:
             self.showNormal()
+        if eco.enabled():
+            self._refresh_visible_page()  # Bring cached data up to date on restore.
         self.raise_()
         self.activateWindow()
 
