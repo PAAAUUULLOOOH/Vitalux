@@ -734,7 +734,7 @@ EN_MORE.update({
 })
 
 
-// Graphics backends (v0.9.4.3).
+# Graphics backends (v0.9.4.3).
 EN_MORE.update({
     "Qt Quick · OpenGL (experimentell)": "Qt Quick · OpenGL (experimental)",
     "Wayland · OpenGL (experimentell)": "Wayland · OpenGL (experimental)",
