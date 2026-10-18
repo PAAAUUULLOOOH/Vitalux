@@ -34,6 +34,9 @@ RAINBOW_PRESETS = frozenset(('prism',))
 
 def resolve(style, theme_mode):
     """Discontinued wallpaper selections fall back to the original theme."""
+    from . import eco
+    if eco.enabled():
+        return 'minimal'  # No file decode, gradient, blur or animation.
     if theme_mode == 'black_glass_gold' and style in ('theme_default', 'black_glass_gold'):
         return 'black_glass'
     return style if style == 'custom_image' else (theme_mode if style not in KEYS or style == 'theme_default' else style)
