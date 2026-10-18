@@ -275,7 +275,7 @@ else:
 
 def create_ambient_scene():
     """Select one backend at startup; never hot-swap a GL surface."""
-    if renderer.desired() == renderer.QTQUICK:
+    if renderer.desired() in renderer.QUICK_MODES:
         if renderer.quick_available():
             try:
                 from .quick_scene import QuickAmbientScene
