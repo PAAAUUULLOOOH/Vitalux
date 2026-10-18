@@ -234,8 +234,9 @@ jobs:
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
           # Lavapipe is a Vulkan CPU ICD for CI only; user hardware uses its own driver.
-          ICD=/usr/share/vulkan/icd.d/lvp_icd.x86_64.json
-          test -r "$ICD"
+          ICD="$(find /usr/share/vulkan/icd.d -maxdepth 1 -name 'lvp_icd*.json' -print -quit)"
+          test -n "$ICD" && test -r "$ICD"
+          echo "Vulkan-Lavapipe-ICD: $ICD"
           QT_QPA_PLATFORM=xcb QSG_RHI_BACKEND=vulkan VITALUX_QUICK_API=vulkan \
             VK_ICD_FILENAMES="$ICD" LIBGL_ALWAYS_SOFTWARE=1 \
             LD_LIBRARY_PATH="$PWD/lib" \
