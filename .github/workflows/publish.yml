@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   build-and-release:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'publish Vitalux v0.9.4.6')
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'publish Vitalux v0.9.4.7')
     runs-on: ubuntu-24.04
     timeout-minutes: 50
     steps:
@@ -292,6 +292,7 @@ jobs:
           LD_LIBRARY_PATH="$PWD/lib" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_ultra_eco.py"
           LD_LIBRARY_PATH="$PWD/lib" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_holographic_theme.py"
           LD_LIBRARY_PATH="$PWD/lib" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_black_glass_gold.py"
+          LD_LIBRARY_PATH="$PWD/lib" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_gold_palette.py"
           LD_LIBRARY_PATH="$PWD/lib" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_wallpaper_accent_availability.py"
           LD_LIBRARY_PATH="$PWD/lib" PYTHONPATH="$PWD" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_system_status.py"
           LD_LIBRARY_PATH="$PWD/lib" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_gpu_history.py"
