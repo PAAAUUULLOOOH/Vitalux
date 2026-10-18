@@ -80,6 +80,10 @@ def secondary_accent():
 
 
 def level_color(pct):
+    # Black Glass Gold does not inherit the default yellow/red load palette.
+    # Warnings remain semantically distinguishable via their own labels.
+    if _mode == "black_glass_gold":
+        return "#bb8c45" if pct >= 90 else "#dfb963" if pct >= 75 else accent()
     return CRIT if pct >= 90 else WARN if pct >= 75 else accent()
 
 
