@@ -1,7 +1,8 @@
 """GPU and Qt display-backend selection with isolated preflight and safe rollback.
 
-Wayland/X11 select the Qt QPA *window-system* plugin. OpenGL/Vulkan select the
-Qt Quick RHI *rendering* API. Existing Qt Widgets still paint on the CPU.
+Wayland/X11 select the Qt QPA window-system plugin. OpenGL/Vulkan use the
+Qt Quick RHI internally, but have no separate Qt Quick menu item.
+CPU and Qt Raster use native QWidget/QPainter drawing.
 """
 import os
 import subprocess
@@ -10,19 +11,20 @@ import sys
 from . import settings
 
 SOFTWARE = 'software'
+QT_RASTER = 'qt_raster'
 OPENGL = 'opengl'
-QTQUICK = 'qtquick'
+LEGACY_QTQUICK = 'qtquick'  # Previously stored renderer ID; migrate below
 WAYLAND_OPENGL = 'wayland_opengl'
 WAYLAND_VULKAN = 'wayland_vulkan'
 X11_OPENGL = 'x11_opengl'
 
-CHOICES = (SOFTWARE, OPENGL, QTQUICK, WAYLAND_OPENGL, WAYLAND_VULKAN, X11_OPENGL)
-QUICK_MODES = (QTQUICK, WAYLAND_OPENGL, WAYLAND_VULKAN, X11_OPENGL)
+CHOICES = (SOFTWARE, QT_RASTER, OPENGL, WAYLAND_OPENGL, WAYLAND_VULKAN, X11_OPENGL)
+QUICK_MODES = (WAYLAND_OPENGL, WAYLAND_VULKAN, X11_OPENGL)
 GPU_MODES = (OPENGL,) + QUICK_MODES
 DESCRIPTIONS = {
     SOFTWARE: 'CPU · Standard (stabil)',
+    QT_RASTER: 'Qt Raster · Energiesparmodus',
     OPENGL: 'OpenGL · GPU-Test (experimentell)',
-    QTQUICK: 'Qt Quick · OpenGL (experimentell)',
     WAYLAND_OPENGL: 'Wayland · OpenGL (experimentell)',
     WAYLAND_VULKAN: 'Wayland · Vulkan (experimentell)',
     X11_OPENGL: 'X11 · OpenGL (experimentell)',
@@ -34,9 +36,14 @@ _saved_environment = {}
 
 def desired():
     forced = os.environ.get('VITALUX_RENDERER', '').strip().lower()
+    if forced == LEGACY_QTQUICK:
+        return QT_RASTER
     if forced in CHOICES:
         return forced
     saved = settings.get('render_backend', SOFTWARE)
+    if saved == LEGACY_QTQUICK:
+        settings.set('render_backend', QT_RASTER)
+        return QT_RASTER
     return saved if saved in CHOICES else SOFTWARE
 
 
@@ -104,8 +111,9 @@ def prepare_start():
     _preflight_ok = False
     _restore_environment()
     selected = desired()
-    if selected == SOFTWARE:
-        return SOFTWARE
+    if selected in (SOFTWARE, QT_RASTER):
+        successful_start()
+        return selected
     if settings.get('gpu_boot_pending', False):
         _failure = 'Vorheriger GPU-Start abgebrochen; CPU-Rendering wieder aktiviert.'
         fallback()
