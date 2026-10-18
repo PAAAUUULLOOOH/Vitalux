@@ -507,6 +507,7 @@ class PreferencesPage(Page):
             return
         self.window.apply_appearance()
         self.window.set_interval(eco.interval())
+        self.refresh_appearance()  # Update disabled controls also in lightweight hosts.
         self._refresh_restore_button()
         if renderer.desired() != self.window.render_backend_active:
             # A Qt GPU window cannot be replaced safely without a restart.
@@ -514,6 +515,7 @@ class PreferencesPage(Page):
                 settings.set(eco.KEY, old)
                 self.window.apply_appearance()
                 self.window.set_interval(eco.interval())
+                self.refresh_appearance()
                 QMessageBox.warning(self, 'Vitalux',
                     tr('Ultra Eco kann während eines laufenden Vorgangs nicht wechseln.'))
 
