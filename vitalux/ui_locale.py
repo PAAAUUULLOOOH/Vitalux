@@ -191,6 +191,13 @@ class QComboBox(_QComboBox):
     def addItem(self, *args, **kwargs):
         source = original_text(args[0]) if args and isinstance(args[0],str) else None
         if source is not None:
+            key = args[1] if len(args) > 1 else kwargs.get('userData')
+            # Guard against duplicate options when rebuilding a localized tab.
+            # Distinct values with identical labels are still permitted.
+            if any((self.itemData(i) == key if key is not None
+                    else self.itemText(i) == localized(source))
+                   for i in range(self.count())):
+                return
             args = (localized(source), *args[1:])
         result = super().addItem(*args, **kwargs)
         self._source_items.append(source)

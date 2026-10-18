@@ -199,3 +199,10 @@ Eine vollständig eigenständig gezeichnete, **undurchsichtige Sci-Fi-HUD-Oberfl
 präzisen Konturen, technischen Kacheln, Neon-Akzenten und Live-Diagrammen.
 Keine Glasunschärfe oder Glasreflexion. Auswahl unter **Einstellungen → Farbschema**.
 **Glass mit Vitalux-Blau bleibt die Standardeinstellung**.
+
+### Black Glass Gold
+
+Separates Glas-Farbschema mit dunkler Oberfläche und dauerhaftem Hellgold für
+Logo, Icons, Diagramme, Anzeigen und Rahmen. **Akzentfarbauswahl und eigene
+Akzentfarben sind in diesem Schema gesperrt**; beim Zurückwechseln bleiben
+die zuvor gewählten Farben gespeichert. Standard bleibt **Glass + Vitalux-Blau**.

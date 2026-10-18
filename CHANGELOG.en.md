@@ -15,3 +15,6 @@ is intentionally not imported. All previously implemented features remain.
 ### In development – Holographic
 - New native **Holographic** theme with opaque custom-drawn HUD cards, technical sidebar, grid backdrop, custom charts, gauges, navigation and controls.
 - No glass or frosted blur effects in Holographic, including OpenGL and Qt Quick. Glass with Vitalux Blue remains the default.
+
+- Restored separate **Black Glass Gold** theme with fixed light gold styling for widgets, graphs, icons and logo; accent selection disabled while active.
+- Prevent duplicated options and repeated release entries in tab selectors; bundled Qt/Python runtime retained for portable ZIP and AppImage.

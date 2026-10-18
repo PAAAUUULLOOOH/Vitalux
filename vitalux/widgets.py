@@ -366,6 +366,10 @@ class HistoryGraph(QWidget):
         outer = QRectF(self.rect()).adjusted(2, 2, -2, -2)
         if theme.mode() == "holographic":
             holographic.paint_chart_frame(p, outer, theme.accent())
+        elif theme.mode() == "black_glass_gold":
+            p.setPen(QPen(QColor("#98743b"), 1.1))
+            p.setBrush(QColor("#14120e"))
+            p.drawRoundedRect(outer, 14, 14)
         else:
             bg = QLinearGradient(outer.topLeft(), outer.bottomLeft())
             if theme.mode() == "light":
@@ -581,6 +585,8 @@ class ChartPanel(QWidget):
         layout.addLayout(live)
 
     def _palette_color(self, idx):
+        if theme.mode() == 'black_glass_gold':
+            return ("#ffe5a0", "#e0b55d", "#f4cf81", "#ba8739")[idx % 4]
         role = self.color_roles[idx]
         if role == 'accent': return theme.accent()
         if role == 'secondary': return theme.secondary_accent()

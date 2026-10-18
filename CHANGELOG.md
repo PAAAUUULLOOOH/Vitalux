@@ -16,3 +16,7 @@ Alle bisher enthaltenen Funktionen sind Bestandteil dieses Neustarts.
 ### In Entwicklung – Holographic
 - Neues natives Farbschema **Holographic**: undurchsichtige, individuell gezeichnete HUD-Panels, technische Sidebar, Gitter-Hintergrund und angepasste Diagramme, Anzeigen, Navigation sowie Bedienelemente.
 - Holographic verzichtet vollständig auf Glas- und Unschärfeeffekte, auch bei OpenGL und Qt Quick. Standard bleibt Glass mit Vitalux-Blau.
+
+- **Black Glass Gold** als eigenständiges Farbschema zurückgebracht: festes helles Gold für Oberfläche, Diagramme, Icons und Logo; Akzentfarben im Gold-Schema deaktiviert.
+- Farbschema-Auswahl bleibt eindeutig; doppelte Einträge in Auswahlfeldern und mehrfach eingelesene Changelog-Versionen werden vermieden.
+- Native Runtime inklusive Qt/OpenGL/Qt Quick bleibt im ZIP und AppImage des offiziellen Releases gebündelt.

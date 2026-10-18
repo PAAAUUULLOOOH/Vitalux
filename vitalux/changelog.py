@@ -22,7 +22,11 @@ def entries(path=None, lang=None):
         return []
     heads = list(_HEADING.finditer(data))
     results = []
+    seen_versions = set()
     for idx, match in enumerate(heads):
+        if match.group(1) in seen_versions:
+            continue
+        seen_versions.add(match.group(1))
         until = heads[idx + 1].start() if idx + 1 < len(heads) else len(data)
         body = data[match.end():until]
         changes = [line.strip()[2:].strip() for line in body.splitlines()
