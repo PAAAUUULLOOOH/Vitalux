@@ -1,5 +1,12 @@
 # Vitalux – Änderungen
 
+## [v0.9.4.4] - 2026-10-18
+- Endlosschleife bei „Neustart vorgemerkt“ für Wayland-OpenGL, Wayland-Vulkan und X11-OpenGL behoben: Vitalux erkennt nun das tatsächlich aktive Rendering-Profil.
+- Qt-Quick-Kompatibilitätstest öffnet kein sichtbares kleines Testfenster mehr.
+- Ursache eines GPU-Fallbacks und der aktive Fenster-/Grafikmodus werden im Vitalux-Log ausgegeben.
+- Systemleisten-Vorschau verwendet ein vereinfachtes Qt-Stylesheet.
+
+
 ## [v0.9.4.3] - 2026-10-18
 - Experimentelle Grafik-Backends für Wayland mit OpenGL oder Vulkan sowie X11 mit OpenGL ergänzt.
 - Qt-Quick-Teststart prüft jetzt das tatsächliche OpenGL-/Vulkan-Scene-Graph-Rendering isoliert vor dem App-Start.
