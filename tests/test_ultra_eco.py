@@ -55,7 +55,7 @@ def run():
             app.processEvents()
             assert pref.eco_toggle.isEnabled()
             assert not pref.eco_toggle.isChecked()
-            assert not pref.eco_restart_button.isVisible()
+            assert pref.eco_restart_button.isVisible(), 'Saved GPU profile is awaiting restart'
             pref.eco_toggle.setChecked(True)
             app.processEvents()
             assert eco.enabled()
