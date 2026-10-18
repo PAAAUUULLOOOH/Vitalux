@@ -77,8 +77,8 @@ SLIDES = [
         "Darstellung und Einstellungen",
         "Standardmäßig startet Vitalux mit Glass und Vitalux Blau. Gespeicherte persönliche Einstellungen bleiben erhalten.",
         "Wähle einen von 14 integrierten Hintergründen oder importiere eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
-        "Unter Leistung & Energie schaltest du Ultra Eco ein oder aus: ein primitiver, flacher Skin ohne Effekte, CPU-Rendering und 5 Sekunden Messintervall. Deine vorherigen Einstellungen bleiben erhalten. Grafik-Rendering bietet weiterhin CPU, Qt Raster und experimentelle GPU-Modi.",
-        "Sieben Farbschemata bleiben verfügbar und werden nach dem Abschalten von Ultra Eco wiederhergestellt. Black Glass sperrt eigene Akzente, Black Glass Gold alle Akzente; Holographic bleibt ein HUD ohne Glas. Automatische Hintergrundfarbe benötigt ein eigenes Bild.",
+        "Unter Leistung & Energie schaltest du Ultra Eco ein oder aus: ein primitiver, flacher Skin ohne Effekte, CPU-Rendering und 10 Sekunden Messintervall. Die Anwendung zeichnet verborgen keine Diagramme neu. Mit Jetzt neu starten übernimmst du GPU-/CPU-Wechsel; vorherige Einstellungen bleiben erhalten. Grafik-Rendering bietet weiterhin CPU, Qt Raster und experimentelle GPU-Modi.",
+        "Sieben Farbschemata bleiben verfügbar und werden nach dem Abschalten von Ultra Eco wiederhergestellt. Black Glass sperrt eigene Akzente, Black Glass Gold alle Akzente und zeigt Diagramme samt RAM-Beschriftungen in Goldtönen; Holographic bleibt ein HUD ohne Glas. Automatische Hintergrundfarbe benötigt ein eigenes Bild.",
         "settings",
     ),
     (
