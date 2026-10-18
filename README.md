@@ -124,17 +124,20 @@ In **Black Glass Gold** sind die Auswahl und Bearbeitung von Akzentfarben bewuss
 
 ### Grafik-Rendering
 
-Unter **Einstellungen → Grafik-Rendering** stehen drei Varianten bereit:
+Unter **Einstellungen → Grafik-Rendering** lassen sich sechs Modi auswählen:
 
-| Render-Methode | Einsatz |
+| Modus | Funktion |
 | --- | --- |
-| **CPU · Standard** | Voreingestellte, auf Stabilität ausgerichtete Grafikausgabe |
-| **OpenGL · GPU-Test** | Experimentelle GPU-Unterstützung für Hintergrund und grafische Komposition |
-| **Qt Quick · GPU-Test** | Experimenteller Hintergrund über den Qt-Quick-Scene-Graph |
+| **CPU · Standard** | Stabiler Standardrenderer |
+| **OpenGL · GPU-Test** | Experimenteller OpenGL-Hintergrund |
+| **Qt Quick · OpenGL** | Experimenteller Scene Graph auf der aktuellen Desktop-Sitzung |
+| **Wayland · OpenGL** | Native Wayland-Fenster mit OpenGL-Scene-Graph (experimentell) |
+| **Wayland · Vulkan** | Native Wayland-Fenster mit Vulkan-Scene-Graph (experimentell) |
+| **X11 · OpenGL** | X11-/XWayland-Fenster mit OpenGL-Scene-Graph (experimentell) |
 
-Ein Wechsel wird mit **Jetzt neu starten** übernommen. Die Qt-Widgets, Bedienelemente und Diagramme werden dadurch **nicht automatisch vollständig auf GPU-Rendering umgestellt**. Die experimentellen Modi sind nicht auf jeder Hardware schneller.
+**Jetzt neu starten** aktiviert die Auswahl. Die Qt-Widgets, Bedienelemente und Diagramme werden weiterhin überwiegend über die CPU gezeichnet; ein schnelleres Bild ist nicht garantiert. Vulkan setzt passende Treiber und Qt-Unterstützung voraus, Wayland eine aktive Wayland-Sitzung und X11 ein erreichbares X-Display. Vor dem Start wird das gewählte Qt-Quick-GPU-Backend in einem separaten Prozess getestet. Bei Inkompatibilität oder einem erkannten Startabsturz kehrt Vitalux zum **CPU-Modus** zurück.
 
-**Wiederherstellung:** Ein fehlgeschlagener oder inkompatibler GPU-Start kann auf das CPU-Rendering zurückgesetzt werden. Für einen erzwungenen Softwarestart der entpackten ZIP-Version:
+**Notfallstart (portable ZIP):**
 
 ```bash
 VITALUX_RENDERER=software ./run.sh
