@@ -24,7 +24,7 @@ def run():
         try:
             settings.PATH = str(Path(tmp) / 'settings.json')
             theme.set_mode('glass')
-            settings.set('render_backend', renderer.QTQUICK)
+            settings.set('render_backend', renderer.X11_OPENGL)
             renderer.prepare_start()
             if GPU:
                 assert renderer.quick_available(), 'Qt Quick modules or GL context missing'
@@ -32,7 +32,7 @@ def run():
                 from PySide6.QtQuick import QSGRendererInterface
                 widget = create_ambient_scene()
                 assert isinstance(widget, QQuickWidget), type(widget).__name__
-                assert widget.render_backend == renderer.QTQUICK
+                assert widget.render_backend == renderer.X11_OPENGL
                 assert widget.rootObject() is not None
                 widget.resize(520, 340)
                 sample = QLabel('Qt widget over Qt Quick texture', widget)
