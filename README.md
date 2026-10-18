@@ -47,7 +47,7 @@ Vitalux vereint Systemüberwachung, Live-Diagramme, Datenträgeranalyse und eine
 | **Laufwerke** | Datenträger, Partitionen, Belegung, SMART-Diagnose und fio-Benchmarks |
 | **Sensoren** | Verfügbare Temperaturen, Lüfterdrehzahlen, Spannungen, Leistungsaufnahme und Frequenzen |
 | **System** | Distribution, Kernel, Desktop-/Sitzungsinformationen, Mesa, Treiber und Hardwaredetails |
-| **Einstellungen** | Farbschemata, Akzentfarben, Hintergründe, Animationen, Rendering, Warnungen und Datenexport |
+| **Einstellungen** | Designs, Farben, Ultra-Eco-Schalter, Rendering, Warnungen und lokale Berichte |
 | **Updates** | Offizielle GitHub-Releases prüfen, Neuerungen anzeigen und Aktualisierungen bestätigen |
 | **Info** | Versionsinformationen, Mitwirkende und integrierte, bebilderte Anleitung |
 
@@ -121,6 +121,10 @@ Der integrierte **fio-Benchmark** bietet **Standard-, Peak-, Real-World- und ben
 - **Animationen:** Flüssig, Reduziert oder Aus.
 
 Eigene Bilder und Farben erweitern die Auswahl; nicht jede Kombination ist in allen Farbschemata verfügbar.
+
+### Ultra Eco · maximale Ressourcenschonung
+
+Unter **Einstellungen → Leistung & Energie** aktiviert ein **Ein-/Aus-Schalter** den besonders schlichten Ultra-Eco-Skin: **kein Glas, keine Schatten, keine Hintergrundbilder und keine Animationen**. Vitalux verwendet CPU-Raster-Rendering und misst alle **5 Sekunden**, um Rechen- und Zeichenarbeit zu reduzieren. **Beim Ausschalten werden das vorherige Design, Akzentfarben, Hintergrund, Animationen, Messintervall und Renderer wiederhergestellt**; bei einem Wechsel zwischen GPU und CPU erfolgt ein kontrollierter Neustart. Hardwareüberwachung und Warnungen bleiben aktiv, reagieren aber nur mit dem langsameren Messintervall.
 
 ### Grafik-Rendering
 
