@@ -336,7 +336,7 @@ class PreferencesPage(Page):
         render_row.addWidget(label('Render-Methode', 'strong'))
         self.render_combo = QComboBox()
         for backend in renderer.CHOICES:
-            self.render_combo.addItem(renderer.DESCRIPTIONS[backend], backend)
+            self.render_combo.addItem(tr(renderer.DESCRIPTIONS[backend]), backend)
         selected_renderer = renderer.desired()
         self.render_combo.setCurrentIndex(max(0, self.render_combo.findData(selected_renderer)))
         self.render_combo.currentIndexChanged.connect(self.change_renderer)
@@ -448,7 +448,7 @@ class PreferencesPage(Page):
         elif active == renderer.OPENGL:
             status = tr('Aktiv: OpenGL-GPU-Rendering (experimentell)')
         elif active in renderer.QUICK_MODES:
-            status = tr('Aktiv: ') + renderer.DESCRIPTIONS[active]
+            status = tr('Aktiv: ') + tr(renderer.DESCRIPTIONS[active])
         else:
             status = tr('Aktiv: CPU-Rendering (Standard)')
         self.render_status.setText(status)
@@ -532,6 +532,9 @@ class PreferencesPage(Page):
         self._refresh_restore_button()
 
     def refresh_appearance(self):
+        for i in range(self.render_combo.count()):
+            backend = self.render_combo.itemData(i)
+            self.render_combo.setItemText(i, tr(renderer.DESCRIPTIONS[backend]))
         self._sync_custom_accent_actions()
         self.theme_note.setText(tr(self.mode_notes.get(theme.mode(), self.mode_notes['dark'])))
         self.accent_preview.setStyleSheet(f'background: {theme.accent()}; border-radius: 7px;')
