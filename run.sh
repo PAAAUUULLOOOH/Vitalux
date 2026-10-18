@@ -84,13 +84,14 @@ fi
 if [[ "$STATUS" =~ ^(132|134|139)$ ]] && [ "${VITALUX_GPU_RECOVERY:-0}" != "1" ]; then
   if "$PY" - <<'PYGPU'
 from vitalux import settings
-if settings.get('render_backend') != 'qtquick':
+from vitalux import renderer
+if settings.get('render_backend') not in renderer.GPU_MODES:
     raise SystemExit(1)
 if not settings.set_many({'render_backend': 'software', 'gpu_boot_pending': False}):
     raise SystemExit(2)
 PYGPU
   then
-    log_line "=== Qt Quick crash ($STATUS) – Neustart mit CPU-Rendering ==="
+    log_line "=== GPU-Backend-Absturz ($STATUS) – Neustart mit CPU-Rendering ==="
     export VITALUX_GPU_RECOVERY=1
     exec bash "$HERE/run.sh" "$@"
   fi
