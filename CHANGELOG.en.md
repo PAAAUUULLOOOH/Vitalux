@@ -1,5 +1,12 @@
 # Vitalux – Changes
 
+## [v0.9.4.4] - 2026-10-18
+- Fixed the repeated “restart pending” state for Wayland/OpenGL, Wayland/Vulkan, and X11/OpenGL by reporting the active backend correctly.
+- Graphics preflight no longer opens a visible small Qt Quick test window.
+- Added explicit logging of display backend, rendering profile and GPU fallback details.
+- Simplified Qt styling for the system-tray preview.
+
+
 ## [v0.9.4.3] - 2026-10-18
 - Added experimental Wayland/OpenGL, Wayland/Vulkan and X11/OpenGL graphics profiles.
 - Qt Quick now verifies its actual OpenGL or Vulkan scene graph in an isolated subprocess before starting.
