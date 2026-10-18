@@ -7,7 +7,7 @@ All geometry derives from actual widget bounds: no fixed image assets.
 import math
 
 from PySide6.QtCore import QPointF, QRectF, Qt
-from PySide6.QtGui import QColor, QLinearGradient, QPainter, QPainterPath, QPen, QPixmap
+from PySide6.QtGui import QBrush, QColor, QLinearGradient, QPainter, QPainterPath, QPen, QPixmap
 
 
 def color(value, alpha=255):
@@ -51,7 +51,7 @@ def paint_scene(p, rect, accent):
     background.setColorAt(0, QColor("#030912"))
     background.setColorAt(.52, QColor("#051523"))
     background.setColorAt(1, QColor("#020811"))
-    p.fillRect(rect, background)
+    p.fillRect(rect, QBrush(background))
     # Two independent dot-and-wire grids. They remain below the opaque tiles.
     p.setPen(QPen(color(accent, 20), .7))
     for x in range(0, int(w)+1, 48):
@@ -92,7 +92,7 @@ def paint_panel(p, rect, accent, *, strong=False, compact=False, active=False):
     cut = 6 if compact else 12 if strong else 9
     path = _cut_path(r, cut)
     # The interior is strictly opaque, deliberately not a frosted glass effect.
-    p.fillPath(path, QColor("#0a1b2b" if strong else "#081725" if compact else "#091826"))
+    p.fillPath(path, QBrush(QColor("#0a1b2b" if strong else "#081725" if compact else "#091826")))
     core = color(accent, 125 if active else 83)
     p.setBrush(Qt.NoBrush)
     p.setPen(QPen(color(accent, 27 if not active else 52), 4.5))
@@ -125,7 +125,7 @@ def paint_sidebar(p, rect, accent):
     bg = QLinearGradient(r.topLeft(), r.bottomRight())
     bg.setColorAt(0, QColor("#030c16"))
     bg.setColorAt(1, QColor("#091b29"))
-    p.fillRect(r, bg)
+    p.fillRect(r, QBrush(bg))
     x = r.right()-1.5
     p.setPen(QPen(color(accent, 39), 5.0))
     p.drawLine(QPointF(x,0), QPointF(x,r.bottom()))
@@ -144,7 +144,7 @@ def paint_nav(p, rect, accent, selected=False, hovered=False):
     if not (selected or hovered):
         return
     path = _cut_path(r, 5)
-    p.fillPath(path, QColor("#103046" if selected else "#0b2537"))
+    p.fillPath(path, QBrush(QColor("#103046" if selected else "#0b2537")))
     p.setBrush(Qt.NoBrush)
     p.setPen(QPen(color(accent, 190 if selected else 105), 1.05))
     p.drawPath(path)
@@ -156,7 +156,7 @@ def paint_nav(p, rect, accent, selected=False, hovered=False):
 
 def paint_chart_frame(p, rect, accent):
     r = QRectF(rect)
-    p.fillPath(_cut_path(r, 7), QColor("#061725"))
+    p.fillPath(_cut_path(r, 7), QBrush(QColor("#061725")))
     p.setBrush(Qt.NoBrush)
     p.setPen(QPen(color(accent, 94), 1))
     p.drawPath(_cut_path(r, 7))
