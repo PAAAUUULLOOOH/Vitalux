@@ -111,7 +111,7 @@ Der integrierte **fio-Benchmark** bietet **Standard-, Peak-, Real-World- und ben
 | **Light** | Helle Oberfläche mit gut lesbaren Karten und Bedienelementen |
 | **Minimalistisch** | Reduzierte Darstellung mit geringeren dekorativen Effekten |
 
-**Black Glass Gold** hat einen festen Goldakzent. **Black Glass** lässt Standardakzente zu, graut eigene Farben und deren Aktionen aus; gespeicherte Farben bleiben erhalten.
+**Black Glass Gold** nutzt auch für RAM-Diagramme, Datenreihen-Beschriftungen und Auslastungsringe durchgängig Goldtöne und hat einen festen Goldakzent. **Black Glass** lässt Standardakzente zu, graut eigene Farben und deren Aktionen aus; gespeicherte Farben bleiben erhalten.
 
 ### Hintergründe, Farben und Animationen
 
@@ -124,7 +124,7 @@ Eigene Bilder und Farben erweitern die Auswahl; nicht jede Kombination ist in al
 
 ### Ultra Eco · maximale Ressourcenschonung
 
-Unter **Einstellungen → Leistung & Energie** aktiviert ein **Ein-/Aus-Schalter** den besonders schlichten Ultra-Eco-Skin: **kein Glas, keine Schatten, keine Hintergrundbilder und keine Animationen**. Vitalux verwendet CPU-Raster-Rendering und misst alle **5 Sekunden**, um Rechen- und Zeichenarbeit zu reduzieren. **Beim Ausschalten werden das vorherige Design, Akzentfarben, Hintergrund, Animationen, Messintervall und Renderer wiederhergestellt**; bei einem Wechsel zwischen GPU und CPU erfolgt ein kontrollierter Neustart. Hardwareüberwachung und Warnungen bleiben aktiv, reagieren aber nur mit dem langsameren Messintervall.
+Unter **Einstellungen → Leistung & Energie** aktiviert ein **Ein-/Aus-Schalter** den besonders schlichten Ultra-Eco-Skin: **kein Glas, keine Schatten, keine Hintergrundbilder und keine Animationen**. Vitalux verwendet CPU-Raster-Rendering und misst alle **10 Sekunden**. Ist das Fenster verborgen, entfallen zusätzliche Dashboard-Neuzeichnungen. **Beim Ausschalten werden das vorherige Design, Akzentfarben, Hintergrund, Animationen, Messintervall und Renderer wiederhergestellt**; bei einem Wechsel zwischen GPU und CPU übernimmt der separate Button **Jetzt neu starten** den Wechsel auf Wunsch. Hardwareüberwachung und Warnungen bleiben aktiv, reagieren aber nur mit dem langsameren Messintervall.
 
 ### Grafik-Rendering
 
