@@ -1,39 +1,37 @@
 <p align="center"><img src="assets/vitalux-readme-dark.svg" alt="Vitalux" width="285"></p>
 
-<h3 align="center">Dein Linux-System auf einen Blick.</h3>
-<p align="center">Native Systemüberwachung mit Live-Dashboard, Analysen und Laufwerksdiagnose.</p>
-<p align="center"><a href="https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest"><strong>Vitalux herunterladen</strong></a> · <a href="#funktionen">Funktionen</a> · <a href="#installation">Installation</a> · <a href="#hilfe">Hilfe</a></p>
+<h3 align="center">Your Linux system at a glance.</h3>
+<p align="center">Native system monitoring, live hardware telemetry and performance insights.</p>
+<p align="center"><a href="https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest"><strong>Download Vitalux</strong></a> · <a href="#features">Features</a> · <a href="#installation">Installation</a> · <a href="#help">Help</a></p>
 
-<p align="center"><img src="assets/vitalux-dashboard-preview.png" alt="Vitalux im Glass-Design" width="1000"></p>
+<p align="center"><img src="assets/vitalux-dashboard-preview.png" alt="Vitalux desktop dashboard" width="1000"></p>
 
-## Funktionen
+## Features
 
-| Bereich | Möglichkeiten |
+| Area | Highlights |
 | --- | --- |
-| **Übersicht** | Verschiebbare Live-Kacheln, **Systemzustand** mit Score und Hinweisen |
-| **CPU / GPU / RAM** | Auslastung, Takt, Temperaturen, VRAM, Verlaufsdiagramme |
-| **Netzwerk / Laufwerke** | Datenraten, SMART, Partitionen und Laufwerks-Benchmarks |
-| **System / Sensoren** | Distribution, Kernel, Mesa, Treiber und verfügbare Messwerte |
-| **Vitalux Insights** | Performance-Hinweise, Gaming-Sessions, Vergleiche und Ereignisverlauf |
-| **Einstellungen** | Designs, Akzentfarben, Hintergrundbilder, Warnungen und Render-Modus |
+| **Dashboard** | Live readings, flexible tiles, consistent spacing and system health score |
+| **CPU, GPU & memory** | Load, clocks, temperatures, VRAM and history charts |
+| **Storage & network** | SMART information, throughput and disk benchmarks |
+| **System & sensors** | Distribution, kernel, Mesa, drivers and available sensors |
+| **Vitalux Insights** | Performance diagnostics, gaming sessions and comparisons |
+| **Appearance** | Seven themes, custom wallpapers, accents and graphics renderers |
 
-### Design und Personalisierung
+### Themes and personalization
 
-Standard ist **Glass mit Vitalux-Blau**. Zusätzlich stehen **Black Glass**, **Black Glass Gold** (fester Goldakzent), **Holographic** (undurchsichtiges HUD ohne Glas), **Dark**, **Light** und **Minimalistisch** zur Auswahl.
-
-Eigene Bilder, Farben und der animierte Hintergrund **Funkeln** lassen sich konfigurieren. **„Hintergrundfarbe automatisch“** ist ausschließlich bei einem ausgewählten **eigenen Hintergrundbild** aktiv, sonst ausgegraut. Beim Hintergrundwechsel kehrt die vorherige Akzentfarbe zurück. Black Glass Gold sperrt die Akzentfarben unabhängig davon.
+**Glass with Vitalux Blue** is the default. Other styles are **Black Glass**, **Black Glass Gold** (fixed gold accent), **Holographic** (opaque sci-fi HUD), **Dark**, **Light** and **Minimal**. Import your own wallpaper or use built-in backgrounds. Wallpaper-derived accent colors are available only with a selected custom image.
 
 ## Installation
 
-Unter [Releases](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest) gibt es **AppImage**, **portable Vollversions-ZIP** und **Update-ZIP**, inklusive gebündelter Python-/Qt-Laufzeit.
+Get the **AppImage**, **portable ZIP**, or **update ZIP** from [Releases](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). Complete packages include the bundled Python/Qt runtime.
 
-- **AppImage:** ausführbar machen und starten; optional benutzerweit installieren.
-- **ZIP:** vollständig entpacken und `run.sh` starten. Kein separates Python nötig.
+- **AppImage:** Mark executable, then launch. Optional per-user installation is supported.
+- **Portable ZIP:** Extract everything and start **run.sh**.
 
-Zielplattform ist aktuelles **Linux x86-64** mit Wayland oder X11. Nicht jeder Treiber und Sensor wird unterstützt; einige Systembibliotheken und gegebenenfalls FUSE müssen vorhanden sein. CPU-Rendering ist der Standard; OpenGL und Qt Quick sind optional.
+Designed for modern **Linux x86-64** on Wayland or X11. Some graphics drivers and system libraries are provided by the host. Sensor availability varies by hardware and permissions. CPU rendering is the default; OpenGL and Qt Quick are optional. Unsupported Qt Quick configurations revert to CPU rendering.
 
-## Hilfe
+## Help
 
-Die interaktive Anleitung findest du unter **Info → Anleitung**. Fehlerprotokolle liegen unter `~/.local/state/vitalux/`; bei Startproblemen hilft `Portable-pruefen.sh`. Benchmarks können temporär Daten schreiben.
+The built-in guide is under **Info → Guide**. Use **Portable-pruefen.sh** for diagnostics. Logs are stored under **~/.local/state/vitalux/**. To report a problem, [open an issue](https://github.com/PAAAUUULLOOOH/Vitalux/issues).
 
-**Made by PAAAUUULLOOOH.** Danke an [TimBooH](https://github.com/TimBooH) für Unterstützung bei Hintergrundbildern und der Grafikausgabe. [Fehler melden](https://github.com/PAAAUUULLOOOH/Vitalux/issues).
+Made by **[PAAAUUULLOOOH](https://github.com/PAAAUUULLOOOH)**. Thanks to [TimBooH](https://github.com/TimBooH) for help with custom wallpapers and graphics output.

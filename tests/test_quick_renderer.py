@@ -70,6 +70,11 @@ def run():
             credit = info.findChild(QLabel, 'supportCredit')
             author = info.findChild(QLabel, 'madeBy')
             assert credit is not None and author is not None
+            from vitalux.pages_extra import AUTHOR_URL
+            assert author is info.author_credit
+            assert author.openExternalLinks()
+            assert AUTHOR_URL in author.text()
+            assert 'PAAAUUULLOOOH</a>' in author.text()
             from PySide6.QtCore import Qt
             from vitalux.pages_extra import CREDIT_TEXT, CREDIT_URL
             from vitalux.ui_locale import retranslate_widgets
@@ -88,6 +93,7 @@ def run():
                 credit.font().pixelSize(), author.font().pixelSize())
             i18n.set_lang('en')
             retranslate_widgets(info)
+            assert AUTHOR_URL in author.text()
             assert credit.text().startswith('<b>Thanks to:</b> ')
             assert f'<a href="{CREDIT_URL}"' in credit.text()
             assert credit.accessibleName() == tr(CREDIT_TEXT)
