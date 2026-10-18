@@ -2,7 +2,7 @@
 import os
 import sys
 
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget
 from PySide6.QtQuick import QSGRendererInterface
 
@@ -17,7 +17,12 @@ def main():
     from PySide6.QtQuickWidgets import QQuickWidget
     from .quick_scene import QuickAmbientScene
     scene = QuickAmbientScene()
-    scene.resize(800, 560)
+    # Keep the hardware preflight invisible: its former 800x560 top-level
+    # window was briefly shown to users on every backend switch.
+    # QQuickWidget can render to its offscreen RHI texture without mapping
+    # a visible native window.
+    scene.setAttribute(Qt.WA_DontShowOnScreen, True)
+    scene.resize(640, 440)
     # Simulate the actual mixed Qt Widget layout, not only an empty Quick view.
     layout = QVBoxLayout(scene)
     layout.addWidget(QLabel('Qt Widget overlay smoke test', scene))
