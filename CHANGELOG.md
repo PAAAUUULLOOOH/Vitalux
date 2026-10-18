@@ -1,5 +1,12 @@
 # Vitalux – Änderungen
 
+## [v0.9.4.6] - 2026-10-18
+- Ultra Eco als Ein-/Aus-Schalter unter „Leistung & Energie“ ergänzt: besonders primitiver, flacher Skin ohne Glas, Schatten, Hintergrundbilder und Animationen.
+- CPU-Rendering statt GPU, 5 Sekunden Abfrageintervall und reduzierte Zeichenarbeit im Ultra-Eco-Modus.
+- Nach dem Ausschalten kehren das zuvor gewählte Design, die Farben, Hintergründe, Animationen, das Messintervall und der gespeicherte Renderer zurück.
+- Kompakte README, integrierte Anleitung sowie deutsche und englische Texte angepasst.
+
+
 ## [v0.9.4.5] - 2026-10-18
 - Qt Raster als sparsamen CPU-Render-Modus ergänzt: statische Hintergründe bleiben zwischengespeichert; die optionale Funkeln-Animation zeichnet seltener neu.
 - Eigenständigen Qt-Quick-Modus aus der Auswahl entfernt. Die experimentellen Wayland-/X11-GPU-Modi bleiben erhalten.
