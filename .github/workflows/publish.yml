@@ -18,12 +18,18 @@ concurrency:
 
 jobs:
   build-and-release:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'publish Vitalux v0.9.4.2')
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'publish Vitalux v0.9.4.3')
     runs-on: ubuntu-24.04
     timeout-minutes: 50
     steps:
       - name: Quellcode abrufen
         uses: actions/checkout@v4
+      - name: Python-Syntax und experimentelle Display-Profile prüfen
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m compileall -q vitalux tests scripts
+          PYTHONPATH="$PWD" python3 tests/test_display_backends.py
       - name: Release-Freigabe, Versionsfolge und einmaligen Bootstrap prüfen
         shell: bash
         env:
@@ -220,6 +226,20 @@ jobs:
           QT_QPA_PLATFORM=xcb VITALUX_QUICK_SMOKE=1 QSG_RHI_BACKEND=opengl LIBGL_ALWAYS_SOFTWARE=1 \
             LD_LIBRARY_PATH="$PWD/lib" \
             xvfb-run -a "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_quick_renderer.py"
+      - name: Experimentelles Vulkan-Scene-Graph-Rendering unter Mesa prüfen
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get install -y mesa-vulkan-drivers libvulkan1
+          STAGED="$PWD/build/staged/Vitalux-${TAG}"
+          cd "$STAGED"
+          # Lavapipe is a Vulkan CPU ICD for CI only; user hardware uses its own driver.
+          ICD=/usr/share/vulkan/icd.d/lvp_icd.x86_64.json
+          test -r "$ICD"
+          QT_QPA_PLATFORM=xcb QSG_RHI_BACKEND=vulkan VITALUX_QUICK_API=vulkan \
+            VK_ICD_FILENAMES="$ICD" LIBGL_ALWAYS_SOFTWARE=1 \
+            LD_LIBRARY_PATH="$PWD/lib" \
+            xvfb-run -a "$PWD/runtime/bin/python3.12" -m vitalux.quick_probe
       - name: Native Anleitung und Übersetzungen testen
         shell: bash
         run: |
