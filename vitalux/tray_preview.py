@@ -90,17 +90,21 @@ class TrayPreview(QWidget):
 
     def retheme(self):
         accent = theme.accent()
+        # Keep the popup stylesheet small, with one simple selector per rule.
+        # Avoid deeply chained QWidget/subcontrol selectors that some Qt
+        # builds reject when the popup is constructed during GPU startup.
         self.setStyleSheet(
-            f'QWidget#vitaluxTrayPreview {{ background: {theme.CARD}; '
-            f'border: 1px solid {theme.BORDER}; border-radius: 14px; }}'
-            f'QWidget#vitaluxTrayPreview QLabel {{ color: {theme.TEXT}; border: 0; }}'
-            'QLabel#trayHeading { font-size: 16px; font-weight: 800; }'
-            f'QWidget#vitaluxTrayPreview QProgressBar {{ background: {theme.TRACK}; '
-            'border: none; border-radius: 4px; }}'
-            f'QWidget#vitaluxTrayPreview QProgressBar::chunk {{ background: {accent}; '
-            'border-radius: 4px; }}'
-            f'QWidget#vitaluxTrayPreview QPushButton {{ background: transparent; '
-            f'color: {theme.TEXT}; border: none; font-size: 20px; }}')
+            f'QWidget#vitaluxTrayPreview {{ background-color: {theme.CARD}; '
+            f'border: 1px solid {theme.BORDER}; border-radius: 14px; }}\n'
+            f'QLabel {{ color: {theme.TEXT}; border: none; }}\n'
+            'QLabel#trayHeading { font-size: 16px; font-weight: bold; }\n'
+            f'QProgressBar {{ background-color: {theme.TRACK}; '
+            'border: none; border-radius: 4px; }\n'
+            f'QProgressBar::chunk {{ background-color: {accent}; '
+            'border: none; border-radius: 4px; }\n'
+            f'QPushButton {{ background-color: transparent; color: {theme.TEXT}; '
+            'border: none; font-size: 20px; }'
+        )
         self.heading.setText('Vitalux · ' + tr('Live-Übersicht'))
 
     def update_sample(self, sample):
