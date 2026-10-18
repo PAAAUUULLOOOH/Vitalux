@@ -173,7 +173,7 @@ class PreferencesPage(Page):
         self.window = window
         look = Card('Erscheinungsbild')
         self.mode = QComboBox()
-        for title, value in [('Dark', 'dark'), ('Light', 'light'), ('Glass', 'glass'), ('Black Glass', 'black_glass'), ('Minimalistisch', 'minimal')]:
+        for title, value in [('Dark', 'dark'), ('Light', 'light'), ('Glass', 'glass'), ('Black Glass', 'black_glass'), ('Black Glass Gold', 'black_glass_gold'), ('Holographic', 'holographic'), ('Minimalistisch', 'minimal')]:
             self.mode.addItem(title, value)
         self.mode.setCurrentIndex(max(0, self.mode.findData(theme.mode())))
         self.mode.currentIndexChanged.connect(self.change_mode)
@@ -190,6 +190,8 @@ class PreferencesPage(Page):
             'light': 'Light · Helle, gut lesbare Karten ohne Glaseffekt.',
             'glass': 'Glass · Halbtransparente Panels mit Lichtreflexen und weichgezeichnetem Hintergrund.',
             'black_glass': 'Black Glass · Tiefschwarze Glasflächen mit dezenten Reflexionen und silbernen Kanten.',
+            'black_glass_gold': 'Black Glass Gold · Tiefschwarze Glasflächen, festes helles Gold für Logo, Diagramme, Anzeigen, Icons und Rahmen. Akzentfarben sind deaktiviert.',
+            'holographic': 'Holographic · Eigenständige, undurchsichtige Sci-Fi-HUD-Oberfläche mit leuchtenden Konturen, technischen Kacheln und Diagrammen – ohne Glas.',
             'minimal': 'Minimalistisch · Einfache Flächen ohne Glas, Schatten und dekorative Animationen. Spart Zeichenaufwand.',
         }
         self.theme_note.setText(tr(self.mode_notes.get(theme.mode(), self.mode_notes['dark'])))
@@ -238,6 +240,7 @@ class PreferencesPage(Page):
         self.remove_custom_accent_button.clicked.connect(self.remove_custom_accent)
         accent_actions.addWidget(self.remove_custom_accent_button)
         custom = QPushButton('Eigene Farbe …')
+        self.custom_accent_button = custom
         custom.setObjectName('ghostBtn')
         custom.clicked.connect(lambda: self.custom_accent(accent))
         accent_actions.addWidget(custom)
@@ -536,9 +539,12 @@ class PreferencesPage(Page):
         val = self.mode.currentData()
         settings.set('theme', val)
         self.window.apply_appearance()
+        self._sync_custom_accent_actions()
         self._refresh_restore_button()
 
     def change_accent(self, val):
+        if theme.mode() == 'black_glass_gold' or not self.accent_combo.isEnabled():
+            return
         if not val:
             return
         settings.set('accent', val)
@@ -573,6 +579,11 @@ class PreferencesPage(Page):
         return result
 
     def _sync_custom_accent_actions(self):
+        gold = theme.mode() == 'black_glass_gold'
+        self.accent_combo.setEnabled(not gold)
+        self.custom_accent_button.setEnabled(not gold)
+        self.edit_custom_accent_button.setEnabled(not gold)
+        self.remove_custom_accent_button.setEnabled(not gold)
         # A shortened combo must not hide the selected custom color's name.
         self.accent_combo.setToolTip(self.accent_combo.currentText())
         selected = self.accent_combo.currentData()

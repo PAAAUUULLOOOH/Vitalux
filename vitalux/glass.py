@@ -62,7 +62,7 @@ class _AmbientSceneCore:
         self._composed_key = None
         style = backdrops.resolve(settings.get('background_style', 'theme_default'),
                                   theme.mode())
-        active = style in backdrops.ANIMATED_PRESETS
+        active = style in backdrops.ANIMATED_PRESETS and theme.mode() != 'holographic'
         if active and not self._wallpaper_timer.isActive():
             self._wallpaper_timer.start()
         elif not active:
@@ -119,7 +119,7 @@ class _AmbientSceneCore:
                 self._asset_mode = None
                 self._cache_size = self.size()
             return
-        if style not in ('glass', 'black_glass'):
+        if style not in ('glass', 'black_glass', 'black_glass_gold'):
             # Each preset is cached independently and sampled by glass panels.
             key = (theme.mode(), style, theme.accent(), self.size(),
                    round(self._phase, 3) if style in backdrops.ANIMATED_PRESETS else 0)
@@ -172,6 +172,15 @@ class _AmbientSceneCore:
         sampled the un-tinted original. Light wallpapers with Glass therefore
         gave three incompatible colors. Compose once and share that result.
         """
+        if theme.mode() == 'holographic':
+            # No wallpaper blur, compositing, glass sampling or animation.
+            key = ('holographic', self.size(), theme.accent())
+            if key != self._composed_key or self._composed_sharp.isNull():
+                from .holographic import scene_pixmap
+                self._composed_sharp = scene_pixmap(self.size(), theme.accent())
+                self._composed_soft = self._composed_sharp
+                self._composed_key = key
+            return
         style = backdrops.resolve(settings.get('background_style', 'theme_default'),
                                   theme.mode())
         if style == 'minimal' and theme.mode() == 'minimal':
@@ -197,7 +206,7 @@ class _AmbientSceneCore:
         # intended palette; the card and sidebar materials provide legibility.
         # Only the original Glass / Black Glass atmosphere retains its
         # purpose-designed shading.
-        if style == theme.mode() and style in ('glass', 'black_glass'):
+        if style == theme.mode() and style in ('glass', 'black_glass', 'black_glass_gold'):
             wash = QLinearGradient(0, 0, canvas.width(), canvas.height())
             if style == 'black_glass':
                 wash.setColorAt(0, rgba(0, 0, 0, 109))
@@ -329,7 +338,7 @@ def paint_rim(p, rect, radius, *, active=False, compact=False):
     outer = rounded(rect, radius)
     a = theme.accent_qcolor()
     other = QColor(theme.secondary_accent())
-    if theme.mode() not in ('glass', 'black_glass'):
+    if theme.mode() not in ('glass', 'black_glass', 'black_glass_gold'):
         edge = QColor(theme.BORDER)
         if active:
             edge = a
@@ -337,7 +346,20 @@ def paint_rim(p, rect, radius, *, active=False, compact=False):
         p.setBrush(Qt.NoBrush)
         p.drawPath(outer)
         return
-    if theme.mode() == 'black_glass':
+    if theme.mode() == 'black_glass_gold':
+        # The special gold material has its own layered, luminous frame.
+        gold = QLinearGradient(rect.topLeft(), rect.bottomRight())
+        gold.setColorAt(0, rgba(255, 238, 179, 223))
+        gold.setColorAt(.35, rgba(166, 112, 38, 123))
+        gold.setColorAt(.65, rgba(250, 211, 119, 189))
+        gold.setColorAt(1, rgba(181, 125, 45, 143))
+        p.setBrush(Qt.NoBrush)
+        p.setPen(QPen(QBrush(gold), 1.65 if active else 1.1))
+        p.drawPath(outer)
+        p.setPen(QPen(rgba(255, 229, 153, 103 if active else 52), 3.0))
+        p.drawPath(outer)
+        return
+    if theme.mode() in ('black_glass', 'black_glass_gold'):
         # Neutral silver rather than the cyan/violet outline of regular Glass.
         # Keep the distro/user accent for selected/hover elements only.
         grad = QLinearGradient(rect.topLeft(), rect.bottomRight())
@@ -399,6 +421,10 @@ def paint_rim(p, rect, radius, *, active=False, compact=False):
 
 def paint_glass_body(p, widget, rect, radius, *, strong=False, compact=False, active=False):
     """Frosted materials sample a shared blurred backdrop; Dark/Light stay opaque."""
+    if theme.mode() == "holographic":
+        from .holographic import paint_panel
+        paint_panel(p, rect, theme.accent(), strong=strong, compact=compact, active=active)
+        return
     if theme.mode() == "minimal":
         # No frosted backdrop, rounded paths, gradients or specular passes.
         p.fillRect(rect, QColor(theme.CARD))
@@ -409,7 +435,7 @@ def paint_glass_body(p, widget, rect, radius, *, strong=False, compact=False, ac
     glass = rounded(rect, radius)
     p.save()
     p.setClipPath(glass)
-    if theme.mode() not in ('glass', 'black_glass'):
+    if theme.mode() not in ('glass', 'black_glass', 'black_glass_gold'):
         # Solid cards are intentional. Dark and Light must not resemble frosted glass.
         bg_style = backdrops.resolve(settings.get('background_style', 'theme_default'),
                                      theme.mode())
@@ -426,7 +452,7 @@ def paint_glass_body(p, widget, rect, radius, *, strong=False, compact=False, ac
     else:
         draw_frosted_backdrop(p, widget, rect, 1.0)
         overlay = QLinearGradient(rect.topLeft(), rect.bottomRight())
-        if theme.mode() == 'black_glass':
+        if theme.mode() in ('black_glass', 'black_glass_gold'):
             overlay.setColorAt(0, rgba(31, 33, 36, 155 if strong else 122))
             overlay.setColorAt(.50, rgba(10, 11, 13, 178 if strong else 153))
             overlay.setColorAt(1, rgba(18, 19, 23, 179 if strong else 153))
@@ -462,7 +488,7 @@ def paint_glass_body(p, widget, rect, radius, *, strong=False, compact=False, ac
         reflection.lineTo(rect.left(), rect.top()+rect.height()*.78)
         reflection.closeSubpath()
         spec = QLinearGradient(rect.left(), rect.top(), rect.left()+rect.width()*.51, rect.bottom())
-        if theme.mode() == 'black_glass':
+        if theme.mode() in ('black_glass', 'black_glass_gold'):
             spec.setColorAt(0, rgba(255, 255, 255, 35))
             spec.setColorAt(.50, rgba(220, 223, 229, 11))
             spec.setColorAt(1, rgba(195, 198, 205, 0))
@@ -508,6 +534,12 @@ class GlassSidebar(QFrame):
         palette so it remains related to the cards and the scene.
         """
         p = QPainter(self)
+        if theme.mode() == "holographic":
+            from .holographic import paint_sidebar
+            p.setRenderHint(QPainter.Antialiasing)
+            paint_sidebar(p, QRectF(self.rect()), theme.accent())
+            p.end()
+            return
         style = backdrops.resolve(settings.get('background_style', 'theme_default'),
                                   theme.mode())
         matching = style == theme.mode()
@@ -518,10 +550,10 @@ class GlassSidebar(QFrame):
         else:
             p.setRenderHint(QPainter.Antialiasing)
             rect = QRectF(self.rect())
-            if theme.mode() in ('glass', 'black_glass'):
+            if theme.mode() in ('glass', 'black_glass', 'black_glass_gold'):
                 draw_frosted_backdrop(p, self, rect, 1.0)
                 shade = QLinearGradient(0, 0, self.width(), 0)
-                if theme.mode() == 'black_glass':
+                if theme.mode() in ('black_glass', 'black_glass_gold'):
                     # Original two-sided black-glass frost.
                     left, right = (190, 160) if matching else (143, 119)
                     shade.setColorAt(0, rgba(2, 2, 3, left))
@@ -542,7 +574,7 @@ class GlassSidebar(QFrame):
                     material.setAlpha(210 if theme.mode() == 'light' else 188)
                 p.fillRect(rect, material)
         side = QLinearGradient(0, 0, 0, max(1, self.height()))
-        accent = theme.accent_qcolor(130 if theme.mode() in ('glass', 'black_glass') else 82)
+        accent = theme.accent_qcolor(130 if theme.mode() in ('glass', 'black_glass', 'black_glass_gold') else 82)
         side.setColorAt(0, QColor(theme.BORDER))
         side.setColorAt(.5, accent)
         side.setColorAt(1, QColor(theme.BORDER))

@@ -8,6 +8,8 @@ _THEMES = {
     "light":{"bg":"#f3f7fc", "sidebar":"#e9eff7", "card":"#ffffff", "border":"#c6d4e3", "track":"#dbe5ef", "grid":"#e2eaf3", "text":"#192c42", "muted":"#60728a"},
     "glass":{"bg":"#090f1b", "sidebar":"#101b2c", "card":"#18283c", "border":"#47718e", "track":"#27394f", "grid":"#2b405a", "text":"#f1f7ff", "muted":"#b3c5da"},
     "black_glass":{"bg":"#050506", "sidebar":"#0b0c0f", "card":"#141518", "border":"#454950", "track":"#25262b", "grid":"#303239", "text":"#f3f3f6", "muted":"#b9b9bf"},
+    "black_glass_gold":{"bg":"#050504", "sidebar":"#100e0b", "card":"#16130f", "border":"#9a783a", "track":"#3d3120", "grid":"#574326", "text":"#fbe8b8", "muted":"#d0b984"},
+    "holographic":{"bg":"#030b13", "sidebar":"#071421", "card":"#091826", "border":"#236282", "track":"#163144", "grid":"#1b4154", "text":"#e9faff", "muted":"#9cbdd1"},
     # Flat and opaque: the cheapest render path, with no atmospheric textures.
     "minimal":{"bg":"#111315", "sidebar":"#191b1d", "card":"#222528", "border":"#35393d", "track":"#373c41", "grid":"#32363a", "text":"#ecedef", "muted":"#b3b6ba"},
 }
@@ -45,7 +47,9 @@ def _luminance(c):
 
 def accent():
     """Keep user-selected hues readable against white/dark backgrounds."""
-    c = QColor(_accent)
+    if _mode == "black_glass_gold":
+        return "#f3cd79"  # The gold theme ignores user and wallpaper accents.
+    c = QColor("#52d3ff" if _mode == "holographic" and _accent == "#4f8cff" else _accent)
     if _mode == 'light':
         for _ in range(12):
             if (1.05 / (_luminance(c) + .05)) >= 4.0:
@@ -66,6 +70,8 @@ def accent_qcolor(alpha=255):
 
 
 def secondary_accent():
+    if _mode == "black_glass_gold":
+        return "#ffe4a2"
     c = QColor(accent())
     h, s, v, _ = c.getHsv()
     if h < 0:
@@ -85,6 +91,10 @@ def blend(foreground, background, strength):
 
 
 def combo_surface():
+    if _mode == "black_glass_gold":
+        return CARD
+    if _mode == "holographic":
+        return CARD
     if _mode == "glass":
         return blend(BORDER, CARD, .17)
     if _mode == "black_glass":
@@ -93,6 +103,74 @@ def combo_surface():
         return blend(CARD, SIDEBAR, .82)
     return CARD if _mode == "minimal" else blend(CARD, SIDEBAR, .78)
 
+
+_BLACK_GLASS_GOLD_QSS = Template(r"""
+/* Special fixed-gold material; user-selected accents are intentionally ignored. */
+#pageTitle, #heroTitle, #telemetryValue, #chipValue, #bigName { color: #ffebb5; }
+#cardTitle, #chipTitle, #metricCaption, #overviewLive, #statusTag, #focusReading { color: $ACCENT; }
+#pageSub, #metricDetail, #sidebarDistro, #sidebarVersion, #muted { color: #d0b984; }
+QToolTip { background: #16130f; border: 1px solid #b99147; color: #ffe7af; }
+QLineEdit, QComboBox, QSpinBox, QTextEdit, QListWidget,
+QFrame#alertThresholdField { background: #17130e; color: #fbe8b8; border: 1px solid #9a783a; }
+QComboBox::drop-down { background: #211a10; border-left: 1px solid #9a783a; }
+QComboBox::drop-down:hover { background: #382913; }
+QComboBox QAbstractItemView { background: #16120d; color: #ffe6a9; border: 1px solid #b99147;
+    selection-background-color: #403019; selection-color: #fff0c9; }
+QComboBox QAbstractItemView::item:selected { background: #403019; color: #fff0c9; }
+QPushButton#ghostBtn, QPushButton#langBtn, QToolButton#layoutAction,
+QPushButton#systemUpdatesDetails, QPushButton#systemUpdatesInstall {
+    background: #211a11; color: #fbe8b8; border: 1px solid #8c703e;
+}
+QPushButton#ghostBtn:hover, QPushButton#langBtn:hover, QToolButton#layoutAction:hover,
+QPushButton#systemUpdatesDetails:hover, QPushButton#systemUpdatesInstall:hover {
+    border-color: $ACCENT; background: #382c17; color: #ffefb8;
+}
+QProgressBar { background: #17130c; border: 1px solid #9a783a; }
+QProgressBar::chunk { background: $ACCENT; }
+QGroupBox#insightGroup { background: #16120c; border-color: #9a783a; }
+#primaryBtn { background: #f3cd79; border-color: #f3cd79; color: #160e03; }
+QComboBox:disabled, QPushButton:disabled { color: #877858; border-color: #51432c; background: #16120e; }
+""")
+
+_HOLOGRAPHIC_QSS = Template(r"""
+/* Entirely opaque, angular native HUD controls: no backdrop-filter or glass. */
+QWidget { selection-background-color: $ACCENT; }
+QToolTip { background: #081827; border: 1px solid $ACCENT; color: #e9faff; }
+#cardTitle { color: $ACCENT; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; }
+#pageTitle { color: #e9faff; }
+#chipTitle, #metricCaption, #systemUpdatesStatus { color: #9cbdd1; }
+#telemetryValue, #chipValue { color: #eefeff; }
+QLineEdit, QComboBox, QSpinBox, QTextEdit, QListWidget,
+QFrame#alertThresholdField {
+    background: #071b2a; color: #e9faff; border: 1px solid #236282;
+    border-radius: 2px; padding: 8px 11px;
+}
+QComboBox { padding-right: 24px; }
+QComboBox::drop-down { background: #0a2638; border: none; border-left: 1px solid #236282;
+    border-radius: 0px; width: 21px; }
+QComboBox QAbstractItemView { background: #061725; border: 1px solid $ACCENT;
+    selection-background-color: #12384d; color: #e9faff; }
+QComboBox QAbstractItemView::item:selected { background: #12384d; color: #ffffff; }
+QPushButton#ghostBtn, QPushButton#langBtn, QToolButton#layoutAction,
+QPushButton#systemUpdatesDetails, QPushButton#systemUpdatesInstall {
+    background: #0a2436; border: 1px solid #236282; border-radius: 2px;
+    color: #d9f9ff;
+}
+QPushButton#ghostBtn:hover, QPushButton#langBtn:hover, QToolButton#layoutAction:hover,
+QPushButton#systemUpdatesDetails:hover, QPushButton#systemUpdatesInstall:hover {
+    background: #113a4f; border: 1px solid $ACCENT; color: #ffffff;
+}
+QPushButton#langBtn:checked { background: #104155; border-color: $ACCENT; color: $ACCENT; }
+QPushButton#primaryBtn { border-radius: 2px; background: $ACCENT;
+    color: #041521; border: 1px solid $ACCENT; }
+QProgressBar { background: #081e2e; border: 1px solid #236282;
+    border-radius: 2px; min-height: 12px; }
+QProgressBar::chunk { background: $ACCENT; border-radius: 1px; }
+QGroupBox#insightGroup { background: #091b2a; border: 1px solid #236282; border-radius: 2px; }
+QToolButton#customAccentRemove { border-radius: 2px; }
+QLabel#benchmarkResultRead, QLabel#benchmarkResultWrite { border-radius: 3px; }
+QScrollBar::handle:vertical { background: #236282; border-radius: 2px; }
+""")
 
 _QSS = Template(r"""
 QWidget { background: transparent; color: $TEXT; font-family: "Inter", "Noto Sans", "Cantarell", "DejaVu Sans", sans-serif; font-size: 13px; }
@@ -232,7 +310,7 @@ def stylesheet():
     light = _mode == "light"
     result_bg = blend(base, pal['card'], .055 if light else .10)
     active_bg = blend(base, pal['sidebar'], .18 if light else .22)
-    return _QSS.substitute(
+    qss = _QSS.substitute(
         BG=BG, TEXT=TEXT, MUTED=MUTED, CARD=CARD, BORDER=BORDER, TRACK=TRACK,
         ACCENT=base, ACCENT_HOVER=QColor(base).lighter(115).name() if light else QColor(base).lighter(128).name(),
         SECONDARY=secondary_accent(), BUTTON_TEXT="#07111b" if not light else "#ffffff",
@@ -243,3 +321,6 @@ def stylesheet():
         RESULT_BORDER=blend(base, pal['border'], .30),
         ACCENT_HOVER_BORDER=blend(base, pal['border'], .48 if light else .60),
     )
+    if _mode == "black_glass_gold":
+        return qss + _BLACK_GLASS_GOLD_QSS.substitute(ACCENT=base)
+    return qss + (_HOLOGRAPHIC_QSS.substitute(ACCENT=base) if _mode == "holographic" else "")

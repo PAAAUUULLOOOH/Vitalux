@@ -64,6 +64,11 @@ ACCENT_VARIANTS = {
 def _selected_variant():
     from . import settings
     chosen = settings.get("accent", "#4f8cff")
+    from . import theme
+    if theme.mode() == "black_glass_gold":
+        return "gold"
+    if theme.mode() == "holographic" and str(chosen).lower() == "#4f8cff":
+        return "cyan"
     return ACCENT_VARIANTS.get(str(chosen).lower())
 
 

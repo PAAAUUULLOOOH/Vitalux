@@ -1,9 +1,13 @@
 name: Vitalux – Automatische Veröffentlichung
 
-# Never publish on a normal push. Start from Actions > Run workflow ONLY
-# after the user has explicitly approved the release.
+# User-approved first release: one guarded main push (merge commit).
+# Later releases are workflow_dispatch only. Ordinary pushes never publish.
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish.yml'
 
 permissions:
   contents: write
@@ -14,6 +18,7 @@ concurrency:
 
 jobs:
   build-and-release:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'publish Vitalux v0.9.4.0')
     runs-on: ubuntu-24.04
     timeout-minutes: 50
     steps:
@@ -262,6 +267,8 @@ jobs:
             "$PWD/runtime/bin/python3.12" \
             "$GITHUB_WORKSPACE/tests/test_preferences_changelog.py"
           LD_LIBRARY_PATH="$PWD/lib" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_protected_accents.py"
+          LD_LIBRARY_PATH="$PWD/lib" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_holographic_theme.py"
+          LD_LIBRARY_PATH="$PWD/lib" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_black_glass_gold.py"
           LD_LIBRARY_PATH="$PWD/lib" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_gpu_history.py"
           LD_LIBRARY_PATH="$PWD/lib" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_warning_render.py"
           LD_LIBRARY_PATH="$PWD/lib" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_update_indicators.py"
