@@ -7,7 +7,7 @@ from PySide6.QtGui import QColor, QIntValidator
 from PySide6.QtWidgets import (QColorDialog, QFrame, QGridLayout, QHBoxLayout, QInputDialog, QLabel, QLineEdit, QListWidget, QSizePolicy, QVBoxLayout, QWidget)
 from .ui_locale import QCheckBox, QComboBox, QDialog, QFileDialog, QListWidgetItem, QMessageBox, QPushButton
 
-from . import __version__, settings, theme, motion, backdrops, user_background, wallpaper_accents, renderer
+from . import __version__, settings, theme, motion, backdrops, user_background, wallpaper_accents, renderer, eco
 from .pages import Page
 from .sensors import fmt_bytes, fmt_rate, system_static
 from .widgets import Card, KeyValue, Meter, label
@@ -163,7 +163,7 @@ class PreferencesPage(Page):
     DEFAULTS = {
         'theme': 'glass', 'accent': '#4f8cff', 'motion': 'smooth',
         'background_style': 'theme_default', 'custom_background_fit': 'cover',
-        'render_backend': renderer.SOFTWARE,
+        'render_backend': renderer.SOFTWARE, 'ultra_eco': False,
         'interval': 1, 'close_to_tray': True, 'alerts_enabled': False,
         'cpu_temp': 90, 'gpu_temp': 90, 'ram_usage': 90, 'disk_usage': 95,
     }
@@ -175,7 +175,7 @@ class PreferencesPage(Page):
         self.mode = QComboBox()
         for title, value in [('Dark', 'dark'), ('Light', 'light'), ('Glass', 'glass'), ('Black Glass', 'black_glass'), ('Black Glass Gold', 'black_glass_gold'), ('Holographic', 'holographic'), ('Minimalistisch', 'minimal')]:
             self.mode.addItem(title, value)
-        self.mode.setCurrentIndex(max(0, self.mode.findData(theme.mode())))
+        self.mode.setCurrentIndex(max(0, self.mode.findData(settings.get('theme', 'glass'))))
         self.mode.currentIndexChanged.connect(self.change_mode)
         r = QHBoxLayout()
         r.addWidget(label('Farbschema', 'strong'))
@@ -323,13 +323,29 @@ class PreferencesPage(Page):
         self.motion_combo = QComboBox()
         for name, value in [('Flüssig', 'smooth'), ('Reduziert', 'reduced'), ('Aus', 'off')]:
             self.motion_combo.addItem(name, value)
-        self.motion_combo.setCurrentIndex(max(0, self.motion_combo.findData(motion.level())))
+        self.motion_combo.setCurrentIndex(max(0, self.motion_combo.findData(settings.get('motion', 'smooth'))))
         self.motion_combo.currentIndexChanged.connect(self.change_motion)
         r_motion.addWidget(self.motion_combo)
         r_motion.addStretch(1)
         look.body.addLayout(r_motion)
         look.body.addWidget(label('Übergänge anpassen: weich, verkürzt oder ohne Animation.', 'muted', wrap=True))
         self.content.addWidget(look)
+
+        # A genuine toggle, not another GPU backend or a destructive theme switch.
+        # Original theme, wallpaper, accent, motion and render choice remain saved.
+        eco_card = Card('Leistung & Energie')
+        self.eco_toggle = QCheckBox('Ultra Eco – maximale Ressourcenschonung')
+        self.eco_toggle.setChecked(eco.enabled())
+        self.eco_toggle.toggled.connect(self.toggle_ultra_eco)
+        eco_card.body.addWidget(self.eco_toggle)
+        eco_card.body.addWidget(label(
+            'Sehr einfache, flache Oberfläche ohne Glas, Schatten, Hintergrundbilder, '
+            'Funkeln oder Übergangsanimationen. CPU-Rendering und 5 Sekunden '
+            'Messintervall sparen Zeichen- und Abfragearbeit. Ausschalten stellt '
+            'deine bisherigen Einstellungen wieder her.', 'muted', wrap=True))
+        self.eco_status = label('', 'muted', wrap=True)
+        eco_card.body.addWidget(self.eco_status)
+        self.content.addWidget(eco_card)
 
         render_card = Card('Grafik-Rendering')
         render_row = QHBoxLayout()
@@ -440,6 +456,10 @@ class PreferencesPage(Page):
 
     def _refresh_renderer_status(self):
         active = getattr(self.window, 'render_backend_active', renderer.SOFTWARE)
+        if eco.enabled():
+            self.render_status.setText(tr('Ultra Eco: CPU-Rendering erzwungen; gespeicherter Renderer bleibt erhalten.'))
+            self.render_restart_button.setVisible(False)
+            return
         selected = self.render_combo.currentData()
         if selected != active:
             status = tr('Rendering-Wechsel vorgemerkt – bitte Vitalux neu starten.')
@@ -455,6 +475,8 @@ class PreferencesPage(Page):
         self.render_restart_button.setVisible(selected != active)
 
     def change_renderer(self, *_):
+        if eco.enabled():
+            return
         selected = self.render_combo.currentData()
         if selected not in renderer.CHOICES:
             return
@@ -471,6 +493,29 @@ class PreferencesPage(Page):
         if not self.window.restart_for_renderer():
             QMessageBox.warning(self, 'Vitalux',
                 tr('Vitalux kann wegen eines laufenden Vorgangs gerade nicht neu starten.'))
+
+    def toggle_ultra_eco(self, enabled):
+        """Switch the primitive skin live, restarting only for GPU <-> CPU."""
+        enabled = bool(enabled)
+        old = eco.enabled()
+        if enabled == old:
+            return
+        if not settings.set(eco.KEY, enabled):
+            self.eco_toggle.blockSignals(True)
+            self.eco_toggle.setChecked(old)
+            self.eco_toggle.blockSignals(False)
+            return
+        self.window.apply_appearance()
+        self.window.set_interval(eco.interval())
+        self._refresh_restore_button()
+        if renderer.desired() != self.window.render_backend_active:
+            # A Qt GPU window cannot be replaced safely without a restart.
+            if not self.window.restart_for_renderer():
+                settings.set(eco.KEY, old)
+                self.window.apply_appearance()
+                self.window.set_interval(eco.interval())
+                QMessageBox.warning(self, 'Vitalux',
+                    tr('Ultra Eco kann während eines laufenden Vorgangs nicht wechseln.'))
 
     def _set_preference(self, key, value):
         settings.set(key, value)
@@ -494,6 +539,9 @@ class PreferencesPage(Page):
         # Commit the reset atomically rather than rewriting settings.json
         # once for every option. Custom colors, wallpapers and layouts remain.
         settings.set_many(self.DEFAULTS)
+        self.eco_toggle.blockSignals(True)
+        self.eco_toggle.setChecked(False)
+        self.eco_toggle.blockSignals(False)
         self.mode.blockSignals(True)
         self.mode.setCurrentIndex(self.mode.findData('glass'))
         self.mode.blockSignals(False)
@@ -527,21 +575,39 @@ class PreferencesPage(Page):
             box.blockSignals(True)
             box.setValue(self.DEFAULTS[key])
             box.blockSignals(False)
-        self.window.set_interval(1)
+        self.window.set_interval(eco.interval())
         self.window.apply_appearance()
         self._refresh_restore_button()
 
     def refresh_appearance(self):
+        ultra = eco.enabled()
+        self.eco_toggle.blockSignals(True)
+        self.eco_toggle.setChecked(ultra)
+        self.eco_toggle.blockSignals(False)
+        self.eco_status.setText(tr('Ultra Eco aktiv: alle Effekte aus, einfache Darstellung und 5 Sekunden Messintervall.')
+                                if ultra else '')
+        self.mode.setEnabled(not ultra)
+        self.background_combo.setEnabled(not ultra)
+        self.custom_background_area.setEnabled(not ultra)
+        self.motion_combo.setEnabled(not ultra)
+        self.accent_combo.setEnabled(not ultra and theme.mode() != 'black_glass_gold')
+        self.interval.setEnabled(not ultra)
+        self.render_combo.setEnabled(not ultra)
+        self.eco_toggle.setEnabled(True)
         for i in range(self.render_combo.count()):
             backend = self.render_combo.itemData(i)
             self.render_combo.setItemText(i, tr(renderer.DESCRIPTIONS[backend]))
         self._sync_custom_accent_actions()
-        self.theme_note.setText(tr(self.mode_notes.get(theme.mode(), self.mode_notes['dark'])))
+        self.theme_note.setText(
+            tr('Ultra Eco verwendet vorübergehend einen einfachen, flachen Skin.')
+            if ultra else tr(self.mode_notes.get(theme.mode(), self.mode_notes['dark'])))
         self.accent_preview.setStyleSheet(f'background: {theme.accent()}; border-radius: 7px;')
         self.sync_background_controls()
         self._refresh_renderer_status()
 
     def change_mode(self, *_):
+        if eco.enabled():
+            return
         val = self.mode.currentData()
         settings.set('theme', val)
         self.window.apply_appearance()
@@ -549,7 +615,7 @@ class PreferencesPage(Page):
         self._refresh_restore_button()
 
     def change_accent(self, val):
-        if theme.mode() == 'black_glass_gold' or not self.accent_combo.isEnabled():
+        if eco.enabled() or theme.mode() == 'black_glass_gold' or not self.accent_combo.isEnabled():
             return
         if theme.mode() == 'black_glass' and any(
                 item['color'] == val for item in self.custom_accents):
@@ -597,8 +663,8 @@ class PreferencesPage(Page):
         return result
 
     def _sync_custom_accent_actions(self):
-        gold = theme.mode() == 'black_glass_gold'
-        custom_locked = theme.mode() in ('black_glass', 'black_glass_gold')
+        gold = theme.mode() == 'black_glass_gold' or eco.enabled()
+        custom_locked = theme.mode() in ('black_glass', 'black_glass_gold') or eco.enabled()
         self.accent_combo.setEnabled(not gold)
         self.custom_accent_button.setEnabled(not custom_locked)
         self.edit_custom_accent_button.setEnabled(not custom_locked)
@@ -845,12 +911,16 @@ class PreferencesPage(Page):
         self._refresh_restore_button()
 
     def change_motion(self, *_):
+        if eco.enabled():
+            return
         profile = self.motion_combo.currentData()
         if profile in motion.MODES:
             self._set_preference('motion', profile)
             self.window.apply_appearance()
 
     def change_interval(self, *_):
+        if eco.enabled():
+            return
         val = self.interval.currentData()
         if val:
             self._set_preference('interval', int(val))
