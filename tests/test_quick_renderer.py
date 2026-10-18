@@ -46,6 +46,12 @@ def run():
                 assert not widget.grabFramebuffer().isNull(), 'Qt Quick framebuffer empty'
                 before = widget._generation
                 widget.sync_background()
+                # GPU uploads are intentionally coalesced over a 16 ms frame.
+                # Allow the Qt event loop to reach that timer before asserting.
+                from PySide6.QtCore import QEventLoop, QTimer
+                frame = QEventLoop()
+                QTimer.singleShot(95, frame.quit)
+                frame.exec()
                 for _ in range(8):
                     app.processEvents()
                 assert widget._generation > before, 'QML did not receive a wallpaper update'
