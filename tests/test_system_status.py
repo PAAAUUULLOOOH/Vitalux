@@ -1,4 +1,6 @@
 """Dashboard system status: real readings, gaps and severity boundaries."""
+import os, sys
+sys.path.insert(0, os.getcwd())
 from vitalux.pages import _system_state
 from vitalux.dashboard_model import DEFAULT, TITLES
 def run():
