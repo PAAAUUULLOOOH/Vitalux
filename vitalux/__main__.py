@@ -52,6 +52,9 @@ def main():
     sensors.prime()
     manager = UpdateManager()
     win = MainWindow(info, logo, manager)
+    print(f"Vitalux: Fensterplattform={app.platformName()}, "
+          f"Grafik-Backend={win.render_backend_active}, "
+          f"Fenstergröße={win.width()}x{win.height()} logisch", flush=True)
     win.show()
     # A native driver crash while initializing any GPU backend leaves a marker;
     # next launch automatically selects the known-working CPU renderer.
