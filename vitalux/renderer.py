@@ -5,6 +5,8 @@ the CPU. The OpenGL background and Qt's final top-level composition use a
 GL context when the platform can provide one.
 """
 import os
+import subprocess
+import sys
 
 from . import settings
 
@@ -73,18 +75,36 @@ def gpu_available():
 
 
 def quick_available():
-    """Qt Quick needs its own QML and Qt RHI dependencies in the portable ZIP."""
-    try:
-        from PySide6.QtQuickWidgets import QQuickWidget  # noqa: F401
-        from PySide6.QtQuick import QQuickImageProvider  # noqa: F401
-        return gpu_available()
-    except (ImportError, RuntimeError, OSError):
+    """Keep Qt Quick/GL initialization in a child process that may safely abort.
+
+    Native SIGABRT (exit code 134) cannot be caught as a Python exception.
+    """
+    global _failure
+    if os.environ.get('QT_QPA_PLATFORM', '').lower() in ('offscreen', 'minimal'):
+        _failure = 'Qt Quick: keine grafische Sitzung verfügbar; CPU-Rendering aktiviert.'
         return False
+    try:
+        result = subprocess.run(
+            [sys.executable, '-m', 'vitalux.quick_probe'],
+            capture_output=True, check=False, timeout=9,
+            env={**os.environ, 'QSG_RHI_BACKEND': 'opengl'})
+    except subprocess.TimeoutExpired:
+        _failure = 'Qt Quick: Grafik-Starttest hat nicht reagiert; CPU-Rendering aktiviert.'
+        return False
+    except OSError:
+        _failure = 'Qt Quick: Grafik-Starttest nicht verfügbar; CPU-Rendering aktiviert.'
+        return False
+    if result.returncode == 0:
+        return True
+    _failure = (f'Qt Quick: Grafik-Starttest fehlgeschlagen '
+                f'(Code {result.returncode}); CPU-Rendering aktiviert.')
+    return False
 
 
 def fallback():
     global _failure
-    _failure = 'Die gewählte GPU-Grafikausgabe ist hier nicht verfügbar. CPU-Rendering bleibt aktiv.'
+    if not _failure:
+        _failure = 'Die gewählte GPU-Grafikausgabe ist hier nicht verfügbar. CPU-Rendering bleibt aktiv.'
     if os.environ.get('VITALUX_RENDERER', '').strip().lower() not in (OPENGL, QTQUICK):
         settings.set('render_backend', SOFTWARE)
     successful_start()

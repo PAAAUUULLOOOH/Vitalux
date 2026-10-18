@@ -5,7 +5,7 @@ this backend). All normal QWidget charts/cards are intentionally unchanged.
 """
 from pathlib import Path
 
-from PySide6.QtCore import QUrl
+from PySide6.QtCore import QMutex, QMutexLocker, QTimer, QUrl
 from PySide6.QtGui import QColor, QImage
 from PySide6.QtQuick import QQuickImageProvider
 from PySide6.QtQuickWidgets import QQuickWidget
@@ -17,15 +17,18 @@ from .glass import ASSETS, _AmbientSceneCore
 class WallpaperProvider(QQuickImageProvider):
     def __init__(self):
         super().__init__(QQuickImageProvider.Image)
+        self._lock = QMutex()
         self._image = QImage(1, 1, QImage.Format_ARGB32)
         self._image.fill(QColor(theme.BG))
 
     def replace(self, image):
         if not image.isNull():
-            self._image = image
+            with QMutexLocker(self._lock):
+                self._image = image.copy()
 
     def requestImage(self, identifier, size, requestedSize):
-        image = self._image
+        with QMutexLocker(self._lock):
+            image = self._image.copy()
         if size is not None:
             size.setWidth(image.width())
             size.setHeight(image.height())
@@ -39,6 +42,9 @@ class QuickAmbientScene(_AmbientSceneCore, QQuickWidget):
         self._quick_ready = False
         self._generation = 0
         super().__init__()
+        self._upload_timer = QTimer(self)
+        self._upload_timer.setSingleShot(True)
+        self._upload_timer.timeout.connect(self._upload_frame)
         self.setResizeMode(QQuickWidget.SizeRootObjectToView)
         self.setClearColor(QColor(theme.BG))
         self._provider = WallpaperProvider()
@@ -49,7 +55,11 @@ class QuickAmbientScene(_AmbientSceneCore, QQuickWidget):
             details = '; '.join(item.toString() for item in self.errors())
             raise RuntimeError('Qt Quick background could not start: ' + details)
         self._quick_ready = True
-        self._upload_frame()
+        self._schedule_upload()
+
+    def _schedule_upload(self):
+        if self._quick_ready and not self._upload_timer.isActive():
+            self._upload_timer.start(0)
 
     def _upload_frame(self):
         if not self._quick_ready:
@@ -72,14 +82,14 @@ class QuickAmbientScene(_AmbientSceneCore, QQuickWidget):
     def sync_background(self):
         super().sync_background()
         if self._quick_ready:
-            self._upload_frame()
+            self._schedule_upload()
 
     def _advance_backdrop(self):
         super()._advance_backdrop()
         if self._quick_ready and self.isVisible():
-            self._upload_frame()
+            self._schedule_upload()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
         if self._quick_ready:
-            self._upload_frame()
+            self._schedule_upload()

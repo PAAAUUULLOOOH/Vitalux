@@ -9,6 +9,7 @@ from .pages import Page
 from .ui_locale import QLabel, QPushButton, QComboBox
 from .widgets import Bar, Card, KeyValue, label
 
+AUTHOR_URL = "https://github.com/PAAAUUULLOOOH"
 CREDIT_URL = "https://github.com/TimBooH"
 CREDIT_TEXT = "Danke an: TimBooH für die Unterstützung bei der Integration eigener Hintergrundbilder und der Grafikausgabe (OpenGL/CPU-Rendering)."
 
@@ -131,6 +132,24 @@ class UpdatePage(Page):
                            .replace("- ", "• ")[:6000])
 
 
+class AuthorCredit(QLabel):
+    """Theme-aware, accessible hyperlink to the developer's profile."""
+
+    def __init__(self):
+        super().__init__()
+        self.setObjectName('madeBy')
+        self.setAlignment(Qt.AlignHCenter)
+        self.setTextFormat(Qt.RichText)
+        self.setTextInteractionFlags(Qt.TextBrowserInteraction | Qt.TextSelectableByMouse)
+        self.setOpenExternalLinks(True)
+        self.retranslate()
+
+    def retranslate(self):
+        self.setText(f'Made by <a href="{AUTHOR_URL}" style="color: {theme.accent()}; '
+                     f'text-decoration: underline;">PAAAUUULLOOOH</a>')
+        self.setAccessibleName('Made by PAAAUUULLOOOH')
+
+
 class SupportCredit(QLabel):
     """Translated acknowledgement linking only to the fixed GitHub profile."""
 
@@ -163,7 +182,8 @@ class InfoPage(Page):
         super().__init__("Info", "Über diese App")
         c = Card(hero=True)
         c.body.addSpacing(10)
-        c.body.addWidget(label("Made by PAAAUUULLOOOH", "madeBy", Qt.AlignHCenter, wrap=True))
+        self.author_credit = AuthorCredit()
+        c.body.addWidget(self.author_credit)
         self.support_credit = SupportCredit()
         c.body.addWidget(self.support_credit)
         c.body.addWidget(label(f"{APP_NAME} {__version__}", "muted", Qt.AlignHCenter))

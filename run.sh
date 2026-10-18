@@ -76,12 +76,26 @@ if [ "$STATUS" -eq 42 ]; then
   log_line '=== Grafik-Rendering geändert – Vitalux wird kontrolliert neu gestartet ==='
   exec bash "$HERE/run.sh" "$@"
 fi
-if [ "$STATUS" -ne 0 ]; then
-  # Python's fatal handler writes raw native frames to errors.log before
-  # exiting. A post-crash footer gives that frame block the crash *time*
-  # and exact version, even if no Python exception could be raised.
+# Preserve a timestamped native-crash record before an automatic recovery.
+if [ "$STATUS" -ne 0 ] && [ "$STATUS" -ne 42 ]; then
   printf '[%s] [Vitalux v%s] Process crashed (exit code %s; see vitalux.log)\n' \
     "$(date -Is)" "${VERSION:-unknown}" "$STATUS" >>"$STATE_DIR/errors.log"
+fi
+if [[ "$STATUS" =~ ^(132|134|139)$ ]] && [ "${VITALUX_GPU_RECOVERY:-0}" != "1" ]; then
+  if "$PY" - <<'PYGPU'
+from vitalux import settings
+if settings.get('render_backend') != 'qtquick':
+    raise SystemExit(1)
+if not settings.set_many({'render_backend': 'software', 'gpu_boot_pending': False}):
+    raise SystemExit(2)
+PYGPU
+  then
+    log_line "=== Qt Quick crash ($STATUS) – Neustart mit CPU-Rendering ==="
+    export VITALUX_GPU_RECOVERY=1
+    exec bash "$HERE/run.sh" "$@"
+  fi
+fi
+if [ "$STATUS" -ne 0 ]; then
   # ZIP installations keep precisely the last update's .backup. Restore this
   # working version if the new program exits abnormally; never roll back for
   # normal termination, terminal interruptions or session shutdown.

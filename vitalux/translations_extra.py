@@ -453,7 +453,7 @@ EN_MORE.update({
     "Auf der Startseite sind die wichtigsten Informationen als Kacheln zusammengefasst.": "The home screen shows the most important information in tiles.",
     "Du siehst unter anderem Prozessor, Grafik, RAM und Systemlaufwerk.": "You can see the CPU, GPU, RAM and system drive, among other things.",
     "Diagramme zeigen, wie sich die Auslastung im Zeitverlauf verändert.": "Charts show how resource usage changes over time.",
-    "Unter „Layout bearbeiten“ verschiebst du Kacheln; große Lücken schließen sich automatisch, die Abstände bleiben gleich.": "Use Edit layout to move tiles; large gaps close automatically while spacing stays unchanged.",
+    "Unter „Layout bearbeiten“ verschiebst du Kacheln; freie Flächen füllen sich automatisch, der Kachelabstand bleibt gleich.": "Use Edit layout to move tiles; free space is filled automatically while tile spacing stays unchanged.",
     "Die Navigation links": "Navigation on the left",
     "Über die linke Seitenleiste wechselst du zwischen den Bereichen.": "Use the left sidebar to switch between sections.",
     "Jeder Reiter öffnet einen anderen Teil der Systemüberwachung.": "Each tab opens a different part of the system monitor.",
