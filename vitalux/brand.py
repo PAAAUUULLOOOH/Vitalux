@@ -287,11 +287,12 @@ class PulseCore(QWidget):
 
     @staticmethod
     def _low_power():
-        from . import theme
-        return theme.mode() == "minimal"
+        from . import theme, eco
+        return eco.enabled() or theme.mode() == "minimal"
 
     def sync_theme(self):
-        if self._low_power() and not self._update_available:
+        from . import eco
+        if eco.enabled() or (self._low_power() and not self._update_available):
             self._timer.stop()
         elif self.isVisible():
             self._timer.start()
@@ -317,7 +318,7 @@ class PulseCore(QWidget):
 
     def paintEvent(self, _event):
         painter = QPainter(self)
-        if self._low_power() and not self._update_available:
+        if self._low_power() and (not self._update_available or eco.enabled()):
             # Retain the recognizable logo; skip the moving halo and orbit.
             size = min(self.width(), self.height())
             _renderer(_brand_asset(icon=True)).render(painter, QRectF(self.rect()))
