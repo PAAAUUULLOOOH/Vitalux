@@ -55,17 +55,20 @@ def run():
             app.processEvents()
             assert pref.eco_toggle.isEnabled()
             assert not pref.eco_toggle.isChecked()
+            assert not pref.eco_restart_button.isVisible()
             pref.eco_toggle.setChecked(True)
             app.processEvents()
             assert eco.enabled()
             assert theme.mode() == 'minimal'
-            assert eco.interval() == 5
+            assert eco.interval() == 10
             assert renderer.desired() == renderer.SOFTWARE
+            assert pref.eco_restart_button.isVisible()
+            assert host.restarts == 0, 'Never restart automatically on toggle'
             assert renderer.prepare_start() == renderer.SOFTWARE
             assert motion.level() == 'off' and not motion.enabled()
             assert motion.duration(500) == 0
             assert backdrops.resolve('animated_sparkle', 'minimal') == 'minimal'
-            assert host.intervals[-1] == 5
+            assert host.intervals[-1] == 10
             assert not pref.mode.isEnabled()
             assert not pref.background_combo.isEnabled()
             assert not pref.accent_combo.isEnabled()
@@ -92,7 +95,11 @@ def run():
             assert motion.level() == 'smooth'
             assert renderer.desired() == renderer.WAYLAND_VULKAN
             assert host.intervals[-1] == 1
-            assert host.restarts == 1, 'GPU backend must be restored on next controlled restart'
+            assert host.restarts == 0, 'Toggle never restarts without user action'
+            assert pref.eco_restart_button.isVisible()
+            assert pref.render_combo.currentData() == renderer.WAYLAND_VULKAN
+            pref.eco_restart_button.click()
+            assert host.restarts == 1, 'Explicit restart applies remembered GPU backend'
             assert pref.mode.isEnabled()
             assert pref.background_combo.isEnabled()
             assert pref.accent_combo.isEnabled()
