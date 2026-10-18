@@ -748,3 +748,19 @@ EN_MORE.update({
     "Unter Grafik-Rendering kannst du CPU, OpenGL, Qt Quick sowie experimentelle Wayland-OpenGL-, Wayland-Vulkan- und X11-OpenGL-Modi wählen. Nach Jetzt neu starten prüft Vitalux die GPU-Unterstützung und schaltet bei Problemen auf CPU zurück.":
         "In Graphics rendering choose CPU, OpenGL, Qt Quick, or experimental Wayland/OpenGL, Wayland/Vulkan and X11/OpenGL modes. Restart now tests the GPU and falls back to CPU if needed."
 })
+
+# v0.9.4.5: localized compact rendering choices and the in-app guide.
+EN_MORE.update({
+    "Qt Raster · Energiesparmodus": "Qt Raster · Power-saving mode",
+    "CPU · Standard (stabil)": "CPU · Standard (stable)",
+    "OpenGL · GPU-Test (experimentell)": "OpenGL · GPU test (experimental)",
+    "Aktiv: Qt Raster (Energiesparmodus)": "Active: Qt Raster (power-saving mode)",
+    "Black Glass · Tiefschwarze Glasflächen mit dezenten Reflexionen und silbernen Kanten. Eigene Akzentfarben sind hier gesperrt.":
+        "Black Glass · Deep black glass surfaces with subtle reflections and silver borders. Custom accent colors are unavailable in this theme.",
+    "Qt Raster nutzt CPU-Zeichnung mit zwischengespeicherten Hintergründen und reduziert nur die Funkeln-Animation. Wayland und X11 bleiben experimentelle GPU-Modi; Diagramme und Qt-Widgets nutzen weiter die CPU.":
+        "Qt Raster uses CPU painting and cached backgrounds, reducing only the Sparkle animation. Wayland and X11 remain experimental GPU modes; charts and Qt widgets still use the CPU.",
+    "Unter Grafik-Rendering wählst du CPU, das sparsame Qt Raster oder experimentelle OpenGL-, Wayland- und X11-Modi mit OpenGL/Vulkan. Qt Quick ist kein eigener Modus mehr. Jetzt neu starten übernimmt die Auswahl; bei GPU-Problemen wird CPU aktiviert.":
+        "Under Graphics rendering choose CPU, power-saving Qt Raster, or experimental OpenGL, Wayland and X11 modes using OpenGL/Vulkan. Qt Quick is no longer a separate mode. Restart now applies the choice and falls back to CPU for GPU problems.",
+    "Sieben Farbschemata sind verfügbar. Black Glass sperrt eigene Akzentfarben, Black Glass Gold alle Akzentfarben; Holographic bleibt ein HUD ohne Glas. Hintergrundfarbe automatisch braucht ein eigenes Bild.":
+        "Seven themes are available. Black Glass disables custom accent colors, Black Glass Gold locks all accent colors; Holographic is a separate non-glass HUD. Automatic wallpaper accent requires a custom image."
+})
