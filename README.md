@@ -104,14 +104,14 @@ Der integrierte **fio-Benchmark** bietet **Standard-, Peak-, Real-World- und ben
 | Farbschema | Charakter |
 | --- | --- |
 | **Glass** · Standard | Halbtransparente Glasflächen, weiche Hintergrundunschärfe und Reflexionen |
-| **Black Glass** | Tiefschwarze Glasoptik mit zurückhaltenden Licht- und Kanteneffekten |
+| **Black Glass** | Tiefschwarze Glasoptik; eigene Akzentfarben gesperrt, Standardakzente weiterhin verfügbar |
 | **Black Glass Gold** | Schwarzes Premiumdesign mit **festem hellgoldenem Akzent** für Logo, Symbole, Anzeigen und Diagramme |
 | **Holographic** | Technisches, vollständig deckendes HUD-Design mit leuchtenden Konturen – **kein Glasmodus** |
 | **Dark** | Kontrastreiche dunkle Oberflächen ohne Glasunschärfe |
 | **Light** | Helle Oberfläche mit gut lesbaren Karten und Bedienelementen |
 | **Minimalistisch** | Reduzierte Darstellung mit geringeren dekorativen Effekten |
 
-In **Black Glass Gold** sind die Auswahl und Bearbeitung von Akzentfarben bewusst deaktiviert. Für alle anderen Farbschemata stehen die regulären Akzentoptionen zur Verfügung.
+**Black Glass Gold** hat einen festen Goldakzent. **Black Glass** lässt Standardakzente zu, graut eigene Farben und deren Aktionen aus; gespeicherte Farben bleiben erhalten.
 
 ### Hintergründe, Farben und Animationen
 
@@ -120,24 +120,24 @@ In **Black Glass Gold** sind die Auswahl und Bearbeitung von Akzentfarben bewuss
 - **Akzente:** Acht geschützte Standardfarben, Distributionsfarbe und eigene, bearbeitbare/löschbare Farben. **Hintergrundfarbe automatisch** funktioniert nur bei ausgewähltem eigenen Bild.
 - **Animationen:** Flüssig, Reduziert oder Aus.
 
-**Black Glass Gold** verwendet ausschließlich seinen festen Goldakzent; dessen Farbauswahl ist deaktiviert. Eigene Bilder und Akzente ermöglichen zahlreiche weitere Designs, aber nicht jede theoretische Kombination ist gleichzeitig wählbar.
+Eigene Bilder und Farben erweitern die Auswahl; nicht jede Kombination ist in allen Farbschemata verfügbar.
 
 ### Grafik-Rendering
 
-Unter **Einstellungen → Grafik-Rendering** lassen sich sechs Modi auswählen:
+Sechs wählbare Profile unter **Einstellungen → Grafik-Rendering**:
 
 | Modus | Funktion |
 | --- | --- |
-| **CPU · Standard** | Stabiler Standardrenderer |
-| **OpenGL · GPU-Test** | Experimenteller OpenGL-Hintergrund |
-| **Qt Quick · OpenGL** | Experimenteller Scene Graph auf der aktuellen Desktop-Sitzung |
-| **Wayland · OpenGL** | Native Wayland-Fenster mit OpenGL-Scene-Graph (experimentell) |
-| **Wayland · Vulkan** | Native Wayland-Fenster mit Vulkan-Scene-Graph (experimentell) |
-| **X11 · OpenGL** | X11-/XWayland-Fenster mit OpenGL-Scene-Graph (experimentell) |
+| **CPU · Standard** | Bewährtes Qt-Widgets-/Raster-Rendering |
+| **Qt Raster · Energiesparmodus** | CPU-Rendering mit Hintergrundcache; „Funkeln“ wird seltener neu gezeichnet |
+| **OpenGL · GPU-Test** | Experimentelle OpenGL-Hintergrundausgabe |
+| **Wayland · OpenGL** | Experimenteller Wayland-Modus mit OpenGL |
+| **Wayland · Vulkan** | Experimenteller Wayland-Modus mit Vulkan |
+| **X11 · OpenGL** | Experimenteller X11-Modus mit OpenGL |
 
-**Jetzt neu starten** aktiviert die Auswahl. Die Qt-Widgets, Bedienelemente und Diagramme werden weiterhin überwiegend über die CPU gezeichnet; ein schnelleres Bild ist nicht garantiert. Vulkan setzt passende Treiber und Qt-Unterstützung voraus, Wayland eine aktive Wayland-Sitzung und X11 ein erreichbares X-Display. Vor dem Start wird das gewählte Qt-Quick-GPU-Backend in einem **unsichtbaren** separaten Prozess getestet. Bei Inkompatibilität oder einem erkannten Startabsturz kehrt Vitalux zum **CPU-Modus** zurück.
+**Qt Quick ist kein eigener Menüpunkt mehr**; die Wayland-/X11-GPU-Modi nutzen intern weiterhin dessen Scene Graph. Die normalen Widgets und Diagramme bleiben CPU-gezeichnet. Über **Jetzt neu starten** wird gewechselt. GPU-Starttests laufen unsichtbar; bei erkannten Fehlern fällt Vitalux auf CPU zurück. Geschwindigkeit und Kompatibilität hängen von Treibern und Desktop ab.
 
-**Notfallstart (portable ZIP):**
+**CPU-Notfallstart der ZIP-Version:**
 
 ```bash
 VITALUX_RENDERER=software ./run.sh
