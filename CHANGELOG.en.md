@@ -1,5 +1,11 @@
 # Vitalux – Changes
 
+## [v0.9.4.3] - 2026-10-18
+- Added experimental Wayland/OpenGL, Wayland/Vulkan and X11/OpenGL graphics profiles.
+- Qt Quick now verifies its actual OpenGL or Vulkan scene graph in an isolated subprocess before starting.
+- Improved safe CPU fallback for unsupported backends and native graphics crashes.
+- Added quick restart-based switching with updated English strings and documentation.
+
 ## [v0.9.4.2] - 2026-10-18
 - Dashboard tiles fill available space more reliably while keeping the same spacing.
 - Qt Quick now checks graphics compatibility before activation and automatically returns to CPU rendering after graphics crashes.
