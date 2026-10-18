@@ -53,26 +53,22 @@ Vitalux vereint Systemüberwachung, Live-Diagramme, Datenträgeranalyse und eine
 
 ### Dashboard und Live-Anzeigen
 
-Die Startseite bündelt die wichtigsten Messwerte in einem individuell anpassbaren Dashboard:
+Das Dashboard vereint Systemzustand, CPU-, GPU-, RAM- und Laufwerksauslastung, Netzwerkverkehr, Live-Diagramme und Systemlaufzeit.
 
-- **Frei anordenbare Kacheln:** Im Modus **Layout bearbeiten** Kacheln verschieben, ausblenden oder wieder hinzufügen; Änderungen speichern, verwerfen oder zurücksetzen.
-- **Intelligente Flächennutzung:** Größere freie Bereiche werden beim Anordnen möglichst geschlossen, während der gewohnte **14-px-Abstand** zwischen den Kacheln erhalten bleibt. Die vorhandenen Kachelformate bleiben grundsätzlich bestehen.
-- **Systemzustand:** Eine kompakte, aus verfügbaren Messwerten abgeleitete Statusbewertung mit Hinweisen. **Kein Ersatz für eine Hardwarediagnose.**
-- **Live-Diagramme:** Auslastung und Netzwerkaktivität direkt auf der Übersicht; weitere Verläufe in den jeweiligen Hardware-Reitern.
-- **Systeminformationen:** Distribution, Kernel, KDE, Mesa, Architektur, Grafiktreiber, Sitzung, Distributionsversion und **Systemlaufzeit**.
-- **Anpassbare Navigation:** Die Seitenleiste bleibt links, kann platzsparend eingeklappt werden und bietet einen direkten Sprachwechsel.
-
-Die Anzeige aktualisiert sich standardmäßig im Sekundentakt. Das Abfrageintervall lässt sich in den Einstellungen ändern. Die Oberfläche berücksichtigt unterschiedliche Fenstergrößen und KDE-Skalierungen.
+- **Layout bearbeiten:** Kacheln verschieben, ein- oder ausblenden; Änderungen speichern, verwerfen oder zurücksetzen. Größere Lücken werden bei unverändertem **14-px-Kachelabstand** aufgefüllt.
+- **Systemzustand:** Messwertbasierte Statusbewertung mit Hinweisen – keine umfassende Hardwarediagnose.
+- **Systemdetails:** Distribution, Kernel, KDE, Mesa, Treiber, Architektur und Sitzung.
+- **Bedienung:** Einklappbare linke Navigation, anpassbares Abfrageintervall (Standard: eine Sekunde) und Unterstützung unterschiedlicher Fenstergrößen und Skalierungen.
 
 ### CPU, GPU und Systemdiagnose
 
-**CPU:** Gesamtauslastung, vorhandene Kern-/Thread- und Taktinformationen sowie CPU-Temperaturen, soweit vom System bereitgestellt. Verfügbare Min-/Max-Messwerte werden für die laufende Sitzung erfasst.
+**CPU:** Auslastung, Kerne und Threads, Taktraten, verfügbare Temperaturen, Verlaufsdiagramme sowie Min-/Max-Werte der laufenden Sitzung.
 
-**GPU:** Auslastung, VRAM-Belegung, aktuelle Taktraten, Temperaturen einschließlich Hotspot sowie – wenn vom Treiber geliefert – Spannung, Leistungsaufnahme und Lüfterwerte. Ergänzende Angaben umfassen unter anderem Grafiktreiber, Mesa, PCIe-Verbindung und Sensorquelle. Verlaufskurven helfen, Laständerungen einzuordnen.
+**GPU:** Auslastung, VRAM, Taktraten, Temperatur/Hotspot, Spannung, Leistung, Lüfter, PCIe, Mesa, Treiber und Sensorquelle – jeweils soweit verfügbar.
 
-**Sensoren:** Ein eigener Reiter fasst Messwerte aus Linux-Schnittstellen wie hwmon zusammen. Kategorien ohne auslesbare Werte bleiben verborgen; fehlende Kennzahlen werden als nicht verfügbar gekennzeichnet.
+**Sensoren:** Eigener Reiter für auslesbare Temperaturen, Lüfterdrehzahlen, Spannungen, Leistung und Frequenzen.
 
-**Berichte:** Über **Einstellungen → Diagnose & Berichte** lassen sich Systemberichte als **TXT oder JSON** sowie separate Fehlerdiagnosen als JSON exportieren. Die Berichte können Hardwaredetails und persönliche Systeminformationen enthalten und werden **nur auf ausdrücklichen Wunsch lokal gespeichert**.
+**Diagnose:** Systemberichte als **TXT/JSON**, Fehlerdiagnosen als **JSON** unter **Einstellungen → Diagnose & Berichte**. Exporte erfolgen nur auf ausdrücklichen Wunsch und können private Systemdaten enthalten.
 
 ### Vitalux Insights
 
@@ -94,17 +90,12 @@ Im Reiter **Grafik** stehen zusätzlich ausklappbare Analysewerkzeuge zur Verfü
 
 ## Laufwerke, SMART und Benchmarks
 
-Unter **Laufwerke** werden erkannte Speichergeräte, Partitionen, Dateisysteme und Kapazitäten angezeigt. Beim ersten Öffnen startet die verfügbare **SMART-Prüfung im Hintergrund**; eine manuelle Wiederholung ist möglich. Welche Gesundheitsdaten erscheinen, hängt vom Laufwerk, Controller und den erforderlichen Berechtigungen ab.
+Der Reiter **Laufwerke** zeigt Datenträger, Partitionen, Dateisysteme, Kapazitäten und verfügbare SMART-Werte. Beim ersten Öffnen wird eine SMART-Prüfung im Hintergrund angestoßen; sie kann manuell wiederholt werden.
 
-Der integrierte **fio-Benchmark** bietet unter anderem:
-
-- **Standard-, Peak- und Real-World-Profile** sowie anpassbare Testmuster.
-- Einstellungen für sequenzielle und zufällige Zugriffe, Blockgröße, Queue Depth und Threads.
-- Wählbare Testgröße, Durchläufe und Messzeit sowie auf die Geräteklasse abgestimmte Vorgaben.
-- Ergebnisse für **MB/s**, **IOPS** und **Latenz**, soweit der jeweilige Test sie liefert.
+Der integrierte **fio-Benchmark** bietet **Standard-, Peak-, Real-World- und benutzerdefinierte Tests** mit sequenziellen bzw. zufälligen Zugriffen. Testgröße, Durchläufe, Messdauer, Blockgröße, Queue Depth und Threads sind einstellbar. Die Auswertung zeigt **MB/s, IOPS und Latenz**, soweit vom Test geliefert.
 
 > [!CAUTION]
-> **Benchmarks belasten Datenträger und können vorübergehend Daten schreiben.** Vitalux verwendet temporäre Testdateien, keinen direkten Schreibtest auf bestehende Dateien oder rohe Blockgeräte. Wähle das Ziel sorgfältig aus, achte auf freien Speicherplatz und sichere wichtige Daten vor intensiven Schreibtests.
+> **Schreibbenchmarks belasten den Datenträger und erzeugen temporäre Testdateien.** Vitalux schreibt nicht direkt auf bestehende Dateien oder rohe Blockgeräte. Vor dem Start Laufwerk, freien Speicherplatz und Datensicherung prüfen.
 
 ## Design und Personalisierung
 
@@ -124,14 +115,12 @@ In **Black Glass Gold** sind die Auswahl und Bearbeitung von Akzentfarben bewuss
 
 ### Hintergründe, Farben und Animationen
 
-- **14 integrierte Hintergrundoptionen:** vom farbschemaabhängigen Standard über Glass, Black Glass, Dark und Light bis zu Morgenlicht, Prisma, Tiefsee, Mitternacht, Samt, Graphit und einem adaptiven Hintergrund.
-- **Funkeln** ist der einzige verbliebene **animierte Hintergrund**; die übrigen integrierten Hintergründe sind statisch.
-- **Eigene Bilder:** PNG, JPEG, WebP und BMP importieren, auswählen und wieder entfernen. Unterstützte Ausrichtungen sind **Bildschirmfüllend, Einpassen, Strecken, Zentrieren und Kacheln**.
-- **Akzentfarben:** **acht feste Vitalux-Farben** (Blau, Cyan, Violett, Grün, Orange, Gelb, Rot und Rosa), die Farbe der Linux-Distribution sowie individuell benannte Farben. Eigene Farben lassen sich erstellen, bearbeiten und löschen; Standardfarben bleiben geschützt.
-- **Hintergrundfarbe automatisch:** Die Akzentfarbe kann aus dem **ausgewählten eigenen Hintergrundbild** abgeleitet werden. Ohne eigenes Bild ist diese Option nicht verfügbar; beim Verlassen der Funktion wird die vorherige Akzentwahl berücksichtigt.
-- **Bewegung:** **Flüssig**, **Reduziert** oder **Aus** für Übergänge und dekorative Animationen.
+- **14 integrierte Hintergründe:** darunter Glass, Black Glass, Morgenlicht, Prisma, Tiefsee, Mitternacht, Samt, Graphit und Adaptiv. Nur **Funkeln** ist animiert.
+- **Eigene Bilder:** PNG, JPEG, WebP und BMP; Füllen, Einpassen, Strecken, Zentrieren oder Kacheln.
+- **Akzente:** Acht geschützte Standardfarben, Distributionsfarbe und eigene, bearbeitbare/löschbare Farben. **Hintergrundfarbe automatisch** funktioniert nur bei ausgewähltem eigenen Bild.
+- **Animationen:** Flüssig, Reduziert oder Aus.
 
-Die Farb- und Hintergrundauswahl eröffnet zahlreiche Kombinationen. Da **Black Glass Gold** einen festen Akzent verwendet und die automatische Bildfarbe ein eigenes Hintergrundbild voraussetzt, ist nicht jede mathematisch denkbare Auswahl tatsächlich kombinierbar. Eigene Farben und Bilder erweitern die Möglichkeiten zusätzlich.
+**Black Glass Gold** verwendet ausschließlich seinen festen Goldakzent; dessen Farbauswahl ist deaktiviert. Eigene Bilder und Akzente ermöglichen zahlreiche weitere Designs, aber nicht jede theoretische Kombination ist gleichzeitig wählbar.
 
 ### Grafik-Rendering
 
@@ -153,11 +142,10 @@ VITALUX_RENDERER=software ./run.sh
 
 ## Warnungen, Systemleiste und Bedienung
 
-- **Hardware-Warnungen:** Konfigurierbare Grenzwerte für CPU- und GPU-Temperatur, RAM-Auslastung und Belegung des Systemlaufwerks. Wiederholte Meldungen erfolgen erst nach zwischenzeitlicher Entwarnung.
-- **Systemleiste (Tray):** Vitalux kann beim Schließen im Hintergrund weiterlaufen. Tooltip und optionale kompakte Live-Vorschau zeigen verfügbare Hardwarewerte.
-- **Update-Hinweise:** Bei einer neuen Vitalux-Version können das App-Logo und das Tray-Symbol leuchten bzw. pulsieren, der Updates-Reiter wird hervorgehoben und eine Systembenachrichtigung angezeigt.
-- **DE / EN:** Deutsch und Englisch lassen sich **ohne Neustart** wechseln. Der lokale Changelog folgt der gewählten Sprache.
-- **Integrierte Anleitung:** Über **Info → Anleitung öffnen** startet eine bebilderte, neunteilige Einführung zu Navigation, Monitoring, Benchmarks, Einstellungen und Updates. Beim Erststart wird sie optional angeboten.
+- **Hardware-Warnungen:** Individuelle Grenzwerte für CPU-/GPU-Temperatur, RAM und Systemlaufwerk. Neue Meldungen erst nach zwischenzeitlicher Entwarnung.
+- **Systemleiste:** Weiterlaufen beim Schließen, Tooltip und kompakte Live-Vorschau. Updates können durch pulsierendes Logo, hervorgehobenen Reiter und Benachrichtigung angezeigt werden.
+- **Sprachen:** **Deutsch / Englisch** ohne Neustart, einschließlich lokalisiertem Changelog.
+- **Anleitung:** Unter **Info → Anleitung öffnen** steht eine bebilderte, neunteilige Einführung bereit; beim Erststart optional.
 
 ## Download
 
@@ -222,13 +210,11 @@ Abweichende XDG-Umgebungsvariablen können die Speicherorte beeinflussen.
 
 ## Updates
 
-Vitalux sucht **beim Start und ungefähr alle sechs Stunden** nach offiziellen Veröffentlichungen auf GitHub. Im **Updates-Reiter** lassen sich die installierte Version, eine verfügbare neue Version und deren Neuerungen einsehen. Die Suche kann manuell wiederholt werden.
+Vitalux prüft **beim Start und ungefähr alle sechs Stunden** die offiziellen GitHub-Releases. Im **Updates-Reiter** erscheinen Versionsstatus, Neuerungen und eine manuelle Suche. **Installiert wird erst nach „Jetzt aktualisieren“**; Downloads werden mit SHA-256 geprüft. Je nach Paket stehen Sicherungs- und Wiederherstellungsmechanismen bereit.
 
-**Ein Update wird nicht ungefragt installiert:** Erst **Jetzt aktualisieren** startet die Aktualisierung. Downloads werden über **SHA-256** geprüft. Die Anwendung unterstützt – abhängig vom verwendeten Paket – den Austausch des AppImages beziehungsweise die Aktualisierung der portablen Version mit Sicherungs- und Wiederherstellungsmechanismen.
+Der **deutsch/englische Changelog** ist offline verfügbar. Nur die Release-Prüfung benötigt Internet – die Hardwareüberwachung funktioniert lokal und offline.
 
-Der **lokale Changelog** bleibt auch ohne Internet einsehbar und zeigt die Einträge in der aktuell ausgewählten Sprache. Die automatische Versionsprüfung benötigt eine Verbindung zu GitHub; die eigentliche Hardwareüberwachung funktioniert offline.
-
-Für Veröffentlichungen erstellt der manuell angestoßene GitHub-Workflow **AppImage, Vollversion, passendes Differenzupdate und Prüfsummen**. Ein normaler README- oder Code-Commit veröffentlicht **keine neue Version**.
+Der manuell gestartete GitHub-Workflow erstellt **AppImage, Vollversion, Differenzupdate und Prüfsummen**. Eine README-Änderung veröffentlicht **keinen Release**.
 
 ## Hilfe und Fehlerbehebung
 
@@ -307,19 +293,16 @@ Der Desktop-Eintrag und die installierte Anwendung werden entfernt. **Persönlic
 
 ## Systemanforderungen und Datenschutz
 
-- **Betriebssystem:** Aktuelle **GNU/Linux-x86-64**-Distribution; **Wayland oder X11**.
-- **Kompatibilität:** Derzeitiges Ziel sind moderne Systeme mit **glibc 2.38 oder neuer**; weitere Laufzeitbibliotheken und Grafikunterstützung hängen von der Distribution ab.
-- **Desktop:** Besonders auf KDE Plasma ausgelegt, ohne auf KDE beschränkt zu sein.
-- **Pakete:** Offizielle Vollversionen bündeln Python/Qt; AppImages benötigen abhängig von der Distribution FUSE.
-- **Offline-Nutzung:** Hardwaremonitoring, lokale Verläufe und die integrierte Anleitung benötigen keinen Cloud-Dienst.
-- **Datenschutz:** Messwerte werden lokal verarbeitet. Gaming-Sitzungen bleiben bis zum ausdrücklichen Export im Arbeitsspeicher; Vergleichs-Snapshots können in der Benutzerkonfiguration liegen. MangoHud-Dateien werden nur nach manueller Auswahl eingelesen.
-- **Keine Fernsteuerung:** Vitalux ist ein Monitor- und Analysewerkzeug, kein Übertaktungs- oder Lüftersteuerungsdienst.
+- **Linux x86-64**, Wayland oder X11; ausgelegt besonders für **KDE Plasma**. Ziel: aktuelle Distributionen mit **glibc 2.38+**; FUSE und weitere Systembibliotheken können erforderlich sein.
+- **Vollständige Release-Pakete** enthalten Python und Qt; Sensorfunktionen erfordern passende Treiber und Berechtigungen.
+- **Offline und lokal:** Monitoring und Anleitung benötigen keine Cloud. Gaming-Aufzeichnungen werden erst auf Wunsch exportiert; Vergleichssnapshots können lokal gespeichert werden. MangoHud-Dateien werden ausschließlich manuell ausgewählt.
+- **Nur Überwachung:** Keine GPU-Übertaktung oder eigene Lüftersteuerung.
 
 ## Projekt, Mitwirkende und Lizenzen
 
 **Entwicklung:** [PAAAUUULLOOOH](https://github.com/PAAAUUULLOOOH) · **Vitalux**
 
-**Besonderer Dank an [TimBooH](https://github.com/TimBooH)** für die Unterstützung bei der Integration eigener Hintergrundbilder und der Grafikausgabe (OpenGL/CPU-Rendering). Der Hinweis ist auch im Info-Reiter der App zu finden.
+**Besonderer Dank an [TimBooH](https://github.com/TimBooH)** für die Unterstützung bei der Integration eigener Hintergrundbilder und der Grafikausgabe (OpenGL/CPU-Rendering).
 
 Vitalux verwendet unter anderem **Python**, **Qt/PySide6**, **psutil**, **fio** und **libaio**. Lizenzinformationen zu mitgelieferten Drittkomponenten befinden sich in den offiziellen Paketen unter `licenses/`. Für den Vitalux-eigenen Projektcode liegt derzeit keine allgemeine Lizenzdatei im Repository vor; öffentliche Einsicht allein bedeutet daher keine allgemeine Nutzungserlaubnis.
 
