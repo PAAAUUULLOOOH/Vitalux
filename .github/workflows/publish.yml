@@ -1,7 +1,7 @@
 name: Vitalux – Automatische Veröffentlichung
 
-# User-approved first release: one guarded main push (merge commit).
-# Later releases are workflow_dispatch only. Ordinary pushes never publish.
+# The named publish commit is authorized to run the release on main.
+# Ordinary source pushes do not publish; workflow_dispatch also remains available.
 on:
   workflow_dispatch:
   push:
