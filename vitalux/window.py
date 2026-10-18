@@ -660,9 +660,8 @@ class MainWindow(QMainWindow):
         sync_installed_icon()
         minimal = theme.mode() == 'minimal'
         self.centralWidget().set_low_power(minimal)
-        if eco.enabled():
-            self.set_interval(eco.SAMPLE_INTERVAL)
-        else:
+        # _build may call apply_appearance before Sampler has been created.
+        if hasattr(self, 'sampler'):
             self.set_interval(eco.interval())
         # Disabling graphics effects (rather than removing them) retains the
         # original glass shadows when switching back to Glass/Dark/Light.
