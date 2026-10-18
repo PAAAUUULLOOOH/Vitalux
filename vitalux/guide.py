@@ -77,8 +77,8 @@ SLIDES = [
         "Darstellung und Einstellungen",
         "Standardmäßig startet Vitalux mit Glass und Vitalux Blau. Gespeicherte persönliche Einstellungen bleiben erhalten.",
         "Wähle einen von 14 integrierten Hintergründen oder importiere eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
-        "Unter Grafik-Rendering kannst du CPU, OpenGL, Qt Quick sowie experimentelle Wayland-OpenGL-, Wayland-Vulkan- und X11-OpenGL-Modi wählen. Nach Jetzt neu starten prüft Vitalux die GPU-Unterstützung und schaltet bei Problemen auf CPU zurück.",
-        "Sieben Farbschemata stehen zur Wahl. Black Glass Gold hat einen festen Goldakzent; Holographic ist ein eigenes HUD ohne Glas. Hintergrundfarbe automatisch ist nur mit ausgewähltem eigenem Hintergrundbild verfügbar.",
+        "Unter Grafik-Rendering wählst du CPU, das sparsame Qt Raster oder experimentelle OpenGL-, Wayland- und X11-Modi mit OpenGL/Vulkan. Qt Quick ist kein eigener Modus mehr. Jetzt neu starten übernimmt die Auswahl; bei GPU-Problemen wird CPU aktiviert.",
+        "Sieben Farbschemata sind verfügbar. Black Glass sperrt eigene Akzentfarben, Black Glass Gold alle Akzentfarben; Holographic bleibt ein HUD ohne Glas. Hintergrundfarbe automatisch braucht ein eigenes Bild.",
         "settings",
     ),
     (
