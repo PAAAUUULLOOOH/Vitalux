@@ -784,3 +784,23 @@ EN_MORE.update({
     "Sieben Farbschemata bleiben verfügbar und werden nach dem Abschalten von Ultra Eco wiederhergestellt. Black Glass sperrt eigene Akzente, Black Glass Gold alle Akzente; Holographic bleibt ein HUD ohne Glas. Automatische Hintergrundfarbe benötigt ein eigenes Bild.":
         "Seven themes remain available and are restored after disabling Ultra Eco. Black Glass locks custom accents, Black Glass Gold all accents, while Holographic remains a non-glass HUD. Automatic background accent requires a custom image."
 })
+
+# Ultra Eco restart and fully themed gold diagrams (v0.9.4.7).
+EN_MORE.update({
+    "Ultra Eco vorgemerkt – bitte Jetzt neu starten klicken.":
+        "Ultra Eco queued – click Restart now to apply CPU rendering.",
+    "Ultra Eco deaktiviert – bitte Jetzt neu starten klicken.":
+        "Ultra Eco turned off – click Restart now to restore the previous GPU renderer.",
+    "Ultra Eco wartet auf Neustart für CPU-Rendering.":
+        "Ultra Eco requires a restart to activate CPU rendering.",
+    "Ultra Eco: CPU-Rendering aktiv.":
+        "Ultra Eco: CPU rendering is active.",
+    "Ultra Eco aktiv: alle Effekte aus, einfache Darstellung und 10 Sekunden Messintervall.":
+        "Ultra Eco active: effects off, plain graphics, sampling every 10 seconds.",
+    "Sehr einfache, flache Oberfläche ohne Glas, Schatten, Hintergrundbilder, Funkeln oder Übergangsanimationen. CPU-Rendering und 10 Sekunden Messintervall sparen Zeichen- und Abfragearbeit. Ausschalten stellt deine bisherigen Einstellungen wieder her.":
+        "Plain flat interface without glass, shadows, wallpapers, sparkles or transitions. CPU rendering and a 10-second polling interval save CPU/GPU work. Turning this off restores your previous settings.",
+    "Unter Leistung & Energie schaltest du Ultra Eco ein oder aus: ein primitiver, flacher Skin ohne Effekte, CPU-Rendering und 10 Sekunden Messintervall. Die Anwendung zeichnet verborgen keine Diagramme neu. Mit Jetzt neu starten übernimmst du GPU-/CPU-Wechsel; vorherige Einstellungen bleiben erhalten. Grafik-Rendering bietet weiterhin CPU, Qt Raster und experimentelle GPU-Modi.":
+        "Use the Ultra Eco switch in Performance & energy: plain flat skin without effects, CPU rendering and 10-second monitoring. Hidden windows do not redraw charts. Use Restart now to apply CPU/GPU switches; your previous settings stay intact. Standard rendering choices remain available.",
+    "Sieben Farbschemata bleiben verfügbar und werden nach dem Abschalten von Ultra Eco wiederhergestellt. Black Glass sperrt eigene Akzente, Black Glass Gold alle Akzente und zeigt Diagramme samt RAM-Beschriftungen in Goldtönen; Holographic bleibt ein HUD ohne Glas. Automatische Hintergrundfarbe benötigt ein eigenes Bild.":
+        "Seven themes remain available and are restored when Ultra Eco is disabled. Black Glass disables custom accents, Black Glass Gold locks all accents and uses gold for charts including RAM labels; Holographic is a separate HUD. Automatic wallpaper accent requires a custom image."
+})
