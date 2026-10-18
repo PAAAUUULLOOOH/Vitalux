@@ -58,6 +58,13 @@ def run():
                 assert widget.rootObject().property('generation') == widget._generation
                 assert sample.isVisible()
                 widget.close()
+                # The old code always marked Wayland/X11 as plain Qt Quick:
+                # this made the UI repeatedly display "restart pending".
+                settings.set('render_backend', renderer.WAYLAND_OPENGL)
+                extra = create_ambient_scene()
+                assert isinstance(extra, QQuickWidget)
+                assert extra.render_backend == renderer.WAYLAND_OPENGL
+                extra.close()
                 renderer.successful_start()
                 print('GPU Qt Quick scene graph and QWidget composition: OK')
             else:
