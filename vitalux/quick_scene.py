@@ -1,7 +1,7 @@
 """Experimental Qt Quick/scene-graph wallpaper under ordinary Qt widgets.
 
-Qt Quick owns the actual background texture through the Qt RHI (OpenGL on
-this backend). All normal QWidget charts/cards are intentionally unchanged.
+Qt Quick owns the background texture through Qt RHI (OpenGL or Vulkan).
+Ordinary QWidget charts/cards remain CPU-painted.
 """
 from pathlib import Path
 
@@ -42,6 +42,10 @@ class QuickAmbientScene(_AmbientSceneCore, QQuickWidget):
         self._quick_ready = False
         self._generation = 0
         super().__init__()
+        # QQuickWidget composites its own backing texture; do not mark it as
+        # a manually painted, opaque raster widget (can corrupt its surface).
+        from PySide6.QtCore import Qt
+        self.setAttribute(Qt.WA_OpaquePaintEvent, False)
         self._upload_timer = QTimer(self)
         self._upload_timer.setSingleShot(True)
         self._upload_timer.timeout.connect(self._upload_frame)
@@ -59,7 +63,7 @@ class QuickAmbientScene(_AmbientSceneCore, QQuickWidget):
 
     def _schedule_upload(self):
         if self._quick_ready and not self._upload_timer.isActive():
-            self._upload_timer.start(0)
+            self._upload_timer.start(16)
 
     def _upload_frame(self):
         if not self._quick_ready:
@@ -93,3 +97,9 @@ class QuickAmbientScene(_AmbientSceneCore, QQuickWidget):
         super().resizeEvent(event)
         if self._quick_ready:
             self._schedule_upload()
+
+    def closeEvent(self, event):
+        # Never let a pending image-provider update race Qt Quick destruction.
+        self._quick_ready = False
+        self._upload_timer.stop()
+        super().closeEvent(event)
