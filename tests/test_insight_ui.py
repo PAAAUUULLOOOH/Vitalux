@@ -14,7 +14,7 @@ except ImportError:
     QTest = None
 from vitalux import theme
 from vitalux.insight_engine import MonitoringLab
-from vitalux.insight_ui import FocusWindow, _HardwareNode
+from vitalux.insight_ui import FocusWindow, MonitoringLabPanel
 from vitalux.pages import GpuPage
 
 
@@ -36,83 +36,57 @@ def check_lab_panel():
     app.setStyleSheet(theme.stylesheet())
     lab = MonitoringLab()
     focus_requests = []
-    page = GpuPage(lab, lambda: focus_requests.append("open"))
-    page.resize(1120, 800)
-    page.show()
+    panel = MonitoringLabPanel(lab, lambda: focus_requests.append("open"))
+    panel.resize(1000, 800)
+    panel.show()
     for value in (30, 40, 60):
-        sample_data = sample(value)
-        lab.ingest(sample_data)
-    page.refresh(sample_data, {"gpu": [30, 40, 60], "vram": [33, 33, 33],
-                               "gpu_temp": [48, 50, 51], "gpu_clock": [1900, 2000, 2100]})
+        data = sample(value)
+        lab.ingest(data)
+    panel.refresh(data)
     app.processEvents()
-    panel = page.lab_panel
-    assert panel is not None
     assert not panel.record_group.isVisible()
-    assert "GPU-Auslastung" not in panel.findings.text() or panel.findings.text()
+    assert not hasattr(panel, "timeline")
+    assert not hasattr(panel, "hardware_group")
+    assert not hasattr(panel, "compare_group")
     panel.focus.click()
     assert focus_requests == ["open"]
     panel.show_advanced.click()
     app.processEvents()
     assert panel.record_group.isVisible()
-    assert panel.compare_group.isVisible()
     assert panel.trend_group.isVisible()
     assert panel.trend_chart.graph.mode == "percent"
-    assert len(panel.trend_chart.toggles) == 3
-    assert panel.map.scene().items()
-    nodes = [node for node in panel.map.scene().items() if isinstance(node, _HardwareNode)]
-    assert {node.key for node in nodes} == {"cpu", "gpu", "ram", "disk", "mainboard"}
-    node = next(x for x in nodes if x.key == "mainboard")
-    point = panel.map.mapFromScene(node.mapToScene(node.rect().center()))
-    if QTest is not None:
-        QTest.mouseClick(panel.map.viewport(), Qt.LeftButton, pos=point)
-    else:
-        node.callback(node.key)  # Native item's wired click handler
-    assert "Mainboard" in panel.hardware_detail.text()
 
     panel.session_name.setText("Cyberpunk")
     panel.begin.click()
     assert lab.started is not None
     for value in (70, 90, 99):
-        s = sample(value)
-        lab.ingest(s)
-        page.refresh(s, {"gpu": [value], "vram": [33],
-                         "gpu_temp": [51], "gpu_clock": [2100]})
+        data = sample(value)
+        lab.ingest(data)
+        panel.refresh(data)
     panel.end.click()
     assert lab.last_session and lab.last_session["samples"] == 3
     assert "Cyberpunk" in panel.session_report.text()
-    panel.before.click()
-    s2 = sample(55)
-    lab.ingest(s2)
-    page.refresh(s2, {"gpu": [55], "vram": [33], "gpu_temp": [51], "gpu_clock": [2100]})
-    panel.after.click()
-    assert lab.comparison()
-    assert "GPU" in panel.comparison.text()
-    assert panel.timeline.count() >= 1
-    panel.timeline.setCurrentRow(0)
-    assert "GPU" in panel.event_detail.text()
 
     focus = FocusWindow()
     focus.show()
-    focus.update_sample(s2)
+    focus.update_sample(sample(55))
     app.processEvents()
     assert "55.0" in focus.entries[0][1].text()
     focus.entries[0][0].setCurrentIndex(focus.entries[0][0].findData("cpu_temp"))
-    focus.update_sample(s2)
+    focus.update_sample(sample(55))
     assert "62.0" in focus.entries[0][1].text()
     from vitalux import i18n
     i18n.set_lang("en")
     panel.retranslate()
     focus.retranslate()
-    assert panel.compare_group.title() == "Before / after comparison"
     assert "Focus mode" in focus.windowTitle()
-    assert "DRIVES" in [node.text.text() for node in nodes]
     i18n.set_lang("de")
     panel.retranslate()
     focus.retranslate()
     focus.close()
-    page.close()
+    panel.close()
     app.processEvents()
-    print("Native Insights, gaming, comparison, hardware nodes and focus mode: PASS")
+    print("Native Insights without removed timeline, comparison and hardware map: PASS")
 
 
 if __name__ == "__main__":
