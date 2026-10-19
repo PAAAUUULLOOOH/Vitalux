@@ -917,3 +917,19 @@ EN_MORE.update({
     'Unter Einstellungen → Leistung & Energie schaltest du Ultra Eco ein oder aus: ein primitiver, flacher Skin ohne Effekte, CPU-Rendering und 10 Sekunden Messintervall. Die Anwendung zeichnet verborgen keine Diagramme neu. Mit Jetzt neu starten übernimmst du GPU-/CPU-Wechsel; vorherige Einstellungen bleiben erhalten. Grafik-Rendering bietet weiterhin CPU, Qt Raster und experimentelle GPU-Modi.':
         'Under Settings → Performance & energy, switch Ultra Eco on or off to use a plain, effect-free skin with CPU rendering and ten-second polling. No hidden charts are redrawn. Restart now applies CPU/GPU changes while preserving your previous preferences. Graphics rendering still offers CPU, Qt Raster and experimental GPU modes.'
 })
+
+# Texts for the clean, single-page navigation and wallpaper performance notice.
+EN_MORE.update({
+    'Leistungshinweis: Eigene Hintergrundbilder können besonders bei hoher Auflösung und aktivierten Glaseffekten zusätzliche Systemressourcen beanspruchen. Dadurch sind Ruckler oder eine verzögerte Darstellung möglich. Für eine optimale Leistung empfehlen wir die integrierten Vitalux-Hintergründe.':
+        'Performance note: Custom wallpapers may use extra system resources, especially at high resolutions with glass effects enabled. This may cause stuttering or slower rendering. For best performance, we recommend Vitalux built-in backgrounds.',
+    'Wayland und X11 bleiben experimentelle GPU-Modi; Diagramme und Qt-Widgets nutzen weiterhin die CPU.':
+        'Wayland and X11 remain experimental GPU modes; charts and Qt widgets still use the CPU.',
+    'Standardmäßig startet Vitalux mit Glass und Vitalux Blau. Alle Einstellungen stehen übersichtlich auf einer scrollbaren Seite; die Suche springt direkt zur gefundenen Option.':
+        'Vitalux defaults to Glass with Vitalux Blue. All settings appear on one scrollable page, and search jumps to the matching option.',
+    'Unter Einstellungen → Leistung & Energie schaltest du Ultra Eco ein oder aus: ein primitiver, flacher Skin ohne Effekte, CPU-Rendering und 10 Sekunden Messintervall. Die Anwendung zeichnet verborgen keine Diagramme neu. Mit Jetzt neu starten übernimmst du GPU-/CPU-Wechsel; vorherige Einstellungen bleiben erhalten. Grafik-Rendering bietet CPU und experimentelle GPU-Modi.':
+        'In Settings → Performance & energy, toggle Ultra Eco for a plain, effect-free CPU interface with ten-second monitoring. Hidden charts are not redrawn. Restart now applies CPU/GPU changes, preserving preferences. Graphics rendering offers CPU and experimental GPU modes.',
+    'Das Diagnostic Center zeigt Schnellcheck, Hardware- und Systemdiagnose, Performance & Insights, Verlauf und Berichte auf einer Seite.':
+        'Diagnostic Center presents quick checks, hardware and system diagnostics, performance insights, history, and reports on one page.',
+    'Im Diagnostic Center kannst du System- und Fehlerberichte lokal als TXT/JSON exportieren. Externer Ping nur per Klick.':
+        'Export system and error reports locally in TXT/JSON from Diagnostic Center. External ping runs only on request.',
+})
