@@ -158,8 +158,10 @@ def _system_state(sample):
     score = max(0, min(100, round(score)))
     issue = max(issues, key=lambda row: row[0])[1] if issues else ""
     # A missing SMART scan does not mean that disks were checked and are good.
-    if not smart and score > 92:
-        score = 92
+    if not smart and score > 89:
+        score = 89
+    if not smart and not issue:
+        issue = tr('SMART noch nicht geprüft')
     if score >= 90:
         return score, tr('Sehr gut'), issue or tr('Alles im grünen Bereich')
     if score >= 76:
