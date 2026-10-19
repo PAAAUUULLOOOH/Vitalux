@@ -12,6 +12,7 @@ from .pages import Page
 from .sensors import fmt_bytes, fmt_rate, system_static
 from .widgets import Card, KeyValue, Meter, label
 from .i18n import tr
+from .section_nav import SectionNav
 
 
 class SensorsPage(Page):
@@ -19,7 +20,7 @@ class SensorsPage(Page):
         super().__init__('Sensoren', 'Temperaturen, Lüfter und Spannungen · direkt aus Linux hwmon')
         self.cards = {}
         self.rows = {}
-        for ident, title in [('temps', 'Temperaturen'), ('fans', 'Lüfter'), ('voltages', 'Spannungen'), ('powers', 'Leistungsaufnahme'), ('frequencies', 'Frequenzen')]:
+        for ident, title in [('temps', 'Temperaturen'), ('fans', 'Lüfter'), ('frequencies', 'Frequenzen'), ('powers', 'Leistungsaufnahme'), ('voltages', 'Spannungen')]:
             card = Card(title)
             self.cards[ident] = card
             self.rows[ident] = {}
@@ -171,6 +172,29 @@ class PreferencesPage(Page):
     def __init__(self, window):
         super().__init__('Einstellungen', 'Design, Messintervall, Dashboard und Datenexport')
         self.window = window
+        # Six direct subcategories reuse every original control and saved setting.
+        self.section_nav = SectionNav([
+            ('appearance', 'Darstellung'),
+            ('hud', 'MiniHUD & Fenster'),
+            ('monitoring', 'Monitoring & Warnungen'),
+            ('energy', 'Leistung & Energie'),
+            ('general', 'Allgemein'),
+            ('render', 'Grafik-Rendering'),
+        ])
+        self.search = QLineEdit()
+        self.search.setObjectName('settingsSearch')
+        self.search.setPlaceholderText(tr('Einstellungen durchsuchen …'))
+        self.search.textChanged.connect(self.search_settings)
+        self.search_results = QListWidget()
+        self.search_results.setObjectName('settingsSearchResults')
+        self.search_results.setMaximumHeight(156)
+        self.search_results.setVisible(False)
+        self.search_results.itemActivated.connect(self.choose_search_result)
+        self.search_results.itemClicked.connect(self.choose_search_result)
+        self.content.addWidget(self.search)
+        self.content.addWidget(self.search_results)
+        self.content.addWidget(self.section_nav)
+        self._search_targets = []
         look = Card('Erscheinungsbild')
         self.mode = QComboBox()
         for title, value in [('Dark', 'dark'), ('Light', 'light'), ('Glass', 'glass'), ('Black Glass', 'black_glass'), ('Black Glass Gold', 'black_glass_gold'), ('Holographic', 'holographic'), ('Minimalistisch', 'minimal')]:
@@ -329,7 +353,7 @@ class PreferencesPage(Page):
         r_motion.addStretch(1)
         look.body.addLayout(r_motion)
         look.body.addWidget(label('Übergänge anpassen: weich, verkürzt oder ohne Animation.', 'muted', wrap=True))
-        self.content.addWidget(look)
+        self.section_nav.add('appearance', look)
 
         # A genuine toggle, not another GPU backend or a destructive theme switch.
         # Original theme, wallpaper, accent, motion and render choice remain saved.
@@ -349,7 +373,7 @@ class PreferencesPage(Page):
         self.eco_restart_button.setObjectName('primaryBtn')
         self.eco_restart_button.clicked.connect(self.restart_for_eco)
         eco_card.body.addWidget(self.eco_restart_button, 0, Qt.AlignLeft)
-        self.content.addWidget(eco_card)
+        self.section_nav.add('energy', eco_card)
 
         render_card = Card('Grafik-Rendering')
         render_row = QHBoxLayout()
@@ -380,7 +404,7 @@ class PreferencesPage(Page):
         self.render_restart_button.clicked.connect(self.restart_for_renderer)
         render_card.body.addWidget(self.render_restart_button, 0, Qt.AlignLeft)
         self._refresh_renderer_status()
-        self.content.addWidget(render_card)
+        self.section_nav.add('render', render_card)
 
         monitor = Card('Live-Monitoring')
         row = QHBoxLayout()
@@ -394,7 +418,7 @@ class PreferencesPage(Page):
         row.addStretch()
         monitor.body.addLayout(row)
         monitor.body.addWidget(label('Die Diagramme bieten 60 Sekunden, 5 Minuten und 15 Minuten Verlauf sowie einzeln schaltbare Datenreihen.', 'muted', wrap=True))
-        self.content.addWidget(monitor)
+        self.section_nav.add('monitoring', monitor)
         tray = Card('Systemleiste')
         self.close_to_tray = QCheckBox('Fenster schließen → in Systemleiste weiterlaufen')
         self.close_to_tray.setChecked(bool(settings.get('close_to_tray', True)))
@@ -402,7 +426,7 @@ class PreferencesPage(Page):
         self.close_to_tray.toggled.connect(lambda enabled: self._set_preference('close_to_tray', enabled))
         tray.body.addWidget(self.close_to_tray)
         tray.body.addWidget(label('Tray-Hover: CPU-, GPU- und RAM-Auslastung sowie Temperaturen. Im Kontextmenü öffnet sich zusätzlich eine kompakte Live-Vorschau.', 'muted', wrap=True))
-        self.content.addWidget(tray)
+        self.section_nav.add('hud', tray)
 
         hud = Card('MiniHUD · kompakte Live-Anzeige')
         hud.body.addWidget(label('Separates Desktop-Fenster mit den vorhandenen Vitalux-Messwerten. '                                 'Auch bei verborgenem Hauptfenster nutzbar; keine zusätzliche Sensorabfrage.', 'muted', wrap=True))
@@ -448,7 +472,7 @@ class PreferencesPage(Page):
         hud.body.addLayout(metric_grid)
         hud.body.addWidget(label('Wayland: Das HUD ist ein normales Qt-Fenster. Im echten Spielvollbild ist '                                 'die Einblendung nicht garantiert. Ultra Eco reduziert auch die HUD-Darstellung.',
                                  'muted', wrap=True))
-        self.content.addWidget(hud)
+        self.section_nav.add('hud', hud)
 
         notifications = Card('Hardware-Warnungen')
         self.alert_toggle = QCheckBox('Grenzwert-Warnungen aktivieren')
@@ -479,7 +503,7 @@ class PreferencesPage(Page):
             self.alert_boxes[key] = value
             self.alert_labels[key] = text
         notifications.body.addLayout(threshold_grid)
-        self.content.addWidget(notifications)
+        self.section_nav.add('monitoring', notifications)
 
         # Only visible when the *preferences* deviate from the original values.
         # Dashboard tile positions, update source and language are intentionally
@@ -490,8 +514,53 @@ class PreferencesPage(Page):
         self.restore_button.setObjectName('ghostBtn')
         self.restore_button.clicked.connect(self.restore_defaults)
         restore_row.addWidget(self.restore_button)
-        self.content.addLayout(restore_row)
+        self.section_nav.add_layout('general', restore_row)
         self._refresh_restore_button()
+        self._search_targets = [
+            ('appearance', 'Farbschema Glass Black Glass Gold', self.mode),
+            ('appearance', 'Akzentfarbe Eigene Farben Bearbeiten Löschen', self.accent_combo),
+            ('appearance', 'Hintergrund Bild Hintergrundfarbe automatisch', self.background_combo),
+            ('appearance', 'Animationen Bewegung Übergang', self.motion_combo),
+            ('hud', 'MiniHUD Anzeigen Einblenden', self.hud_on),
+            ('hud', 'MiniHUD Größe Layout', self.hud_size),
+            ('hud', 'MiniHUD Deckkraft Transparenz', self.hud_opacity),
+            ('hud', 'MiniHUD im Vordergrund', self.hud_top),
+            ('hud', 'Systemleiste Tray Schließen', self.close_to_tray),
+            ('monitoring', 'Aktualisierungsintervall Live Monitoring', self.interval),
+            ('monitoring', 'Warnungen Grenzwerte CPU GPU Temperatur RAM Laufwerk', self.alert_toggle),
+            ('energy', 'Ultra Eco Ressourcenschonung Neustarten', self.eco_toggle),
+            ('general', 'Standardwerte wiederherstellen Zurücksetzen', self.restore_button),
+            ('render', 'Grafik Rendering Backend Qt Raster CPU OpenGL Wayland Vulkan X11', self.render_combo),
+        ]
+        self.section_nav.select(settings.get('settings_section', 'appearance'))
+        self.section_nav.changed.connect(lambda key: settings.set('settings_section', key))
+
+    def search_settings(self, query):
+        """Real search results navigate directly to existing options."""
+        self.search_results.clear()
+        words = query.casefold().split()
+        if not words:
+            self.search_results.hide()
+            return
+        for index, (key, terms, _target) in enumerate(self._search_targets):
+            haystack = (terms + ' ' + self.section_nav.labels[key]).casefold()
+            if all(word in haystack for word in words):
+                item = QListWidgetItem(tr(terms.split(' ')[0]) + '  ·  ' + tr(self.section_nav.labels[key]))
+                item.setData(Qt.UserRole, key)
+                item.setData(Qt.UserRole + 1, index)
+                self.search_results.addItem(item)
+        self.search_results.setVisible(bool(self.search_results.count()))
+
+    def choose_search_result(self, item):
+        self.section_nav.select(item.data(Qt.UserRole))
+        index = item.data(Qt.UserRole + 1)
+        if isinstance(index, int) and 0 <= index < len(self._search_targets):
+            self._search_targets[index][2].setFocus(Qt.OtherFocusReason)
+        self.search_results.hide()
+
+    def retranslate(self):
+        self.section_nav.retranslate()
+        self.search.setPlaceholderText(tr('Einstellungen durchsuchen …'))
 
     def set_hud_enabled(self, enabled):
         callback = getattr(self.window, 'set_mini_hud_enabled', None)
