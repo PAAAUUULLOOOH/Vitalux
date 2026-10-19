@@ -7,7 +7,7 @@ from PySide6.QtGui import QColor, QIntValidator
 from PySide6.QtWidgets import (QColorDialog, QFrame, QGridLayout, QHBoxLayout, QInputDialog, QLabel, QLineEdit, QListWidget, QSizePolicy, QVBoxLayout, QWidget)
 from .ui_locale import QCheckBox, QComboBox, QDialog, QFileDialog, QListWidgetItem, QMessageBox, QPushButton
 
-from . import __version__, settings, theme, motion, backdrops, user_background, wallpaper_accents, renderer, eco
+from . import __version__, settings, theme, motion, backdrops, user_background, wallpaper_accents, renderer, eco, i18n
 from .pages import Page
 from .sensors import fmt_bytes, fmt_rate, system_static
 from .widgets import Card, KeyValue, Meter, label
@@ -514,6 +514,21 @@ class PreferencesPage(Page):
         self.restore_button.setObjectName('ghostBtn')
         self.restore_button.clicked.connect(self.restore_defaults)
         restore_row.addWidget(self.restore_button)
+        general_card = Card('Sprache & Allgemein')
+        language_row = QHBoxLayout()
+        language_row.addWidget(label('Sprache', 'strong'))
+        self.language_combo = QComboBox()
+        self.language_combo.addItem('Deutsch', 'de')
+        self.language_combo.addItem('English', 'en')
+        self.language_combo.setCurrentIndex(max(0, self.language_combo.findData(i18n.lang())))
+        self.language_combo.currentIndexChanged.connect(self.change_language)
+        language_row.addWidget(self.language_combo)
+        language_row.addStretch()
+        general_card.body.addLayout(language_row)
+        general_card.body.addWidget(label('Sprache und allgemeines Verhalten. '
+                                          'Die meisten Änderungen werden sofort übernommen.',
+                                          'muted', wrap=True))
+        self.section_nav.add('general', general_card)
         self.section_nav.add_layout('general', restore_row)
         self._refresh_restore_button()
         self._search_targets = [
@@ -529,6 +544,7 @@ class PreferencesPage(Page):
             ('monitoring', 'Aktualisierungsintervall Live Monitoring', self.interval),
             ('monitoring', 'Warnungen Grenzwerte CPU GPU Temperatur RAM Laufwerk', self.alert_toggle),
             ('energy', 'Ultra Eco Ressourcenschonung Neustarten', self.eco_toggle),
+            ('general', 'Sprache Deutsch Englisch Language', self.language_combo),
             ('general', 'Standardwerte wiederherstellen Zurücksetzen', self.restore_button),
             ('render', 'Grafik Rendering Backend Qt Raster CPU OpenGL Wayland Vulkan X11', self.render_combo),
         ]
@@ -561,6 +577,18 @@ class PreferencesPage(Page):
     def retranslate(self):
         self.section_nav.retranslate()
         self.search.setPlaceholderText(tr('Einstellungen durchsuchen …'))
+        self.language_combo.blockSignals(True)
+        self.language_combo.setCurrentIndex(self.language_combo.findData(i18n.lang()))
+        self.language_combo.blockSignals(False)
+
+    def change_language(self, *_):
+        code = self.language_combo.currentData()
+        if code in ('de', 'en'):
+            handler = getattr(self.window, 'set_language', None)
+            if callable(handler):
+                handler(code)
+            else:
+                i18n.set_lang(code)
 
     def set_hud_enabled(self, enabled):
         callback = getattr(self.window, 'set_mini_hud_enabled', None)
