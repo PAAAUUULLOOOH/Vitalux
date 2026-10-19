@@ -36,6 +36,8 @@ app.processEvents()
 assert 'Diagnostic Center' in [name for name,page in w.pages]
 assert len(w.pages)==12
 assert w.render_backend_active=='software'
+assert not hasattr(w, '_tray_preview')
+assert not hasattr(w, 'lab')
 assert theme.mode()=='glass'
 assert w.pages[8][0]=='System'
 assert next(p for n,p in w.pages if n=='Einstellungen').__class__.__name__=='PreferencesPage'
@@ -51,10 +53,8 @@ assert not any(x.text()=='Diagnose & Berichte' for x in pref.findChildren(__impo
 assert pref.hud_size.count()==3
 assert pref.hud_opacity.findData(50) >= 0
 assert not hasattr(pref, 'language_combo')
-assert len(cent.findChildren(__import__('vitalux.widgets',fromlist=['Card']).Card)) == 1
-assert not hasattr(cent.lab_panel, 'hardware_group')
-assert not hasattr(cent.lab_panel, 'timeline_group')
-assert not hasattr(cent.lab_panel, 'compare_group')
+assert len(cent.findChildren(__import__('vitalux.widgets',fromlist=['Card']).Card)) == 3
+assert cent.lab_panel is None
 assert not any('Erweiterte Grafikoptionen' in c.text() for c in pref.findChildren(__import__('PySide6.QtWidgets',fromlist=['QPushButton']).QPushButton))
 w.set_mini_hud_enabled(True)
 app.processEvents()

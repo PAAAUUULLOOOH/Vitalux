@@ -23,12 +23,12 @@ class _SearchIcon(QToolButton):
         painter.setRenderHint(QPainter.Antialiasing, True)
         c = QColor(theme.MUTED)
         c.setAlpha(176)
-        p = QPen(c, 1.75)
+        p = QPen(c, 1.6)
         p.setCapStyle(Qt.RoundCap)
         painter.setPen(p)
         painter.setBrush(Qt.NoBrush)
-        painter.drawEllipse(QRectF(8, 7, 12, 12))
-        painter.drawLine(QPointF(18, 18), QPointF(25, 25))
+        painter.drawEllipse(QRectF(10, 9, 9, 9))
+        painter.drawLine(QPointF(18, 18), QPointF(23, 23))
         painter.end()
 
 
@@ -36,7 +36,7 @@ class FloatingSettingsSearch(QWidget):
     """Theme-aware centered search. It never participates in page scrolling."""
 
     COLLAPSED = 0
-    DEFAULT_WIDTH = 110
+    DEFAULT_WIDTH = 235
     MAX_WIDTH = 500
 
     def __init__(self, field, suggestions, parent=None):
@@ -70,7 +70,7 @@ class FloatingSettingsSearch(QWidget):
         self.hide()
 
         self.animation = QVariantAnimation(self)
-        self.animation.setDuration(280)
+        self.animation.setDuration(340)
         self.animation.setEasingCurve(QEasingCurve.InOutCubic)
         self.animation.valueChanged.connect(self._on_frame)
         self.animation.finished.connect(self._finished)
@@ -161,6 +161,9 @@ class FloatingSettingsSearch(QWidget):
         self.animation.stop()
         self.animation.setStartValue(self._width)
         self.animation.setEndValue(int(end))
+        # Retarget from the current visible width without snapping back.
+        distance = abs(int(end) - self._width)
+        self.animation.setDuration(max(190, min(370, round(distance * 1.25))))
         if int(end) == self._width:
             self._finished()
         else:
@@ -178,8 +181,12 @@ class FloatingSettingsSearch(QWidget):
                 self.home_icon.show()
 
     def _wanted_width(self):
-        advance = self.field.fontMetrics().horizontalAdvance(self.field.text())
-        return min(self.MAX_WIDTH, max(self.DEFAULT_WIDTH, 105 + advance))
+        metrics = self.field.fontMetrics()
+        # Never truncate the complete placeholder to 'Einstellung…' on opening.
+        # Reserve room for the caret, borders and the search field's padding.
+        placeholder = metrics.horizontalAdvance(self.field.placeholderText()) + 36
+        typed = metrics.horizontalAdvance(self.field.text()) + 56
+        return min(self.MAX_WIDTH, max(self.DEFAULT_WIDTH, placeholder, typed))
 
     def _typed(self, _):
         self.idle_timer.start()

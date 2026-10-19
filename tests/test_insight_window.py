@@ -43,25 +43,17 @@ def check_window():
             app.processEvents()
             data = collect()
             window.on_sample(data)
-            # Analysis lives in Diagnostic Center, not on the GPU page.
+            # The obsolete Insights panels and Focus window are no longer exposed.
             window._switch_page(7)
             center = window.pages[7][1]
-            center.select_area('performance')
+            center.select_area('hardware', 'pcie')
             app.processEvents()
-            panel = center.lab_panel
-            assert panel is not None
-            assert len(window.lab.history) == 1
-            assert panel.last_sample is data
-            window.open_focus_window()
-            app.processEvents()
-            assert window._focus_window.isVisible()
+            assert center.lab_panel is None
+            assert not hasattr(window, 'lab')
+            assert not hasattr(window, 'open_focus_window')
+            assert center.tabs.tabText(center.tabs.currentIndex()) == 'PCIe Guardian'
             window.set_language("en")
-            assert "Focus mode" in window._focus_window.windowTitle()
-            assert not hasattr(panel, "compare_group")
-            assert panel.detector.title() == "Performance Detective"
             window.set_language("de")
-            assert "Fokusmodus" in window._focus_window.windowTitle()
-            window._focus_window.close()
             window._force_quit = True
             assert window.close()
             app.processEvents()

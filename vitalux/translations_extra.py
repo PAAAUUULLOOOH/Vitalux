@@ -967,4 +967,18 @@ EN_MORE.update({
         'Diagnostic Center combines the full check, individual diagnostics, performance insights and reports in one large card. The event timeline, interactive hardware map and before-after comparison have been removed.',
     'Das MiniHUD lässt sich in den Einstellungen oder über die Systemleiste aktivieren. Drei Größen, Sensoren, 50–100 % Deckkraft und Vordergrundmodus sind wählbar.':
         'Enable MiniHUD in Settings or from the tray. Choose one of three layouts, metrics, 50–100% opacity and a topmost window mode.',
+    'Gezielte Hardware- und Systemprüfungen findest du im Diagnostic Center.':
+        'Find targeted hardware and system checks in Diagnostic Center.',
+    'Das Diagnostic Center trennt Systemanalyse, Einzelprüfungen und lokale Berichte in übersichtliche Kacheln.':
+        'Diagnostic Center separates system analysis, individual tests and local reports into clear cards.',
+    'Das MiniHUD lässt sich in den Einstellungen oder über die Systemleiste aktivieren. Drei Größen, Sensoren und 50–100 % Deckkraft sind wählbar.':
+        'Enable MiniHUD in Settings or from the tray. Choose three layouts, metrics and 50–100% opacity.',
+    'Das Diagnostic Center bietet unabhängige Prüfkacheln und den lokalen Export von Diagnoseberichten.':
+        'Diagnostic Center provides separate test cards and local diagnostic report export.',
+    'Das MiniHUD ist ein eigenständiges Desktop-Fenster. KDE/Wayland legt die Fensterreihenfolge fest; über Vollbildspielen ist keine Einblendung garantiert. Ultra Eco reduziert auch die HUD-Darstellung.':
+        'MiniHUD is a separate desktop window. KDE/Wayland controls window stacking; display over fullscreen games is not guaranteed. Ultra Eco also simplifies the HUD.',
+    'Einzeldiagnosen · gezielte Prüfungen': 'Individual diagnostics · targeted tests',
+    'Wähle eine Prüfung aus; die Ergebnisse erscheinen direkt darunter.':
+        'Choose a diagnostic test; results appear below.',
+
 })

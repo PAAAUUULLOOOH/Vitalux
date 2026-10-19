@@ -169,13 +169,13 @@ class PreferencesPage(Page):
         'interval': 1, 'close_to_tray': True, 'alerts_enabled': False,
         'cpu_temp': 90, 'gpu_temp': 90, 'ram_usage': 90, 'disk_usage': 95,
         'mini_hud_enabled': False, 'mini_hud_layout': 'compact',
-        'mini_hud_opacity': 90, 'mini_hud_on_top': True,
+        'mini_hud_opacity': 90,
         'mini_hud_metrics': list(DEFAULT_KEYS),
     }
     SECTION_DEFAULTS = {
         'appearance': ('theme', 'accent', 'motion', 'background_style', 'custom_background_fit'),
         'hud': ('mini_hud_enabled', 'mini_hud_layout', 'mini_hud_opacity',
-                'mini_hud_on_top', 'mini_hud_metrics'),
+                'mini_hud_metrics'),
         'alerts': ('alerts_enabled', 'cpu_temp', 'gpu_temp', 'ram_usage', 'disk_usage'),
     }
 
@@ -490,10 +490,6 @@ class PreferencesPage(Page):
         size_row.addWidget(self.hud_size)
         size_row.addStretch()
         hud.body.addLayout(size_row)
-        self.hud_top = QCheckBox('Im Vordergrund halten (soweit vom Fenstermanager unterstützt)')
-        self.hud_top.setChecked(bool(settings.get('mini_hud_on_top', True)))
-        self.hud_top.toggled.connect(lambda on: self.change_hud_option('mini_hud_on_top', on))
-        hud.body.addWidget(self.hud_top)
         opacity_row = QHBoxLayout()
         opacity_row.addWidget(label('Deckkraft', 'strong'))
         self.hud_opacity = QComboBox()
@@ -516,7 +512,7 @@ class PreferencesPage(Page):
             metric_grid.addWidget(box, idx // 2, idx % 2)
             self.hud_metrics[key] = box
         hud.body.addLayout(metric_grid)
-        hud.body.addWidget(label('Wayland: Das HUD ist ein normales Qt-Fenster. Im echten Spielvollbild ist '                                 'die Einblendung nicht garantiert. Ultra Eco reduziert auch die HUD-Darstellung.',
+        hud.body.addWidget(label('Das MiniHUD ist ein eigenständiges Desktop-Fenster. KDE/Wayland legt die Fensterreihenfolge fest; über Vollbildspielen ist keine Einblendung garantiert. Ultra Eco reduziert auch die HUD-Darstellung.',
                                  'muted', wrap=True))
         self._add_section_reset(hud.body, 'hud', 'MiniHUD zurücksetzen')
         self._settings_cards['hud'].append(hud)
@@ -572,7 +568,6 @@ class PreferencesPage(Page):
             ('hud', 'MiniHUD Anzeigen Einblenden', self.hud_on),
             ('hud', 'MiniHUD Größe Layout', self.hud_size),
             ('hud', 'MiniHUD Deckkraft Transparenz', self.hud_opacity),
-            ('hud', 'MiniHUD im Vordergrund', self.hud_top),
             ('hud', 'Systemleiste Tray Schließen', self.close_to_tray),
             ('monitoring', 'Aktualisierungsintervall Live Monitoring', self.interval),
             ('monitoring', 'Warnungen Grenzwerte CPU GPU Temperatur RAM Laufwerk', self.alert_toggle),
@@ -703,7 +698,6 @@ class PreferencesPage(Page):
             self.refresh_appearance()
         elif section == 'hud':
             self._check_without_signal(self.hud_on, False)
-            self._check_without_signal(self.hud_top, True)
             self._select_without_signal(self.hud_size, 'compact')
             self._select_without_signal(self.hud_opacity, 90)
             for key, box in self.hud_metrics.items():
@@ -926,7 +920,6 @@ class PreferencesPage(Page):
             box.setValue(self.DEFAULTS[key])
             box.blockSignals(False)
         self._check_without_signal(self.hud_on, False)
-        self._check_without_signal(self.hud_top, True)
         self._select_without_signal(self.hud_size, 'compact')
         self._select_without_signal(self.hud_opacity, 90)
         for key, box in self.hud_metrics.items():

@@ -13,7 +13,6 @@ from .widgets import Card, label
 from . import diagnostic_engine as engine, settings, theme
 from .i18n import tr
 from .pages import Page
-from .insight_ui import MonitoringLabPanel
 
 
 class DiagnosticWorker(QThread):
@@ -49,8 +48,6 @@ class DiagnosticCenter(Page):
         ('quick', 'Schnellcheck'),
         ('hardware', 'Hardwarediagnose'),
         ('system', 'Systemdiagnose'),
-        ('performance', 'Performance & Insights'),
-        ('history', 'Verlauf & Überwachung'),
         ('reports', 'Berichte'),
     )
     GROUPS = {
@@ -60,7 +57,7 @@ class DiagnosticCenter(Page):
         'compare': 'history', 'blackbox': 'history',
     }
 
-    def __init__(self, lab=None, open_focus=None):
+    def __init__(self):
         super().__init__('Diagnostic Center', 'Systemanalyse, Diagnose und lokale Berichte')
         self.last_sample = None
         self.worker = None
@@ -84,7 +81,7 @@ class DiagnosticCenter(Page):
         intro.body.addLayout(action_row)
         self.status = label('Bereit · bisher keine Diagnose gestartet', 'muted', wrap=True)
         intro.body.addWidget(self.status)
-        # All results and tools join this one continuous card.
+        # Each functional area is a separate card in the vertical page.
 
         # Unified destination for every export previously in Settings.
         reports_card = QWidget()
@@ -168,36 +165,30 @@ class DiagnosticCenter(Page):
             self.texts[key] = readout
             self.section_tabs[key] = self.tabs.count()
             self.tabs.addTab(pane, tr(title))
-        intro.body.addWidget(self.tabs)
-        self.lab_panel = None
-        if lab is not None and open_focus is not None:
-            self.lab_panel = MonitoringLabPanel(lab, open_focus)
-            self.lab_panel.show_advanced.setChecked(True)
-            self.lab_panel.show_advanced.hide()
-            self.lab_panel._advanced_visible(True)
-            intro.body.addWidget(self.lab_panel)
-        intro.body.addWidget(reports_card)
-        intro.body.addWidget(label(
+        self.content.addWidget(intro)
+        diagnostics_card = Card('Einzeldiagnosen · gezielte Prüfungen')
+        diagnostics_card.body.addWidget(label('Wähle eine Prüfung aus; die Ergebnisse erscheinen direkt darunter.', 'muted', wrap=True))
+        diagnostics_card.body.addWidget(self.tabs)
+        self.content.addWidget(diagnostics_card)
+        self.lab_panel = None  # Compatibility: no optional Insights panel        reports_section = Card('Diagnose & Berichte')
+        reports_section.body.addWidget(reports_card)
+        reports_section.body.addWidget(label(
             'Berichte werden nur auf ausdrücklichen Klick gespeichert. '
             'Journal- und Prozessdaten können persönliche Informationen enthalten.',
             'muted', wrap=True))
-        intro.body.addWidget(label(
+        reports_section.body.addWidget(label(
             'Der externe Ping wird nur über die separate Schaltfläche gestartet.',
             'muted', wrap=True))
-        self.content.addWidget(intro)
+        self.content.addWidget(reports_section)
 
     def refresh(self, data, _hist):
         self.last_sample = data
-        if self.lab_panel is not None and self.isVisible():
-            self.lab_panel.refresh(data)
 
     def select_area(self, category, section=None):
         """Open an existing diagnostic tab without extra category buttons."""
         if section in self.section_tabs:
             self.tabs.setCurrentIndex(self.section_tabs[section])
             self.last_section = section
-        elif category in ('performance', 'history') and self.lab_panel is not None and self.last_sample:
-            self.lab_panel.refresh(self.last_sample)
 
     def start_check(self, section):
         if self.worker is not None and self.worker.isRunning():
@@ -322,5 +313,3 @@ class DiagnosticCenter(Page):
             position = self.report_source.findData(key)
             if position >= 0:
                 self.report_source.setItemText(position, tr(title))
-        if self.lab_panel is not None:
-            self.lab_panel.retranslate()

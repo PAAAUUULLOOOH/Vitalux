@@ -72,7 +72,9 @@ def main():
             assert pref.content.indexOf(pref._settings_cards['render'][0]) > pref.content.indexOf(pref._settings_cards['energy'][0])
             assert not hasattr(gpu, 'diagnostic_shortcut')
             assert not hasattr(gpu, 'lab_panel') or gpu.lab_panel is None
-            assert diag.lab_panel is not None
+            assert diag.lab_panel is None
+            assert pref.hud_on is not None
+            assert not hasattr(pref, 'hud_top')
             assert set(diag.texts) == {key for key,_,_ in diag.SECTIONS}
             assert diag.tabs.count() == len(diag.SECTIONS)
             assert diag.report_source.count() == len(diag.SECTIONS)
@@ -97,7 +99,7 @@ def main():
             assert pref.background_performance_note.isHidden()
             diag.select_area('hardware', 'pcie')
             assert diag.tabs.tabText(diag.tabs.currentIndex()) == 'PCIe Guardian'
-            assert diag.lab_panel.focus.text()
+            assert diag.lab_panel is None
             assert diag.worker is None
             print('Original sidebar, searchable settings, diagnostic tabs and GPU safe: OK')
         finally:

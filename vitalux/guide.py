@@ -46,7 +46,7 @@ SLIDES = [
         "Hier erfährst du, wie stark deine Hardware gerade beansprucht wird.",
         "Beim Prozessor findest du Auslastung, Takt und verfügbare Temperaturen.",
         "Der Grafik-Reiter vereint Auslastung, Videospeicher, Taktraten, Spannung und Temperatur. Technische Details und Live-Diagramme sind aufklappbar.",
-        "Unter Diagnostic Center → Performance & Insights findest du Performance Detective, Gaming-Aufzeichnungen und Vergleichsmessungen.",
+        "Gezielte Hardware- und Systemprüfungen findest du im Diagnostic Center.",
         "hardware",
     ),
     (
@@ -83,9 +83,9 @@ SLIDES = [
     ),
     (
         "Diagnostic Center und MiniHUD",
-        "Das Diagnostic Center vereint Gesamtcheck, einzelne Diagnoseprüfungen, Performance & Insights und Berichte in einer großen Kachel. Ereignis-Timeline, interaktive Hardwaregrafik und Vorher-Nachher-Vergleich sind entfernt.",
+        "Das Diagnostic Center trennt Systemanalyse, Einzelprüfungen und lokale Berichte in übersichtliche Kacheln.",
         "Im Diagnostic Center kannst du System- und Fehlerberichte lokal als TXT/JSON exportieren. Externer Ping nur per Klick.",
-        "Das MiniHUD lässt sich in den Einstellungen oder über die Systemleiste aktivieren. Drei Größen, Sensoren, 50–100 % Deckkraft und Vordergrundmodus sind wählbar.",
+        "Das MiniHUD lässt sich in den Einstellungen oder über die Systemleiste aktivieren. Drei Größen, Sensoren und 50–100 % Deckkraft sind wählbar.",
         "Das MiniHUD nutzt bestehende Messwerte. Wayland/KWin entscheidet, ob es über einem Vollbildspiel sichtbar bleibt.",
         "diagnostics",
     ),
@@ -94,7 +94,7 @@ SLIDES = [
         "Vitalux prüft automatisch beim Start und etwa alle sechs Stunden auf Updates.",
         "Bei einem Update glüht das Vitalux-Logo in der App und im Tray. Der Updates-Reiter pulsiert; eine Tray-Nachricht nennt die Version.",
         "Vor dem Aktualisieren siehst du die Neuerungen; erst „Jetzt aktualisieren“ startet den Download.",
-        "Unter Diagnostic Center findest du Performance & Insights mit Hardwareübersicht und Fokusmodus sowie unter Verlauf & Überwachung die Ereignis-Timeline.",
+        "Das Diagnostic Center bietet unabhängige Prüfkacheln und den lokalen Export von Diagnoseberichten.",
         "updates",
     ),
 ]
@@ -375,25 +375,11 @@ class GuideDialog(QDialog):
 
 
 def offer_first_start_guide(parent):
-    """Ask once (or again when postponed), never force the tutorial on users."""
+    """Automatically show the guide once on the first successful launch."""
     from . import settings
     if settings.get("guide_intro_choice") in ("completed", "never"):
         return
-    question = QMessageBox(parent)
-    question.setWindowTitle(tr("Vitalux kennenlernen"))
-    question.setIcon(QMessageBox.Information)
-    question.setText(tr("Möchtest du eine kurze Einführung in Vitalux sehen?"))
-    question.setInformativeText(tr(
-        "Die Anleitung erklärt die Oberfläche mit Pfeilen und Beispielen. "
-        "Du kannst sie später jederzeit unter Info öffnen."))
-    launch = question.addButton(tr("Anleitung öffnen"), QMessageBox.AcceptRole)
-    question.addButton(tr("Später"), QMessageBox.RejectRole)
-    never = question.addButton(tr("Nicht mehr anzeigen"), QMessageBox.DestructiveRole)
-    question.exec()
-    clicked = question.clickedButton()
-    if clicked is launch:
-        settings.set("guide_intro_choice", "completed")
-        GuideDialog(parent).exec()
-    elif clicked is never:
-        settings.set("guide_intro_choice", "never")
-    # 'Later' leaves the preference unset, allowing the question next launch.
+    dialog = GuideDialog(parent)
+    dialog.exec()
+    # Persist only after the required first-run guide was actually opened.
+    settings.set("guide_intro_choice", "completed")

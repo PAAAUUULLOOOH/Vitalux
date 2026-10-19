@@ -1,5 +1,12 @@
 # Vitalux – Changes
 
+## [v0.9.5.4] - 2026-10-19
+- Improved search animation and full placeholder visibility; smaller magnifier.
+- Removed unreliable MiniHUD always-on-top option under KDE/Wayland.
+- Diagnostic Center now separates system analysis, individual tests and reports into cards; removed Insights UI.
+- Removed redundant tray preview; tooltip remains.
+- First-run guide opens automatically. Improved initial X11 rendering setup and shortened README.
+
 ## [v0.9.5.3] - 2026-10-19
 - Improved system score with CPU/GPU loads and temperatures, RAM, swap, VRAM, all mounted volume capacities, and actual SMART warnings; missing SMART data is never treated as healthy.
 - Made settings search genuinely animated and text-responsive, with a smaller subtle magnifier that stays at the top of the page when closed.

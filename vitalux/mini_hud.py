@@ -22,9 +22,9 @@ class MiniHUD(QWidget):
     hidden_by_user = Signal()
 
     def __init__(self):
+        # Wayland/KWin does not guarantee permanent stacking above other
+        # windows, especially fullscreen apps. Do not expose a broken toggle.
         flags = Qt.Tool | Qt.FramelessWindowHint
-        if settings.get('mini_hud_on_top', True):
-            flags |= Qt.WindowStaysOnTopHint
         super().__init__(None, flags)
         self.setWindowTitle('Vitalux · MiniHUD')
         self.setObjectName('vitaluxMiniHUD')
@@ -128,7 +128,6 @@ class MiniHUD(QWidget):
         self.setMinimumSize(180, 60)
         self.setMaximumSize(440, 550)
         self.setFixedSize(290 if mode == 'minimal' else 325, 44 + rows * (65 if mode == 'extended' else 52))
-        self.setWindowFlag(Qt.WindowStaysOnTopHint, bool(settings.get('mini_hud_on_top', True)))
         # Wayland may ignore setWindowOpacity() entirely. Paint the HUD surfaces
         # with real alpha instead; text stays solid/readable at 50%.
         opacity = 1.0 if eco.enabled() else max(0.5, min(1.0, float(settings.get('mini_hud_opacity', 90)) / 100))

@@ -35,132 +35,39 @@
 
 ## Vitalux auf einen Blick
 
-Vitalux vereint Systemüberwachung, Live-Diagramme, Datenträgeranalyse und eine anpassbare Oberfläche in einer **eigenständigen Linux-Desktopanwendung mit Qt/PySide6**. Die Benutzeroberfläche läuft nativ unter **Wayland und X11**; ein Browser oder Webserver ist nicht erforderlich.
+Vitalux ist ein **nativer Linux-Systemmonitor** mit PySide6 für **Wayland und X11**, ohne Browser oder Webserver.
 
-| Bereich | Funktionsumfang |
+| Bereich | Was du findest |
 | --- | --- |
-| **Übersicht** | Live-Dashboard, Systemzustand, CPU-/GPU-/RAM-Auslastung, Laufwerke, Netzwerk und Systemlaufzeit |
-| **Prozessor** | Kerne, Threads, aktuelle Auslastung und Taktraten, verfügbare Temperaturen und Verläufe |
-| **Grafik** | GPU-/VRAM-Telemetrie, Taktraten, Sensoren und PCIe-/Treiberinformationen |
-| **Arbeitsspeicher** | Auslastung, belegter und verfügbarer Speicher sowie zeitlicher Verlauf |
-| **Netzwerk** | Schnittstellen, IP-Adressen, aktuelle Up-/Downloadraten und Datenverkehr |
-| **Laufwerke** | Datenträger, Partitionen, Belegung, SMART-Diagnose und fio-Benchmarks |
-| **Sensoren** | Verfügbare Temperaturen, Lüfterdrehzahlen, Spannungen, Leistungsaufnahme und Frequenzen |
-| **Diagnostic Center** | Einheitliche Diagnosekachel für Gesamtcheck, Einzelanalysen, Performance & Insights und Berichte |
-| **System** | Distribution, Kernel, Desktop-/Sitzungsinformationen, Mesa, Treiber und Hardwaredetails |
-| **Einstellungen** | Scrollbare Optionen mit schwebender Glass-Suche, gezieltem Zurücksetzen und Grafik-Rendering |
-| **Updates** | Offizielle GitHub-Releases prüfen, Neuerungen anzeigen und Aktualisierungen bestätigen |
-| **Info** | Versionsinformationen, Mitwirkende und integrierte, bebilderte Anleitung |
+| **Übersicht** | Live-Kacheln und Systemzustand auf Basis von Auslastung, Speicherbelegung und verfügbaren SMART-Befunden |
+| **Hardware** | CPU, GPU, RAM, Laufwerke, Netzwerke, Sensoren, Kernel, Mesa und Treiberdaten |
+| **Laufwerke** | SMART und einstellbare fio-Benchmarks mit MB/s, IOPS und Latenz |
+| **Diagnostic Center** | Drei getrennte Kacheln: Systemanalyse, Einzelprüfungen und Diagnoseberichte |
+| **Einstellungen** | Glass-Suche, Farbdesigns, Warnwerte, MiniHUD, Ultra Eco und Grafik-Backends |
+| **Info** | Versionsdetails und bebilderte Anleitung, die beim allerersten Start automatisch geöffnet wird |
 
-### Dashboard und Live-Anzeigen
+### Darstellung und Bedienung
 
-Das Dashboard vereint Systemzustand, CPU-, GPU-, RAM- und Laufwerksauslastung, Netzwerkverkehr, Live-Diagramme und Systemlaufzeit.
+**Standard: Glass mit Vitalux-Blau.** Weitere Farbschemata: Black Glass, Black Glass Gold, Holographic, Dark, Light und Minimalistisch. Es gibt integrierte Hintergründe, eigene Bilder, Akzentfarben sowie einstellbare Animationen. Black Glass Gold verwendet einen festen Goldakzent.
 
-- **Layout bearbeiten:** Kacheln verschieben, ein- oder ausblenden; Änderungen speichern, verwerfen oder zurücksetzen. Größere Lücken werden bei unverändertem **14-px-Kachelabstand** aufgefüllt.
-- **Systemzustand:** Messwertbasierte Statusbewertung mit Hinweisen – keine umfassende Hardwarediagnose.
-- **Systemdetails:** Distribution, Kernel, KDE, Mesa, Treiber, Architektur und Sitzung.
-- **Bedienung:** Einklappbare linke Navigation, anpassbares Abfrageintervall (Standard: eine Sekunde) und Unterstützung unterschiedlicher Fenstergrößen und Skalierungen.
+Die **Einstellungssuche** öffnet und schließt weich animiert, zeigt auch den vollständigen Platzhaltertext und erweitert sich für längere Eingaben. Die geschlossene Lupe bleibt am Anfang der Seite, die geöffnete Suche bleibt beim Scrollen sichtbar.
 
-### CPU, GPU und Systemdiagnose
+Das **MiniHUD** ist ein separat verschiebbares Qt-Fenster mit drei Größen, auswählbaren Messwerten und **50–100 % Deckkraft**. Einen garantierten Vordergrundmodus gibt es nicht: KDE/KWin und andere Wayland-Compositoren bestimmen die Fensterreihenfolge.
 
-**CPU:** Auslastung, Kerne und Threads, Taktraten, verfügbare Temperaturen, Verlaufsdiagramme sowie Min-/Max-Werte der laufenden Sitzung.
+### Diagnostik und Sicherheit
 
-**GPU:** Auslastung, VRAM, Taktraten, Temperatur/Hotspot, Spannung, Leistung, Lüfter, PCIe, Mesa, Treiber und Sensorquelle – jeweils soweit verfügbar.
+Im **Diagnostic Center** sind die vollständige Systemanalyse, gezielte Einzelprüfungen und lokale TXT-/JSON-Berichte deutlich voneinander getrennt. Netzwerk-Ping und Blackbox-Aufzeichnung werden nur nach ausdrücklicher Aktivierung gestartet. Eine eigenständige Insights-Oberfläche und die überflüssige Tray-Live-Vorschau werden nicht mehr angeboten; die Systeminformationen bleiben über die Tray-Tooltip-Anzeige erreichbar.
 
-**Sensoren:** Eigener Reiter für auslesbare Temperaturen, Lüfterdrehzahlen, Spannungen, Leistung und Frequenzen.
+SMART-Werte hängen von Geräten und Berechtigungen ab. **fio-Schreibbenchmarks** erzeugen temporäre Daten, beanspruchen Laufwerke und sollten nur bei ausreichend freiem Speicher und vorhandener Datensicherung genutzt werden.
 
-**Diagnose:** Systemberichte als **TXT/JSON**, Fehlerdiagnosen als **JSON** unter **Diagnostic Center → Diagnose & Berichte**. Exporte erfolgen nur auf ausdrücklichen Wunsch und können private Systemdaten enthalten.
+### Grafik-Backends
 
-### Vitalux Insights
-
-Im Reiter **Grafik** stehen zusätzlich ausklappbare Analysewerkzeuge zur Verfügung:
-
-| Werkzeug | Beschreibung |
-| --- | --- |
-| **Performance Detective** | Messwertbasierte Hinweise auf auffällige Auslastungen und mögliche Engpässe; unterscheidet Beobachtungen von Vermutungen |
-| **Performance-Verlauf** | Gemeinsame grafische Betrachtung von CPU-, GPU- und VRAM-Auslastung |
-| **Gaming Session Analyzer** | Gaming-Sitzungen manuell aufzeichnen, auswerten und bei Bedarf als JSON speichern |
-| **MangoHud-Import** | Lokal ausgewählte CSV-Dateien einlesen und enthaltene FPS-Daten auswerten; ungefähre 1%-Lows nur aus geeigneten Daten |
-| **Vorher-/Nachher-Vergleich** | Zwei Messzeitpunkte speichern und deren vorhandene Werte gegenüberstellen |
-| **Ereignis-Timeline** | Aufgezeichnete Ereignisse mit zugehörigen Telemetriedaten nachvollziehen |
-| **Interaktive Hardware-Übersicht** | Schematische Komponentenansicht mit anklickbaren Hardwareinformationen |
-| **Fokusmodus** | Eigenständiges, verschiebbares Live-Fenster, beispielsweise für einen zweiten Monitor; Messgrößen auswählbar |
-
-> [!IMPORTANT]
-> Vitalux Insights ist eine **experimentelle, lesende Analysefunktion**. Einzelschnappschüsse sind kein reproduzierbarer Benchmark. FPS und 1%-Lows werden nicht aus gewöhnlicher GPU-Auslastung errechnet. **Vitalux nimmt keine GPU-Übertaktung vor und steuert keine eigenen Lüfterkurven.**
-
-## Laufwerke, SMART und Benchmarks
-
-Der Reiter **Laufwerke** zeigt Datenträger, Partitionen, Dateisysteme, Kapazitäten und verfügbare SMART-Werte. Beim ersten Öffnen wird eine SMART-Prüfung im Hintergrund angestoßen; sie kann manuell wiederholt werden.
-
-Der integrierte **fio-Benchmark** bietet **Standard-, Peak-, Real-World- und benutzerdefinierte Tests** mit sequenziellen bzw. zufälligen Zugriffen. Testgröße, Durchläufe, Messdauer, Blockgröße, Queue Depth und Threads sind einstellbar. Die Auswertung zeigt **MB/s, IOPS und Latenz**, soweit vom Test geliefert.
-
-> [!CAUTION]
-> **Schreibbenchmarks belasten den Datenträger und erzeugen temporäre Testdateien.** Vitalux schreibt nicht direkt auf bestehende Dateien oder rohe Blockgeräte. Vor dem Start Laufwerk, freien Speicherplatz und Datensicherung prüfen.
-
-## Design und Personalisierung
-
-**Standarddesign: Glass mit Vitalux Blau.** Vitalux bietet sieben eigenständige Farbschemata:
-
-| Farbschema | Charakter |
-| --- | --- |
-| **Glass** · Standard | Halbtransparente Glasflächen, weiche Hintergrundunschärfe und Reflexionen |
-| **Black Glass** | Tiefschwarze Glasoptik; eigene Akzentfarben gesperrt, Standardakzente weiterhin verfügbar |
-| **Black Glass Gold** | Schwarzes Premiumdesign mit **festem hellgoldenem Akzent** für Logo, Symbole, Anzeigen und Diagramme |
-| **Holographic** | Technisches, vollständig deckendes HUD-Design mit leuchtenden Konturen – **kein Glasmodus** |
-| **Dark** | Kontrastreiche dunkle Oberflächen ohne Glasunschärfe |
-| **Light** | Helle Oberfläche mit gut lesbaren Karten und Bedienelementen |
-| **Minimalistisch** | Reduzierte Darstellung mit geringeren dekorativen Effekten |
-
-**Black Glass Gold** nutzt auch für RAM-Diagramme, Datenreihen-Beschriftungen und Auslastungsringe durchgängig Goldtöne und hat einen festen Goldakzent. **Black Glass** lässt Standardakzente zu, graut eigene Farben und deren Aktionen aus; gespeicherte Farben bleiben erhalten.
-
-### Hintergründe, Farben und Animationen
-
-- **14 integrierte Hintergründe:** darunter Glass, Black Glass, Morgenlicht, Prisma, Tiefsee, Mitternacht, Samt, Graphit und Adaptiv. Nur **Funkeln** ist animiert.
-- **Eigene Bilder:** PNG, JPEG, WebP und BMP; Füllen, Einpassen, Strecken, Zentrieren oder Kacheln.
-- **Akzente:** Acht geschützte Standardfarben, Distributionsfarbe und eigene, bearbeitbare/löschbare Farben. **Hintergrundfarbe automatisch** funktioniert nur bei ausgewähltem eigenen Bild.
-- **Animationen:** Flüssig, Reduziert oder Aus.
-
-Eigene Bilder und Farben erweitern die Auswahl; nicht jede Kombination ist in allen Farbschemata verfügbar. Hochauflösende eigene Hintergründe können zusammen mit Glaseffekten zusätzliche Ressourcen benötigen. Vitalux blendet dafür einen dezenten Hinweis ein.
-
-### Ultra Eco · maximale Ressourcenschonung
-
-Unter **Einstellungen → Leistung & Energie** aktiviert ein **Ein-/Aus-Schalter** den besonders schlichten Ultra-Eco-Skin: **kein Glas, keine Schatten, keine Hintergrundbilder und keine Animationen**. Vitalux verwendet CPU-Raster-Rendering und misst alle **10 Sekunden**. Ist das Fenster verborgen, entfallen zusätzliche Dashboard-Neuzeichnungen. **Beim Ausschalten werden das vorherige Design, Akzentfarben, Hintergrund, Animationen, Messintervall und Renderer wiederhergestellt**; bei einem Wechsel zwischen GPU und CPU übernimmt der separate Button **Jetzt neu starten** den Wechsel auf Wunsch. Hardwareüberwachung und Warnungen bleiben aktiv, reagieren aber nur mit dem langsameren Messintervall.
-
-### Grafik-Rendering
-
-Fünf Render-Profile stehen als letzter Bereich auf der **scrollbaren Einstellungsseite** zur Auswahl:
-
-| Modus | Funktion |
-| --- | --- |
-| **CPU · Standard** | Bewährtes Qt-Widgets-/Raster-Rendering |
-| **OpenGL · GPU-Test** | Experimentelle OpenGL-Hintergrundausgabe |
-| **Wayland · OpenGL** | Experimenteller Wayland-Modus mit OpenGL |
-| **Wayland · Vulkan** | Experimenteller Wayland-Modus mit Vulkan |
-| **X11 · OpenGL** | Experimenteller X11-Modus mit OpenGL |
-
-**Qt Quick ist kein eigener Menüpunkt mehr**; die Wayland-/X11-GPU-Modi nutzen intern weiterhin dessen Scene Graph. Die normalen Widgets und Diagramme bleiben CPU-gezeichnet. Über **Jetzt neu starten** wird gewechselt. GPU-Starttests laufen unsichtbar; bei erkannten Fehlern fällt Vitalux auf CPU zurück. Geschwindigkeit und Kompatibilität hängen von Treibern und Desktop ab.
-
-**CPU-Notfallstart der ZIP-Version:**
+In **Einstellungen → Grafik-Rendering** lassen sich **CPU (Standard)**, OpenGL (GPU-Test), Wayland/OpenGL, Wayland/Vulkan und X11/OpenGL auswählen. GPU-Modi sind experimentell und besitzen eine separate Startprüfung mit CPU-Rückfall. Ein Wechsel wird mit **Jetzt neu starten** übernommen. Ultra Eco reduziert die Oberfläche auf schlichte CPU-Darstellung und verlängert das Messintervall auf zehn Sekunden.
 
 ```bash
+# Notfallstart der portablen ZIP mit CPU-Rendering
 VITALUX_RENDERER=software ./run.sh
 ```
-
-## Warnungen, Systemleiste und Bedienung
-
-- **Hardware-Warnungen:** Individuelle Grenzwerte für CPU-/GPU-Temperatur, RAM und Systemlaufwerk. Neue Meldungen erst nach zwischenzeitlicher Entwarnung.
-- **Systemleiste:** Weiterlaufen beim Schließen, Tooltip und kompakte Live-Vorschau. Updates können durch pulsierendes Logo, hervorgehobenen Reiter und Benachrichtigung angezeigt werden.
-- **Sprachen:** **Deutsch / Englisch** ohne Neustart, einschließlich lokalisiertem Changelog.
-- **Anleitung:** Unter **Info → Anleitung öffnen** steht eine bebilderte, zehnteilige Einführung bereit; beim Erststart optional.
-
-### Diagnostic Center und MiniHUD
-
-**Diagnostic Center** vereint Gesamtcheck, Einzeldiagnosen, Performance & Insights und lokale Berichte in einer durchgehenden Kachel. Vorhandene Diagnose-Register bleiben nutzbar; Ping und Blackbox starten nur nach ausdrücklicher Aktivierung.
-
-**MiniHUD** bietet drei Größen, auswählbare Sensoren und transparente Oberflächen mit 50–100 % Deckkraft. Aktivierung über **Einstellungen → MiniHUD & Fenster** oder die Systemleiste. Unter Wayland entscheidet der Compositor über die Darstellung über Vollbildspielen.
-
-**Einstellungen** sind auf einer Seite angeordnet: Darstellung, MiniHUD & Fenster, Monitoring & Warnungen, Leistung & Energie und abschließend Grafik-Rendering. Ein Klick auf die mittige Lupe öffnet die leicht transparente Suche mit Sofortvorschlägen. Sie bleibt nur geöffnet beim Scrollen oben sichtbar, wächst mit dem Text und schließt nach fünf Sekunden Inaktivität oder Klick außerhalb sanft; die geschlossene Lupe gehört wieder zum Seitenanfang. Nur geänderte Darstellung-, MiniHUD- und Warnungsbereiche bieten einen eigenen Reset; der Gesamtrücksetzknopf steht am Seitenende. DE/EN ist ausschließlich unten in der Seitenleiste erreichbar. Unter Grafik-Rendering gibt es getrennte Aktionen zum Leeren des Vitalux-Caches und – nach Rückfrage – zum Löschen persönlicher Einstellungen. Der Systemzustand bezieht mehr Last- und Speicherwerte, alle Laufwerksfüllstände und vorhandene echte SMART-Befunde ein; Benchmarks sind ohne Vergleichsbasis kein Gesundheitsnachweis.
 
 ## Download
 
