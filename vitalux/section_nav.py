@@ -13,7 +13,7 @@ class CurrentSizeStack(QStackedWidget):
         return page.sizeHint() if page is not None else QSize(480, 300)
 
     def minimumSizeHint(self):
-        return QSize(220, 160)  # Fits Vitalux's 800px-wide minimum window
+        return QSize(340, 160)
 
     def setCurrentIndex(self, index):
         super().setCurrentIndex(index)
