@@ -1,5 +1,14 @@
 # Vitalux – Änderungen
 
+## [v0.9.4.9] - 2026-10-19
+- Seitenleiste logisch gruppiert; Einstellungen, Updates und Info bleiben unten fest erreichbar.
+- Einstellungen in sechs Unterbereiche geteilt: Darstellung, MiniHUD & Fenster, Monitoring & Warnungen, Leistung & Energie, Allgemein und zuletzt Grafik-Rendering.
+- Suche in den Einstellungen mit direkten Treffern ergänzt; zuletzt geöffnete Unterkategorie wird gespeichert.
+- Diagnostic Center in sechs Themenbereiche gegliedert. Vitalux Insights mit Gaming Session Analyzer und Vergleichsmessungen aus Grafik dorthin verschoben; Berichte separat erreichbar.
+- GPU- und Netzwerkansichten verlinken passende Diagnosewerkzeuge. Laufwerke, Netzwerk und Sensoren sinnvoller sortiert.
+- Anleitung, README und Übersetzungen angepasst; bestehende Designs, Überwachung und Benutzeroptionen bleiben erhalten.
+
+
 ## [v0.9.4.8] - 2026-10-19
 - Diagnostic Center als neuer Reiter: lokale Hardware-, Treiber- und Fehleranalysen inklusive optionaler Blackbox.
 - Bestehende Systemberichte und Fehlerdiagnose aus den Einstellungen in das Diagnostic Center verschoben.
