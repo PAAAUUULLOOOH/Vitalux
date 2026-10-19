@@ -121,7 +121,7 @@ Der integrierte **fio-Benchmark** bietet **Standard-, Peak-, Real-World- und ben
 - **Akzente:** Acht geschützte Standardfarben, Distributionsfarbe und eigene, bearbeitbare/löschbare Farben. **Hintergrundfarbe automatisch** funktioniert nur bei ausgewähltem eigenen Bild.
 - **Animationen:** Flüssig, Reduziert oder Aus.
 
-Eigene Bilder und Farben erweitern die Auswahl; nicht jede Kombination ist in allen Farbschemata verfügbar.
+Eigene Bilder und Farben erweitern die Auswahl; nicht jede Kombination ist in allen Farbschemata verfügbar. Hochauflösende eigene Hintergründe können zusammen mit Glaseffekten zusätzliche Ressourcen benötigen. Vitalux blendet dafür einen dezenten Hinweis ein.
 
 ### Ultra Eco · maximale Ressourcenschonung
 
@@ -129,12 +129,11 @@ Unter **Einstellungen → Leistung & Energie** aktiviert ein **Ein-/Aus-Schalter
 
 ### Grafik-Rendering
 
-Sechs wählbare Profile unter **Einstellungen → Grafik-Rendering** (kompakte Kategorienavigation):
+Fünf Render-Profile stehen als letzter Bereich auf der **scrollbaren Einstellungsseite** zur Auswahl:
 
 | Modus | Funktion |
 | --- | --- |
 | **CPU · Standard** | Bewährtes Qt-Widgets-/Raster-Rendering |
-| **Qt Raster · Energiesparmodus** | CPU-Rendering mit Hintergrundcache; „Funkeln“ wird seltener neu gezeichnet |
 | **OpenGL · GPU-Test** | Experimentelle OpenGL-Hintergrundausgabe |
 | **Wayland · OpenGL** | Experimenteller Wayland-Modus mit OpenGL |
 | **Wayland · Vulkan** | Experimenteller Wayland-Modus mit Vulkan |
@@ -153,13 +152,15 @@ VITALUX_RENDERER=software ./run.sh
 - **Hardware-Warnungen:** Individuelle Grenzwerte für CPU-/GPU-Temperatur, RAM und Systemlaufwerk. Neue Meldungen erst nach zwischenzeitlicher Entwarnung.
 - **Systemleiste:** Weiterlaufen beim Schließen, Tooltip und kompakte Live-Vorschau. Updates können durch pulsierendes Logo, hervorgehobenen Reiter und Benachrichtigung angezeigt werden.
 - **Sprachen:** **Deutsch / Englisch** ohne Neustart, einschließlich lokalisiertem Changelog.
-- **Anleitung:** Unter **Info → Anleitung öffnen** steht eine bebilderte, neunteilige Einführung bereit; beim Erststart optional.
+- **Anleitung:** Unter **Info → Anleitung öffnen** steht eine bebilderte, zehnteilige Einführung bereit; beim Erststart optional.
 
 ### Diagnostic Center und MiniHUD
 
-**Diagnostic Center** ist jetzt in Schnellcheck, Hardwarediagnose, Systemdiagnose, Performance & Insights, Verlauf & Überwachung und Berichte gegliedert. Vitalux Insights (inklusive Gaming Session Analyzer) liegt nicht mehr im GPU-Reiter. Diagnose- und Fehlerberichte bleiben lokal; Ping und Blackbox sind nur nach ausdrücklicher Aktivierung möglich.
+**Diagnostic Center** vereint Hardware- und Systemprüfungen, Performance & Insights, Verlauf und lokale Berichte auf einer Seite. Vorhandene Diagnose-Register bleiben nutzbar; Ping und Blackbox starten nur nach ausdrücklicher Aktivierung.
 
-**MiniHUD** bleibt ein frei positionierbares Live-Fenster mit drei Größen und wählbaren Sensoren. Aktivierung unter **Einstellungen → MiniHUD & Fenster** oder über das Tray-Menü; keine zusätzliche Sensorabfrage. Unter Wayland hängt die Darstellung über Vollbildspielen vom Compositor ab. **Grafik-Rendering** steht als letzter Einstellungsbereich. Die Seitenleiste hält Einstellungen, Updates und Info unten erreichbar. Eine Einstellungssuche und direkte Links von GPU/Netzwerk zur Diagnose verkürzen die Navigation.
+**MiniHUD** bietet drei Größen, auswählbare Sensoren und Deckkraft. Aktivierung über **Einstellungen → MiniHUD & Fenster** oder die Systemleiste. Unter Wayland entscheidet der Compositor über die Darstellung über Vollbildspielen.
+
+**Einstellungen** sind auf einer Seite angeordnet: Darstellung, Allgemein, MiniHUD & Fenster, Monitoring & Warnungen, Leistung & Energie und abschließend Grafik-Rendering. Die Suche am Seitenanfang führt direkt zu den Einstellungen; die klassische Seitenleiste bleibt ohne zusätzliche Gruppenknöpfe.
 
 ## Download
 
