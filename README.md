@@ -111,7 +111,7 @@ For an AppImage that cannot mount through FUSE, extract its payload instead:
 VITALUX_RENDERER=software bash squashfs-root/AppRun --portable
 ```
 
-GPU modes are experimental. Select them under **Settings → Advanced settings** and use **Restart now** to apply a change.
+GPU modes are experimental. Select them under **Settings → Advanced settings** and use **Restart now** to apply a change. Closing or restarting waits for active sensor reads to finish safely.
 </details>
 
 <details>

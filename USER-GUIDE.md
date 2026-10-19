@@ -28,7 +28,7 @@ Click the magnifier in Settings. Search grows with the text, adapts to the avail
 
 **Advanced settings** is the final card at the bottom of Settings. Click its header to expand or collapse it smoothly. It contains graphics rendering and **Maintenance** (clear Vitalux caches or reset personal preferences). Searching for these controls opens the card automatically.
 
-CPU rendering is the stable default. Experimental OpenGL, X11/OpenGL, Wayland/OpenGL and Wayland/Vulkan profiles depend on working drivers and a suitable session. Apply a renderer change with **Restart now**. A failed startup falls back to CPU. X11 and Wayland select a window-system plugin; they do not change your desktop login session.
+CPU rendering is the stable default. Experimental OpenGL, X11/OpenGL, Wayland/OpenGL and Wayland/Vulkan profiles depend on working drivers and a suitable session. Apply a renderer change with **Restart now**. Closing and restarting retain the window until active sensor reads finish safely. A failed startup falls back to CPU. X11 and Wayland select a window-system plugin; they do not change your desktop login session.
 
 MiniHUD reuses the main sensor stream and offers three layouts and adjustable opacity. Your desktop compositor determines its placement relative to fullscreen applications.
 

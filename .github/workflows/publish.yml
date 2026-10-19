@@ -98,7 +98,7 @@ jobs:
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/check-ui-audio.py --output "$GITHUB_WORKSPACE/build/audio-checks"
-      - name: Check all five native renderers and startup windows
+      - name: Check all five native renderers, startup windows and clean exit
         id: graphics
         run: |
           set -euo pipefail

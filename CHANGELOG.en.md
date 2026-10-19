@@ -6,6 +6,7 @@
 - Settings search glides to recognized matches and stays visible for five seconds after selection before closing smoothly.
 - Graphics renderers and Maintenance now live in the animated Advanced settings section at the bottom; matching searches expand it automatically.
 - Theme previews gently enlarge on hover, and a clearer slow satin reflection moves across the original wordmark.
+- Closing or restarting safely waits for slow sensor reads; Ultra Eco's sampling pause no longer delays exit.
 
 ## [v0.9.5.5] - 2026-10-19
 - Choose ten themes through native preview tiles; Obsidian Gold, Champagne Glass and Aurora Gold are now included in the stable release.

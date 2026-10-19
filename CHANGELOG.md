@@ -6,6 +6,7 @@
 - Die Einstellungssuche gleitet zu erkannten Treffern und bleibt nach der Auswahl fünf Sekunden sichtbar, bevor sie sanft schließt.
 - Grafik-Renderer und Wartung liegen ganz unten im animiert auf- und zuklappbaren Bereich „Erweiterte Einstellungen“, den die Suche automatisch öffnet.
 - Designvorschauen vergrößern sich beim Darüberfahren sanft; der originale Schriftzug erhält einen deutlicheren, langsam wandernden Lichtreflex.
+- Beenden und Neustarten warten sicher auf langsame Sensorabfragen; die Messpause von Ultra Eco verzögert das Schließen nicht mehr.
 
 ## [v0.9.5.5] - 2026-10-19
 - Zehn Farbschemata über native Vorschaukacheln auswählen; Obsidian Gold, Champagne Glass und Aurora Gold sind jetzt im stabilen Release enthalten.

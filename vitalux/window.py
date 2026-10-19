@@ -1,5 +1,6 @@
 from collections import deque
 from pathlib import Path
+from threading import Event
 
 from PySide6.QtCore import Qt, QThread, QTimer, Signal, QVariantAnimation, QEasingCurve, QPoint, QRect, QEventLoop
 from PySide6.QtGui import QRegion, QAction
@@ -33,11 +34,18 @@ class Sampler(QThread):
         super().__init__(parent)
         self.interval = eco.interval()
         self._last_error = None
+        self._stopped = Event()
+
+    def stop(self):
+        self.requestInterruption()
+        self._stopped.set()
 
     def run(self):
         while not self.isInterruptionRequested():
             try:
-                self.sample.emit(sensors.collect())
+                data = sensors.collect()
+                if not self.isInterruptionRequested():
+                    self.sample.emit(data)
                 self._last_error = None
             except Exception as exc:
                 # Retain one timestamped, versioned traceback per distinct
@@ -46,7 +54,7 @@ class Sampler(QThread):
                 if error != self._last_error:
                     log_exception(type(exc), exc, exc.__traceback__)
                     self._last_error = error
-            self.msleep(max(1, self.interval) * 1000)
+            self._stopped.wait(max(1, self.interval))
 
 
 class MainWindow(QMainWindow):
@@ -83,6 +91,9 @@ class MainWindow(QMainWindow):
         self._sidebar_overlay = None
         self._alerts = AlertMonitor()
         self._force_quit = False
+        self._close_retry = QTimer(self)
+        self._close_retry.setSingleShot(True)
+        self._close_retry.timeout.connect(self.close)
         self.restart_requested = False
         self._update_notice_queued = False
         self._notified_update_version = str(settings.get('last_notified_update_version', ''))
@@ -911,7 +922,7 @@ class MainWindow(QMainWindow):
             return True
         self._tray_click_timer.stop()
         self._force_quit = True
-        if self.close():
+        if self.close() or self._close_retry.isActive():
             self.restart_requested = True
             return True
         # An active benchmark may refuse shutdown.
@@ -921,7 +932,7 @@ class MainWindow(QMainWindow):
     def quit_from_tray(self):
         self._tray_click_timer.stop()
         self._force_quit = True
-        if not self.close():
+        if not self.close() and not self._close_retry.isActive():
             # An active benchmark may refuse to close until its worker stops.
             self._force_quit = False
 
@@ -962,8 +973,15 @@ class MainWindow(QMainWindow):
                 event.ignore()
                 self._notify_diagnostic_busy()
                 return
-        self.sampler.requestInterruption()
-        self.sampler.wait(7000)
+        self.sampler.stop()
+        if not self.sampler.wait(7000):
+            # A slow sensor read may outlive the grace period. Keep its Qt
+            # owner alive and retry, rather than destroying a running thread.
+            event.ignore()
+            self._force_quit = True
+            self._close_retry.start(100)
+            return
+        self._close_retry.stop()
         self._tray_click_timer.stop()
         self._tray_glow.stop()
         self._mini_hud.hide()
