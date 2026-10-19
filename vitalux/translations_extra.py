@@ -912,3 +912,8 @@ EN_MORE.update({
     'Unter Diagnostic Center findest du Performance & Insights mit Hardwareübersicht und Fokusmodus sowie unter Verlauf & Überwachung die Ereignis-Timeline.':
         'Diagnostic Center hosts Performance & insights with hardware map and focus mode, while History & monitoring includes the event timeline.'
 })
+
+EN_MORE.update({
+    'Unter Einstellungen → Leistung & Energie schaltest du Ultra Eco ein oder aus: ein primitiver, flacher Skin ohne Effekte, CPU-Rendering und 10 Sekunden Messintervall. Die Anwendung zeichnet verborgen keine Diagramme neu. Mit Jetzt neu starten übernimmst du GPU-/CPU-Wechsel; vorherige Einstellungen bleiben erhalten. Grafik-Rendering bietet weiterhin CPU, Qt Raster und experimentelle GPU-Modi.':
+        'Under Settings → Performance & energy, switch Ultra Eco on or off to use a plain, effect-free skin with CPU rendering and ten-second polling. No hidden charts are redrawn. Restart now applies CPU/GPU changes while preserving your previous preferences. Graphics rendering still offers CPU, Qt Raster and experimental GPU modes.'
+})
