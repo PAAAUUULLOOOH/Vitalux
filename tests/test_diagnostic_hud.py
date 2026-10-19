@@ -1,5 +1,6 @@
 import os,sys,tempfile
 from pathlib import Path
+sys.path.insert(0, os.getcwd())  # CI launches this script from the staged runtime.
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 _tmp=tempfile.TemporaryDirectory(prefix='vitalux-diag-hud-')
 os.environ['XDG_CONFIG_HOME']=_tmp.name+'/config'
