@@ -1,5 +1,11 @@
 # Vitalux – Änderungen
 
+## [v0.9.5.2] - 2026-10-19
+- Mittige, schwebende Einstellungssuche mit sanfter Glass-Animation, dynamischer Breite und Sofortvorschlägen. Beim Scrollen bleibt sie sichtbar und schließt nach fünf Sekunden Inaktivität oder Klick außerhalb.
+- Darstellung, MiniHUD und Hardware-Warnungen lassen sich gezielt zurücksetzen; die Knöpfe erscheinen nur bei Abweichungen von den Standardwerten.
+- Gesamtrücksetzung bleibt am Ende aller Einstellungen, importierte Bilder und persönliche Dashboard-Layouts bleiben erhalten.
+- DE/EN-Umschalter unten in der Seitenleiste auch im kompakten Zustand erreichbar.
+
 ## [v0.9.5.1] - 2026-10-19
 - Die ursprüngliche, kompakte Seitenleiste ist zurück: alle Reiter ohne zusätzliche Gruppen und feste Untermenüs.
 - Einstellungen wieder auf einer scrollbaren Seite; Allgemein direkt nach Darstellung, Grafik-Rendering ganz unten.
