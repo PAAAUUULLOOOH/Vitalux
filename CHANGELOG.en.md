@@ -1,5 +1,14 @@
 # Vitalux – Changes
 
+## [v0.9.5.1] - 2026-10-19
+- Restored the original compact sidebar with all pages in one uninterrupted list.
+- Returned Settings to one scrollable page, with General directly after Appearance and Graphics rendering last.
+- Settings-only search scrolls to the exact option and highlights it briefly.
+- Diagnostic Center combines checks, performance insights, history and reports without extra category navigation.
+- Removed Qt Raster from renderer choices; saved legacy settings safely migrate to standard CPU rendering.
+- Added a subtle warning for custom wallpaper resource use and avoided redundant preview rendering.
+- Preserved dashboard layouts, existing themes and GPU startup safety checks.
+
 ## [v0.9.5.0] - 2026-10-19
 - Kept Settings and Diagnostic Center cards at their natural height instead of leaving oversized empty spaces.
 - Made settings search results and diagnostic report selection more compact.
