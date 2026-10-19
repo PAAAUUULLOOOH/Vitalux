@@ -408,7 +408,7 @@ class PreferencesPage(Page):
         hud.body.addWidget(label('Separates Desktop-Fenster mit den vorhandenen Vitalux-Messwerten. '                                 'Auch bei verborgenem Hauptfenster nutzbar; keine zusätzliche Sensorabfrage.', 'muted', wrap=True))
         self.hud_on = QCheckBox('MiniHUD anzeigen')
         self.hud_on.setChecked(bool(settings.get('mini_hud_enabled', False)))
-        self.hud_on.toggled.connect(self.window.set_mini_hud_enabled)
+        self.hud_on.toggled.connect(self.set_hud_enabled)
         hud.body.addWidget(self.hud_on)
         size_row = QHBoxLayout()
         size_row.addWidget(label('Größe', 'strong'))
@@ -493,6 +493,14 @@ class PreferencesPage(Page):
         self.content.addLayout(restore_row)
         self._refresh_restore_button()
 
+    def set_hud_enabled(self, enabled):
+        callback = getattr(self.window, 'set_mini_hud_enabled', None)
+        if callable(callback):
+            callback(enabled)
+        else:
+            # Standalone settings pages may not have a MiniHUD window.
+            settings.set('mini_hud_enabled', bool(enabled))
+
     def sync_hud_controls(self):
         if not hasattr(self, 'hud_on'):
             return
@@ -505,7 +513,9 @@ class PreferencesPage(Page):
 
     def change_hud_option(self, key, value):
         settings.set(key, value)
-        self.window.refresh_mini_hud()
+        refresh = getattr(self.window, 'refresh_mini_hud', None)
+        if callable(refresh):
+            refresh()
 
     def change_hud_metrics(self, *_):
         choices = [key for key, box in self.hud_metrics.items() if box.isChecked()]
