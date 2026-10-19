@@ -166,7 +166,6 @@ class MonitoringLabPanel(QWidget):
         self._advanced_visible(False)
         self.show_advanced.setChecked(False)
         self._update_session()
-        self._update_comparison()
 
     def retranslate(self):
         for group, title in (
