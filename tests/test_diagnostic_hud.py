@@ -49,6 +49,12 @@ assert hasattr(pref,'hud_metrics') and hasattr(pref,'render_combo')
 assert not hasattr(pref,'render_advanced_toggle')
 assert not any(x.text()=='Diagnose & Berichte' for x in pref.findChildren(__import__('PySide6.QtWidgets',fromlist=['QLabel']).QLabel))
 assert pref.hud_size.count()==3
+assert pref.hud_opacity.findData(50) >= 0
+assert not hasattr(pref, 'language_combo')
+assert len(cent.findChildren(__import__('vitalux.widgets',fromlist=['Card']).Card)) == 1
+assert not hasattr(cent.lab_panel, 'hardware_group')
+assert not hasattr(cent.lab_panel, 'timeline_group')
+assert not hasattr(cent.lab_panel, 'compare_group')
 assert not any('Erweiterte Grafikoptionen' in c.text() for c in pref.findChildren(__import__('PySide6.QtWidgets',fromlist=['QPushButton']).QPushButton))
 w.set_mini_hud_enabled(True)
 app.processEvents()
