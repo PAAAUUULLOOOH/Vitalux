@@ -84,7 +84,7 @@ def check():
             assert page.search_results.count() > 0
             floating.field.setText('grafikrendering backend wayland vulkan')
             app.processEvents()
-            QTest.qWait(330)
+            qwait(330)
             assert floating.width() > first_width
             assert abs((floating.x() + floating.width() / 2) - scroll.viewport().width() / 2) <= 2
 
@@ -99,13 +99,13 @@ def check():
             floating.field.setText('vulk')
             page.search_settings('vulk')
             page.choose_search_result(page.search_results.item(0))
-            QTest.qWait(330)
+            qwait(330)
             assert not floating.expanded and not floating.field.text()
             assert page.render_combo.hasFocus()
             floating.icon.click()
-            QTest.qWait(330)
+            qwait(330)
             floating.close_search()
-            QTest.qWait(330)
+            qwait(330)
             assert not floating.expanded and floating.width() == 40
 
             # Exactly three groups have their own reset and only when changed.
