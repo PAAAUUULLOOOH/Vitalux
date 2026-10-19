@@ -948,3 +948,23 @@ EN_MORE.update({
     'Alle Darstellungs-, MiniHUD-, Überwachungs- und Warnungseinstellungen zurücksetzen? Dashboard-Anordnung, importierte Bilder und Sprache bleiben erhalten.':
         'Reset appearance, MiniHUD, monitoring and alert settings? Dashboard layout, imported images and language will be preserved.',
 })
+
+# v0.9.5.3: native maintenance actions and updated built-in guide.
+EN_MORE.update({
+    'Wartung': 'Maintenance',
+    'Nur Vitalux-eigene Daten verwalten. Kein Eingriff in Linux-Systemcaches.':
+        'Manage Vitalux data only. Linux system caches are never touched.',
+    'Vitalux-Cache leeren': 'Clear Vitalux cache',
+    'Persönliche Einstellungen löschen …': 'Delete personal settings …',
+    'Temporärer Vitalux-Bild- und Farb-Cache geleert. Einstellungen und importierte Bilder bleiben erhalten.':
+        'Temporary Vitalux image and color cache cleared. Settings and imported wallpapers remain intact.',
+    'Wirklich alle gespeicherten Vitalux-Einstellungen löschen? Farbauswahl, Layouts, Warnwerte und Programmeinstellungen gehen verloren. Importierte Bilddateien bleiben auf dem Datenträger. Vitalux wird anschließend neu gestartet.':
+        'Delete all saved Vitalux preferences? Color selections, layouts, alert thresholds and app preferences will be lost. Imported image files remain on disk. Vitalux will restart afterwards.',
+    'SMART noch nicht geprüft': 'SMART not yet checked',
+    'Standardmäßig startet Vitalux mit Glass und Vitalux Blau. Die Lupe bleibt geschlossen am Seitenanfang und folgt geöffnet beim Scrollen. Die Suche wächst mit der Eingabe, schließt nach fünf Sekunden oder Klick außerhalb sanft. Geänderte Einstellungen lassen sich gezielt zurücksetzen.':
+        'Vitalux defaults to Glass with Vitalux Blue. The closed magnifier stays at the top of the page; when opened, search follows scrolling. Its width adapts to text and smoothly closes after five seconds or an outside click. Changed settings can be reset by section.',
+    'Das Diagnostic Center vereint Gesamtcheck, einzelne Diagnoseprüfungen, Performance & Insights und Berichte in einer großen Kachel. Ereignis-Timeline, interaktive Hardwaregrafik und Vorher-Nachher-Vergleich sind entfernt.':
+        'Diagnostic Center combines the full check, individual diagnostics, performance insights and reports in one large card. The event timeline, interactive hardware map and before-after comparison have been removed.',
+    'Das MiniHUD lässt sich in den Einstellungen oder über die Systemleiste aktivieren. Drei Größen, Sensoren, 50–100 % Deckkraft und Vordergrundmodus sind wählbar.':
+        'Enable MiniHUD in Settings or from the tray. Choose one of three layouts, metrics, 50–100% opacity and a topmost window mode.',
+})
