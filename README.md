@@ -129,7 +129,7 @@ Unter **Einstellungen → Leistung & Energie** aktiviert ein **Ein-/Aus-Schalter
 
 ### Grafik-Rendering
 
-Sechs wählbare Profile unter **Einstellungen → Grafik-Rendering**:
+Sechs wählbare Profile unter **Einstellungen → Grafik-Rendering** (kompakte Kategorienavigation):
 
 | Modus | Funktion |
 | --- | --- |
