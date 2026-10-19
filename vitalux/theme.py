@@ -326,20 +326,8 @@ def stylesheet():
         RESULT_BORDER=blend(base, pal['border'], .30),
         ACCENT_HOVER_BORDER=blend(base, pal['border'], .48 if light else .60),
     )
-    # Native Qt subcategory selectors adapt to every Vitalux color scheme.
+    # Settings-local search remains themed to the selected palette.
     qss += f"""
-    QPushButton#subCategoryButton {{
-        text-align: left; padding: 7px 11px;
-        background: {CARD}; color: {TEXT}; border: 1px solid {BORDER};
-        border-radius: 7px; font-weight: 650;
-    }}
-    QPushButton#subCategoryButton:checked {{
-        background: {blend(base, CARD, .29)};
-        color: {TEXT}; border: 2px solid {base};
-    }}
-    QPushButton#subCategoryButton:hover:!checked {{
-        background: {blend(base, CARD, .13)};
-    }}
     QLineEdit#settingsSearch {{
         background: {CARD}; color: {TEXT}; border: 1px solid {BORDER};
         padding: 9px 12px; border-radius: 7px;
