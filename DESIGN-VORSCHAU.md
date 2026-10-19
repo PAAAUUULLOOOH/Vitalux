@@ -12,8 +12,11 @@ auf diesen Branch nach bestandenen Tests ein herunterladbares Artifact namens
 Download-Link. Für GitHub-Actions-Downloads ist eine GitHub-Anmeldung erforderlich.
 Das Artifact enthält die vollständige Test-ZIP, Prüfsumme und Bildschirmaufnahmen.
 
-**Code → Download ZIP** liefert nur Quellcode. Für den direkten Programmstart
-bitte das vollständige Testpaket aus dem erfolgreichen Workflow verwenden.
+**Code → Download ZIP funktioniert ebenfalls:** Dieser experimentelle Branch
+enthält Python 3.12, Qt und die benötigten Bibliotheken als komprimiertes Paket
+unter **portable-runtime/**. `run.sh` und `Designs-testen.sh` entpacken es beim
+ersten Start automatisch. Dafür sind weder ein Download noch installiertes
+Python oder pip nötig. Das Entpacken benötigt etwa 250 MB zusätzlichen Platz.
 
 ## Start
 
@@ -21,7 +24,7 @@ Das ZIP vollständig in einen **eigenen, beschreibbaren Ordner** entpacken.
 Die installierte Version nicht überschreiben. Im entpackten Ordner starten:
 
 ```bash
-bash Designs-testen.sh
+bash run.sh
 ```
 
 Oder ein Design direkt auswählen:
@@ -55,7 +58,7 @@ bei geschlossener Testanwendung, um die Vorschau zurückzusetzen.
 
 Die automatische Release-Prüfung und Updateinstallation sind im Vorschau-Modus
 deaktiviert, damit ein Update die lokalen Designs nicht überschreibt. Im
-Test-ZIP führt auch run.sh zum getrennten Vorschau-Starter.
+experimentellen Branch führt auch run.sh zum getrennten Vorschau-Starter.
 
 ## Voraussetzungen und Umfang
 

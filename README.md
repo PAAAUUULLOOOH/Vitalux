@@ -1,3 +1,8 @@
+> **Experimentelle Glas-/Gold-Vorschau:** In diesem Branch funktioniert auch
+> **Code → Download ZIP**. ZIP vollständig entpacken und `bash run.sh` starten.
+> Python und Qt sind enthalten und werden beim ersten Start automatisch entpackt.
+> Einzelheiten: [DESIGN-VORSCHAU.md](DESIGN-VORSCHAU.md).
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/vitalux-readme-dark.svg">

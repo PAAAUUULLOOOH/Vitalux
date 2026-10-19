@@ -1,4 +1,5 @@
-# Runtime dependencies are downloaded during GitHub Actions builds; only source and assets are tracked.
+# Expanded runtimes are local; the experimental branch includes a compressed
+# portable-runtime/ payload so GitHub's source ZIP also works without Python.
 __pycache__/
 *.py[cod]
 .pytest_cache/

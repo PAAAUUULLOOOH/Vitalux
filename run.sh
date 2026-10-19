@@ -7,8 +7,8 @@ if ! cd -- "$(dirname -- "${BASH_SOURCE[0]}")"; then
   exit 1
 fi
 HERE="$PWD"
-# Locally packaged design builds always use their separate preview profile.
-if [ -f "$HERE/DESIGN-BUILD.json" ] && [ -f "$HERE/Designs-testen.sh" ]; then
+# Both source ZIPs with their bundled runtime and packaged builds use the preview.
+if { [ -f "$HERE/DESIGN-BUILD.json" ] || [ -f "$HERE/portable-runtime/vitalux-linux-x86_64.tar.xz" ]; } && [ -f "$HERE/Designs-testen.sh" ]; then
   exec bash "$HERE/Designs-testen.sh" "$@"
 fi
 STATE_DIR="${XDG_STATE_HOME:-${HOME}/.local/state}/vitalux"

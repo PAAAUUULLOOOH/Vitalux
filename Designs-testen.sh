@@ -7,6 +7,9 @@ export PATH="$VITALUX_PREVIEW_ROOT/bin:$PATH"
 export LD_LIBRARY_PATH="$VITALUX_PREVIEW_ROOT/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 unset PYTHONHOME PYTHONPATH PYTHONUSERBASE
 VITALUX_PREVIEW_PY="$VITALUX_PREVIEW_ROOT/runtime/bin/python3.12"
+if [ ! -f "$VITALUX_PREVIEW_PY" ] && [ -f "$VITALUX_PREVIEW_ROOT/portable-runtime/vitalux-linux-x86_64.tar.xz" ]; then
+  bash "$VITALUX_PREVIEW_ROOT/scripts/prepare-preview-runtime.sh"
+fi
 if [ -f "$VITALUX_PREVIEW_PY" ] && [ ! -x "$VITALUX_PREVIEW_PY" ]; then
   chmod u+x "$VITALUX_PREVIEW_PY"
 fi
