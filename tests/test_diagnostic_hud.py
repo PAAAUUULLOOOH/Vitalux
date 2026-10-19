@@ -36,6 +36,8 @@ app.processEvents()
 assert 'Diagnostic Center' in [name for name,page in w.pages]
 assert len(w.pages)==12
 assert w.render_backend_active=='software'
+    assert not hasattr(w, '_tray_preview')
+    assert not hasattr(w, 'lab')
 assert theme.mode()=='glass'
 assert w.pages[8][0]=='System'
 assert next(p for n,p in w.pages if n=='Einstellungen').__class__.__name__=='PreferencesPage'
