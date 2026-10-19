@@ -1,6 +1,6 @@
 # Vitalux – Änderungen
 
-## [v0.9.4.10] - 2026-10-19
+## [v0.9.5.0] - 2026-10-19
 - Unterkategorien in Einstellungen und Diagnostic Center optisch verdichtet: Karten bleiben in ihrer natürlichen Höhe statt große Leerflächen zu erzeugen.
 - Einstellungssuche zeigt Treffer kompakt; der Berichtsexport nutzt eine passend breite Auswahl.
 - Die in v0.9.4.9 eingeführte Neuordnung, Suche, Querverweise und sämtliche Funktionen bleiben unverändert erhalten.
