@@ -305,10 +305,6 @@ def create_ambient_scene():
             except (RuntimeError, OSError):
                 pass
         renderer.fallback()
-    if renderer.desired() == renderer.QT_RASTER:
-        scene = EfficientRasterScene()
-        scene.render_backend = renderer.QT_RASTER
-        return scene
     scene = AmbientScene()
     scene.render_backend = renderer.SOFTWARE
     return scene
