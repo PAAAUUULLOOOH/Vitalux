@@ -57,7 +57,8 @@ def check_window():
             assert window._focus_window.isVisible()
             window.set_language("en")
             assert "Focus mode" in window._focus_window.windowTitle()
-            assert panel.compare_group.title() == "Before / after comparison"
+            assert not hasattr(panel, "compare_group")
+            assert panel.detector.title() == "Performance Detective"
             window.set_language("de")
             assert "Fokusmodus" in window._focus_window.windowTitle()
             window._focus_window.close()
