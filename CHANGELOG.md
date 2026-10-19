@@ -1,5 +1,13 @@
 # Vitalux – Änderungen
 
+## [v0.9.5.3] - 2026-10-19
+- Systemzustand präziser: CPU-/GPU-Last, Temperaturen, RAM, Swap, VRAM, Belegung aller Laufwerke und tatsächliche SMART-Warnungen fließen ein. Fehlende SMART-Befunde werden nicht als gesund bewertet.
+- Einstellungssuche mit kleinerer dezenter Lupe, sichtbarer Animation und dynamischer Feldbreite. Geschlossen bleibt die Lupe am Seitenanfang; nur die geöffnete Suche schwebt beim Scrollen mit.
+- Originaler DE/EN-Umschalter unten in der Seitenleiste wiederhergestellt und Sprachauswahl aus den Einstellungen entfernt.
+- Diagnostic Center in einer großen Kachel gebündelt; Ereignis-Timeline, interaktive Hardwareansicht und Vorher-Nachher-Vergleich entfernt.
+- Grafik- und Ultra-Eco-Neustartanzeigen voneinander getrennt. Wartungsaktionen für Vitalux-Cache und persönliche Einstellungen ergänzt.
+- MiniHUD: echte transparente Oberflächen mit Deckkraft bis 50 % und verbesserte Anwendung der Vordergrundeinstellung.
+
 ## [v0.9.5.2] - 2026-10-19
 - Mittige, schwebende Einstellungssuche mit sanfter Glass-Animation, dynamischer Breite und Sofortvorschlägen. Beim Scrollen bleibt sie sichtbar und schließt nach fünf Sekunden Inaktivität oder Klick außerhalb.
 - Darstellung, MiniHUD und Hardware-Warnungen lassen sich gezielt zurücksetzen; die Knöpfe erscheinen nur bei Abweichungen von den Standardwerten.
