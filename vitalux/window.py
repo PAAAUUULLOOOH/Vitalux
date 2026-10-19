@@ -215,37 +215,19 @@ class MainWindow(QMainWindow):
         nav_scroll.viewport().setAutoFillBackground(False)
         nav_scroll.setWidget(nav_host)
 
-        # Hardware scrolls independently; Settings, Updates and Info stay reachable.
-        nav_footer = QWidget(side)
-        self.nav_footer = nav_footer
-        footer_lay = QVBoxLayout(nav_footer)
-        footer_lay.setContentsMargins(1, 2, 3, 2)
-        footer_lay.setSpacing(5)
-        self.nav_headers = []
-        footer_header = label('VITALUX', 'muted')
-        self.nav_headers.append(footer_header)
-        footer_lay.addWidget(footer_header)
         group = QButtonGroup(side)
         self.nav_buttons = []
         glyph = {"Übersicht":"◈", "Prozessor":"◉", "Grafik":"▣", "Arbeitsspeicher":"▤",
                  "Netzwerk":"◎", "Laufwerke":"▱", "Sensoren":"♨", "Diagnostic Center":"⌕", "System":"⚙",
                  "Einstellungen":"≡", "Updates":"↻", "Info":"ⓘ"}
         for i, (name, page) in enumerate(self.pages):
-            if name in ('Übersicht', 'Prozessor', 'Diagnostic Center'):
-                heading = {'Übersicht': 'STARTSEITE',
-                           'Prozessor': 'HARDWARE & SYSTEM',
-                           'Diagnostic Center': 'DIAGNOSE & ANALYSE'}[name]
-                header = label(heading, 'muted')
-                self.nav_headers.append(header)
-                nav_layout.addWidget(header)
             btn = NavButton(glyph.get(name, '•') + '    ' + tr(name))
             btn.setObjectName("navBtn")
             btn.setCheckable(True)
             btn.setCursor(Qt.PointingHandCursor)
             group.addButton(btn, i)
             self.nav_buttons.append(btn)
-            (footer_lay if name in ('Einstellungen', 'Updates', 'Info')
-             else nav_layout).addWidget(btn)
+            nav_layout.addWidget(btn)
             if name == "Updates":
                 self.update_btn = btn
             scroll = AdaptiveScrollArea()
@@ -262,7 +244,6 @@ class MainWindow(QMainWindow):
 
         nav_layout.addStretch(1)
         sl.addWidget(nav_scroll, 1)
-        sl.addWidget(nav_footer, 0)
         # Border-docked arrow replaces the full-width "Einklappen" button.
         self.collapse_button = SidebarToggle(side)
         self.collapse_button.clicked.connect(self.toggle_sidebar)
@@ -296,12 +277,6 @@ class MainWindow(QMainWindow):
         self._apply_sidebar_state()
         self._setup_sidebar_motion()
         self._sync_glow()
-        gpu = next(page for name, page in self.pages if name == 'Grafik')
-        gpu.diagnostic_shortcut.clicked.connect(
-            lambda: self.open_diagnostic_area('hardware', 'pcie'))
-        network = next(page for name, page in self.pages if name == 'Netzwerk')
-        network.diagnostic_shortcut.clicked.connect(
-            lambda: self.open_diagnostic_area('system', 'network'))
         # Apply the lightweight renderer even when Minimalistisch is saved
         # before the application launches, rather than only on theme switches.
         if theme.mode() == "minimal":
@@ -653,9 +628,6 @@ class MainWindow(QMainWindow):
     def _apply_sidebar_state(self):
         """Only for initial construction: no animation before the window shows."""
         compact = self._sidebar_collapsed
-        for header in getattr(self, 'nav_headers', ()):
-            header.setVisible(not compact)
-        self.nav_footer.setVisible(True)
         self.sidebar_layout.setContentsMargins(*( (8,55,8,12) if compact else (16,21,16,16) ))
         self.sidebar_brand.setVisible(not compact)
         self.lang_host.setVisible(not compact)
