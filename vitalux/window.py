@@ -255,13 +255,12 @@ class MainWindow(QMainWindow):
         self.lang_host = lang_host
         langs = QHBoxLayout(lang_host)
         langs.setContentsMargins(0, 0, 0, 0)
-        langs.setSpacing(3)
+        langs.setSpacing(6)
         langs.addStretch(1)
         for code in ("de", "en"):
             b = QPushButton(code.upper())
             b.setObjectName("langBtn")
             b.setCheckable(True)
-            b.setFixedSize(31, 28)
             b.setToolTip('Deutsch' if code == 'de' else 'English')
             b.setChecked(i18n.lang() == code)
             b.setCursor(Qt.PointingHandCursor)
@@ -634,8 +633,8 @@ class MainWindow(QMainWindow):
         compact = self._sidebar_collapsed
         self.sidebar_layout.setContentsMargins(*( (8,55,8,12) if compact else (16,21,16,16) ))
         self.sidebar_brand.setVisible(not compact)
-        # Keep DE/EN reachable even while the sidebar is collapsed.
-        self.lang_host.setVisible(True)
+        # Original full-size DE/EN buttons: never squeeze them into a 74px rail.
+        self.lang_host.setVisible(not compact)
         self.sidebar_version.setVisible(not compact)
         self.nav_host.layout().setContentsMargins(1,2,1 if compact else 3,2)
         for btn in self.nav_buttons:btn.set_compact(compact)
@@ -810,6 +809,9 @@ class MainWindow(QMainWindow):
         import time
         started = time.perf_counter()
         d["session_extrema"] = self._extrema.update(d)
+        disk_page = next((p for title, p in self.pages if title == 'Laufwerke'), None)
+        if disk_page is not None and disk_page._smart_loaded:
+            d['smart_reports'] = list(disk_page.smart_card._reports)
         self._blackbox.ingest(d)
         if self._mini_hud.isVisible():
             self._mini_hud.update_sample(d)
