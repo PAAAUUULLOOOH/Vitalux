@@ -66,6 +66,9 @@ def check_preferences(app):
             app.processEvents()
             assert page.accent_combo.width() == width_before
 
+            # Warning fields are now on their own searchable settings subpage.
+            page.section_nav.select('monitoring')
+            app.processEvents()
             warning_x = set()
             warning_gaps = []
             for name, spin in page.alert_boxes.items():
@@ -102,6 +105,8 @@ def check_preferences(app):
             threshold.setValue(90)
             assert threshold.number.text() == "90"
 
+            page.section_nav.select('appearance')
+            app.processEvents()
             # Backdrop controls persist independently of the color scheme and
             # preserve the readable dropdown styles.
             assert page.background_combo.count() == 15  # 14 presets + imported image option
@@ -161,6 +166,8 @@ def check_preferences(app):
                 assert "width: 25px; border: none; border-left: 1px solid" in css
                 for dropdown in (page.mode, page.accent_combo, page.interval,
                                  page.motion_combo, smart.selector):
+                    page.section_nav.select('monitoring' if dropdown is page.interval else 'appearance')
+                    app.processEvents()
                     assert dropdown.view().frameShape() == QFrame.NoFrame
                     assert dropdown.view().autoFillBackground()
                     assert dropdown.maxVisibleItems() == 10
@@ -180,6 +187,8 @@ def check_preferences(app):
             page.setStyleSheet(theme.stylesheet())
 
             # Normal Qt checkbox semantics remain intact with our painted tick.
+            page.section_nav.select('monitoring')
+            app.processEvents()
             standard = page.alert_toggle
             chart = ChartSeriesCheckBox("Netzwerkstatus", "#52d3ff")
             chart.show()
@@ -193,6 +202,8 @@ def check_preferences(app):
             assert not standard.grab().isNull()
             assert not chart.grab().isNull()
             chart.close()
+            page.section_nav.select('appearance')
+            app.processEvents()
 
             assert not page.remove_custom_accent_button.isVisible()
             assert not page.edit_custom_accent_button.isVisible()
@@ -277,6 +288,8 @@ def check_preferences(app):
             assert page2.remove_custom_accent_button.isVisible()
             assert page2.edit_custom_accent_button.isVisible()
             assert page2.accent_combo.currentText() == "Eigene Farbe"
+            page2.section_nav.select('appearance')
+            app.processEvents()
             page2.remove_custom_accent_button.click()
             assert settings.get("accent") == "auto"
 
