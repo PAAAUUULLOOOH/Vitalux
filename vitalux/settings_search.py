@@ -163,7 +163,7 @@ class FloatingSettingsSearch(QWidget):
         self.animation.setEndValue(int(end))
         # Retarget from the current visible width without snapping back.
         distance = abs(int(end) - self._width)
-        self.animation.setDuration(max(190, min(370, round(distance * 1.25))))
+        self.animation.setDuration(max(190, min(270, round(distance * 0.9))))
         if int(end) == self._width:
             self._finished()
         else:
