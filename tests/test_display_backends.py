@@ -23,15 +23,18 @@ def run():
             assert renderer.display_api(renderer.WAYLAND_VULKAN) == 'wayland'
             assert renderer.display_api(renderer.WAYLAND_OPENGL) == 'wayland'
             assert renderer.display_api(renderer.X11_OPENGL) == 'xcb'
-            assert len(renderer.CHOICES) == 6
-            assert len(set(renderer.CHOICES)) == 6
+            assert len(renderer.CHOICES) == 5
+            assert len(set(renderer.CHOICES)) == 5
             assert renderer.DESCRIPTIONS[renderer.SOFTWARE].startswith('CPU')
-            assert renderer.DESCRIPTIONS[renderer.QT_RASTER].startswith('Qt Raster')
+            assert renderer.QT_RASTER not in renderer.CHOICES
             assert renderer.LEGACY_QTQUICK not in renderer.CHOICES
             settings.set('render_backend', renderer.LEGACY_QTQUICK)
-            assert renderer.desired() == renderer.QT_RASTER
-            assert settings.get('render_backend') == renderer.QT_RASTER
-            assert renderer.prepare_start() == renderer.QT_RASTER
+            assert renderer.desired() == renderer.SOFTWARE
+            assert settings.get('render_backend') == renderer.SOFTWARE
+            assert renderer.prepare_start() == renderer.SOFTWARE
+            settings.set('render_backend', renderer.QT_RASTER)
+            assert renderer.desired() == renderer.SOFTWARE
+            assert settings.get('render_backend') == renderer.SOFTWARE
             assert not settings.get('gpu_boot_pending', False)
             settings.set('render_backend', renderer.SOFTWARE)
             for choice, platform, rhi in (
