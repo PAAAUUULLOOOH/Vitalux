@@ -55,7 +55,8 @@ def run():
             app.processEvents()
             assert pref.eco_toggle.isEnabled()
             assert not pref.eco_toggle.isChecked()
-            assert pref.eco_restart_button.isVisible(), 'Saved GPU profile is awaiting restart'
+            assert pref.render_restart_button.isVisible(), 'Saved GPU profile is awaiting renderer restart'
+            assert not pref.eco_restart_button.isVisible(), 'Renderer changes must not activate Ultra Eco restart'
             pref.eco_toggle.setChecked(True)
             app.processEvents()
             assert eco.enabled()
@@ -63,6 +64,7 @@ def run():
             assert eco.interval() == 10
             assert renderer.desired() == renderer.SOFTWARE
             assert pref.eco_restart_button.isVisible()
+            assert not pref.render_restart_button.isVisible()
             assert host.restarts == 0, 'Never restart automatically on toggle'
             assert renderer.prepare_start() == renderer.SOFTWARE
             assert motion.level() == 'off' and not motion.enabled()
@@ -96,9 +98,10 @@ def run():
             assert renderer.desired() == renderer.WAYLAND_VULKAN
             assert host.intervals[-1] == 1
             assert host.restarts == 0, 'Toggle never restarts without user action'
-            assert pref.eco_restart_button.isVisible()
+            assert pref.render_restart_button.isVisible()
+            assert not pref.eco_restart_button.isVisible()
             assert pref.render_combo.currentData() == renderer.WAYLAND_VULKAN
-            pref.eco_restart_button.click()
+            pref.render_restart_button.click()
             assert host.restarts == 1, 'Explicit restart applies remembered GPU backend'
             assert pref.mode.isEnabled()
             assert pref.background_combo.isEnabled()
