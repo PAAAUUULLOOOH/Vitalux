@@ -7,7 +7,7 @@ from PySide6.QtGui import QColor, QIntValidator
 from PySide6.QtWidgets import (QColorDialog, QFrame, QGridLayout, QHBoxLayout, QInputDialog, QLabel, QLineEdit, QListWidget, QScrollArea, QSizePolicy, QVBoxLayout, QWidget)
 from .ui_locale import QCheckBox, QComboBox, QDialog, QFileDialog, QListWidgetItem, QMessageBox, QPushButton
 
-from . import __version__, settings, theme, motion, backdrops, user_background, wallpaper_accents, renderer, eco, i18n
+from . import __version__, settings, theme, motion, backdrops, user_background, wallpaper_accents, renderer, eco, i18n, premium
 from .pages import Page
 from .sensors import fmt_bytes, fmt_rate, system_static
 from .widgets import Card, KeyValue, Meter, label
@@ -219,6 +219,8 @@ class PreferencesPage(Page):
         self.mode = QComboBox()
         for title, value in [('Dark', 'dark'), ('Light', 'light'), ('Glass', 'glass'), ('Black Glass', 'black_glass'), ('Black Glass Gold', 'black_glass_gold'), ('Holographic', 'holographic'), ('Minimalistisch', 'minimal')]:
             self.mode.addItem(title, value)
+        for key, pal in premium.COLLECTIONS.items():
+            self.mode.addItem(pal['title'], key)
         self.mode.setCurrentIndex(max(0, self.mode.findData(settings.get('theme', 'glass'))))
         self.mode.currentIndexChanged.connect(self.change_mode)
         r = QHBoxLayout()
@@ -226,6 +228,16 @@ class PreferencesPage(Page):
         r.addWidget(self.mode)
         r.addStretch(1)
         look.body.addLayout(r)
+        gallery = QHBoxLayout()
+        gallery.setSpacing(10)
+        self.design_tiles = []
+        for key in premium.KEYS:
+            tile = premium.DesignTile(key)
+            tile.setChecked(self.mode.currentData() == key)
+            tile.clicked.connect(lambda _checked=False, key=key: self.select_design(key))
+            self.design_tiles.append(tile)
+            gallery.addWidget(tile)
+        look.body.addLayout(gallery)
         self.theme_note = label('', 'muted', wrap=True)
         self.theme_note.setObjectName('themeDescription')
         look.body.addWidget(self.theme_note)
@@ -237,6 +249,9 @@ class PreferencesPage(Page):
             'black_glass_gold': 'Black Glass Gold · Tiefschwarze Glasflächen, festes helles Gold für Logo, Diagramme, Anzeigen, Icons und Rahmen. Akzentfarben sind deaktiviert.',
             'holographic': 'Holographic · Eigenständige, undurchsichtige Sci-Fi-HUD-Oberfläche mit leuchtenden Konturen, technischen Kacheln und Diagrammen – ohne Glas.',
             'minimal': 'Minimalistisch · Einfache Flächen ohne Glas, Schatten und dekorative Animationen. Spart Zeichenaufwand.',
+            'obsidian_gold': 'Obsidian Gold · Rauchglas, gebürstetes Gold und präzise Instrumentringe. Die äußeren Logo-Streifen drehen sich langsam.',
+            'champagne_glass': 'Champagne Glass · Kristallglas, warme Champagnertöne und seidenweiche Reflexionen mit goldenen Instrumenten.',
+            'aurora_gold': 'Aurora Gold · Irisierendes Glas mit Petrol- und Violettlicht, flüssigen Goldkanten und leuchtenden Instrumenten.',
         }
         self.theme_note.setText(tr(self.mode_notes.get(theme.mode(), self.mode_notes['dark'])))
         accent_row = QVBoxLayout()
@@ -954,7 +969,12 @@ class PreferencesPage(Page):
         self.background_combo.setEnabled(not ultra)
         self.custom_background_area.setEnabled(not ultra)
         self.motion_combo.setEnabled(not ultra)
-        self.accent_combo.setEnabled(not ultra and theme.mode() != 'black_glass_gold')
+        self.accent_combo.setEnabled(not ultra and theme.mode() != 'black_glass_gold'
+                                     and theme.mode() not in premium.KEYS)
+        for tile in self.design_tiles:
+            tile.setEnabled(not ultra)
+            tile.setChecked(theme.mode() == tile.key)
+            tile.update()
         self.interval.setEnabled(not ultra)
         self.render_combo.setEnabled(not ultra)
         # Show the remembered renderer after leaving Ultra Eco.
@@ -977,6 +997,13 @@ class PreferencesPage(Page):
         self.search_overlay.refresh_theme()
         self._refresh_restore_button()
 
+    def select_design(self, key):
+        if eco.enabled():
+            return
+        self.mode.setCurrentIndex(self.mode.findData(key))
+        for tile in self.design_tiles:
+            tile.setChecked(tile.key == key)
+
     def change_mode(self, *_):
         if eco.enabled():
             return
@@ -987,7 +1014,7 @@ class PreferencesPage(Page):
         self._refresh_restore_button()
 
     def change_accent(self, val):
-        if eco.enabled() or theme.mode() == 'black_glass_gold' or not self.accent_combo.isEnabled():
+        if eco.enabled() or theme.mode() == 'black_glass_gold' or theme.mode() in premium.KEYS or not self.accent_combo.isEnabled():
             return
         if theme.mode() == 'black_glass' and any(
                 item['color'] == val for item in self.custom_accents):
@@ -1035,8 +1062,8 @@ class PreferencesPage(Page):
         return result
 
     def _sync_custom_accent_actions(self):
-        gold = theme.mode() == 'black_glass_gold' or eco.enabled()
-        custom_locked = theme.mode() in ('black_glass', 'black_glass_gold') or eco.enabled()
+        gold = theme.mode() == 'black_glass_gold' or theme.mode() in premium.KEYS or eco.enabled()
+        custom_locked = theme.mode() in ('black_glass', 'black_glass_gold') or theme.mode() in premium.KEYS or eco.enabled()
         self.accent_combo.setEnabled(not gold)
         self.custom_accent_button.setEnabled(not custom_locked)
         self.edit_custom_accent_button.setEnabled(not custom_locked)

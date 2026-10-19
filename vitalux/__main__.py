@@ -52,6 +52,8 @@ def main():
     sensors.prime()
     manager = UpdateManager()
     win = MainWindow(info, logo, manager)
+    if os.environ.get('VITALUX_LOCAL_PREVIEW') == '1':
+        win.setWindowTitle('Vitalux · Design Preview · ' + theme.mode().replace('_', ' ').title())
     print(f"Vitalux: Fensterplattform={app.platformName()}, "
           f"Grafik-Backend={win.render_backend_active}, "
           f"Fenstergröße={win.width()}x{win.height()} logisch", flush=True)

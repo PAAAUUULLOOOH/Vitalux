@@ -1,11 +1,11 @@
 import math
 
 from PySide6.QtCore import QPointF, QRectF, QSize, Qt, QTimer, QVariantAnimation, QEasingCurve
-from PySide6.QtGui import QBrush, QColor, QConicalGradient, QFont, QLinearGradient, QPainter, QPainterPath, QPen, QPolygonF
+from PySide6.QtGui import QBrush, QColor, QConicalGradient, QFont, QFontMetrics, QLinearGradient, QPainter, QPainterPath, QPen, QPolygonF
 from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget, QGraphicsDropShadowEffect
 from .ui_locale import QLabel, QPushButton, QComboBox, QCheckBox, paint_check_indicator
 
-from . import theme, motion, holographic
+from . import theme, motion, holographic, premium
 from .glass import GlassSurface, paint_glass_body, rgba
 from .i18n import tr
 
@@ -226,6 +226,12 @@ class Gauge(QWidget):
             p.end()
             return
         p.setRenderHint(QPainter.Antialiasing)
+        if theme.mode() in premium.KEYS:
+            value = self._render_value
+            premium.paint_gauge(p, self, value, self.text,
+                                self._ring_color(value or 0))
+            p.end()
+            return
         side = min(self.width(), self.height())
         pen_w = max(9.0, side * 0.08)
         rect = QRectF((self.width() - side) / 2 + pen_w / 2, (self.height() - side) / 2 + pen_w / 2,
@@ -385,7 +391,9 @@ class HistoryGraph(QWidget):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
         outer = QRectF(self.rect()).adjusted(2, 2, -2, -2)
-        if theme.mode() == "holographic":
+        if theme.mode() in premium.KEYS:
+            premium.paint_panel(p, self, outer, compact=True)
+        elif theme.mode() == "holographic":
             holographic.paint_chart_frame(p, outer, theme.accent())
         elif theme.mode() == "black_glass_gold":
             p.setPen(QPen(QColor("#98743b"), 1.1))
@@ -542,6 +550,16 @@ class ChartSeriesCheckBox(QCheckBox):
         self.series_color = color
         self.update()
 
+    def sizeHint(self):
+        font = QFont(self.font())
+        font.setBold(True)
+        metrics = QFontMetrics(font)
+        return QSize(metrics.horizontalAdvance(self.text()) + 32,
+                     max(24, metrics.height()+6))
+
+    def minimumSizeHint(self):
+        return self.sizeHint()
+
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
@@ -608,6 +626,8 @@ class ChartPanel(QWidget):
         layout.addLayout(live)
 
     def _palette_color(self, idx):
+        if theme.mode() in premium.KEYS:
+            return premium.palette()['series'][idx % 4]
         if theme.mode() == 'black_glass_gold':
             return ("#ffe5a0", "#e0b55d", "#f4cf81", "#ba8739")[idx % 4]
         role = self.color_roles[idx]
@@ -832,7 +852,9 @@ class NavButton(_SoftHover, QPushButton):
         hovered = hover_amount > .01
         # Keep the selected card stable; idle hover lighting fades in with a
         # low-alpha brush, rather than forcing a glass redraw every tick.
-        if theme.mode() == 'holographic':
+        if theme.mode() in premium.KEYS:
+            premium.paint_nav(p, self, r, checked, hover_amount)
+        elif theme.mode() == 'holographic':
             holographic.paint_nav(p, r, theme.accent(), selected=checked, hovered=hovered)
         elif checked:
             paint_glass_body(p, self, r, 11, compact=True, active=True)

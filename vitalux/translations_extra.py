@@ -1,5 +1,10 @@
 """Extra English translations for dashboard, settings, sensors and disk tests."""
 EN_MORE = {
+    'Lokale Designvorschau · Updates sind deaktiviert.': 'Local design preview · Updates are disabled.',
+    'Zehn Farbschemata stehen bereit: Obsidian Gold, Champagne Glass und Aurora Gold ergänzen die bisherigen Designs. Ihre Goldpaletten sind fest abgestimmt. Die äußeren Logo-Streifen drehen sich langsam; Animationen und Ultra Eco können die Bewegung abschalten. Deine persönlichen Akzente bleiben gespeichert.': 'Ten themes are available: Obsidian Gold, Champagne Glass and Aurora Gold join the existing designs. Their gold palettes are carefully matched. The outer logo bands revolve slowly; motion settings and Ultra Eco can stop the animation. Your personal accents remain saved.',
+    'Obsidian Gold · Rauchglas, gebürstetes Gold und präzise Instrumentringe. Die äußeren Logo-Streifen drehen sich langsam.': 'Obsidian Gold · Smoked glass, brushed gold and precision instrument rings. The outer logo bands revolve slowly.',
+    'Champagne Glass · Kristallglas, warme Champagnertöne und seidenweiche Reflexionen mit goldenen Instrumenten.': 'Champagne Glass · Crystal glass, warm champagne tones and silky reflections with gold instruments.',
+    'Aurora Gold · Irisierendes Glas mit Petrol- und Violettlicht, flüssigen Goldkanten und leuchtenden Instrumenten.': 'Aurora Gold · Iridescent glass with teal and violet light, liquid gold edges and luminous instruments.',
     'Nur mit eigenem Hintergrundbild verfügbar': 'Available only when a custom background image is selected',
     'Akzentfarbe aus dem eigenen Hintergrundbild': 'Accent color taken from the selected background image',
     'Sieben Farbschemata stehen zur Wahl. Black Glass Gold hat einen festen Goldakzent; Holographic ist ein eigenes HUD ohne Glas. Hintergrundfarbe automatisch ist nur mit ausgewähltem eigenem Hintergrundbild verfügbar.': 'Choose from seven themes. Black Glass Gold has a fixed gold accent, while Holographic is a separate non-glass HUD. Automatic wallpaper accent is available only for selected custom background images.',

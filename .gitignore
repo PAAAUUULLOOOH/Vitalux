@@ -13,3 +13,4 @@ build/
 dist/
 *.log
 .DS_Store
+design-test-data/

@@ -14,6 +14,7 @@ CREDIT_URL = "https://github.com/TimBooH"
 CREDIT_TEXT = "Danke an: TimBooH für die Unterstützung bei der Integration eigener Hintergrundbilder und der Grafikausgabe (OpenGL/CPU-Rendering)."
 
 STATUS_TEXT = {
+    'preview': 'Lokale Designvorschau · Updates sind deaktiviert.',
     "idle": "Die Updateprüfung startet automatisch.",
     "checking": "Prüfe GitHub auf eine neue Vitalux-Version …",
     "uptodate": "Vitalux ist auf dem neuesten Stand.",
@@ -116,7 +117,7 @@ class UpdatePage(Page):
     def sync(self):
         m = self.m
         self.status.setText(tr(m.error if m.status == "error" else STATUS_TEXT.get(m.status, "")))
-        self.check_button.setEnabled(m.status not in ("checking", "installing", "installed"))
+        self.check_button.setEnabled(m.status not in ("checking", "installing", "installed", "preview"))
         visible = m.status in ("available", "installing", "installed")
         self.update_card.setVisible(visible)
         self.latest.set(m.latest or "–")

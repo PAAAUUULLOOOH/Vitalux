@@ -1,6 +1,7 @@
 """Vitalux themes with a shared, user-selectable accent palette."""
 from string import Template
 from PySide6.QtGui import QColor
+from .premium import COLLECTIONS, KEYS as PREMIUM_MODES
 
 WARN, CRIT, VIOLET, TEAL, CYAN = "#f5b84d", "#f26464", "#a78bfa", "#2dd4bf", "#52d3ff"
 _THEMES = {
@@ -13,6 +14,9 @@ _THEMES = {
     # Flat and opaque: the cheapest render path, with no atmospheric textures.
     "minimal":{"bg":"#111315", "sidebar":"#191b1d", "card":"#222528", "border":"#35393d", "track":"#373c41", "grid":"#32363a", "text":"#ecedef", "muted":"#b3b6ba"},
 }
+_THEMES.update({key: {name: pal[name] for name in (
+    'bg', 'sidebar', 'card', 'border', 'track', 'grid', 'text', 'muted')}
+    for key, pal in COLLECTIONS.items()})
 _mode = "glass"
 _accent = "#4f8cff"  # Replaced with the detected distro color at app startup.
 BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED = (_THEMES[_mode][key] for key in (
@@ -47,6 +51,8 @@ def _luminance(c):
 
 def accent():
     """Keep user-selected hues readable against white/dark backgrounds."""
+    if _mode in PREMIUM_MODES:
+        return COLLECTIONS[_mode]['accent']
     if _mode == "black_glass_gold":
         return "#f3cd79"  # The gold theme ignores user and wallpaper accents.
     c = QColor("#52d3ff" if _mode == "holographic" and _accent == "#4f8cff" else _accent)
@@ -70,6 +76,8 @@ def accent_qcolor(alpha=255):
 
 
 def secondary_accent():
+    if _mode in PREMIUM_MODES:
+        return COLLECTIONS[_mode]['secondary']
     if _mode == "black_glass_gold":
         return "#ffe4a2"
     c = QColor(accent())
@@ -95,6 +103,8 @@ def blend(foreground, background, strength):
 
 
 def combo_surface():
+    if _mode in PREMIUM_MODES:
+        return CARD
     if _mode == "black_glass_gold":
         return CARD
     if _mode == "holographic":
@@ -336,6 +346,9 @@ def stylesheet():
         background: {CARD}; color: {TEXT}; border: 1px solid {BORDER};
     }}
     """
+    if _mode in PREMIUM_MODES:
+        from .premium import stylesheet as premium_stylesheet
+        return qss + premium_stylesheet(_mode)
     if _mode == "black_glass_gold":
         return qss + _BLACK_GLASS_GOLD_QSS.substitute(ACCENT=base)
     if eco.enabled():

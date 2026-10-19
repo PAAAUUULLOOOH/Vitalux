@@ -16,7 +16,7 @@ try:
 except (ImportError, RuntimeError):
     QOpenGLWidget = None
 
-from . import theme, settings, backdrops, user_background, renderer
+from . import theme, settings, backdrops, user_background, renderer, premium
 
 ASSETS = Path(__file__).resolve().parent.parent / "assets"
 
@@ -172,6 +172,18 @@ class _AmbientSceneCore:
         sampled the un-tinted original. Light wallpapers with Glass therefore
         gave three incompatible colors. Compose once and share that result.
         """
+        selected_style = settings.get('background_style', 'theme_default')
+        if theme.mode() in premium.KEYS and selected_style == 'theme_default':
+            key = (theme.mode(), self.size())
+            if key != self._composed_key or self._composed_sharp.isNull():
+                self._composed_sharp = premium.scene_pixmap(self.size(), theme.mode())
+                tiny = self._composed_sharp.scaled(
+                    max(14, self.width()//16), max(14, self.height()//16),
+                    Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
+                self._composed_soft = tiny.scaled(
+                    self.size(), Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
+                self._composed_key = key
+            return
         if theme.mode() == 'holographic':
             # No wallpaper blur, compositing, glass sampling or animation.
             key = ('holographic', self.size(), theme.accent())
@@ -445,6 +457,9 @@ def paint_rim(p, rect, radius, *, active=False, compact=False):
 
 def paint_glass_body(p, widget, rect, radius, *, strong=False, compact=False, active=False):
     """Frosted materials sample a shared blurred backdrop; Dark/Light stay opaque."""
+    if theme.mode() in premium.KEYS:
+        premium.paint_panel(p, widget, rect, strong=strong, compact=compact, active=active)
+        return
     if theme.mode() == "holographic":
         from .holographic import paint_panel
         paint_panel(p, rect, theme.accent(), strong=strong, compact=compact, active=active)
@@ -558,6 +573,11 @@ class GlassSidebar(QFrame):
         palette so it remains related to the cards and the scene.
         """
         p = QPainter(self)
+        if theme.mode() in premium.KEYS:
+            p.setRenderHint(QPainter.Antialiasing)
+            premium.paint_sidebar(p, self, QRectF(self.rect()))
+            p.end()
+            return
         if theme.mode() == "holographic":
             from .holographic import paint_sidebar
             p.setRenderHint(QPainter.Antialiasing)

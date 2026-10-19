@@ -8,13 +8,15 @@ from __future__ import annotations
 
 import math
 import os
+import time
+import xml.etree.ElementTree as ET
 from tempfile import NamedTemporaryFile
 from functools import lru_cache
 from pathlib import Path
 
 from PySide6.QtCore import QObject, QPointF, QRectF, Qt, QTimer
-from PySide6.QtGui import (QBrush, QColor, QIcon, QPainter, QPen, QPixmap,
-                           QRadialGradient)
+from PySide6.QtGui import (QBrush, QColor, QFont, QIcon, QLinearGradient,
+                           QPainter, QPen, QPixmap, QRadialGradient)
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import QSizePolicy, QWidget
 
@@ -30,6 +32,33 @@ def _renderer(filename):
     if not renderer.isValid():
         raise RuntimeError(f"Vitalux design asset not readable: {filename}")
     return renderer
+
+
+@lru_cache(maxsize=16)
+def _logo_layers(filename):
+    """Split the authored outer bands from the stationary pulse and lens.
+
+    Original SVG colors, gradients and exact band shapes survive the split.
+    Desktop/tray icons continue to use the complete static SVG.
+    """
+    data = (_ASSETS / filename).read_bytes()
+    layers = []
+    for outer in (False, True):
+        root = ET.fromstring(data)
+        for child in list(root):
+            tag = child.tag.rsplit('}', 1)[-1]
+            if tag == 'defs':
+                continue
+            d = child.get('d', '')
+            band = ('A 107,107' in d or d.startswith('M 100,30')
+                    or (tag == 'circle' and child.get('cx') in ('213', '53')))
+            if band != outer:
+                root.remove(child)
+        svg = QSvgRenderer(ET.tostring(root))
+        if not svg.isValid():
+            raise RuntimeError('Unable to load animated Vitalux logo layer')
+        layers.append(svg)
+    return tuple(layers)
 
 
 def _pixmap(filename, width, height, ratio=1.0):
@@ -67,7 +96,7 @@ def _selected_variant():
     from . import settings
     chosen = settings.get("accent", "#4f8cff")
     from . import theme
-    if theme.mode() == "black_glass_gold":
+    if theme.mode() == "black_glass_gold" or theme.mode() in theme.PREMIUM_MODES:
         return "gold"
     if theme.mode() == "holographic" and str(chosen).lower() == "#4f8cff":
         return "cyan"
@@ -90,6 +119,32 @@ def themed_icon_pixmap(size=152):
 
 
 def wordmark_pixmap(width=205, height=44):
+    from . import theme
+    if theme.mode() in theme.PREMIUM_MODES:
+        pixmap = QPixmap(round(width*2), round(height*2))
+        pixmap.setDevicePixelRatio(2)
+        pixmap.fill(Qt.transparent)
+        p = QPainter(pixmap)
+        p.setRenderHint(QPainter.TextAntialiasing)
+        font = QFont('DejaVu Sans')
+        font.setPixelSize(round(height*.54))
+        font.setWeight(QFont.Light)
+        font.setLetterSpacing(QFont.AbsoluteSpacing, width*.023)
+        p.setFont(font)
+        gold = QLinearGradient(0, 0, width, height)
+        gold.setColorAt(0, QColor(theme.secondary_accent()))
+        gold.setColorAt(.55, QColor(theme.accent()))
+        gold.setColorAt(1, QColor(theme.MUTED))
+        p.setPen(QPen(QBrush(gold), 1))
+        p.drawText(QRectF(0, 0, width, height*.75), Qt.AlignCenter, 'VITALUX')
+        font.setPixelSize(7)
+        font.setLetterSpacing(QFont.AbsoluteSpacing, 2.0)
+        p.setFont(font)
+        p.setPen(QColor(theme.MUTED))
+        p.drawText(QRectF(0, height*.75, width, height*.25), Qt.AlignCenter,
+                   'SYSTEM MONITOR')
+        p.end()
+        return pixmap
     return _pixmap(_brand_asset(icon=False), width, height, ratio=2.0)
 
 
@@ -253,7 +308,7 @@ class TrayPulse(QObject):
 
 
 class PulseCore(QWidget):
-    """Low-power CPU-responsive light orbit around the Vitalux brand symbol.
+    """Slowly revolving outer bands around the stationary Vitalux pulse.
 
     All UI changes run in the main Qt thread; the monitoring worker only sends
     its existing, once-per-second CPU sample through the MainWindow signal.
@@ -265,11 +320,12 @@ class PulseCore(QWidget):
         self._cpu = 0.0
         self._display_cpu = 0.0
         self._phase = 0.0
+        self._last_tick = time.monotonic()
         self._update_available = False
         self._update_clock = 0.0
         self.setToolTip("Vitalux · Live CPU activity")
         self._timer = QTimer(self)
-        self._timer.setInterval(90)  # ~11 fps, negligible UI overhead
+        self._timer.setInterval(40)  # Repaint only this small widget, at 25 fps.
         self._timer.timeout.connect(self._advance)
 
     def set_update_available(self, available):
@@ -289,14 +345,17 @@ class PulseCore(QWidget):
 
     @staticmethod
     def _low_power():
-        from . import theme, eco
-        return eco.enabled() or theme.mode() == "minimal"
+        from . import theme, eco, motion
+        return eco.enabled() or theme.mode() == "minimal" or not motion.enabled()
 
     def sync_theme(self):
         from . import eco
-        if eco.enabled() or (self._low_power() and not self._update_available):
+        if self._low_power():
             self._timer.stop()
         elif self.isVisible():
+            from . import motion
+            self._timer.setInterval(80 if motion.level() == 'reduced' else 40)
+            self._last_tick = time.monotonic()
             self._timer.start()
         self.update()
 
@@ -309,18 +368,21 @@ class PulseCore(QWidget):
         super().hideEvent(event)
 
     def _advance(self):
-        if self._low_power() and not self._update_available:
+        if self._low_power():
             self._timer.stop()
             return
+        now = time.monotonic()
+        elapsed = min(.25, max(0, now-self._last_tick))
+        self._last_tick = now
         # Smooth values so short CPU spikes don't make the animation flicker.
-        self._update_clock = (self._update_clock + .17) % (2 * math.pi)
+        self._update_clock = (self._update_clock + elapsed*1.9) % (2 * math.pi)
         self._display_cpu += (self._cpu - self._display_cpu) * 0.09
-        self._phase = (self._phase + 0.55 + self._display_cpu * 0.009) % 360.0
+        self._phase = (self._phase + elapsed*7.5) % 360.0  # One revolution / 48s.
         self.update()
 
     def paintEvent(self, _event):
         painter = QPainter(self)
-        if self._low_power() and (not self._update_available or eco.enabled()):
+        if self._low_power():
             # Retain the recognizable logo; skip the moving halo and orbit.
             size = min(self.width(), self.height())
             _renderer(_brand_asset(icon=True)).render(painter, QRectF(self.rect()))
@@ -361,7 +423,13 @@ class PulseCore(QWidget):
             ring_glow.setColorAt(1, clear)
             painter.setBrush(QBrush(ring_glow))
             painter.drawEllipse(rect)
-        _renderer(_brand_asset(icon=True)).render(painter, rect)
+        core, bands = _logo_layers(_brand_asset(icon=True))
+        core.render(painter, rect)
+        painter.save()
+        painter.translate(rect.center())
+        painter.rotate(self._phase)
+        bands.render(painter, QRectF(-size/2, -size/2, size, size))
+        painter.restore()
 
         if self._update_available:
             # A restrained heartbeat around the main Vitalux mark.

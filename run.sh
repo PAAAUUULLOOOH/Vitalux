@@ -7,6 +7,10 @@ if ! cd -- "$(dirname -- "${BASH_SOURCE[0]}")"; then
   exit 1
 fi
 HERE="$PWD"
+# Locally packaged design builds always use their separate preview profile.
+if [ -f "$HERE/DESIGN-BUILD.json" ] && [ -f "$HERE/Designs-testen.sh" ]; then
+  exec bash "$HERE/Designs-testen.sh" "$@"
+fi
 STATE_DIR="${XDG_STATE_HOME:-${HOME}/.local/state}/vitalux"
 mkdir -p -- "$STATE_DIR"
 LOG="$STATE_DIR/vitalux.log"
