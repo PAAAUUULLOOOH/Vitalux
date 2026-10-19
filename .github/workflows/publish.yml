@@ -1,7 +1,7 @@
 name: Vitalux – Automatische Veröffentlichung
 
 # The named publish commit is authorized to run the release on main.
-# Ordinary source pushes do not publish; workflow_dispatch is also available. MiniHUD and Diagnostic Center guide rendering are regression-tested.
+# Ordinary source pushes do not publish; workflow_dispatch is also available. MiniHUD, Diagnostic Center guide, and quiet diagnostic shutdown are regression-tested.
 on:
   workflow_dispatch:
   push:
