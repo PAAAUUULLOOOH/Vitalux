@@ -13,7 +13,6 @@ from .widgets import Card, label
 from . import diagnostic_engine as engine, settings, theme
 from .i18n import tr
 from .pages import Page
-from .section_nav import SectionNav
 from .insight_ui import MonitoringLabPanel
 
 
@@ -36,10 +35,10 @@ class DiagnosticCenter(Page):
     SECTIONS = (
         ('all', 'Gesamtcheck', 'Alle lokalen Diagnosen auf einmal (ohne externen Verbindungstest).'),
         ('system', 'Systemcheck', 'Aktuelle Sensorwerte und konfigurierbare Warnschwellen.'),
-        ('crashes', 'Crash Investigator', 'Kernel- und Treiberfehler aus dem erreichbaren Systemjournal.'),
         ('displays', 'DisplayDoctor', 'Display-Verbindungen, Modi, Wayland und KScreen-Auskunft.'),
         ('pcie', 'PCIe Guardian', 'PCIe-GPU-Link, ausgehandelte Geschwindigkeit und Breite.'),
         ('thermal', 'Thermal Compass', 'Temperatursensoren und Abstand zu gesetzten Warnwerten.'),
+        ('crashes', 'Crash Investigator', 'Kernel- und Treiberfehler aus dem erreichbaren Systemjournal.'),
         ('network', 'NetworkPulse', 'Schnittstellen und IP-Konfiguration. Verbindungstest nur auf Klick.'),
         ('processes', 'Process Spotlight', 'CPU- und RAM-intensive Prozesse in einer kurzen Stichprobe.'),
         ('compare', 'ChangeRadar', 'Aktuellen Kernel, Desktop, Mesa und Hardware mit eigener Basis vergleichen.'),
@@ -67,16 +66,11 @@ class DiagnosticCenter(Page):
         self.worker = None
         self._reports = {}
         self.texts = {}
-        self.nav = SectionNav(self.CATEGORIES)
-        self.category_tabs = {}
+        self.tabs = QTabWidget()
+        self.tabs.setObjectName('diagnosticsTabs')
+        self.tabs.setMinimumHeight(460)
         self.section_tabs = {}
         self.last_section = 'all'
-        for key in ('quick', 'hardware', 'system', 'history'):
-            tabs = QTabWidget()
-            tabs.setObjectName('diagnosticsTabs')
-            tabs.setMinimumHeight(460)
-            self.category_tabs[key] = tabs
-        self.tabs = self.category_tabs['quick']
         intro = Card('Diagnostic Center · Linux-Systemanalyse')
         intro.body.addWidget(label('Gezielte, ausschließlich lesende Hardware- und Systemprüfungen. '
                                    'Die Ergebnisse sind Hinweise, keine automatischen Fehlerursachen. '
@@ -90,7 +84,7 @@ class DiagnosticCenter(Page):
         intro.body.addLayout(action_row)
         self.status = label('Bereit · bisher keine Diagnose gestartet', 'muted', wrap=True)
         intro.body.addWidget(self.status)
-        self.nav.add('quick', intro)
+        self.content.addWidget(intro)
 
         # Unified destination for every export previously in Settings.
         reports_card = Card('Diagnose & Berichte')
@@ -119,7 +113,7 @@ class DiagnosticCenter(Page):
         reports_row.addWidget(self.error_report_btn)
         reports_row.addStretch(1)
         reports_card.body.addLayout(reports_row)
-        self.nav.add('reports', reports_card)
+        # Reports remain after the diagnostic results and performance tools.
 
         for key, title, description in self.SECTIONS:
             pane = QWidget()
@@ -169,12 +163,9 @@ class DiagnosticCenter(Page):
             readout.setMinimumHeight(340)
             layout.addWidget(readout, 1)
             self.texts[key] = readout
-            category = self.GROUPS[key]
-            tabs = self.category_tabs[category]
-            self.section_tabs[key] = (category, tabs.count())
-            tabs.addTab(pane, tr(title))
-        for category, tabs in self.category_tabs.items():
-            self.nav.add(category, tabs)
+            self.section_tabs[key] = self.tabs.count()
+            self.tabs.addTab(pane, tr(title))
+        self.content.addWidget(self.tabs)
         self.lab_panel = None
         if lab is not None and open_focus is not None:
             self.lab_panel = MonitoringLabPanel(lab, open_focus)
@@ -184,37 +175,32 @@ class DiagnosticCenter(Page):
             timeline = self.lab_panel.timeline_group
             self.lab_panel._tools = tuple(w for w in self.lab_panel._tools if w is not timeline)
             self.lab_panel._advanced_visible(True)
-            self.nav.add('performance', self.lab_panel)
+            self.content.addWidget(self.lab_panel)
             history_card = Card('Ereignis-Timeline')
             history_card.body.addWidget(timeline)
             timeline.show()
-            self.nav.add('history', history_card)
-        self.nav.add('reports', label(
+            self.content.addWidget(history_card)
+        self.content.addWidget(reports_card)
+        self.content.addWidget(label(
             'Berichte werden nur auf ausdrücklichen Klick gespeichert. '
             'Journal- und Prozessdaten können persönliche Informationen enthalten.',
             'muted', wrap=True))
-        self.nav.add('system', label(
+        self.content.addWidget(label(
             'Der externe Ping wird nur über die separate Schaltfläche gestartet.',
             'muted', wrap=True))
-        self.content.addWidget(self.nav)
-        self.nav.select(settings.get('diagnostic_category', 'quick'))
-        self.nav.changed.connect(lambda key: settings.set('diagnostic_category', key))
 
     def refresh(self, data, _hist):
         self.last_sample = data
-        if self.lab_panel is not None and self.nav.current_key() in ('performance', 'history'):
+        if self.lab_panel is not None and self.isVisible():
             self.lab_panel.refresh(data)
 
     def select_area(self, category, section=None):
-        """Open one category or a specific existing diagnostic check."""
-        self.nav.select(category)
-        if category in ('performance', 'history') and self.lab_panel is not None and self.last_sample:
-            self.lab_panel.refresh(self.last_sample)
+        """Open an existing diagnostic tab without extra category buttons."""
         if section in self.section_tabs:
-            group, index = self.section_tabs[section]
-            self.nav.select(group)
-            self.category_tabs[group].setCurrentIndex(index)
+            self.tabs.setCurrentIndex(self.section_tabs[section])
             self.last_section = section
+        elif category in ('performance', 'history') and self.lab_panel is not None and self.last_sample:
+            self.lab_panel.refresh(self.last_sample)
 
     def start_check(self, section):
         if self.worker is not None and self.worker.isRunning():
@@ -334,10 +320,8 @@ class DiagnosticCenter(Page):
             QMessageBox.information(self, 'Vitalux', tr('Fehlerbericht gespeichert.'))
 
     def retranslate(self):
-        self.nav.retranslate()
         for key, title, _description in self.SECTIONS:
-            category, index = self.section_tabs[key]
-            self.category_tabs[category].setTabText(index, tr(title))
+            self.tabs.setTabText(self.section_tabs[key], tr(title))
             position = self.report_source.findData(key)
             if position >= 0:
                 self.report_source.setItemText(position, tr(title))
