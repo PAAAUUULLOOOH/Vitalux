@@ -68,7 +68,7 @@ class DiagnosticCenter(Page):
         self.texts = {}
         self.tabs = QTabWidget()
         self.tabs.setObjectName('diagnosticsTabs')
-        self.tabs.setMinimumHeight(460)
+        self.tabs.setMinimumHeight(350)
         self.section_tabs = {}
         self.last_section = 'all'
         intro = Card('Diagnostic Center · Linux-Systemanalyse')
@@ -84,10 +84,13 @@ class DiagnosticCenter(Page):
         intro.body.addLayout(action_row)
         self.status = label('Bereit · bisher keine Diagnose gestartet', 'muted', wrap=True)
         intro.body.addWidget(self.status)
-        self.content.addWidget(intro)
+        # All results and tools join this one continuous card.
 
         # Unified destination for every export previously in Settings.
-        reports_card = Card('Diagnose & Berichte')
+        reports_card = QWidget()
+        reports_card.body = QVBoxLayout(reports_card)
+        reports_card.body.setContentsMargins(0, 0, 0, 0)
+        reports_card.body.addWidget(label('Diagnose & Berichte', 'cardTitle'))
         self.report_source = QComboBox()
         self.report_source.setObjectName('diagnosticReportSource')
         self.report_source.setMaximumWidth(360)
@@ -160,34 +163,28 @@ class DiagnosticCenter(Page):
             readout.setLineWrapMode(QPlainTextEdit.WidgetWidth)
             readout.setObjectName('diagnosticReadout')
             readout.setPlainText('Keine Untersuchung durchgeführt.\nDie Auswertung wird auf Wunsch gestartet.')
-            readout.setMinimumHeight(340)
+            readout.setMinimumHeight(180)
             layout.addWidget(readout, 1)
             self.texts[key] = readout
             self.section_tabs[key] = self.tabs.count()
             self.tabs.addTab(pane, tr(title))
-        self.content.addWidget(self.tabs)
+        intro.body.addWidget(self.tabs)
         self.lab_panel = None
         if lab is not None and open_focus is not None:
             self.lab_panel = MonitoringLabPanel(lab, open_focus)
-            # Open performance tools, never add a new collapsible section.
             self.lab_panel.show_advanced.setChecked(True)
             self.lab_panel.show_advanced.hide()
-            timeline = self.lab_panel.timeline_group
-            self.lab_panel._tools = tuple(w for w in self.lab_panel._tools if w is not timeline)
             self.lab_panel._advanced_visible(True)
-            self.content.addWidget(self.lab_panel)
-            history_card = Card('Ereignis-Timeline')
-            history_card.body.addWidget(timeline)
-            timeline.show()
-            self.content.addWidget(history_card)
-        self.content.addWidget(reports_card)
-        self.content.addWidget(label(
+            intro.body.addWidget(self.lab_panel)
+        intro.body.addWidget(reports_card)
+        intro.body.addWidget(label(
             'Berichte werden nur auf ausdrücklichen Klick gespeichert. '
             'Journal- und Prozessdaten können persönliche Informationen enthalten.',
             'muted', wrap=True))
-        self.content.addWidget(label(
+        intro.body.addWidget(label(
             'Der externe Ping wird nur über die separate Schaltfläche gestartet.',
             'muted', wrap=True))
+        self.content.addWidget(intro)
 
     def refresh(self, data, _hist):
         self.last_sample = data
