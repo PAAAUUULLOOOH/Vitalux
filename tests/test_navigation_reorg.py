@@ -66,8 +66,9 @@ def main():
             assert not hasattr(pref, 'section_nav')
             assert not hasattr(diag, 'nav')
             assert pref.SEARCH_CATEGORIES['general'] == 'Allgemein'
-            assert pref.content.indexOf(pref._settings_cards['appearance'][0]) < pref.content.indexOf(pref._settings_cards['general'][0])
-            assert pref.content.indexOf(pref._settings_cards['general'][0]) < pref.content.indexOf(pref._settings_cards['hud'][0])
+            assert pref.content.indexOf(pref._settings_cards['appearance'][0]) < pref.content.indexOf(pref._settings_cards['hud'][0])
+            assert not hasattr(pref, 'language_combo')
+            assert not pref._settings_cards['general']
             assert pref.content.indexOf(pref._settings_cards['render'][0]) > pref.content.indexOf(pref._settings_cards['energy'][0])
             assert not hasattr(gpu, 'diagnostic_shortcut')
             assert not hasattr(gpu, 'lab_panel') or gpu.lab_panel is None
@@ -78,9 +79,9 @@ def main():
             window.nav_buttons[9].click()
             app.processEvents()
             assert pref.search_overlay.parentWidget() is window.stack.currentWidget().viewport()
-            assert pref.search_overlay.icon.isVisible()
+            assert pref.search_home.isVisible()
             assert not pref.search_overlay.expanded
-            pref.search_overlay.icon.click()
+            pref.search_home.click()
             qwait(320)
             pref.search.setText('Vulk')
             pref.search_settings('Vulk')
