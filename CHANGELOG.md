@@ -1,5 +1,12 @@
 # Vitalux – Änderungen
 
+## [v0.9.4.8] - 2026-10-19
+- Diagnostic Center als neuer Reiter: lokale Hardware-, Treiber- und Fehleranalysen inklusive optionaler Blackbox.
+- Bestehende Systemberichte und Fehlerdiagnose aus den Einstellungen in das Diagnostic Center verschoben.
+- MiniHUD mit drei Größen, Sensorwahl, Deckkraft und Systemleisten-Steuerung ergänzt.
+- Die modernen Grafik-Rendering-Einstellungen und Designs aus v0.9.4.7 bleiben unverändert.
+
+
 ## [v0.9.4.7] - 2026-10-19
 - Black Glass Gold: RAM-Beschriftung in der Auslastungsgrafik sowie weitere Diagramm-Legenden und Auslastungsringe direkt beim Aufbau an die Goldpalette angepasst.
 - Ultra Eco: eigener Button „Jetzt neu starten“ zum bewussten Wechsel zwischen CPU- und vorherigem GPU-Renderer statt automatischem Neustart beim Umschalten.

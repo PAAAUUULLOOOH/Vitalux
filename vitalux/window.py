@@ -22,6 +22,9 @@ from .wallpaper_accents import resolve_accent
 from .monitor_insights import SessionExtrema
 from .insight_engine import MonitoringLab
 from .diagnostics import log_exception
+from .diagnostic_center import DiagnosticCenter
+from .diagnostic_engine import BlackboxRecorder
+from .mini_hud import MiniHUD
 
 
 class Sampler(QThread):
@@ -71,6 +74,9 @@ class MainWindow(QMainWindow):
         self._extrema = SessionExtrema()
         self.lab = MonitoringLab(snapshot_path=Path(settings.PATH).with_name("insights-snapshots.json"))
         self._focus_window = None
+        self._mini_hud = MiniHUD()
+        self._mini_hud.hidden_by_user.connect(self._mini_hud_closed)
+        self._blackbox = BlackboxRecorder()
         self.last_sample = None
         self.pages = []
         self.update_btn = None
@@ -102,6 +108,11 @@ class MainWindow(QMainWindow):
         self._tray_quit_action.triggered.connect(self.quit_from_tray)
         self._tray_menu.addAction(self._tray_open_action)
         self._tray_menu.addAction(self._tray_preview_action)
+        self._tray_hud_action = QAction(tr('MiniHUD anzeigen'), self._tray_menu)
+        self._tray_hud_action.setCheckable(True)
+        self._tray_hud_action.setChecked(bool(settings.get('mini_hud_enabled', False)))
+        self._tray_hud_action.toggled.connect(self.set_mini_hud_enabled)
+        self._tray_menu.addAction(self._tray_hud_action)
         self._tray_update_action = QAction('', self._tray_menu)
         self._tray_update_action.setVisible(False)
         self._tray_update_action.triggered.connect(self._open_updates_from_tray)
@@ -120,6 +131,8 @@ class MainWindow(QMainWindow):
         manager.changed.connect(self._sync_glow)
         manager.restart.connect(self.quit_from_tray)
         self._build(0)
+        if settings.get('mini_hud_enabled', False):
+            self.set_mini_hud_enabled(True)
 
         self.sampler = Sampler(self)
         self.sampler.sample.connect(self.on_sample)
@@ -177,6 +190,7 @@ class MainWindow(QMainWindow):
             ("Netzwerk", NetworkPage()),
             ("Laufwerke", DiskPage()),
             ("Sensoren", SensorsPage()),
+            ("Diagnostic Center", DiagnosticCenter()),
             ("System", SystemPage(distro)),
             ("Einstellungen", PreferencesPage(self)),
             ("Updates", UpdatePage(self.manager)),
@@ -204,7 +218,7 @@ class MainWindow(QMainWindow):
         group = QButtonGroup(side)
         self.nav_buttons = []
         glyph = {"Übersicht":"◈", "Prozessor":"◉", "Grafik":"▣", "Arbeitsspeicher":"▤",
-                 "Netzwerk":"◎", "Laufwerke":"▱", "Sensoren":"♨", "System":"⚙",
+                 "Netzwerk":"◎", "Laufwerke":"▱", "Sensoren":"♨", "Diagnostic Center":"⌕", "System":"⚙",
                  "Einstellungen":"≡", "Updates":"↻", "Info":"ⓘ"}
         for i, (name, page) in enumerate(self.pages):
             if name == "Updates":
@@ -300,14 +314,19 @@ class MainWindow(QMainWindow):
         self._tray_open_action.setText(tr('Vitalux öffnen'))
         self._tray_quit_action.setText(tr('Beenden'))
         self._tray_preview_action.setText(tr('Live-Vorschau anzeigen'))
+        self._tray_hud_action.setText(tr('MiniHUD anzeigen'))
+        self.refresh_mini_hud()
         self._tray_preview.retheme()
         self._tray.setToolTip(tray_tooltip(self.last_sample))
         retranslate_widgets(self.centralWidget())
         if self._focus_window is not None:
             self._focus_window.retranslate()
             retranslate_widgets(self._focus_window)
+        diagnosis = next((page for title, page in self.pages if title == 'Diagnostic Center'), None)
+        if diagnosis is not None:
+            diagnosis.retranslate()
         glyph = {"Übersicht":"◈", "Prozessor":"◉", "Grafik":"▣", "Arbeitsspeicher":"▤",
-                 "Netzwerk":"◎", "Laufwerke":"▱", "Sensoren":"♨", "System":"⚙",
+                 "Netzwerk":"◎", "Laufwerke":"▱", "Sensoren":"♨", "Diagnostic Center":"⌕", "System":"⚙",
                  "Einstellungen":"≡", "Updates":"↻", "Info":"ⓘ"}
         for btn, (name, _) in zip(self.nav_buttons,self.pages):
             btn.setText(glyph.get(name,'•') + '    ' + tr(name))
@@ -320,8 +339,9 @@ class MainWindow(QMainWindow):
         disk = next((p for name, p in self.pages if name == 'Laufwerke'), None)
         if disk is not None and hasattr(disk, 'retranslate'):
             disk.retranslate()
-        if len(self.pages)>8 and hasattr(self.pages[8][1],'refresh_appearance'):
-            self.pages[8][1].refresh_appearance()
+        pref = next((page for title, page in self.pages if title == 'Einstellungen'), None)
+        if pref is not None and hasattr(pref, 'refresh_appearance'):
+            pref.refresh_appearance()
         self._sync_glow()
         # Layout reflow may happen when labels grow in English.
         QTimer.singleShot(0,lambda: [scroll.verticalScrollBar().setValue(value)
@@ -661,6 +681,7 @@ class MainWindow(QMainWindow):
         self._sync_glow()  # Stop/restart all logo, sidebar and tray pulses.
         self._tray_glow.refresh()
         self._tray_preview.retheme()
+        self.refresh_mini_hud()
         sync_installed_icon()
         minimal = theme.mode() == 'minimal'
         self.centralWidget().set_low_power(minimal)
@@ -696,10 +717,9 @@ class MainWindow(QMainWindow):
         self.centralWidget().update()
         for widget in self.centralWidget().findChildren(QWidget):
             widget.update()
-        if len(self.pages) > 8:
-            pref = self.pages[8][1]
-            if hasattr(pref, 'refresh_appearance'):
-                pref.refresh_appearance()
+        pref = next((page for title, page in self.pages if title == 'Einstellungen'), None)
+        if pref is not None and hasattr(pref, 'refresh_appearance'):
+            pref.refresh_appearance()
 
     def _check_alerts(self, sample):
         preferences = settings.get_many(dict(
@@ -723,6 +743,39 @@ class MainWindow(QMainWindow):
             if hasattr(overview, 'apply_layout'):
                 overview.apply_layout()
 
+    def _mini_hud_closed(self):
+        self._tray_hud_action.blockSignals(True)
+        self._tray_hud_action.setChecked(False)
+        self._tray_hud_action.blockSignals(False)
+        pref = next((p for title, p in self.pages if title == 'Einstellungen'), None)
+        if pref is not None:
+            pref.sync_hud_controls()
+
+    def set_mini_hud_enabled(self, enabled):
+        enabled = bool(enabled)
+        settings.set('mini_hud_enabled', enabled)
+        self._tray_hud_action.blockSignals(True)
+        self._tray_hud_action.setChecked(enabled)
+        self._tray_hud_action.blockSignals(False)
+        if enabled:
+            self._mini_hud.apply_settings()
+            self._mini_hud.show()
+            self._mini_hud.update_sample(self.last_sample)
+        else:
+            self._mini_hud.hide()
+        pref = next((p for title, p in self.pages if title == 'Einstellungen'), None)
+        if pref is not None:
+            pref.sync_hud_controls()
+
+    def refresh_mini_hud(self):
+        hud = self._mini_hud
+        if hud is not None:
+            visible = hud.isVisible()
+            hud.apply_settings()
+            if visible:
+                hud.show()
+                hud.update_sample(self.last_sample)
+
     def open_focus_window(self):
         from .insight_ui import FocusWindow
         if self._focus_window is None:
@@ -744,6 +797,9 @@ class MainWindow(QMainWindow):
         import time
         started = time.perf_counter()
         d["session_extrema"] = self._extrema.update(d)
+        self._blackbox.ingest(d)
+        if self._mini_hud.isVisible():
+            self._mini_hud.update_sample(d)
         self.lab.ingest(d, settings.get_many({
             "cpu_temp": 90, "gpu_temp": 90, "ram_usage": 90
         }))
@@ -881,11 +937,18 @@ class MainWindow(QMainWindow):
                 if not page.benchmark.stop_and_wait():
                     event.ignore()
                     return
+        # Do not destroy an active read-only diagnostic worker.
+        for _title, page in self.pages:
+            if isinstance(page, DiagnosticCenter) and page.worker is not None and page.worker.isRunning():
+                event.ignore()
+                self.statusBar().showMessage(tr('Diagnose läuft noch – bitte warten.'), 5000)
+                return
         self.sampler.requestInterruption()
         self.sampler.wait(7000)
         self._tray_click_timer.stop()
         self._tray_glow.stop()
         self._tray_preview.close()
+        self._mini_hud.hide()
         if self._tray is not None:
             self._tray.hide()
         self.manager.shutdown()

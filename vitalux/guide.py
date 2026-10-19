@@ -82,6 +82,14 @@ SLIDES = [
         "settings",
     ),
     (
+        "Diagnostic Center und MiniHUD",
+        "Im neuen Diagnostic Center findest du lokale Systemchecks, Crash Investigator, DisplayDoctor, PCIe Guardian, Thermal Compass, NetworkPulse, Process Spotlight, ChangeRadar und Blackbox.",
+        "Unter Diagnose & Berichte kannst du weiterhin System- und Fehlerberichte lokal als TXT/JSON exportieren. Ein externer Ping wird nur per Klick ausgelöst.",
+        "Das MiniHUD lässt sich in den Einstellungen oder über die Systemleiste aktivieren. Drei Größen, Sensoren, Deckkraft und Vordergrundmodus sind wählbar.",
+        "Das MiniHUD nutzt bestehende Messwerte. Wayland/KWin entscheidet, ob es über einem Vollbildspiel sichtbar bleibt.",
+        "diagnostics",
+    ),
+    (
         "Updates und Informationen",
         "Vitalux prüft automatisch beim Start und etwa alle sechs Stunden auf Updates.",
         "Bei einem Update glüht das Vitalux-Logo in der App und im Tray. Der Updates-Reiter pulsiert; eine Tray-Nachricht nennt die Version.",

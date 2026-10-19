@@ -1,5 +1,12 @@
 # Vitalux – Changes
 
+## [v0.9.4.8] - 2026-10-19
+- Added Diagnostic Center with read-only system, crash, display, PCIe, thermal, network, process and change diagnostics, plus opt-in Blackbox.
+- Moved existing system and error report exports out of Settings into Diagnostic Center.
+- Added MiniHUD with three sizes, configurable metrics, opacity and system-tray controls.
+- Preserved modern render settings and themes from v0.9.4.7.
+
+
 ## [v0.9.4.7] - 2026-10-19
 - Black Glass Gold: fixed the RAM chart-series label, legends and load/status ring colors to use the gold palette from the initial frame.
 - Ultra Eco: added a dedicated Restart now button for manual CPU/previous-GPU renderer switching instead of restarting automatically on toggle.

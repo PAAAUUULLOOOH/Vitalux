@@ -1,4 +1,4 @@
-"""Headless regressions for the nine-slide help tour and DE/EN coverage.
+"""Headless regressions for the ten-slide help tour and DE/EN coverage.
 
 Called using Vitalux's bundled interpreter inside the staged release package.
 """
@@ -102,7 +102,7 @@ def check_gui():
         print("CHECK GUI: after show", flush=True)
         app.processEvents()
         assert guide.windowTitle() == tr("Vitalux-Anleitung")
-        assert len(SLIDES) == 9
+        assert len(SLIDES) == 10
         for idx, (title, intro, *_rest) in enumerate(SLIDES):
             print("CHECK GUI: slide", locale, idx, flush=True)
             guide.show_step(idx)
@@ -119,7 +119,7 @@ def check_gui():
         assert not guide.illustration.grab().isNull(), "No guide illustration painted"
         guide.show_step(0)
         assert not guide.back_btn.isEnabled()
-        guide.show_step(8)
+        guide.show_step(len(SLIDES) - 1)
         assert guide.next_btn.text() == tr("Fertig")
         guide.close()
         guide.deleteLater()
@@ -140,7 +140,7 @@ def check_gui():
     assert "Danke an:" in page.support_credit.text()
     page.close()
 
-    print("Native guide UI: passed (9 slides, arrows, screenshots, DE/EN)")
+    print("Native guide UI: passed (10 slides, arrows, screenshots, DE/EN)")
 
 
 if __name__ == "__main__":

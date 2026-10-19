@@ -404,6 +404,52 @@ class PreferencesPage(Page):
         tray.body.addWidget(label('Tray-Hover: CPU-, GPU- und RAM-Auslastung sowie Temperaturen. Im Kontextmenü öffnet sich zusätzlich eine kompakte Live-Vorschau.', 'muted', wrap=True))
         self.content.addWidget(tray)
 
+        hud = Card('MiniHUD · kompakte Live-Anzeige')
+        hud.body.addWidget(label('Separates Desktop-Fenster mit den vorhandenen Vitalux-Messwerten. '                                 'Auch bei verborgenem Hauptfenster nutzbar; keine zusätzliche Sensorabfrage.', 'muted', wrap=True))
+        self.hud_on = QCheckBox('MiniHUD anzeigen')
+        self.hud_on.setChecked(bool(settings.get('mini_hud_enabled', False)))
+        self.hud_on.toggled.connect(self.window.set_mini_hud_enabled)
+        hud.body.addWidget(self.hud_on)
+        size_row = QHBoxLayout()
+        size_row.addWidget(label('Größe', 'strong'))
+        self.hud_size = QComboBox()
+        for title, value in (('Minimal', 'minimal'), ('Kompakt', 'compact'), ('Erweitert mit Balken', 'extended')):
+            self.hud_size.addItem(title, value)
+        self.hud_size.setCurrentIndex(max(0, self.hud_size.findData(settings.get('mini_hud_layout', 'compact'))))
+        self.hud_size.currentIndexChanged.connect(self.change_hud_size)
+        size_row.addWidget(self.hud_size)
+        size_row.addStretch()
+        hud.body.addLayout(size_row)
+        self.hud_top = QCheckBox('Im Vordergrund halten (soweit vom Fenstermanager unterstützt)')
+        self.hud_top.setChecked(bool(settings.get('mini_hud_on_top', True)))
+        self.hud_top.toggled.connect(lambda on: self.change_hud_option('mini_hud_on_top', on))
+        hud.body.addWidget(self.hud_top)
+        opacity_row = QHBoxLayout()
+        opacity_row.addWidget(label('Deckkraft', 'strong'))
+        self.hud_opacity = QComboBox()
+        for level in (60, 70, 80, 90, 100):
+            self.hud_opacity.addItem(f'{level} %', level)
+        self.hud_opacity.setCurrentIndex(max(0, self.hud_opacity.findData(settings.get('mini_hud_opacity', 90))))
+        self.hud_opacity.currentIndexChanged.connect(lambda *_: self.change_hud_option('mini_hud_opacity', self.hud_opacity.currentData()))
+        opacity_row.addWidget(self.hud_opacity)
+        opacity_row.addStretch()
+        hud.body.addLayout(opacity_row)
+        hud.body.addWidget(label('Messwerte im MiniHUD', 'strong'))
+        self.hud_metrics = {}
+        metric_grid = QGridLayout()
+        from .mini_hud import METRIC_OPTIONS, DEFAULT_KEYS
+        selections = settings.get('mini_hud_metrics', DEFAULT_KEYS)
+        for idx, (key, title, _unit) in enumerate(METRIC_OPTIONS):
+            box = QCheckBox(title)
+            box.setChecked(key in selections)
+            box.toggled.connect(self.change_hud_metrics)
+            metric_grid.addWidget(box, idx // 2, idx % 2)
+            self.hud_metrics[key] = box
+        hud.body.addLayout(metric_grid)
+        hud.body.addWidget(label('Wayland: Das HUD ist ein normales Qt-Fenster. Im echten Spielvollbild ist '                                 'die Einblendung nicht garantiert. Ultra Eco reduziert auch die HUD-Darstellung.',
+                                 'muted', wrap=True))
+        self.content.addWidget(hud)
+
         notifications = Card('Hardware-Warnungen')
         self.alert_toggle = QCheckBox('Grenzwert-Warnungen aktivieren')
         self.alert_toggle.setChecked(bool(settings.get('alerts_enabled', False)))
@@ -435,19 +481,6 @@ class PreferencesPage(Page):
         notifications.body.addLayout(threshold_grid)
         self.content.addWidget(notifications)
 
-        export = Card('Diagnose & Berichte')
-        export.body.addWidget(label('Systembericht als TXT oder JSON: Hardware, aktuelle Sensoren, Treiber und Min-/Max-Werte. Ausschließlich lokal gespeichert.', 'muted', wrap=True))
-        btn = QPushButton('Systembericht exportieren …')
-        btn.setObjectName('ghostBtn')
-        btn.clicked.connect(self.export)
-        export.body.addWidget(btn)
-        diag_btn = QPushButton('Fehlerdiagnose exportieren …')
-        diag_btn.setObjectName('ghostBtn')
-        diag_btn.clicked.connect(self.export_diagnostics)
-        export.body.addWidget(diag_btn)
-        export.body.addWidget(label('Diagnoseberichte enthalten möglicherweise private Systemangaben. Sie werden nur lokal gespeichert, nicht automatisch versendet.', 'muted', wrap=True))
-        self.content.addWidget(export)
-
         # Only visible when the *preferences* deviate from the original values.
         # Dashboard tile positions, update source and language are intentionally
         # not touched by this button.
@@ -459,6 +492,27 @@ class PreferencesPage(Page):
         restore_row.addWidget(self.restore_button)
         self.content.addLayout(restore_row)
         self._refresh_restore_button()
+
+    def sync_hud_controls(self):
+        if not hasattr(self, 'hud_on'):
+            return
+        self.hud_on.blockSignals(True)
+        self.hud_on.setChecked(bool(settings.get('mini_hud_enabled', False)))
+        self.hud_on.blockSignals(False)
+
+    def change_hud_size(self, *_):
+        self.change_hud_option('mini_hud_layout', self.hud_size.currentData())
+
+    def change_hud_option(self, key, value):
+        settings.set(key, value)
+        self.window.refresh_mini_hud()
+
+    def change_hud_metrics(self, *_):
+        choices = [key for key, box in self.hud_metrics.items() if box.isChecked()]
+        if not choices:
+            return
+        settings.set('mini_hud_metrics', choices)
+        self.window.refresh_mini_hud()
 
     def _refresh_renderer_status(self):
         active = getattr(self.window, 'render_backend_active', renderer.SOFTWARE)

@@ -46,8 +46,9 @@ Vitalux vereint Systemüberwachung, Live-Diagramme, Datenträgeranalyse und eine
 | **Netzwerk** | Schnittstellen, IP-Adressen, aktuelle Up-/Downloadraten und Datenverkehr |
 | **Laufwerke** | Datenträger, Partitionen, Belegung, SMART-Diagnose und fio-Benchmarks |
 | **Sensoren** | Verfügbare Temperaturen, Lüfterdrehzahlen, Spannungen, Leistungsaufnahme und Frequenzen |
+| **Diagnostic Center** | Systemcheck, Fehler-, Anzeige-, PCIe-, Temperatur-, Netzwerk- und Prozessdiagnose sowie lokale Berichte |
 | **System** | Distribution, Kernel, Desktop-/Sitzungsinformationen, Mesa, Treiber und Hardwaredetails |
-| **Einstellungen** | Designs, Farben, Ultra-Eco-Schalter, Rendering, Warnungen und lokale Berichte |
+| **Einstellungen** | Designs, Farben, Ultra-Eco-Schalter, MiniHUD, Rendering und Warnungen |
 | **Updates** | Offizielle GitHub-Releases prüfen, Neuerungen anzeigen und Aktualisierungen bestätigen |
 | **Info** | Versionsinformationen, Mitwirkende und integrierte, bebilderte Anleitung |
 
@@ -68,7 +69,7 @@ Das Dashboard vereint Systemzustand, CPU-, GPU-, RAM- und Laufwerksauslastung, N
 
 **Sensoren:** Eigener Reiter für auslesbare Temperaturen, Lüfterdrehzahlen, Spannungen, Leistung und Frequenzen.
 
-**Diagnose:** Systemberichte als **TXT/JSON**, Fehlerdiagnosen als **JSON** unter **Einstellungen → Diagnose & Berichte**. Exporte erfolgen nur auf ausdrücklichen Wunsch und können private Systemdaten enthalten.
+**Diagnose:** Systemberichte als **TXT/JSON**, Fehlerdiagnosen als **JSON** unter **Diagnostic Center → Diagnose & Berichte**. Exporte erfolgen nur auf ausdrücklichen Wunsch und können private Systemdaten enthalten.
 
 ### Vitalux Insights
 
@@ -153,6 +154,12 @@ VITALUX_RENDERER=software ./run.sh
 - **Systemleiste:** Weiterlaufen beim Schließen, Tooltip und kompakte Live-Vorschau. Updates können durch pulsierendes Logo, hervorgehobenen Reiter und Benachrichtigung angezeigt werden.
 - **Sprachen:** **Deutsch / Englisch** ohne Neustart, einschließlich lokalisiertem Changelog.
 - **Anleitung:** Unter **Info → Anleitung öffnen** steht eine bebilderte, neunteilige Einführung bereit; beim Erststart optional.
+
+### Diagnostic Center und MiniHUD
+
+**Diagnostic Center** bietet Systemcheck, Crash Investigator, DisplayDoctor, PCIe Guardian, Thermal Compass, NetworkPulse, Process Spotlight, ChangeRadar und die optional aktivierbare Blackbox. Unter **Diagnose & Berichte** liegen jetzt die manuellen Exporte für Systembericht (TXT/JSON), Fehlerbericht und Diagnoseergebnisse. Externer Ping und Blackbox starten nur nach ausdrücklicher Aktivierung.
+
+**MiniHUD** ist ein frei positionierbares, separates Desktop-Fenster mit drei Größen und wählbaren Sensoren (CPU, GPU, RAM, VRAM, Temperaturen). Aktivierung unter **Einstellungen → MiniHUD** oder über das Tray-Menü; keine zusätzliche Sensorabfrage. Unter Wayland hängt die Darstellung über Vollbildspielen vom Compositor ab. Die erweiterten Render-Optionen bleiben unverändert unter **Grafik-Rendering** – ohne zusätzlichen Unterpunkt.
 
 ## Download
 

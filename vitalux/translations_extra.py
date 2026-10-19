@@ -804,3 +804,70 @@ EN_MORE.update({
     "Sieben Farbschemata bleiben verfügbar und werden nach dem Abschalten von Ultra Eco wiederhergestellt. Black Glass sperrt eigene Akzente, Black Glass Gold alle Akzente und zeigt Diagramme samt RAM-Beschriftungen in Goldtönen; Holographic bleibt ein HUD ohne Glas. Automatische Hintergrundfarbe benötigt ein eigenes Bild.":
         "Seven themes remain available and are restored when Ultra Eco is disabled. Black Glass disables custom accents, Black Glass Gold locks all accents and uses gold for charts including RAM labels; Holographic is a separate HUD. Automatic wallpaper accent requires a custom image."
 })
+
+# Diagnostic Center and MiniHUD additions (v0.9.4.8).
+EN_MORE.update({
+    'Diagnostic Center': 'Diagnostic Center',
+    'MiniHUD anzeigen': 'Show MiniHUD',
+    'Diagnose läuft noch – bitte warten.': 'A diagnostic scan is still running – please wait.',
+    'Systembericht exportieren …': 'Export system report…',
+    'Fehlerdiagnose exportieren …': 'Export error diagnostics…',
+    'MiniHUD · kompakte Live-Anzeige': 'MiniHUD · compact live view',
+    'Gezielte, ausschließlich lesende Hardware- und Systemprüfungen.':
+        'Read-only hardware and system diagnostics.',
+})
+
+# Native Diagnostic Center and MiniHUD translations.
+EN_MORE.update({
+    'Diagnose & Berichte': 'Diagnostics & reports',
+    'Diagnostic Center · Linux-Systemanalyse': 'Diagnostic Center · Linux system analysis',
+    'Systemanalyse, Diagnose und lokale Berichte': 'System analysis, diagnostics and local reports',
+    'Gesamtcheck': 'Full check',
+    'Systemcheck': 'System check',
+    'Vollständige Diagnose starten': 'Run full diagnostics',
+    'Aktuelle Diagnose exportieren …': 'Export current diagnostics…',
+    'Gezielte, ausschließlich lesende Hardware- und Systemprüfungen. Die Ergebnisse sind Hinweise, keine automatischen Fehlerursachen. Alle Prüfungen werden erst durch Klick gestartet.':
+        'Targeted, read-only system checks. Results are observations, not proven causes. Diagnostics run only when requested.',
+    'Systemberichte, Fehlerdiagnose und die aktuelle Untersuchung als TXT/JSON – ausschließlich lokal gespeichert, ohne automatischen Upload.':
+        'Export system reports, errors or the current diagnostics as TXT/JSON locally, without automatic upload.',
+    'Prüfung starten': 'Run check',
+    'Bereit · bisher keine Diagnose gestartet': 'Ready · no diagnostic scan started yet',
+    'Keine Untersuchung durchgeführt.\nDie Auswertung wird auf Wunsch gestartet.':
+        'No examination performed.\nStart the analysis when needed.',
+    'MiniHUD anzeigen': 'Show MiniHUD',
+    'Größe': 'Size',
+    'Kompakt': 'Compact',
+    'Erweitert mit Balken': 'Extended with bars',
+    'Im Vordergrund halten (soweit vom Fenstermanager unterstützt)': 'Keep on top (where supported by the window manager)',
+    'Deckkraft': 'Opacity',
+    'Messwerte im MiniHUD': 'MiniHUD metrics',
+    'Externen Ping ausdrücklich starten': 'Run external ping explicitly',
+    'Aktuellen Stand merken': 'Save current system baseline',
+    'Mit gespeichertem Stand vergleichen': 'Compare with saved baseline',
+    'Blackbox-Ereignisaufzeichnung aktivieren': 'Enable Blackbox event recording',
+    'Aufzeichnungen löschen …': 'Delete recordings…',
+    'Ereignisse anzeigen': 'Show events',
+})
+
+# New guide slide in both languages (the legacy guide still has its nine entries).
+EN_MORE.update({
+    'Diagnostic Center und MiniHUD': 'Diagnostic Center and MiniHUD',
+    'Im neuen Diagnostic Center findest du lokale Systemchecks, Crash Investigator, DisplayDoctor, PCIe Guardian, Thermal Compass, NetworkPulse, Process Spotlight, ChangeRadar und Blackbox.':
+        'Diagnostic Center provides local system checks, crash analysis, display, PCIe, thermal, network, process, change tracking and opt-in Blackbox.',
+    'Unter Diagnose & Berichte kannst du weiterhin System- und Fehlerberichte lokal als TXT/JSON exportieren. Ein externer Ping wird nur per Klick ausgelöst.':
+        'Under Diagnostics & reports, export system and error reports locally as TXT/JSON. External ping runs only after a click.',
+    'Das MiniHUD lässt sich in den Einstellungen oder über die Systemleiste aktivieren. Drei Größen, Sensoren, Deckkraft und Vordergrundmodus sind wählbar.':
+        'Enable MiniHUD in Settings or the system tray. Choose one of three sizes, metrics, opacity and always-on-top preference.',
+    'Das MiniHUD nutzt bestehende Messwerte. Wayland/KWin entscheidet, ob es über einem Vollbildspiel sichtbar bleibt.':
+        'MiniHUD uses existing sensor samples. Wayland/KWin determines whether it stays visible above full-screen games.',
+})
+
+# Additional translation coverage for the native diagnostic views.
+EN_MORE.update({
+    'Hinweis: Journal- und Prozessausgaben sowie exportierte Berichte können private Systemdaten enthalten. Es findet kein automatischer Upload statt. Externe Netzwerkzugriffe erfolgen ausschließlich mit dem Ping-Button.':
+        'Note: system journal and process output as well as exported reports may contain private system information. No automatic upload takes place. External network access requires a click on the ping button.',
+    'Eine Diagnose läuft bereits. Bitte kurz warten.':
+        'A diagnostic task is already running. Please wait briefly.',
+    'Separates Desktop-Fenster mit den vorhandenen Vitalux-Messwerten. Auch bei verborgenem Hauptfenster nutzbar; keine zusätzliche Sensorabfrage.':
+        'A separate desktop window showing the same Vitalux samples, also when the main window is hidden. No additional sensor polling.',
+})
