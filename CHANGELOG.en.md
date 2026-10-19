@@ -1,5 +1,13 @@
 # Vitalux – Changes
 
+## [v0.9.5.3] - 2026-10-19
+- Improved system score with CPU/GPU loads and temperatures, RAM, swap, VRAM, all mounted volume capacities, and actual SMART warnings; missing SMART data is never treated as healthy.
+- Made settings search genuinely animated and text-responsive, with a smaller subtle magnifier that stays at the top of the page when closed.
+- Restored the original DE/EN switch in the sidebar and removed the language setting.
+- Consolidated Diagnostic Center into one card and removed the event timeline, interactive hardware map and before-after comparison.
+- Separated renderer versus Ultra Eco restart notices; added Vitalux cache and personal settings maintenance actions.
+- MiniHUD now paints transparent surfaces from 50–100% opacity and applies the topmost preference more consistently.
+
 ## [v0.9.5.2] - 2026-10-19
 - Added a centered floating settings search with smooth theme-aware glass animation, adaptive width, instant suggestions and automatic close after five idle seconds or outside clicks.
 - Added reset buttons for Appearance, MiniHUD and hardware alerts, visible only when the respective group differs from defaults.
