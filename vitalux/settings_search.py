@@ -5,6 +5,7 @@ from PySide6.QtCore import QEvent, QPointF, QRectF, Qt, QTimer, QVariantAnimatio
 from PySide6.QtGui import QColor, QPainter, QPen
 from PySide6.QtWidgets import QApplication, QHBoxLayout, QToolButton, QVBoxLayout, QWidget
 from . import theme
+from .i18n import tr
 
 
 class _SearchIcon(QToolButton):
@@ -14,7 +15,7 @@ class _SearchIcon(QToolButton):
         super().__init__(parent)
         self.setFixedSize(40, 40)
         self.setCursor(Qt.PointingHandCursor)
-        self.setToolTip('Einstellungen durchsuchen')
+        self.setToolTip(tr('Einstellungen durchsuchen'))
         self.setObjectName('settingsFloatingMagnifier')
 
     def paintEvent(self, event):
@@ -119,6 +120,7 @@ class FloatingSettingsSearch(QWidget):
             'border-radius: 12px; padding: 3px;'
             '}'
         )
+        self.icon.setToolTip(tr('Einstellungen durchsuchen'))
         self.icon.update()
 
     def eventFilter(self, obj, event):
