@@ -709,6 +709,7 @@ class PreferencesPage(Page):
         self.language_combo.blockSignals(True)
         self.language_combo.setCurrentIndex(self.language_combo.findData(i18n.lang()))
         self.language_combo.blockSignals(False)
+        self.search_overlay.refresh_theme()
 
     def change_language(self, *_):
         code = self.language_combo.currentData()
@@ -839,7 +840,7 @@ class PreferencesPage(Page):
     def restore_defaults(self):
         answer = QMessageBox.question(
             self, 'Vitalux',
-            tr('Alle Anzeige-, Überwachungs- und Warnungseinstellungen auf die Standardwerte zurücksetzen? Dashboard-Anordnung und Sprache bleiben erhalten.'),
+            tr('Alle Darstellungs-, MiniHUD-, Überwachungs- und Warnungseinstellungen zurücksetzen? Dashboard-Anordnung, importierte Bilder und Sprache bleiben erhalten.'),
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if answer != QMessageBox.Yes:
             return
