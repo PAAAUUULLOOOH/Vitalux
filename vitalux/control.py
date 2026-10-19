@@ -13,7 +13,7 @@ from .sensors import fmt_bytes, fmt_rate, system_static
 from .widgets import Card, KeyValue, Meter, label
 from .i18n import tr
 from .mini_hud import DEFAULT_KEYS
-from .settings_search import FloatingSettingsSearch
+from .settings_search import FloatingSettingsSearch, _SearchIcon
 
 
 class SensorsPage(Page):
@@ -198,7 +198,17 @@ class PreferencesPage(Page):
         # The overlay is parented to the scroll viewport when the page is embedded.
         # A reserved top margin ensures the pinned control never covers a settings card.
         self.search_overlay = FloatingSettingsSearch(self.search, self.search_results, self)
-        self.content.addSpacing(54)
+        # Resting magnifier is a normal page element. Only the opened search
+        # floats above the viewport; after closing, scroll can carry it away.
+        self.search_home = _SearchIcon(self)
+        self.search_home.clicked.connect(self.search_overlay.open_search)
+        self.search_overlay.home_icon = self.search_home
+        search_home_row = QHBoxLayout()
+        search_home_row.addStretch(1)
+        search_home_row.addWidget(self.search_home)
+        search_home_row.addStretch(1)
+        self.content.addLayout(search_home_row)
+
         self._search_targets = []
         look = Card('Erscheinungsbild')
         self.mode = QComboBox()
@@ -418,6 +428,24 @@ class PreferencesPage(Page):
         render_card.body.addWidget(self.render_restart_button, 0, Qt.AlignLeft)
         self._refresh_renderer_status()
         self._settings_cards['render'].append(render_card)
+        # These are explicitly different: clearing harmless in-memory previews
+        # does not delete user preferences, wallpapers or the OS page cache.
+        maintenance = Card('Wartung')
+        maintenance.body.addWidget(label(
+            'Nur Vitalux-eigene Daten verwalten. Kein Eingriff in Linux-Systemcaches.',
+            'muted', wrap=True))
+        maintenance_row = QHBoxLayout()
+        self.clear_cache_btn = QPushButton('Vitalux-Cache leeren')
+        self.clear_cache_btn.setObjectName('ghostBtn')
+        self.clear_cache_btn.clicked.connect(self.clear_app_cache)
+        maintenance_row.addWidget(self.clear_cache_btn)
+        self.clear_preferences_btn = QPushButton('Persönliche Einstellungen löschen …')
+        self.clear_preferences_btn.setObjectName('ghostBtn')
+        self.clear_preferences_btn.clicked.connect(self.delete_personal_preferences)
+        maintenance_row.addWidget(self.clear_preferences_btn)
+        maintenance_row.addStretch(1)
+        maintenance.body.addLayout(maintenance_row)
+        self._maintenance_card = maintenance
 
         monitor = Card('Live-Monitoring')
         row = QHBoxLayout()
@@ -464,7 +492,7 @@ class PreferencesPage(Page):
         opacity_row = QHBoxLayout()
         opacity_row.addWidget(label('Deckkraft', 'strong'))
         self.hud_opacity = QComboBox()
-        for level in (60, 70, 80, 90, 100):
+        for level in (50, 60, 70, 80, 90, 100):
             self.hud_opacity.addItem(f'{level} %', level)
         self.hud_opacity.setCurrentIndex(max(0, self.hud_opacity.findData(settings.get('mini_hud_opacity', 90))))
         self.hud_opacity.currentIndexChanged.connect(lambda *_: self.change_hud_option('mini_hud_opacity', self.hud_opacity.currentData()))
@@ -529,21 +557,6 @@ class PreferencesPage(Page):
         self.restore_button.setObjectName('ghostBtn')
         self.restore_button.clicked.connect(self.restore_defaults)
         restore_row.addWidget(self.restore_button)
-        general_card = Card('Sprache & Allgemein')
-        language_row = QHBoxLayout()
-        language_row.addWidget(label('Sprache', 'strong'))
-        self.language_combo = QComboBox()
-        self.language_combo.addItem('Deutsch', 'de')
-        self.language_combo.addItem('English', 'en')
-        self.language_combo.setCurrentIndex(max(0, self.language_combo.findData(i18n.lang())))
-        self.language_combo.currentIndexChanged.connect(self.change_language)
-        language_row.addWidget(self.language_combo)
-        language_row.addStretch()
-        general_card.body.addLayout(language_row)
-        general_card.body.addWidget(label('Sprache und allgemeines Verhalten. '
-                                          'Die meisten Änderungen werden sofort übernommen.',
-                                          'muted', wrap=True))
-        self._settings_cards['general'].append(general_card)
         self._restore_row = restore_row
         self._refresh_restore_button()
         self._search_targets = [
@@ -559,7 +572,6 @@ class PreferencesPage(Page):
             ('monitoring', 'Aktualisierungsintervall Live Monitoring', self.interval),
             ('monitoring', 'Warnungen Grenzwerte CPU GPU Temperatur RAM Laufwerk', self.alert_toggle),
             ('energy', 'Ultra Eco Ressourcenschonung Neustarten', self.eco_toggle),
-            ('general', 'Sprache Deutsch Englisch Language', self.language_combo),
             ('general', 'Standardwerte wiederherstellen Zurücksetzen', self.restore_button),
             ('render', 'Grafik Rendering Backend CPU OpenGL Wayland Vulkan X11', self.render_combo),
         ]
@@ -569,7 +581,8 @@ class PreferencesPage(Page):
                      else self._settings_cards[category])
             for card in cards:
                 self.content.addWidget(card)
-        # A single global reset at the absolute bottom of all settings.
+        # Global reset and maintenance remain below the final renderer.
+        self.content.addWidget(self._maintenance_card)
         self.content.addLayout(self._restore_row)
 
     SEARCH_CATEGORIES = {
@@ -706,19 +719,7 @@ class PreferencesPage(Page):
 
     def retranslate(self):
         self.search.setPlaceholderText(tr('Einstellungen durchsuchen …'))
-        self.language_combo.blockSignals(True)
-        self.language_combo.setCurrentIndex(self.language_combo.findData(i18n.lang()))
-        self.language_combo.blockSignals(False)
         self.search_overlay.refresh_theme()
-
-    def change_language(self, *_):
-        code = self.language_combo.currentData()
-        if code in ('de', 'en'):
-            handler = getattr(self.window, 'set_language', None)
-            if callable(handler):
-                handler(code)
-            else:
-                i18n.set_lang(code)
 
     def set_hud_enabled(self, enabled):
         callback = getattr(self.window, 'set_mini_hud_enabled', None)
@@ -765,9 +766,9 @@ class PreferencesPage(Page):
                 'Ultra Eco wartet auf Neustart für CPU-Rendering.'
                 if pending else 'Ultra Eco: CPU-Rendering aktiv.'))
             self.render_restart_button.setVisible(False)
-            self.eco_restart_button.setVisible(True)
+            self.eco_restart_button.setVisible(pending)
             return
-        self.eco_restart_button.setVisible(pending)
+        self.eco_restart_button.setVisible(False)
         selected = self.render_combo.currentData()
         if selected != active:
             status = tr('Rendering-Wechsel vorgemerkt – bitte Vitalux neu starten.')
@@ -779,6 +780,40 @@ class PreferencesPage(Page):
             status = tr('Aktiv: CPU-Rendering (Standard)')
         self.render_status.setText(status)
         self.render_restart_button.setVisible(selected != active)
+
+    def clear_app_cache(self):
+        """Drop only transient Vitalux-render caches, never user/system data."""
+        from . import user_background, wallpaper_accents
+        user_background._scaled_image.cache_clear()
+        wallpaper_accents._sample.cache_clear()
+        self._background_preview_key = None
+        self.sync_background_controls()
+        QMessageBox.information(
+            self, 'Vitalux', tr('Temporärer Vitalux-Bild- und Farb-Cache geleert. '
+                              'Einstellungen und importierte Bilder bleiben erhalten.'))
+
+    def delete_personal_preferences(self):
+        """Explicitly confirmed deletion of only the personal settings file."""
+        from pathlib import Path
+        answer = QMessageBox.question(
+            self, 'Vitalux',
+            tr('Wirklich alle gespeicherten Vitalux-Einstellungen löschen? '
+               'Farbauswahl, Layouts, Warnwerte und Programmeinstellungen gehen verloren. '
+               'Importierte Bilddateien bleiben auf dem Datenträger. '
+               'Vitalux wird anschließend neu gestartet.'),
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if answer != QMessageBox.Yes:
+            return
+        # Avoid deleting preferences before a running benchmark refuses the
+        # restart; never recursively delete a user configuration directory.
+        try:
+            Path(settings.PATH).unlink(missing_ok=True)
+        except OSError as exc:
+            QMessageBox.warning(self, 'Vitalux', str(exc))
+            return
+        restart = getattr(self.window, 'restart_for_renderer', None)
+        if callable(restart):
+            restart()
 
     def change_renderer(self, *_):
         if eco.enabled():
