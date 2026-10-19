@@ -1,0 +1,1 @@
+Originaler Vitalux-Glasklang, lokal synthetisiert. 225 ms, mono, 48 kHz / PCM 16 bit. Harmonische A-/E-Teiltöne, weicher Anschlag, kurzer gläserner Ausklang. Keine externen Samples. Lizenz wie Vitalux.

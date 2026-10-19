@@ -11,7 +11,7 @@ from .i18n import tr
 from .pages import CpuPage, DiskPage, GpuPage, MemoryPage, NetworkPage, OverviewPage, SystemPage
 from .pages_extra import InfoPage, UpdatePage
 from .control import SensorsPage, PreferencesPage
-from .brand import PulseCore, TrayPulse, app_icon, sync_installed_icon, wordmark_pixmap
+from .brand import PulseCore, TrayPulse, Wordmark, app_icon, sync_installed_icon
 from .widgets import NavButton, SidebarToggle, ChartPanel, Gauge, label
 from .glass import AmbientScene, GlassSidebar, GlassSurface, create_ambient_scene
 from .sidebar_transition import SidebarTransition, SidebarFreeze
@@ -172,10 +172,9 @@ class MainWindow(QMainWindow):
         self.pulse_core = PulseCore(size=132, parent=brand)
         brand_lay.addWidget(self.pulse_core, 0, Qt.AlignHCenter)
         brand_lay.addSpacing(4)
-        mark = label(align=Qt.AlignHCenter)
+        mark = Wordmark()
         mark.setObjectName('wordmarkWrap')
         mark.setFixedSize(200, 42)
-        mark.setPixmap(wordmark_pixmap(200, 42))
         self.brand_mark = mark
         brand_lay.addWidget(mark, 0, Qt.AlignHCenter)
         brand_lay.addSpacing(7)
@@ -681,7 +680,7 @@ class MainWindow(QMainWindow):
         user_accent = settings.get('accent', '#4f8cff')
         theme.set_accent('#4f8cff' if eco.enabled() else resolve_accent(user_accent, self.distro['color']))
         QApplication.instance().setStyleSheet(theme.stylesheet())
-        self.brand_mark.setPixmap(wordmark_pixmap(200, 42))
+        self.brand_mark.sync_theme()
         self.pulse_core.sync_theme()
         current_icon = app_icon()
         QApplication.instance().setWindowIcon(current_icon)

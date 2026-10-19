@@ -73,7 +73,7 @@ def run():
             assert motion.duration(500) == 0
             assert backdrops.resolve('animated_sparkle', 'minimal') == 'minimal'
             assert host.intervals[-1] == 10
-            assert not pref.mode.isEnabled()
+            assert not pref.design_tiles[0].isEnabled()
             assert not pref.background_combo.isEnabled()
             assert not pref.accent_combo.isEnabled()
             assert not pref.motion_combo.isEnabled()
@@ -105,7 +105,7 @@ def run():
             assert pref.render_combo.currentData() == renderer.WAYLAND_VULKAN
             pref.render_restart_button.click()
             assert host.restarts == 1, 'Explicit restart applies remembered GPU backend'
-            assert pref.mode.isEnabled()
+            assert pref.design_tiles[0].isEnabled()
             assert pref.background_combo.isEnabled()
             assert pref.accent_combo.isEnabled()
             assert pref.motion_combo.isEnabled()

@@ -93,6 +93,7 @@ def main():
             for color, suffix in (('#facc15', 'yellow'), ('#ef4444', 'red'),
                                   ('#4f8cff', 'blue')):
                 settings.set('accent', color)
+                theme.set_accent(color)
                 assert sync_installed_icon()
                 expected = icons / ('vitalux-' + suffix + '.svg')
                 assert expected.is_file()

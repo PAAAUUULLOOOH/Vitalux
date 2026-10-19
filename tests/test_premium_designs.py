@@ -33,6 +33,15 @@ def run():
             assert window.last_sample is not None
             sampler = window.sampler
             preferences = dict(window.pages)['Einstellungen']
+            assert not hasattr(preferences, 'mode')
+            assert len(preferences.design_tiles) == len(theme.CHOICES) == 10
+            assert {tile.key for tile in preferences.design_tiles} == set(theme._THEMES)
+            for tile in preferences.design_tiles:
+                tile.click()
+                app.processEvents()
+                assert settings.get('theme') == tile.key
+                assert sum(t.isChecked() for t in preferences.design_tiles) == 1
+                assert not tile.grab().isNull()
             images = []
             for key in premium.KEYS:
                 preferences.select_design(key)
@@ -40,6 +49,12 @@ def run():
                 assert theme.mode() == key
                 assert theme.accent() == premium.COLLECTIONS[key]['accent']
                 assert not preferences.accent_combo.isEnabled()
+                assert not preferences.background_combo.isEnabled()
+                assert not preferences.background_lock_note.isHidden()
+                assert not preferences.accent_lock_note.isHidden()
+                original_bg = settings.get('background_style')
+                preferences.background_combo.setCurrentIndex(preferences.background_combo.findData('prism'))
+                assert settings.get('background_style') == original_bg
                 assert settings.get('accent') == '#f472b6'
                 assert window.sampler is sampler and sampler.isRunning()
                 assert sum(t.isChecked() for t in preferences.design_tiles) == 1
@@ -48,12 +63,13 @@ def run():
                 assert tile.isChecked()
                 images.append(window.centralWidget().sharp_backdrop().toImage())
             assert images[0] != images[1] and images[1] != images[2]
-            preferences.mode.setCurrentIndex(preferences.mode.findData('glass'))
+            preferences.select_design('glass')
             app.processEvents()
             assert preferences.accent_combo.isEnabled()
             assert settings.get('accent') == '#f472b6'
             assert window.sampler is sampler
-            assert not any(t.isChecked() for t in preferences.design_tiles)
+            assert sum(t.isChecked() for t in preferences.design_tiles) == 1
+            assert next(t for t in preferences.design_tiles if t.isChecked()).key == 'glass'
         finally:
             if window is not None:
                 window.quit_from_tray()

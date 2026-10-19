@@ -78,7 +78,7 @@ SLIDES = [
         "Standardmäßig startet Vitalux mit Glass und Vitalux Blau. Die Lupe bleibt geschlossen am Seitenanfang und folgt geöffnet beim Scrollen. Die Suche wächst mit der Eingabe, schließt nach fünf Sekunden oder Klick außerhalb sanft. Geänderte Einstellungen lassen sich gezielt zurücksetzen.",
         "Wähle einen von 14 integrierten Hintergründen oder importiere eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
         "Unter Einstellungen → Leistung & Energie schaltest du Ultra Eco ein oder aus: ein primitiver, flacher Skin ohne Effekte, CPU-Rendering und 10 Sekunden Messintervall. Die Anwendung zeichnet verborgen keine Diagramme neu. Mit Jetzt neu starten übernimmst du GPU-/CPU-Wechsel; vorherige Einstellungen bleiben erhalten. Grafik-Rendering bietet CPU und experimentelle GPU-Modi.",
-        "Zehn Farbschemata stehen bereit: Obsidian Gold, Champagne Glass und Aurora Gold ergänzen die bisherigen Designs. Ihre Goldpaletten sind fest abgestimmt. Die äußeren Logo-Streifen drehen sich langsam; Animationen und Ultra Eco können die Bewegung abschalten. Deine persönlichen Akzente bleiben gespeichert.",
+        "Zehn Farbschemata wählst du direkt über Vorschaukacheln. Die vier Gold-/Glas-Designs haben feste Farbpaletten und Hintergründe; gesperrte Optionen sind grau und erklärt. Die äußeren Logo-Streifen drehen sich langsam. Deine persönlichen Akzente bleiben für die anderen Designs gespeichert.",
         "settings",
     ),
     (

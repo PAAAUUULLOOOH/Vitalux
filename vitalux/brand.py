@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import math
 import os
+import re
 import time
 import xml.etree.ElementTree as ET
 from tempfile import NamedTemporaryFile
@@ -41,7 +42,7 @@ def _logo_layers(filename):
     Original SVG colors, gradients and exact band shapes survive the split.
     Desktop/tray icons continue to use the complete static SVG.
     """
-    data = (_ASSETS / filename).read_bytes()
+    data = filename if isinstance(filename, bytes) else (_ASSETS / filename).read_bytes()
     layers = []
     for outer in (False, True):
         root = ET.fromstring(data)
@@ -61,7 +62,7 @@ def _logo_layers(filename):
     return tuple(layers)
 
 
-def _pixmap(filename, width, height, ratio=1.0):
+def _render_pixmap(renderer, width, height, ratio=1.0):
     width, height = max(1, int(width)), max(1, int(height))
     ratio = max(1.0, float(ratio))
     pixmap = QPixmap(round(width * ratio), round(height * ratio))
@@ -69,17 +70,49 @@ def _pixmap(filename, width, height, ratio=1.0):
     pixmap.fill(Qt.transparent)
     p = QPainter(pixmap)
     p.setRenderHint(QPainter.Antialiasing)
-    _renderer(filename).render(p, QRectF(0, 0, width, height))
+    renderer.render(p, QRectF(0, 0, width, height))
     p.end()
     return pixmap
+
+
+def _pixmap(filename, width, height, ratio=1.0):
+    return _render_pixmap(_renderer(filename), width, height, ratio)
+
+
+@lru_cache(maxsize=48)
+def _svg_renderer(data):
+    return QSvgRenderer(data)
+
+
+@lru_cache(maxsize=48)
+def _tinted_svg(filename, accent):
+    """Preserve every authored contour, cut and highlight for arbitrary hues."""
+    base = QColor(accent)
+    hue, saturation, _value, _alpha = base.getHsv()
+    def tint(match):
+        source = QColor(match.group())
+        _h, s, v, _a = source.getHsv()
+        if s < 22:
+            return source.name()
+        tinted_saturation = 0 if hue < 0 else min(255, round(s*.65+saturation*.35))
+        return QColor.fromHsv(max(0, hue), tinted_saturation, v).name()
+    return re.sub(r'#[0-9a-fA-F]{6}', tint, (_ASSETS/filename).read_text()).encode()
+
+
+def _themed_svg(icon):
+    from . import theme
+    filename = _brand_asset(icon)
+    if _selected_variant() is None:
+        return _tinted_svg(filename, theme.accent())
+    return (_ASSETS/filename).read_bytes()
 
 
 def icon_pixmap(size=96):
     return _pixmap("vitalux-pulse.svg", size, size)
 
 
-# Only predefined accent choices receive new, *separately authored SVG assets*.
-# 'Distribution' and arbitrary custom colors retain the original artwork.
+# Presets use their authored SVG palettes; arbitrary and distribution colors
+# tint the same original vector contours with the effective theme hue.
 ACCENT_VARIANTS = {
     "#4f8cff": "blue",
     "#52d3ff": "cyan",
@@ -94,9 +127,9 @@ ACCENT_VARIANTS = {
 
 def _selected_variant():
     from . import settings
-    chosen = settings.get("accent", "#4f8cff")
     from . import theme
-    if theme.mode() == "black_glass_gold" or theme.mode() in theme.PREMIUM_MODES:
+    chosen = theme.accent()
+    if theme.mode() in theme.FIXED_MODES:
         return "gold"
     if theme.mode() == "holographic" and str(chosen).lower() == "#4f8cff":
         return "cyan"
@@ -115,37 +148,74 @@ def _brand_asset(icon):
 
 
 def themed_icon_pixmap(size=152):
-    return _pixmap(_brand_asset(icon=True), size, size)
+    return _render_pixmap(_svg_renderer(_themed_svg(True)), size, size)
 
 
 def wordmark_pixmap(width=205, height=44):
-    from . import theme
-    if theme.mode() in theme.PREMIUM_MODES:
-        pixmap = QPixmap(round(width*2), round(height*2))
-        pixmap.setDevicePixelRatio(2)
-        pixmap.fill(Qt.transparent)
-        p = QPainter(pixmap)
-        p.setRenderHint(QPainter.TextAntialiasing)
-        font = QFont('DejaVu Sans')
-        font.setPixelSize(round(height*.54))
-        font.setWeight(QFont.Light)
-        font.setLetterSpacing(QFont.AbsoluteSpacing, width*.023)
-        p.setFont(font)
-        gold = QLinearGradient(0, 0, width, height)
-        gold.setColorAt(0, QColor(theme.secondary_accent()))
-        gold.setColorAt(.55, QColor(theme.accent()))
-        gold.setColorAt(1, QColor(theme.MUTED))
-        p.setPen(QPen(QBrush(gold), 1))
-        p.drawText(QRectF(0, 0, width, height*.75), Qt.AlignCenter, 'VITALUX')
-        font.setPixelSize(7)
-        font.setLetterSpacing(QFont.AbsoluteSpacing, 2.0)
-        p.setFont(font)
-        p.setPen(QColor(theme.MUTED))
-        p.drawText(QRectF(0, height*.75, width, height*.25), Qt.AlignCenter,
-                   'SYSTEM MONITOR')
+    return _render_pixmap(_svg_renderer(_themed_svg(False)), width, height, ratio=2.0)
+
+
+class Wordmark(QWidget):
+    """Original vector lettering with light clipped precisely to its strokes."""
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedSize(200, 42)
+        self.setAccessibleName('Vitalux')
+        self._base = QPixmap()
+        self._phase = 0.0
+        self._last_tick = time.monotonic()
+        self._timer = QTimer(self)
+        self._timer.timeout.connect(self._advance)
+        self.sync_theme()
+
+    def sync_theme(self):
+        from . import motion
+        self._base = wordmark_pixmap(self.width(), self.height())
+        self._timer.stop()
+        self._last_tick = time.monotonic()
+        if self.isVisible() and motion.enabled():
+            self._timer.start(80 if motion.level() == 'reduced' else 40)
+        self.update()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.sync_theme()
+
+    def hideEvent(self, event):
+        self._timer.stop()
+        super().hideEvent(event)
+
+    def _advance(self):
+        from . import motion
+        if not motion.enabled():
+            self._timer.stop()
+            self.update()
+            return
+        now = time.monotonic()
+        self._phase = (self._phase + min(.25, now-self._last_tick)/7.5) % 1.0
+        self._last_tick = now
+        self.update()
+
+    def paintEvent(self, event):
+        from . import motion
+        p = QPainter(self)
+        p.drawPixmap(0, 0, self._base)
+        if motion.enabled():
+            # A short silvery reflection travels along the original gradient,
+            # followed by a quiet pause. SourceIn leaves every SVG cut intact.
+            sweep = min(1.0, self._phase/.40)
+            x = -50 + sweep*(self.width()+100)
+            if self._phase < .40:
+                gleam = self._base.copy()
+                light = QPainter(gleam)
+                light.setCompositionMode(QPainter.CompositionMode_SourceIn)
+                band = QLinearGradient(x-29, 0, x+29, self.height())
+                for position, alpha in ((0, 0), (.30, 25), (.49, 225), (.57, 130), (1, 0)):
+                    band.setColorAt(position, QColor(255, 255, 255, alpha))
+                light.fillRect(QRectF(0, 0, self.width(), self.height()), QBrush(band))
+                light.end()
+                p.drawPixmap(0, 0, gleam)
         p.end()
-        return pixmap
-    return _pixmap(_brand_asset(icon=False), width, height, ratio=2.0)
 
 
 def app_icon():
@@ -189,8 +259,9 @@ def sync_installed_icon():
             return False
         # The selected color changes the icon *filename*, not just its bytes:
         # Plasma consequently refreshes pinned launchers more reliably.
-        target = directory / ('vitalux-' + (variant or 'original') + '.svg')
-        new_bytes = source.read_bytes()
+        from . import theme
+        target = directory / ('vitalux-' + (variant or 'accent-'+theme.accent()[1:]) + '.svg')
+        new_bytes = _themed_svg(True)
         if not target.is_file() or target.read_bytes() != new_bytes:
             with NamedTemporaryFile(dir=directory, prefix='.vitalux-color-',
                                     suffix='.svg', delete=False) as fd:
@@ -385,7 +456,7 @@ class PulseCore(QWidget):
         if self._low_power():
             # Retain the recognizable logo; skip the moving halo and orbit.
             size = min(self.width(), self.height())
-            _renderer(_brand_asset(icon=True)).render(painter, QRectF(self.rect()))
+            _svg_renderer(_themed_svg(True)).render(painter, QRectF(self.rect()))
             painter.end()
             return
         painter.setRenderHint(QPainter.Antialiasing)
@@ -423,7 +494,7 @@ class PulseCore(QWidget):
             ring_glow.setColorAt(1, clear)
             painter.setBrush(QBrush(ring_glow))
             painter.drawEllipse(rect)
-        core, bands = _logo_layers(_brand_asset(icon=True))
+        core, bands = _logo_layers(_themed_svg(True))
         core.render(painter, rect)
         painter.save()
         painter.translate(rect.center())

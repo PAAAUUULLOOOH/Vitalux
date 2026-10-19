@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from PySide6.QtCore import QEvent, QPointF, QRectF, Qt, QTimer, QVariantAnimation, QEasingCurve
 from PySide6.QtGui import QColor, QPainter, QPen
-from PySide6.QtWidgets import QApplication, QToolButton, QWidget
-from . import theme
+from PySide6.QtWidgets import QApplication, QGraphicsOpacityEffect, QToolButton, QWidget
+from . import theme, motion
 from .i18n import tr
 
 
@@ -69,6 +69,13 @@ class FloatingSettingsSearch(QWidget):
         self.setFixedSize(32, 32)
         self.hide()
 
+        self._opacity = QGraphicsOpacityEffect(self)
+        self.setGraphicsEffect(self._opacity)
+        self._opacity.setOpacity(0)
+        self.reveal = QVariantAnimation(self)
+        self.reveal.setEasingCurve(QEasingCurve.OutCubic)
+        self.reveal.valueChanged.connect(self._reveal_frame)
+
         self.animation = QVariantAnimation(self)
         self.animation.setDuration(340)
         self.animation.setEasingCurve(QEasingCurve.InOutCubic)
@@ -129,7 +136,12 @@ class FloatingSettingsSearch(QWidget):
     def eventFilter(self, obj, event):
         kind = event.type()
         if obj is self._host and kind == QEvent.Resize:
-            self._position()
+            if self._expanded:
+                self._animate(self._wanted_width())
+            else:
+                self._position()
+        elif self._expanded and kind in (QEvent.MouseButtonPress, QEvent.KeyPress) and (obj is self or isinstance(obj, QWidget) and self.isAncestorOf(obj)):
+            self.idle_timer.start()
         elif self._expanded and kind == QEvent.MouseButtonPress and isinstance(obj, QWidget):
             if obj is not self and not self.isAncestorOf(obj):
                 self.close_search()
@@ -140,7 +152,8 @@ class FloatingSettingsSearch(QWidget):
 
     def _position(self):
         if self._host is not None:
-            self.move(max(0, (self._host.width() - self.width()) // 2), 12)
+            self.move(max(0, (self._host.width() - self.width()) // 2),
+                      12 - round((1-self._opacity.opacity())*7))
             self.raise_()
 
     def _sync_geometry(self):
@@ -163,7 +176,7 @@ class FloatingSettingsSearch(QWidget):
         self.animation.setEndValue(int(end))
         # Retarget from the current visible width without snapping back.
         distance = abs(int(end) - self._width)
-        self.animation.setDuration(max(190, min(270, round(distance * 0.9))))
+        self.animation.setDuration(motion.duration(max(220, min(360, round(distance * 1.1)))))
         if int(end) == self._width:
             self._finished()
         else:
@@ -186,7 +199,19 @@ class FloatingSettingsSearch(QWidget):
         # Reserve room for the caret, borders and the search field's padding.
         placeholder = metrics.horizontalAdvance(self.field.placeholderText()) + 36
         typed = metrics.horizontalAdvance(self.field.text()) + 56
-        return min(self.MAX_WIDTH, max(self.DEFAULT_WIDTH, placeholder, typed))
+        available = max(100, self._host.width()-61) if self._host else self.MAX_WIDTH
+        return min(self.MAX_WIDTH, available, max(self.DEFAULT_WIDTH, placeholder, typed))
+
+    def _reveal_frame(self, value):
+        self._opacity.setOpacity(float(value))
+        self._position()
+
+    def _fade(self, value):
+        self.reveal.stop()
+        self.reveal.setStartValue(self._opacity.opacity())
+        self.reveal.setEndValue(value)
+        self.reveal.setDuration(motion.duration(300 if value else 240))
+        self.reveal.start()
 
     def _typed(self, _):
         self.idle_timer.start()
@@ -222,6 +247,7 @@ class FloatingSettingsSearch(QWidget):
         self.idle_timer.start()
         self.refresh_theme()
         self._animate(self._wanted_width())
+        self._fade(1.0)
         self.raise_()
 
     def close_search(self):
@@ -233,6 +259,7 @@ class FloatingSettingsSearch(QWidget):
         self.suggestions.hide()
         self.field.clearFocus()
         self._animate(0)
+        self._fade(0.0)
 
     @property
     def expanded(self):

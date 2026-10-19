@@ -1,5 +1,13 @@
 """Extra English translations for dashboard, settings, sensors and disk tests."""
 EN_MORE = {
+    'Zehn Farbschemata wählst du direkt über Vorschaukacheln. Die vier Gold-/Glas-Designs haben feste Farbpaletten und Hintergründe; gesperrte Optionen sind grau und erklärt. Die äußeren Logo-Streifen drehen sich langsam. Deine persönlichen Akzente bleiben für die anderen Designs gespeichert.': 'Select ten themes directly through preview tiles. The four gold/glass designs have fixed palettes and backgrounds; locked options are grey and explained. The outer logo bands revolve slowly. Your personal accents remain saved for other themes.',
+
+    'Glas-Klang bei Klicks': 'Glass sound on clicks',
+    'Ultra Eco verwendet einen festen, einfachen Hintergrund.': 'Ultra Eco uses a fixed, simple background.',
+    'Dieses Farbschema hat einen festen Hintergrund. Wähle ein anderes Farbschema, um eigene Bilder oder Hintergründe zu verwenden.': 'This theme has a fixed background. Choose another theme to use custom images or backgrounds.',
+    'Ultra Eco verwendet eine feste, einfache Farbpalette.': 'Ultra Eco uses a fixed, simple palette.',
+    'Dieses Farbschema verwendet eine feste Farbpalette. Eigene Akzentfarben sind hier nicht verfügbar.': 'This theme uses a fixed palette. Custom accent colors are unavailable here.',
+    'Black Glass Gold · Tiefschwarze Glasflächen, helles Gold für Logo, Diagramme, Anzeigen, Icons und Rahmen. Akzentfarbe und Hintergrund sind fest aufeinander abgestimmt.': 'Black Glass Gold · Deep black glass, pale gold for the logo, charts, gauges, icons and borders. The accent and background are fixed and coordinated.',
     'Lokale Designvorschau · Updates sind deaktiviert.': 'Local design preview · Updates are disabled.',
     'Zehn Farbschemata stehen bereit: Obsidian Gold, Champagne Glass und Aurora Gold ergänzen die bisherigen Designs. Ihre Goldpaletten sind fest abgestimmt. Die äußeren Logo-Streifen drehen sich langsam; Animationen und Ultra Eco können die Bewegung abschalten. Deine persönlichen Akzente bleiben gespeichert.': 'Ten themes are available: Obsidian Gold, Champagne Glass and Aurora Gold join the existing designs. Their gold palettes are carefully matched. The outer logo bands revolve slowly; motion settings and Ultra Eco can stop the animation. Your personal accents remain saved.',
     'Obsidian Gold · Rauchglas, gebürstetes Gold und präzise Instrumentringe. Die äußeren Logo-Streifen drehen sich langsam.': 'Obsidian Gold · Smoked glass, brushed gold and precision instrument rings. The outer logo bands revolve slowly.',

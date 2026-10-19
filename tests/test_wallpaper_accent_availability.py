@@ -59,10 +59,10 @@ def run():
             (folder / 'bg.png').unlink()
             page.refresh_background_images()
             assert not item.isEnabled() and settings.get('accent') == '#f472b6'
-            page.mode.setCurrentIndex(page.mode.findData('black_glass_gold'))
+            page.select_design('black_glass_gold')
             app.processEvents()
             assert not page.accent_combo.isEnabled()
-            page.mode.setCurrentIndex(page.mode.findData('glass'))
+            page.select_design('glass')
             app.processEvents()
             assert page.accent_combo.isEnabled()
             page.close()

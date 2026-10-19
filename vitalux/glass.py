@@ -172,9 +172,8 @@ class _AmbientSceneCore:
         sampled the un-tinted original. Light wallpapers with Glass therefore
         gave three incompatible colors. Compose once and share that result.
         """
-        selected_style = settings.get('background_style', 'theme_default')
-        if theme.mode() in premium.KEYS and selected_style == 'theme_default':
-            key = (theme.mode(), self.size())
+        if theme.mode() in premium.KEYS:
+            key = (theme.mode(), theme.accent(), self.size())
             if key != self._composed_key or self._composed_sharp.isNull():
                 self._composed_sharp = premium.scene_pixmap(self.size(), theme.mode())
                 tiny = self._composed_sharp.scaled(

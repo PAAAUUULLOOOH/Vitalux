@@ -75,7 +75,7 @@ def check():
             assert page.search_home.isVisible()
             assert floating.isHidden()
             page.search_home.click()
-            qwait(330)
+            qwait(420)
             assert floating.expanded and floating.field.isVisible()
             first_width = floating.width()
             assert first_width >= 145
@@ -85,7 +85,7 @@ def check():
             assert page.search_results.count() > 0
             floating.field.setText('grafikrendering backend wayland vulkan')
             app.processEvents()
-            qwait(330)
+            qwait(420)
             assert floating.width() > first_width
             assert floating.field.width() > floating.DEFAULT_WIDTH, 'Typing must enlarge the real input'
             assert abs((floating.x() + floating.width() / 2) - scroll.viewport().width() / 2) <= 2
@@ -101,22 +101,36 @@ def check():
             floating.field.setText('vulk')
             page.search_settings('vulk')
             page.choose_search_result(page.search_results.item(0))
-            qwait(330)
+            qwait(420)
             assert not floating.expanded and not floating.field.text()
             assert page.render_combo.hasFocus()
             scroll.verticalScrollBar().setValue(0)
             app.processEvents()
             page.search_home.click()
-            qwait(330)
+            qwait(420)
             floating.close_search()
-            qwait(330)
+            qwait(420)
             assert not floating.expanded and floating.width() == 32
             assert floating.isHidden()
+
+            # Fade in, adapt width, then fade out after five seconds idle.
+            page.search_home.click()
+            qwait(90)
+            assert 0 < floating._opacity.opacity() < 1
+            qwait(350)
+            assert floating._opacity.opacity() == 1
+            floating.field.setText('Grafik Rendering Backend Wayland Vulkan und alle weiteren Einstellungen')
+            qwait(420)
+            assert floating.width() <= scroll.viewport().width()-24
+            qwait(5050)
+            assert not floating.expanded
+            qwait(420)
+            assert floating.isHidden() and not floating.field.text()
 
             # Exactly three groups have their own reset and only when changed.
             settings.set('custom_backgrounds', [{'file':'preserve.png','name':'Do not delete'}])
             settings.set('dashboard_layout', {'keep':'yes'})
-            page.mode.setCurrentIndex(page.mode.findData('dark'))
+            page.select_design('dark')
             app.processEvents()
             assert page._reset_buttons['appearance'].isVisible()
             assert not page._reset_buttons['alerts'].isVisible()

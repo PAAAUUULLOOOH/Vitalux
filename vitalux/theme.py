@@ -17,6 +17,18 @@ _THEMES = {
 _THEMES.update({key: {name: pal[name] for name in (
     'bg', 'sidebar', 'card', 'border', 'track', 'grid', 'text', 'muted')}
     for key, pal in COLLECTIONS.items()})
+CHOICES = (('dark', 'Dark'), ('light', 'Light'), ('glass', 'Glass'),
+           ('black_glass', 'Black Glass'), ('black_glass_gold', 'Black Glass Gold'),
+           ('holographic', 'Holographic'), ('minimal', 'Minimalistisch')) + tuple(
+               (key, pal['title']) for key, pal in COLLECTIONS.items())
+FIXED_MODES = (*PREMIUM_MODES, 'black_glass_gold')
+
+
+def background_locked():
+    from . import eco
+    return eco.enabled() or mode() in (*FIXED_MODES, 'holographic')
+
+
 _mode = "glass"
 _accent = "#4f8cff"  # Replaced with the detected distro color at app startup.
 BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED = (_THEMES[_mode][key] for key in (

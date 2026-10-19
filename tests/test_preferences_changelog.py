@@ -55,11 +55,10 @@ def check_preferences(app):
             page.show()
             app.processEvents()
 
-            # Both selectors must be equally compact even at wide settings
-            # windows; long custom accent names remain readable on hover.
-            assert abs(page.accent_combo.width() - page.mode.width()) <= 2, (
-                page.accent_combo.width(), page.mode.width())
-            assert page.accent_combo.sizePolicy().horizontalPolicy() == page.mode.sizePolicy().horizontalPolicy() or page.accent_combo.maximumWidth() == page.mode.width()
+            # Themes are selected solely through ten preview buttons.
+            assert not hasattr(page, 'mode')
+            assert len(page.design_tiles) == 10
+            assert 150 <= page.accent_combo.width() <= 240
             assert page.accent_combo.toolTip() == page.accent_combo.currentText()
             width_before = page.accent_combo.width()
             page.resize(1400, 900)
@@ -161,7 +160,7 @@ def check_preferences(app):
                 css = theme.stylesheet()
                 assert "QComboBox::drop-down" in css
                 assert "width: 25px; border: none; border-left: 1px solid" in css
-                for dropdown in (page.mode, page.accent_combo, page.interval,
+                for dropdown in (page.accent_combo, page.interval,
                                  page.motion_combo, smart.selector):
                     app.processEvents()
                     assert dropdown.view().frameShape() == QFrame.NoFrame

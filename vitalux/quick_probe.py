@@ -16,7 +16,14 @@ def main():
     app = QApplication([])
     from PySide6.QtQuickWidgets import QQuickWidget
     from .quick_scene import QuickAmbientScene
-    scene = QuickAmbientScene()
+    # Set native window policy before constructing Qt Quick. Applying it to
+    # an already constructed top-level QQuickWidget is too late on some QPAs.
+    host = QWidget(None, Qt.Tool | Qt.FramelessWindowHint)
+    host.setAttribute(Qt.WA_DontShowOnScreen, True)
+    host.setAttribute(Qt.WA_ShowWithoutActivating, True)
+    host.move(-32000, -32000)
+    host.resize(640, 440)
+    scene = QuickAmbientScene(host)
     # Keep the hardware preflight invisible: its former 800x560 top-level
     # window was briefly shown to users on every backend switch.
     # QQuickWidget can render to its offscreen RHI texture without mapping
@@ -27,19 +34,24 @@ def main():
     # Simulate the actual mixed Qt Widget layout, not only an empty Quick view.
     layout = QVBoxLayout(scene)
     layout.addWidget(QLabel('Qt Widget overlay smoke test', scene))
-    scene.show()
+    frame = QVBoxLayout(host)
+    frame.setContentsMargins(0, 0, 0, 0)
+    frame.addWidget(scene)
+    # Logical show initializes the real RHI, but the preconfigured host is
+    # never mapped to the display and can never take focus or a taskbar slot.
+    host.show()
     expected = (QSGRendererInterface.Vulkan if selected == 'vulkan'
                 else QSGRendererInterface.OpenGL)
     def check():
         if scene.status() != QQuickWidget.Ready or scene.rootObject() is None:
             app.exit(3)
             return
+        image = scene.grabFramebuffer()
         actual = scene.quickWindow().rendererInterface().graphicsApi()
         if actual != expected:
             print(f'Unexpected RHI: {actual}; expected {expected}', file=sys.stderr)
             app.exit(4)
             return
-        image = scene.grabFramebuffer()
         if image.isNull():
             app.exit(5)
             return
@@ -51,8 +63,11 @@ def main():
                 scene.quickWindow().rendererInterface().graphicsApi() != expected or
                 scene.grabFramebuffer().isNull()):
             app.exit(6)
+        elif any(window.isVisible() for window in app.allWindows()):
+            print('Graphics preflight unexpectedly mapped a window', file=sys.stderr)
+            app.exit(9)
         else:
-            scene.close()
+            host.close()
             app.exit(0)
     QTimer.singleShot(750, check)
     QTimer.singleShot(5500, lambda: app.exit(7))

@@ -293,7 +293,8 @@ class DesignTile(QAbstractButton):
     def __init__(self, key, parent=None):
         super().__init__(parent)
         self.key = key
-        self.setText(COLLECTIONS[key]['title'])
+        from . import theme
+        self.setText(dict(theme.CHOICES)[key])
         self.setAccessibleName(self.text())
         self.setCheckable(True)
         self.setCursor(Qt.PointingHandCursor)
@@ -306,13 +307,25 @@ class DesignTile(QAbstractButton):
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
-        pal = palette(self.key)
+        from . import theme, backdrops
+        pal = (palette(self.key) if self.key in KEYS else
+               dict(theme._THEMES[self.key], accent='#f3cd79' if self.key == 'black_glass_gold'
+                    else '#52d3ff' if self.key == 'holographic' else '#4f8cff'))
         rect = QRectF(self.rect()).adjusted(2, 2, -2, -2)
         path = rounded(rect, 12)
         p.setClipPath(path)
-        if self._background_key != self.size():
-            self._background = scene_pixmap(self.size(), self.key)
-            self._background_key = self.size()
+        background_key = (self.size(), pal['accent'])
+        if self._background_key != background_key:
+            if self.key in KEYS:
+                self._background = scene_pixmap(self.size(), self.key)
+            elif self.key == 'holographic':
+                from .holographic import scene_pixmap as hologram
+                self._background = hologram(self.size(), pal['accent'])
+            else:
+                self._background = backdrops.render(self.size(),
+                    'black_glass' if self.key == 'black_glass_gold' else self.key,
+                    pal['accent'], self.key == 'light')[0]
+            self._background_key = background_key
         p.drawPixmap(0, 0, self._background)
         p.fillRect(QRectF(0, 0, 24, 75), color(pal['bg'], 220))
         for y in (15, 26, 37, 48):
@@ -341,7 +354,15 @@ class DesignTile(QAbstractButton):
         p.drawText(QRectF(10, 78, self.width()-20, 27), Qt.AlignCenter, self.text())
         p.setClipping(False)
         p.setBrush(Qt.NoBrush)
+        if self.isChecked():
+            p.setPen(Qt.NoPen)
+            p.setBrush(color(pal['accent']))
+            p.drawEllipse(QPointF(self.width()-15, 14), 7, 7)
+            p.setPen(QPen(color(pal['bg']), 1.5, Qt.SolidLine, Qt.RoundCap))
+            p.drawLine(QPointF(self.width()-18, 14), QPointF(self.width()-16, 16))
+            p.drawLine(QPointF(self.width()-16, 16), QPointF(self.width()-12, 12))
         selected = self.isChecked() or self.hasFocus()
+        p.setBrush(Qt.NoBrush)
         p.setPen(QPen(color(pal['accent'], 240 if selected else 75), 2 if selected else 1))
         p.drawPath(path)
         p.end()

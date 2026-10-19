@@ -35,10 +35,15 @@ bash Champagne-Glass.sh
 bash Aurora-Gold.sh
 ```
 
-In **Einstellungen → Erscheinungsbild** stehen die drei Design-Vorschauen
-und die bisherigen Farbschemata zur Auswahl. Ein Wechsel wirkt sofort auf
-die laufende Oberfläche. Die neuen Designs haben aufeinander abgestimmte,
-feste Akzentpaletten; persönliche Akzentfarben bleiben gespeichert.
+In **Einstellungen → Erscheinungsbild** werden alle zehn Farbschemata als
+anklickbare Vorschaukacheln angezeigt. Das Farbschema-Dropdown entfällt.
+Ein Wechsel wirkt sofort auf die laufende Oberfläche.
+
+**Obsidian Gold, Champagne Glass, Black Glass Gold und Aurora Gold** verwenden
+feste Akzentpaletten und eigene Hintergründe. Die gesperrten Auswahlfelder
+sind grau und werden direkt erklärt. Holographic verwendet ebenfalls seinen
+festen HUD-Hintergrund. Persönliche Farben und Hintergründe bleiben für die
+anderen Designs gespeichert und werden beim Wechsel dorthin wieder verwendet.
 
 - **Obsidian Gold:** tiefes Rauchglas, polierte Goldkanten und dunkle Linsen.
 - **Champagne Glass:** helleres Kristallglas, warme Metalle und seidige Reflexe.
@@ -48,6 +53,18 @@ Die äußeren Originalstreifen des Vitalux-Logos rotieren langsam im Uhrzeigersi
 (eine Umdrehung in 48 Sekunden). Pulssymbol und innere Linse bleiben stehen.
 Unter **Animationen** lässt sich die Bewegung reduzieren oder abschalten.
 Minimalistisch und Ultra Eco stoppen die dekorative Logo-Animation.
+Auch die drei neuen Themes verwenden den originalen Vitalux-Vektorschriftzug.
+Ein dezenter Lichtreflex läuft über seine Buchstaben. Logos und Icons folgen
+der wirksamen Palette, einschließlich eigener Farben und Distributionsfarben.
+
+**Glas-Klang bei Klicks** aktiviert einen kurzen, lokal erzeugten Glasklang.
+Er lässt sich in den Einstellungen abschalten. Die Ausgabe verwendet den
+PulseAudio-kompatiblen Desktop-Audioserver (auch PipeWire); Audioarbeit läuft
+außerhalb des GUI-Threads. Es werden keine externen Samples geladen.
+
+Die Einstellungssuche blendet weich ein, passt ihre Breite an den Suchtext und
+die Fensterbreite an und schließt nach fünf Sekunden ohne Eingabe animiert.
+Reduzierte oder abgeschaltete Animationen werden berücksichtigt.
 
 ## Getrennte Einstellungen
 
@@ -78,3 +95,13 @@ beigefügt. Sie zeigen den Cloud-Testrechner, nicht deinen Rechner.
 Der experimentelle Branch ändert den offiziellen main-Branch nicht und erstellt
 keine GitHub-Releases. Die Testpakete sind 14 Tage als Actions-Artifacts verfügbar.
 Ein neuer Push baut die aktuelle Vorschau erneut.
+
+## Grafik-Startprüfung
+
+CPU, OpenGL, X11/OpenGL, Wayland/OpenGL und Wayland/Vulkan wurden mit echten
+Fenstern, Framebuffern und Live-Messwerten unter Xvfb/Weston und Mesa geprüft.
+Unter X11 wird nur das vollständige Hauptfenster eingeblendet. Der vorzeitig
+als eigenes Fenster sichtbare Reset-Button und der GPU-Starttest sind korrigiert.
+Die wiederholbare Prüfung steht in `scripts/check-graphics-startup.py`;
+sie benötigt erreichbare X11- und Wayland-Testdisplays. Das prüft keine
+physische GPU oder die individuellen Treiber eines anderen Rechners.
