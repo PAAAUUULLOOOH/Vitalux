@@ -319,6 +319,16 @@ QWidget#dashboardToolbar { background: transparent; }
 #chipTitle { color: $MUTED; font-size: 11px; font-weight: 700; letter-spacing: 1px; }
 QProgressBar { background: $INPUT_BG; border: 1px solid $BORDER; border-radius: 8px; min-height: 12px; text-align: center; }
 QProgressBar::chunk { background: $ACCENT; border-radius: 7px; }
+QSlider::groove:horizontal { height: 4px; background: $TRACK; border-radius: 2px; }
+QSlider::sub-page:horizontal { background: $ACCENT; border-radius: 2px; }
+QSlider::handle:horizontal { width: 12px; margin: -5px 0; background: $CARD;
+    border: 1px solid $ACCENT; border-radius: 6px; }
+QSlider::handle:horizontal:hover { background: $ACCENT; }
+QSlider::groove:vertical { width: 4px; background: $TRACK; border-radius: 2px; }
+QSlider::add-page:vertical { background: $ACCENT; border-radius: 2px; }
+QSlider::handle:vertical { height: 12px; margin: 0 -5px; background: $CARD;
+    border: 1px solid $ACCENT; border-radius: 6px; }
+QSlider::handle:vertical:hover { background: $ACCENT; }
 QLabel#benchmarkResultRead, QLabel#benchmarkResultWrite { background: $RESULT_BG; border: 1px solid $RESULT_BORDER; border-radius: 14px; font-size: 24px; font-weight: 800; }
 QLabel#benchmarkResultRead { color: $ACCENT; }
 QLabel#benchmarkResultRead[resultState="running"], QLabel#benchmarkResultWrite[resultState="running"] { border: 2px solid $ACCENT; }

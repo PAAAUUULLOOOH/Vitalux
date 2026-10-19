@@ -1,6 +1,7 @@
 name: Vitalux – Stable release
 
-# The named main commit is the authorized release. Ordinary pushes do not publish.
+# The named main commit is the authorized release. Includes final slider/RHI checks.
+# Ordinary source pushes do not publish.
 on:
   workflow_dispatch:
   push:

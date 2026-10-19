@@ -88,6 +88,13 @@ class QuickAmbientScene(_AmbientSceneCore, QQuickWidget):
         if self._quick_ready:
             self._schedule_upload()
 
+    def finish_background_frame(self):
+        """Make a palette-change snapshot include the new RHI texture now."""
+        if self._quick_ready:
+            self._upload_timer.stop()
+            self._upload_frame()
+            self.grabFramebuffer()
+
     def _advance_backdrop(self):
         super()._advance_backdrop()
         if self._quick_ready and self.isVisible():

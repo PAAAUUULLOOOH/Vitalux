@@ -751,6 +751,9 @@ class MainWindow(QMainWindow):
         if before is not None and motion.duration(300):
             from .appearance_transition import AppearanceTransition
             self.layout().activate()
+            scene = self.centralWidget()
+            if hasattr(scene, 'finish_background_frame'):
+                scene.finish_background_frame()
             after = self.grab()
             overlay = AppearanceTransition(self, before, after)
             self._appearance_overlay = overlay

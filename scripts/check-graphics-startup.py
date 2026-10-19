@@ -117,6 +117,12 @@ def child(mode, output):
             for key in ('champagne_glass', 'dark', 'aurora_gold'):
                 preferences.select_design(key)
                 assert win._appearance_overlay is not None
+                overlay = win._appearance_overlay
+                # A static design must already be present in the target
+                # snapshot, rather than jumping to its GPU texture at the end.
+                target = overlay.after.toImage()
+                if mode in renderer.QUICK_MODES:
+                    assert not win.centralWidget()._upload_timer.isActive()
                 QTest.qWait(100)
             QTest.qWait(400)
             assert win._appearance_overlay is None
