@@ -96,6 +96,7 @@ class DiagnosticCenter(Page):
         reports_card = Card('Diagnose & Berichte')
         self.report_source = QComboBox()
         self.report_source.setObjectName('diagnosticReportSource')
+        self.report_source.setMaximumWidth(360)
         for key, title, _description in self.SECTIONS:
             self.report_source.addItem(tr(title), key)
         reports_card.body.addWidget(label('Diagnose für Export auswählen', 'strong'))
