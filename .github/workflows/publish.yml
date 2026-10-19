@@ -82,11 +82,22 @@ jobs:
           cd "$STAGED"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-regressions.py --output "$GITHUB_WORKSPACE/build/regressions"
       - name: Check all five native renderers and startup windows
+        id: graphics
         run: |
           set -euo pipefail
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-graphics-checks.py --output "$GITHUB_WORKSPACE/build/graphics-checks"
+      - name: Expose graphics failure details for diagnosis
+        if: failure() && steps.graphics.outcome == 'failure'
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for log in sorted(Path('build/graphics-checks').glob('*.log')):
+              tail = '\n'.join(log.read_text(errors='replace').splitlines()[-18:])
+              escaped = tail.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+              print(f'::error title={log.name}::{escaped}', flush=True)
+          PY
       - name: Verify source ZIP startup without system Python
         run: python scripts/check-source-preview.py
       - name: Prepare AppImage tooling
