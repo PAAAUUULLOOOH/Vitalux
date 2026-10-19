@@ -565,6 +565,7 @@ class PreferencesPage(Page):
                 item.setData(Qt.UserRole, key)
                 item.setData(Qt.UserRole + 1, index)
                 self.search_results.addItem(item)
+        self.search_results.setFixedHeight(min(156, 34 * self.search_results.count() + 7))
         self.search_results.setVisible(bool(self.search_results.count()))
 
     def choose_search_result(self, item):
