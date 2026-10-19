@@ -22,6 +22,7 @@ def main():
     # QQuickWidget can render to its offscreen RHI texture without mapping
     # a visible native window.
     scene.setAttribute(Qt.WA_DontShowOnScreen, True)
+    scene.setAttribute(Qt.WA_ShowWithoutActivating, True)
     scene.resize(640, 440)
     # Simulate the actual mixed Qt Widget layout, not only an empty Quick view.
     layout = QVBoxLayout(scene)
