@@ -8,6 +8,7 @@ sys.path.insert(0, os.getcwd())
 
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtGui import QPixmap
+from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 from vitalux import i18n, settings, theme
 from vitalux.window import MainWindow, Sampler
@@ -67,13 +68,22 @@ def main():
             assert diag.report_source.count() == len(diag.SECTIONS)
             window.nav_buttons[9].click()
             app.processEvents()
-            pref.search.setText('Vulkan')
+            assert pref.search_overlay.parentWidget() is window.stack.currentWidget().viewport()
+            assert pref.search_overlay.icon.isVisible()
+            assert not pref.search_overlay.expanded
+            pref.search_overlay.icon.click()
+            QTest.qWait(320)
+            pref.search.setText('Vulk')
+            pref.search_settings('Vulk')
+            assert pref.search_overlay.expanded
             assert pref.search_results.count() >= 1
             pref.choose_search_result(pref.search_results.item(0))
             app.processEvents()
             assert pref.render_combo.hasFocus()
             assert window.stack.currentWidget().verticalScrollBar().value() > 0
+            QTest.qWait(320)
             assert not pref.search.text()
+            assert not pref.search_overlay.expanded
             assert pref.background_performance_note.isHidden()
             diag.select_area('hardware', 'pcie')
             assert diag.tabs.tabText(diag.tabs.currentIndex()) == 'PCIe Guardian'
