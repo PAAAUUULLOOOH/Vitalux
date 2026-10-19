@@ -82,22 +82,18 @@ def findings(snapshot, recent=(), limits=None):
 
 
 class MonitoringLab:
-    """One lightweight bounded stream used by detective, timeline and gaming."""
+    """Bounded telemetry stream for Performance Detective and gaming sessions."""
     def __init__(self, max_samples=3600, snapshot_path=None):
         self.snapshot_path = Path(snapshot_path) if snapshot_path else None
         self.recent = deque(maxlen=20)
         self.history = deque(maxlen=max_samples)
-        self.events = deque(maxlen=300)
-        self.prev = {}
         self.started = None
         self.session = deque(maxlen=900)
         self.session_count = 0
         self.session_aggregates = {}
         self.session_name = ""
         self.last_session = None
-        self.snapshots = [None, None]
         self.mangohud = None
-        self._load_snapshots()
 
     @staticmethod
     def _now():
@@ -126,25 +122,6 @@ class MonitoringLab:
                 record["sum"] += value
                 record["min"] = min(record["min"], value)
                 record["max"] = max(record["max"], value)
-        limits = limits or {}
-        checks = (
-            ("cpu_temp", "CPU-Temperatur überschreitet Warnwert", limits.get("cpu_temp", 90)),
-            ("gpu_temp", "GPU-Temperatur überschreitet Warnwert", limits.get("gpu_temp", 90)),
-            ("ram_usage", "RAM-Auslastung überschreitet Warnwert", limits.get("ram_usage", 90)),
-            ("vram_usage", "Videospeicher über 90 %", 90),
-            ("gpu_usage", "GPU-Auslastung über 95 %", 95),
-        )
-        for key, title, limit in checks:
-            v = current[key]
-            prev = self.prev.get(key)
-            if number(v) and number(limit) and v >= limit and not (number(prev) and prev >= limit):
-                self.events.appendleft({"time": now, "title": title,
-                                        "detail": f"{v:.1f}% " if key.endswith("usage") else f"{v:.1f} °C",
-                                        "metrics": dict(current)})
-            if key in ("gpu_temp", "gpu_usage") and not number(v) and number(prev):
-                self.events.appendleft({"time": now, "title": "GPU-Sensor ausgefallen",
-                                        "detail": key, "metrics": dict(current)})
-        self.prev = current
 
     def detective(self, limits=None):
         if not self.recent:
@@ -187,64 +164,6 @@ class MonitoringLab:
                 summary["metrics"][field] = {"avg": round(statistics.fmean(values), 2),
                                              "min": min(values), "max": max(values)}
         return summary
-
-    def _load_snapshots(self):
-        if self.snapshot_path is None:
-            return
-        try:
-            if self.snapshot_path.stat().st_size > 30000:
-                return
-            data = json.loads(self.snapshot_path.read_text(encoding="utf-8"))
-            entries = data.get("snapshots") if isinstance(data, dict) else None
-            if isinstance(entries, list) and len(entries) == 2:
-                for i, entry in enumerate(entries):
-                    if (isinstance(entry, dict) and isinstance(entry.get("metrics"), dict)
-                            and isinstance(entry.get("time"), str)):
-                        self.snapshots[i] = entry
-        except (OSError, ValueError, TypeError):
-            return
-
-    def _save_snapshots(self):
-        if self.snapshot_path is None:
-            return
-        path = self.snapshot_path
-        path.parent.mkdir(parents=True, exist_ok=True)
-        temporary = None
-        try:
-            fd, temporary = tempfile.mkstemp(prefix=".insights-", dir=path.parent)
-            with os.fdopen(fd, "w", encoding="utf-8") as handle:
-                json.dump({"version": 1, "snapshots": self.snapshots}, handle,
-                          ensure_ascii=False, indent=2)
-                handle.flush()
-                os.fsync(handle.fileno())
-            os.replace(temporary, path)
-            temporary = None
-        finally:
-            if temporary:
-                try:
-                    os.unlink(temporary)
-                except OSError:
-                    pass
-
-    def snapshot(self, slot, sample):
-        if slot not in (0, 1) or not isinstance(sample, dict):
-            raise ValueError("Ungültiger Vergleichsschnappschuss.")
-        self.snapshots[slot] = {"time": self._now(), "metrics": telemetry(sample),
-                                "gpu": ((sample.get("gpus") or [{}])[0]).get("name") or "–"}
-        self._save_snapshots()
-
-    def comparison(self):
-        a, b = self.snapshots
-        if not a or not b:
-            return []
-        if a.get("gpu") != b.get("gpu"):
-            return []
-        out = []
-        for key in FIELDS:
-            x, y = a["metrics"].get(key), b["metrics"].get(key)
-            if number(x) and number(y):
-                out.append((key, round(x, 2), round(y, 2), round(y - x, 2)))
-        return out
 
     def export_session(self, path):
         if not self.last_session:
