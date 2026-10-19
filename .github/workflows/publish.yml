@@ -1,7 +1,7 @@
 name: Vitalux – Automatische Veröffentlichung
 
 # The named publish commit is authorized to run the release on main.
-# Release guard tests adaptive settings search, SMART scoring, diagnostics and native MiniHUD.
+# Release guard includes the final MiniHUD Wayland stacking adjustment and system score checks.
 # Ordinary source pushes do not publish; workflow_dispatch is also available. MiniHUD, Diagnostic Center guide, quiet shutdown, and staged diagnostic UI imports are regression-tested.
 on:
   # Full English guide audit and category-aware Qt regression checks.
