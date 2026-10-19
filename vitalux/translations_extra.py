@@ -933,3 +933,13 @@ EN_MORE.update({
     'Im Diagnostic Center kannst du System- und Fehlerberichte lokal als TXT/JSON exportieren. Externer Ping nur per Klick.':
         'Export system and error reports locally in TXT/JSON from Diagnostic Center. External ping runs only on request.',
 })
+
+# Localized shortcuts for the compact search and per-section reset buttons.
+EN_MORE.update({
+    'Darstellung zurücksetzen': 'Reset appearance',
+    'MiniHUD zurücksetzen': 'Reset MiniHUD',
+    'Warnwerte zurücksetzen': 'Reset alert thresholds',
+    'Einstellungen durchsuchen': 'Search settings',
+    'Standardmäßig startet Vitalux mit Glass und Vitalux Blau. Die mittige Lupe öffnet eine schwebende Suche für Einstellungen mit Vorschlägen; sie schließt nach fünf Sekunden oder Klick außerhalb sanft. Darstellung, MiniHUD und Warnungen lassen sich einzeln zurücksetzen, wenn sie geändert wurden.':
+        'Vitalux defaults to Glass with Vitalux Blue. The centered magnifier opens floating settings search with suggestions; it smoothly closes after five seconds or when clicking elsewhere. Appearance, MiniHUD and alerts can each be reset after changes.',
+})
