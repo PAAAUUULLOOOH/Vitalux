@@ -279,6 +279,4 @@ class MonitoringLabPanel(QWidget):
 
 
 def _f(value):
-
-def _f(value):
     return f"{value:.1f}" if number(value) else "–"
