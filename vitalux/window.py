@@ -914,6 +914,10 @@ class MainWindow(QMainWindow):
         from PySide6.QtWidgets import QMessageBox
         QMessageBox.information(self, APP_NAME, tr('Die KDE-Systemleiste ist momentan nicht verfügbar. Vitalux bleibt geöffnet. Um es vollständig zu beenden, deaktiviere die Tray-Funktion unter Einstellungen.'))
 
+    def _notify_diagnostic_busy(self):
+        """Use the status bar, never a tray pop-up, when diagnostics are active."""
+        self.statusBar().showMessage(tr('Diagnose läuft noch – bitte warten.'), 5000)
+
     def closeEvent(self, event):
         if not self._force_quit and settings.get('close_to_tray', True):
             if self._hide_to_tray():
@@ -941,7 +945,7 @@ class MainWindow(QMainWindow):
         for _title, page in self.pages:
             if isinstance(page, DiagnosticCenter) and page.worker is not None and page.worker.isRunning():
                 event.ignore()
-                self.statusBar().showMessage(tr('Diagnose läuft noch – bitte warten.'), 5000)
+                self._notify_diagnostic_busy()
                 return
         self.sampler.requestInterruption()
         self.sampler.wait(7000)
