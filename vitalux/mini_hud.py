@@ -154,7 +154,7 @@ class MiniHUD(QWidget):
             QPushButton { color: %s; background: transparent; border: none; font-size: 19px; }
             QProgressBar { background: #364455; border: none; border-radius: 2px; }
             QProgressBar::chunk { background: %s; border: none; border-radius: 2px; }
-        ''' % (layer(bg),layer(bg),accent if not eco.enabled() else '#555555',
+        ''' % (layer(bg),accent if not eco.enabled() else '#555555',
                '0' if eco.enabled() else '9',layer(cellbg),
                accent,caption,valuecolor,closecolor,accent))
         self.update_sample(self.latest)
