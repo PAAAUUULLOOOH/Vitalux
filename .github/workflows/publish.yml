@@ -289,7 +289,7 @@ jobs:
           # Always run every smoke test, even when an earlier assertion fails.
           # Report all failures in one pass; block packaging if any fail.
           failures=0
-          for test in
+          for test in \
             tests/test_preferences_changelog.py \
             tests/test_protected_accents.py \
             tests/test_black_glass_accents.py \
