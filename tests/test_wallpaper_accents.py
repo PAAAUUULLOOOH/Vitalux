@@ -88,6 +88,9 @@ def run():
             page.resize(560, 900)
             app.processEvents()
             assert page.accent_combo.width() >= 80, 'Combo became too narrow'
+            # Renderer controls moved to the final dedicated subcategory.
+            page.section_nav.select('render')
+            app.processEvents()
             # Restart button appears only while switching renderer.
             assert not page.render_restart_button.isVisible()
             page.render_combo.setCurrentIndex(page.render_combo.findData('opengl'))
@@ -96,6 +99,8 @@ def run():
             assert win.restarts == 1
             page.render_combo.setCurrentIndex(page.render_combo.findData('software'))
             assert not page.render_restart_button.isVisible()
+            page.section_nav.select('appearance')
+            app.processEvents()
             win.apply_appearance()
 
             # Change wallpaper with automatic accent retained.
