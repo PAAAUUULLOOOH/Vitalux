@@ -1,5 +1,14 @@
 # Vitalux – Changes
 
+## [v0.9.4.9] - 2026-10-19
+- Grouped the sidebar while keeping Settings, Updates and Info pinned at the bottom.
+- Organized Settings into six sections: Appearance, MiniHUD & window, Monitoring & alerts, Performance & energy, General, and Graphics rendering last.
+- Added search that navigates directly to settings options and remembers the last category.
+- Organized Diagnostic Center into six categories; moved Vitalux Insights, gaming sessions and comparisons from Graphics to Performance & insights, with reports in their own area.
+- Added contextual links from GPU and Network to their diagnostics; reorganized disk, network and sensor details.
+- Updated the built-in guide, concise README and translations without removing existing features or saved preferences.
+
+
 ## [v0.9.4.8] - 2026-10-19
 - Added Diagnostic Center with read-only system, crash, display, PCIe, thermal, network, process and change diagnostics, plus opt-in Blackbox.
 - Moved existing system and error report exports out of Settings into Diagnostic Center.
