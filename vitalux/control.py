@@ -203,11 +203,16 @@ class PreferencesPage(Page):
         self.search_home = _SearchIcon(self)
         self.search_home.clicked.connect(self.search_overlay.open_search)
         self.search_overlay.home_icon = self.search_home
-        search_home_row = QHBoxLayout()
+        # Keep 32px of vertical space even while the anchored icon is hidden.
+        # Expanding search must not jump the underlying settings layout.
+        search_home_host = QWidget(self)
+        search_home_host.setFixedHeight(32)
+        search_home_row = QHBoxLayout(search_home_host)
+        search_home_row.setContentsMargins(0, 0, 0, 0)
         search_home_row.addStretch(1)
         search_home_row.addWidget(self.search_home)
         search_home_row.addStretch(1)
-        self.content.addLayout(search_home_row)
+        self.content.addWidget(search_home_host)
 
         self._search_targets = []
         look = Card('Erscheinungsbild')
