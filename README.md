@@ -48,7 +48,7 @@ Vitalux vereint Systemüberwachung, Live-Diagramme, Datenträgeranalyse und eine
 | **Sensoren** | Verfügbare Temperaturen, Lüfterdrehzahlen, Spannungen, Leistungsaufnahme und Frequenzen |
 | **Diagnostic Center** | Sechs Unterbereiche für System-/Hardwarediagnose, Performance & Insights, Verlauf und Berichte |
 | **System** | Distribution, Kernel, Desktop-/Sitzungsinformationen, Mesa, Treiber und Hardwaredetails |
-| **Einstellungen** | Sechs Unterbereiche mit Suche: Darstellung, MiniHUD, Warnungen, Ultra Eco, Allgemein und zuletzt Rendering |
+| **Einstellungen** | Scrollbare Optionen mit schwebender Glass-Suche, gezieltem Zurücksetzen und Grafik-Rendering |
 | **Updates** | Offizielle GitHub-Releases prüfen, Neuerungen anzeigen und Aktualisierungen bestätigen |
 | **Info** | Versionsinformationen, Mitwirkende und integrierte, bebilderte Anleitung |
 
@@ -160,7 +160,7 @@ VITALUX_RENDERER=software ./run.sh
 
 **MiniHUD** bietet drei Größen, auswählbare Sensoren und Deckkraft. Aktivierung über **Einstellungen → MiniHUD & Fenster** oder die Systemleiste. Unter Wayland entscheidet der Compositor über die Darstellung über Vollbildspielen.
 
-**Einstellungen** sind auf einer Seite angeordnet: Darstellung, Allgemein, MiniHUD & Fenster, Monitoring & Warnungen, Leistung & Energie und abschließend Grafik-Rendering. Die Suche am Seitenanfang führt direkt zu den Einstellungen; die klassische Seitenleiste bleibt ohne zusätzliche Gruppenknöpfe.
+**Einstellungen** sind auf einer Seite angeordnet: Darstellung, Allgemein, MiniHUD & Fenster, Monitoring & Warnungen, Leistung & Energie und abschließend Grafik-Rendering. Ein Klick auf die mittige Lupe öffnet die leicht transparente Suche mit Sofortvorschlägen. Sie bleibt beim Scrollen oben, passt ihre Breite dem Text an und schließt nach fünf Sekunden ohne Eingabe oder bei einem Klick außerhalb mit sanfter Animation. Nur geänderte Darstellung-, MiniHUD- und Warnungsbereiche bieten einen eigenen Reset; der Gesamtrücksetzknopf steht am Seitenende. DE/EN ist in der Seitenleiste erreichbar.
 
 ## Download
 
