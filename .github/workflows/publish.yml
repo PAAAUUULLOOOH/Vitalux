@@ -1,7 +1,7 @@
 name: Vitalux – Automatische Veröffentlichung
 
 # The named publish commit is authorized to run the release on main.
-# Release guard runs all 19 Qt regressions before packaging and blocks release on any failures.
+# Release guard runs all Qt regressions before packaging and blocks release on any failures. v0.9.5.4 retry after diagnostic card correction.
 # Ordinary source pushes do not publish; workflow_dispatch is also available. MiniHUD, Diagnostic Center guide, quiet shutdown, and staged diagnostic UI imports are regression-tested.
 on:
   # Full English guide audit and category-aware Qt regression checks.
