@@ -75,7 +75,7 @@ SLIDES = [
     ),
     (
         "Darstellung und Einstellungen",
-        "Standardmäßig startet Vitalux mit Glass und Vitalux Blau. Die mittige Lupe öffnet eine schwebende Suche für Einstellungen mit Vorschlägen; sie schließt nach fünf Sekunden oder Klick außerhalb sanft. Darstellung, MiniHUD und Warnungen lassen sich einzeln zurücksetzen, wenn sie geändert wurden.",
+        "Standardmäßig startet Vitalux mit Glass und Vitalux Blau. Die Lupe bleibt geschlossen am Seitenanfang und folgt geöffnet beim Scrollen. Die Suche wächst mit der Eingabe, schließt nach fünf Sekunden oder Klick außerhalb sanft. Geänderte Einstellungen lassen sich gezielt zurücksetzen.",
         "Wähle einen von 14 integrierten Hintergründen oder importiere eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
         "Unter Einstellungen → Leistung & Energie schaltest du Ultra Eco ein oder aus: ein primitiver, flacher Skin ohne Effekte, CPU-Rendering und 10 Sekunden Messintervall. Die Anwendung zeichnet verborgen keine Diagramme neu. Mit Jetzt neu starten übernimmst du GPU-/CPU-Wechsel; vorherige Einstellungen bleiben erhalten. Grafik-Rendering bietet CPU und experimentelle GPU-Modi.",
         "Sieben Farbschemata bleiben verfügbar und werden nach dem Abschalten von Ultra Eco wiederhergestellt. Black Glass sperrt eigene Akzente, Black Glass Gold alle Akzente und zeigt Diagramme samt RAM-Beschriftungen in Goldtönen; Holographic bleibt ein HUD ohne Glas. Automatische Hintergrundfarbe benötigt ein eigenes Bild.",
@@ -83,9 +83,9 @@ SLIDES = [
     ),
     (
         "Diagnostic Center und MiniHUD",
-        "Das Diagnostic Center zeigt Schnellcheck, Hardware- und Systemdiagnose, Performance & Insights, Verlauf und Berichte auf einer Seite.",
+        "Das Diagnostic Center vereint Gesamtcheck, einzelne Diagnoseprüfungen, Performance & Insights und Berichte in einer großen Kachel. Ereignis-Timeline, interaktive Hardwaregrafik und Vorher-Nachher-Vergleich sind entfernt.",
         "Im Diagnostic Center kannst du System- und Fehlerberichte lokal als TXT/JSON exportieren. Externer Ping nur per Klick.",
-        "Das MiniHUD lässt sich in den Einstellungen oder über die Systemleiste aktivieren. Drei Größen, Sensoren, Deckkraft und Vordergrundmodus sind wählbar.",
+        "Das MiniHUD lässt sich in den Einstellungen oder über die Systemleiste aktivieren. Drei Größen, Sensoren, 50–100 % Deckkraft und Vordergrundmodus sind wählbar.",
         "Das MiniHUD nutzt bestehende Messwerte. Wayland/KWin entscheidet, ob es über einem Vollbildspiel sichtbar bleibt.",
         "diagnostics",
     ),
