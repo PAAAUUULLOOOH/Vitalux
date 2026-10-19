@@ -11,7 +11,7 @@ def run():
     score, state, detail = _system_state({'cpu': {'temp': 44, 'usage': 12},
       'ram': {'percent': 34}, 'gpus': [{'temp': 45, 'hotspot': 53, 'usage': 15}],
       'disks': [{'mount': '/', 'percent': 39}]})
-    assert score == 100 and state
+    assert score == 89 and state and 'SMART' in detail
     score, state, detail = _system_state({'cpu': {'temp': 101, 'usage': 99},
       'ram': {'percent': 99}, 'gpus': [{'temp': 98, 'hotspot': 110, 'usage': 99}],
       'disks': [{'mount': '/', 'percent': 99}]})
