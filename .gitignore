@@ -5,9 +5,9 @@ __pycache__/
 .pytest_cache/
 .venv/
 .runtime/
-runtime/
-lib/
-tools-lib/
+/runtime/
+/lib/
+/tools-lib/
 *.AppImage
 *.zip
 build/

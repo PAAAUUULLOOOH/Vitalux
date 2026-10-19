@@ -30,6 +30,7 @@ Icon=vitalux
 Terminal=false
 Categories=System;Monitor;
 DESKTOP
-ARCH=x86_64 "$TOOL" --no-appstream "$DIR" "$OUT"
+(cd "$HERE/runtime" && sha256sum --check SHA256SUMS)
+ARCH=x86_64 "$TOOL" --no-appstream --runtime-file "$HERE/runtime/runtime-x86_64" "$DIR" "$OUT"
 test -s "$OUT"
 chmod 755 "$OUT"

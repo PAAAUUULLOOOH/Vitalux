@@ -204,10 +204,12 @@ class Wordmark(QWidget):
             self._timer.stop()
             return
         now = time.monotonic()
-        self._phase = (self._phase + max(0, now-self._last_tick)/9.0) % 1.0
+        self._phase = (self._phase + max(0, now-self._last_tick)/6.8) % 1.0
         self._last_tick = now
         # There is no repaint loop in the quiet interval between reflections.
-        interval = (80 if self._reduced else 40) if self._phase < .22 else max(80, round((1-self._phase)*9000))
+        from .smooth_scroll import frame_interval_ms
+        active_interval = 80 if self._reduced else frame_interval_ms(self.screen().refreshRate())
+        interval = active_interval if self._phase < .46 else max(80, round((1-self._phase)*6800))
         self._timer.setInterval(interval)
         self.update()
 
@@ -215,15 +217,19 @@ class Wordmark(QWidget):
         from . import theme
         p = QPainter(self)
         p.drawPixmap(0, 0, self._base)
-        if self._enabled and self._phase < .22:
-            sweep = self._phase/.22
-            x = -45+sweep*(self.width()+90)
+        if self._enabled and self._phase < .46:
+            sweep = self._phase/.46
+            # A broad satin reflection carries a narrower white glint across
+            # the original strokes. Ease at both edges instead of flashing.
+            sweep = .5-.5*math.cos(math.pi*sweep)
+            x = -65+sweep*(self.width()+130)
             gleam = self._base.copy()
             light = QPainter(gleam)
             light.setCompositionMode(QPainter.CompositionMode_SourceIn)
-            band = QLinearGradient(x-25, 0, x+25, self.height())
+            band = QLinearGradient(x-55, 0, x+55, self.height())
             warm = QColor(theme.blend('#ffffff', theme.accent(), .88))
-            for position, alpha in ((0,0),(.19,10),(.38,44),(.49,196),(.55,100),(.74,17),(1,0)):
+            for position, alpha in ((0,0),(.13,16),(.29,72),(.42,175),(.49,255),
+                                    (.54,235),(.64,112),(.82,35),(1,0)):
                 tone = QColor(warm); tone.setAlpha(alpha)
                 band.setColorAt(position, tone)
             light.fillRect(QRectF(0,0,self.width(),self.height()),QBrush(band))

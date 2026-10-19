@@ -1,18 +1,7 @@
-# Enthaltene Linux-x86-64-Laufzeit
+# Offline Linux x86-64 runtime
 
-`vitalux-linux-x86_64.tar.xz` enthält Python 3.12, PySide6/Qt, psutil,
-die portablen Bibliotheken, fio und die zugehörigen Lizenztexte.
-Der Vorschau-Starter prüft die SHA-256-Summe und entpackt das Paket einmalig
-im Anwendungsordner. Beim Start wird nichts heruntergeladen oder systemweit
-installiert. Das Archiv ist regulär im experimentellen Git-Zweig enthalten,
-kein Git-LFS-Verweis.
+The checked-in `vitalux-linux-x86_64.tar.xz` contains CPython 3.12.7, PySide6/Qt 6.12.0, psutil 7.2.2, portable shared libraries, fio 3.43 and complete retained license notices. `SHA256SUMS` pins the archive. The launcher verifies and extracts it locally; no Python installation, pip download or administrator permission is required.
 
-Die Dateien stammen unverändert aus dem offiziellen Vitalux-0.9.5.4-Paket:
+The runtime originates from the verified official Vitalux package. Unused Qt compiler/Lottie/vector-image modules and nonfunctional optional PDF/virtual-keyboard plugins have been removed. libaio 0.3.113 is rebuilt from the checksum-locked unmodified source documented in `third_party/sources.lock.json`. These changes preserve the supported desktop rendering modes.
 
-https://github.com/PAAAUUULLOOOH/Vitalux/releases/download/v0.9.5.4/Vitalux-v0.9.5.4-linux-x86_64.zip
-
-Vor dem Verpacken geprüft gegen die offizielle SHA-256-Prüfsumme:
-`4d87b990078dc20f0972ab42fd9cae39d057698def3f5adc95de374ae5052687`.
-
-Die enthaltenen Lizenztexte werden unter `licenses/` entpackt. Die Zuordnung
-zur offiziellen Version bleibt auch bei einer Änderung der Vorschau erhalten.
+License texts and the exact fio build source are extracted under `licenses/`. Other corresponding sources, source checksums and rebuild instructions are provided separately with each release; see [THIRD-PARTY.md](../THIRD-PARTY.md).

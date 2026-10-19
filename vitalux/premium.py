@@ -341,6 +341,12 @@ class DesignTile(QAbstractButton):
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
+        p.setRenderHint(QPainter.SmoothPixmapTransform)
+        # Paint the zoom inside a stable hit box; neighbouring tiles never move.
+        scale = .975+.025*self._hover
+        p.translate(self.width()/2, self.height()/2)
+        p.scale(scale, scale)
+        p.translate(-self.width()/2, -self.height()/2)
         from . import theme, backdrops
         pal = (palette(self.key) if self.key in KEYS else
                dict(theme._THEMES[self.key], accent='#f3cd79' if self.key == 'black_glass_gold'

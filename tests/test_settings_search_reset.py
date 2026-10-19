@@ -102,9 +102,12 @@ def check():
             floating.field.setText('vulk')
             page.search_settings('vulk')
             page.choose_search_result(page.search_results.item(0))
-            qwait(420)
-            assert not floating.expanded and not floating.field.text()
+            qwait(520)
+            assert floating.expanded and floating.field.text() == 'vulk'
+            assert page.advanced.expanded
             assert page.render_combo.hasFocus()
+            floating.close_search()
+            qwait(420)
             scroll.verticalScrollBar().setValue(0)
             app.processEvents()
             page.search_home.click()
@@ -143,7 +146,7 @@ def check():
 
             # Fade in, adapt width, then fade out after five seconds idle.
             page.search_home.click()
-            qwait(90)
+            floating.animation.setCurrentTime(90)
             assert 0 < floating._opacity.opacity() < 1
             qwait(350)
             assert floating._opacity.opacity() == 1

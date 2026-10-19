@@ -1,10 +1,11 @@
 """Hardware-sensor page, appearance settings and customizable dashboard controls."""
 import json
+from functools import lru_cache
 from datetime import datetime
 
 from PySide6.QtCore import Qt, Signal, QSize, QTimer
 from PySide6.QtGui import QColor, QIntValidator
-from PySide6.QtWidgets import (QColorDialog, QFrame, QGridLayout, QHBoxLayout, QInputDialog, QLabel, QLineEdit, QListWidget, QScrollArea, QSizePolicy, QSlider, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QColorDialog, QFrame, QGridLayout, QHBoxLayout, QInputDialog, QLabel, QLineEdit, QListWidget, QSizePolicy, QSlider, QVBoxLayout, QWidget)
 from .ui_locale import QCheckBox, QComboBox, QDialog, QFileDialog, QListWidgetItem, QMessageBox, QPushButton
 
 from . import __version__, settings, theme, motion, backdrops, user_background, wallpaper_accents, renderer, eco, i18n, premium
@@ -15,6 +16,8 @@ from .i18n import tr
 from .mini_hud import DEFAULT_KEYS
 from .settings_search import FloatingSettingsSearch, _SearchIcon
 from .choice_combo import ChoiceComboBox
+from .expandable import ExpandableCard
+from .settings_navigation import SettingsNavigator
 
 
 class SensorsPage(Page):
@@ -199,6 +202,8 @@ class PreferencesPage(Page):
         # The overlay is parented to the scroll viewport when the page is embedded.
         # A reserved top margin ensures the pinned control never covers a settings card.
         self.search_overlay = FloatingSettingsSearch(self.search, self.search_results, self)
+        self.search_navigation = SettingsNavigator(self)
+        self._search_words = None
         # Resting magnifier is a normal page element. Only the opened search
         # floats above the viewport; after closing, scroll can carry it away.
         self.search_home = _SearchIcon(self)
@@ -500,7 +505,7 @@ class PreferencesPage(Page):
         self.close_to_tray.setEnabled(self.window._tray is not None)
         self.close_to_tray.toggled.connect(lambda enabled: self._set_preference('close_to_tray', enabled))
         tray.body.addWidget(self.close_to_tray)
-        tray.body.addWidget(label('Tray-Hover: CPU-, GPU- und RAM-Auslastung sowie Temperaturen. Im Kontextmenü öffnet sich zusätzlich eine kompakte Live-Vorschau.', 'muted', wrap=True))
+        tray.body.addWidget(label('Tray-Hover zeigt CPU-, GPU- und RAM-Auslastung sowie Temperaturen. Das Kontextmenü bietet Fenster-, MiniHUD- und Beenden-Aktionen.', 'muted', wrap=True))
         self._settings_cards['hud'].append(tray)
 
         hud = Card('MiniHUD · kompakte Live-Anzeige')
@@ -606,28 +611,36 @@ class PreferencesPage(Page):
             ('energy', 'Ultra Eco Ressourcenschonung Neustarten', self.eco_toggle),
             ('general', 'Standardwerte wiederherstellen Zurücksetzen', self.restore_button),
             ('render', 'Grafik Rendering Backend CPU OpenGL Wayland Vulkan X11', self.render_combo),
+            ('maintenance', 'Wartung Maintenance Cache leeren Clear', self.clear_cache_btn),
+            ('maintenance', 'Persönliche Einstellungen löschen Delete Preferences Settings', self.clear_preferences_btn),
         ]
-        # Order from frequent to advanced; rendering must remain at the bottom.
-        for category in ('appearance', 'general', 'hud', 'monitoring', 'energy', 'render'):
+        self.advanced = ExpandableCard(self)
+        for card in self._settings_cards['render']:
+            self.advanced.addWidget(card)
+        self.advanced.addWidget(self._maintenance_card)
+        self._search_targets.append(('advanced', 'Erweiterte Einstellungen Advanced Settings', self.advanced.header))
+        for category in ('appearance', 'general', 'hud', 'monitoring', 'energy'):
             cards = (list(reversed(self._settings_cards[category])) if category == 'hud'
                      else self._settings_cards[category])
             for card in cards:
                 self.content.addWidget(card)
-        # Global reset and maintenance remain below the final renderer.
-        self.content.addWidget(self._maintenance_card)
         self.content.addLayout(self._restore_row)
+        self.content.addWidget(self.advanced)
         self.refresh_appearance()
 
     SEARCH_CATEGORIES = {
         'appearance': 'Darstellung', 'general': 'Allgemein',
         'hud': 'MiniHUD & Fenster', 'monitoring': 'Monitoring & Warnungen',
         'energy': 'Leistung & Energie', 'render': 'Grafik-Rendering',
+        'maintenance': 'Wartung', 'advanced': 'Erweiterte Einstellungen',
     }
 
     def install_search_overlay(self, scroll):
         self.search_overlay.install_on(scroll)
+        self.search_navigation.install_on(scroll)
 
     @staticmethod
+    @lru_cache(maxsize=256)
     def _search_normalize(text):
         import unicodedata
         normalized = unicodedata.normalize('NFKD', str(text).casefold())
@@ -641,12 +654,25 @@ class PreferencesPage(Page):
         if not tokens:
             self.search_results.hide()
             self.search_overlay.suggestions_changed()
+            self.search_navigation.cancel()
             return
 
         ranked = []
+        if self._search_words is None:
+            aliases = {self.sound_toggle: 'Glass Sound Click Tone Volume',
+                self.design_tiles[0]: 'Theme Color Scheme Preview', self.accent_combo: 'Accent Color Colour Custom',
+                self.background_combo: 'Background Image Wallpaper', self.motion_combo: 'Animation Motion Transition',
+                self.hud_on: 'MiniHUD Show Enable', self.hud_size: 'MiniHUD Size Layout',
+                self.hud_opacity: 'MiniHUD Opacity Transparency', self.close_to_tray: 'Tray Close Window',
+                self.interval: 'Refresh Interval Live Monitoring', self.alert_toggle: 'Alerts Threshold Temperature',
+                self.eco_toggle: 'Ultra Eco Energy Power Saving Restart', self.restore_button: 'Reset Restore Defaults',
+                self.render_combo: 'Graphics Renderer Rendering Backend', self.clear_cache_btn: 'Maintenance Clear Cache',
+                self.clear_preferences_btn: 'Delete Personal Preferences', self.advanced.header: 'Advanced Settings'}
+            self._search_words = [self._search_normalize(terms+' '+self.SEARCH_CATEGORIES[key]+' '+
+                tr(terms.split(' ')[0])+' '+aliases.get(target, '')).split()
+                for key, terms, target in self._search_targets]
         for index, (key, terms, _target) in enumerate(self._search_targets):
-            haystack = self._search_normalize(terms + ' ' + self.SEARCH_CATEGORIES[key])
-            parts = haystack.split()
+            parts = self._search_words[index]
             matches = []
             for token in tokens:
                 options = [
@@ -660,7 +686,9 @@ class PreferencesPage(Page):
                     break
                 matches.append(max(options))
             if len(matches) == len(tokens):
-                ranked.append((sum(matches), index, key, terms))
+                primary = self._search_normalize(terms.split(' ')[0]+' '+tr(terms.split(' ')[0]))
+                bonus = 2 if any(primary.startswith(token) for token in tokens if len(token) >= 3) else 0
+                ranked.append((sum(matches)+bonus, index, key, terms))
         ranked.sort(key=lambda entry: (-entry[0], entry[1]))
         for _score, index, key, terms in ranked[:7]:
             item = QListWidgetItem(tr(terms.split(' ')[0]) + '  ·  ' +
@@ -671,22 +699,20 @@ class PreferencesPage(Page):
         self.search_results.setVisible(bool(self.search_results.count()) and
                                        self.search_overlay.expanded)
         self.search_overlay.suggestions_changed()
+        # Navigate only when the leading match is distinct; keep typing in the
+        # search field and wait briefly so successive prefixes do not jerk it.
+        distinct = ranked and (len(ranked) == 1 or ranked[0][0] > ranked[1][0])
+        candidate = (self._search_targets[ranked[0][1]][2]
+                     if distinct and max(map(len, tokens)) >= 3 else None)
+        self.search_navigation.predict(candidate)
 
     def choose_search_result(self, item):
         index = item.data(Qt.UserRole)
         if not isinstance(index, int) or not (0 <= index < len(self._search_targets)):
             return
         target = self._search_targets[index][2]
-        self.search_overlay.close_search()
-        scroll = self.parentWidget()
-        while scroll is not None and not isinstance(scroll, QScrollArea):
-            scroll = scroll.parentWidget()
-        if scroll is not None:
-            scroll.ensureWidgetVisible(target, 24, 90)
-        target.setFocus(Qt.OtherFocusReason)
-        original = target.styleSheet()
-        target.setStyleSheet(original + 'border: 2px solid ' + theme.accent() + ';')
-        QTimer.singleShot(1400, lambda w=target, old=original: w.setStyleSheet(old))
+        self.search_overlay.result_chosen()
+        self.search_navigation.choose(target)
 
     def _add_section_reset(self, body, section, title):
         row = QHBoxLayout()
@@ -749,6 +775,7 @@ class PreferencesPage(Page):
         self._refresh_restore_button()
 
     def retranslate(self):
+        self._search_words = None
         self.search.setPlaceholderText(tr('Einstellungen durchsuchen …'))
         self.search_overlay.refresh_theme()
 

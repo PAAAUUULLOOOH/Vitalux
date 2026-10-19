@@ -1,5 +1,12 @@
 # Vitalux – Änderungen
 
+## [v0.9.5.6] - 2026-10-19
+- Feste Designpaletten und Hintergründe bleiben grau und deaktiviert; geschlossene Dropdowns ändern ihre Auswahl beim Scrollen nicht.
+- Neuer weicher Kristallklang für Buttons, Auswahlen und Dropdowns; zuverlässige Wiederholung nach Pausen und bei schnellen Klicks.
+- Die Einstellungssuche gleitet zu erkannten Treffern und bleibt nach der Auswahl fünf Sekunden sichtbar, bevor sie sanft schließt.
+- Grafik-Renderer und Wartung liegen ganz unten im animiert auf- und zuklappbaren Bereich „Erweiterte Einstellungen“, den die Suche automatisch öffnet.
+- Designvorschauen vergrößern sich beim Darüberfahren sanft; der originale Schriftzug erhält einen deutlicheren, langsam wandernden Lichtreflex.
+
 ## [v0.9.5.5] - 2026-10-19
 - Zehn Farbschemata über native Vorschaukacheln auswählen; Obsidian Gold, Champagne Glass und Aurora Gold sind jetzt im stabilen Release enthalten.
 - Feste Akzent- und Hintergrundoptionen werden direkt im geöffneten Dropdown erklärt; nicht verfügbare Einträge bleiben grau und unveränderbar.

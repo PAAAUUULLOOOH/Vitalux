@@ -102,7 +102,7 @@ def run():
         button.close()
         with wave.open(str(SOUND)) as source:
             assert source.getnchannels() == 1 and source.getsampwidth() == 2
-            assert .20 <= source.getnframes()/source.getframerate() <= .25
+            assert .16 <= source.getnframes()/source.getframerate() <= .19
             pcm = source.readframes(source.getnframes())
         samples = struct.unpack('<'+'h'*(len(pcm)//2), pcm)
         assert samples[0] == samples[-1] == 0

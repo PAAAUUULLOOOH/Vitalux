@@ -7,7 +7,7 @@ import tempfile
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0, os.getcwd())
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication, QLabel
+from PySide6.QtWidgets import QApplication
 from vitalux import distro, i18n, premium, settings, theme
 from vitalux.logo import load_logo
 from vitalux.update_manager import UpdateManager
@@ -74,14 +74,10 @@ def run():
                     i18n.set_lang(language)
                     preferences.refresh_appearance()
                     for combo in (preferences.accent_combo, preferences.background_combo):
+                        assert not combo.isEnabled()
                         combo.showPopup()
-                        menu = combo._locked_menu
-                        assert menu is not None and menu.isVisible()
-                        message = menu.findChild(QLabel, 'choiceLockMessage')
-                        assert message is not None and message.text()
-                        assert message.text() == i18n.tr(combo._lock_reason)
-                        assert all(not a.isEnabled() for a in menu.actions() if not a.isSeparator())
-                        combo.hidePopup()
+                        assert not combo.view().isVisible()
+                        assert not hasattr(combo, '_locked_menu')
                 assert not hasattr(preferences, 'background_lock_note')
                 assert not hasattr(preferences, 'accent_lock_note')
                 original_bg = settings.get('background_style')

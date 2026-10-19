@@ -32,7 +32,7 @@ def main():
     full = out / f"Vitalux-v{ver}-linux-x86_64.zip"
     changed = out / f"Vitalux-v{ver}-Update-von-v{previous_version}.zip"
 
-    with ZipFile(full, "w", ZIP_DEFLATED, compresslevel=6, allowZip64=True) as z:
+    with ZipFile(full, "w", ZIP_DEFLATED, compresslevel=6, allowZip64=True, strict_timestamps=False) as z:
         for p in files(current):
             put(z, p, current)
     print(f"Created {full.name} ({full.stat().st_size:,} bytes)")
@@ -48,7 +48,7 @@ def main():
             differences.append(p)
     removed = sorted(str(p.relative_to(previous)) for p in files(previous)
                      if p.relative_to(previous) not in current_paths)
-    with ZipFile(changed, "w", ZIP_DEFLATED, compresslevel=6, allowZip64=True) as z:
+    with ZipFile(changed, "w", ZIP_DEFLATED, compresslevel=6, allowZip64=True, strict_timestamps=False) as z:
         for p in differences:
             put(z, p, current)
         z.writestr("README-UPDATE.txt",

@@ -1,1 +1,1 @@
-Originaler Vitalux-Glasklang, lokal synthetisiert. 225 ms, mono, 48 kHz / PCM 16 bit. Harmonische A-/E-Teiltöne, weicher Anschlag, kurzer gläserner Ausklang. Keine externen Samples. Lizenz wie Vitalux.
+Original Vitalux crystal tap, synthesized locally: 180 ms, mono 48 kHz PCM16. Rounded attack, warm D6 fundamental and softly detuned crystal overtones, with a short smooth decay. No external samples. Licensed with Vitalux.

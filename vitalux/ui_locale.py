@@ -6,7 +6,7 @@ labels all pass through the same translation function.
 """
 from PySide6.QtWidgets import (QLabel as _QLabel, QPushButton as _QPushButton,
     QCheckBox as _QCheckBox, QComboBox as _QComboBox, QDialog as _QDialog,
-    QListView as _QListView, QFrame as _QFrame, QStyleFactory as _QStyleFactory, QStyle as _QStyle, QProxyStyle as _QProxyStyle,
+    QListView as _QListView, QFrame as _QFrame, QStyleFactory as _QStyleFactory,
     QListWidgetItem as _QListWidgetItem, QMessageBox as _QMessageBox,
     QFileDialog as _QFileDialog, QSizePolicy as _QSizePolicy)
 from .i18n import tr
@@ -147,17 +147,11 @@ class QCheckBox(_QCheckBox):
                          Qt.AlignLeft | Qt.AlignVCenter, self.text())
         painter.end()
 
-class _ListPopupStyle(_QProxyStyle):
-    def styleHint(self, hint, option=None, widget=None, returnData=None):
-        if hint == _QStyle.SH_ComboBox_Popup:
-            return 0
-        return super().styleHint(hint, option, widget, returnData)
-
-
 class QComboBox(_QComboBox):
     def __init__(self,*args,**kwargs):
         self._source_items = []
         super().__init__(*args,**kwargs)
+        self.setFocusPolicy(Qt.StrongFocus)
         # KDE/Wayland native popup styles sometimes show black top and bottom
         # scroll strips. A regular Fusion list popup avoids native menu bands.
         self._popup_style = _QStyleFactory.create("Fusion")
@@ -176,6 +170,13 @@ class QComboBox(_QComboBox):
         self.setMaxVisibleItems(10)
         self.setSizeAdjustPolicy(_QComboBox.AdjustToContents)
         self.currentIndexChanged.connect(self._update_selection_tooltip)
+
+    def wheelEvent(self, event):
+        # Wheel gestures belong to the page until the user opens the selector.
+        if not self.view().isVisible():
+            event.ignore()
+            return
+        super().wheelEvent(event)
 
     def sizeHint(self):
         # Trim just a few pixels without forcing a width that would truncate

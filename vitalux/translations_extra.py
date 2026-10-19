@@ -1,5 +1,12 @@
 """Extra English translations for dashboard, settings, sensors and disk tests."""
 EN_MORE = {
+    'Die Einstellungssuche gleitet zu eindeutig erkannten Treffern. Nach der Auswahl bleibt die Leiste fünf Sekunden sichtbar und schließt dann weich. Grafik-Renderer und Wartung findest du ganz unten unter Erweiterte Einstellungen; Suchtreffer klappen diesen Bereich automatisch auf.': 'Settings search glides to confidently recognized matches. After selecting a result, the field stays visible for five seconds, then closes smoothly. Graphics renderers and Maintenance are at the bottom under Advanced settings; matching searches expand this section automatically.',
+    'Ein kurzer Kristallklang begleitet Vitalux-Buttons, Auswahlen und das Öffnen von Dropdowns, auch per Tastatur. Lautstärke und Stummschaltung findest du in den Einstellungen. Geschlossene Dropdowns ändern ihre Auswahl beim Scrollen nicht.': 'A short crystal chime accompanies Vitalux buttons, selections and opening dropdowns, including keyboard activation. Adjust its volume or mute it in Settings. Scrolling over a closed dropdown never changes its selection.',
+    'Die zehn Designvorschauen vergrößern sich beim Darüberfahren sanft. Feste Paletten und Hintergründe stehen grau in deaktivierten Feldern. Der originale Vitalux-Schriftzug trägt einen langsam wandernden Lichtreflex.': 'The ten theme previews gently enlarge on hover. Fixed palettes and backgrounds appear as grey disabled fields. A slow satin reflection travels across the original Vitalux wordmark.',
+    'Erweiterte Einstellungen': 'Advanced settings',
+    'Erweiterte': 'Advanced',
+    'Tray-Hover zeigt CPU-, GPU- und RAM-Auslastung sowie Temperaturen. Das Kontextmenü bietet Fenster-, MiniHUD- und Beenden-Aktionen.': 'The tray tooltip shows CPU, GPU and RAM usage and temperatures. Its menu offers window, MiniHUD and quit actions.',
+
     'Noch keine Vitalux-Version über GitHub Releases veröffentlicht.': 'No Vitalux version has been published through GitHub Releases yet.',
     'Ungültige Versionsangabe bei GitHub.': 'Invalid version number from GitHub.',
     'Das offizielle Vitalux-Update wird auf GitHub noch erstellt oder ist nicht verfügbar.': 'The official Vitalux update is still building on GitHub or is unavailable.',

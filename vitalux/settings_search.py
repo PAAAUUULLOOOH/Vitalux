@@ -35,7 +35,6 @@ class _SearchIcon(QToolButton):
 class FloatingSettingsSearch(QWidget):
     """Theme-aware centered search. It never participates in page scrolling."""
 
-    COLLAPSED = 0
     DEFAULT_WIDTH = 235
     MAX_WIDTH = 500
 
@@ -225,6 +224,12 @@ class FloatingSettingsSearch(QWidget):
         """Call after the result list changes; keep the overlay centered."""
         if self._expanded:
             self._animate(self._wanted_width())
+
+    def result_chosen(self):
+        """Keep the query visible for five seconds after navigating to a match."""
+        self.suggestions.hide()
+        self.idle_timer.start()
+        self._animate(self._wanted_width())
 
     def toggle(self):
         if self._expanded:

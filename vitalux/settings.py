@@ -21,11 +21,11 @@ def _identity():
         return (PATH, None, None, None)
 
 
-def _load():
+def _snapshot():
     global _cache_identity, _cache_value
     identity = _identity()
     if identity == _cache_identity and _cache_value is not None:
-        return copy.deepcopy(_cache_value)
+        return _cache_value
     try:
         with open(PATH, encoding="utf-8") as f:
             data = json.load(f)
@@ -33,19 +33,24 @@ def _load():
     except (OSError, ValueError):
         data = {}
     _cache_identity, _cache_value = identity, data
-    return copy.deepcopy(data)
+    return data
+
+
+def _load():
+    """A caller-owned complete snapshot (used for atomic preference writes)."""
+    return copy.deepcopy(_snapshot())
 
 
 def get(key, default=None):
-    return _load().get(key, default)
+    return copy.deepcopy(_snapshot().get(key, default))
 
 
 def get_many(defaults):
     """Read several settings using just one snapshot of the settings file."""
     if not isinstance(defaults, dict):
         raise TypeError("Preferences defaults must be a dictionary")
-    data = _load()
-    return {key: data.get(key, default) for key, default in defaults.items()}
+    data = _snapshot()
+    return copy.deepcopy({key: data.get(key, default) for key, default in defaults.items()})
 
 
 def _report_write_error(exc):

@@ -1,6 +1,6 @@
 name: Vitalux – Stable release
 
-# The named main commit is the authorized release. Includes final slider/RHI checks.
+# The named main commit is the authorized release. Every package is validated.
 # Ordinary source pushes do not publish.
 on:
   workflow_dispatch:
@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   build-and-release:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'publish Vitalux v0.9.5.5')
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'publish Vitalux v')
     runs-on: ubuntu-24.04
     timeout-minutes: 50
     steps:
@@ -24,6 +24,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
       - name: Check release version and predecessor
         env:
           GH_TOKEN: ${{ github.token }}
@@ -46,18 +48,25 @@ jobs:
       - name: Install pinned build dependencies and virtual graphics drivers
         run: |
           set -euo pipefail
-          python -m pip install 'PySide6==6.12.0' 'psutil==7.2.2'
+          python -m pip install -r requirements-dev.txt
           sudo apt-get update
-          sudo apt-get install -y xvfb weston libegl1 libgl1 libopengl0 libgl1-mesa-dri libglx-mesa0 mesa-vulkan-drivers libvulkan1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-util1 libxcb-shape0 curl squashfs-tools unzip file
+          sudo apt-get install -y xvfb weston pulseaudio pulseaudio-utils libegl1 libgl1 libopengl0 libgl1-mesa-dri libglx-mesa0 mesa-vulkan-drivers libvulkan1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-util1 libxcb-shape0 curl squashfs-tools unzip file
           python -m compileall -q vitalux tests scripts packaging
           bash -n run.sh packaging/AppRun packaging/build-appimage.sh packaging/appimage-integration.sh packaging/appimage-rollback-watch.sh
+      - uses: actions/cache@v4
+        with:
+          path: build/downloads
+          key: vitalux-baseline-v1-${{ env.PREVIOUS_TAG }}-linux-x86_64
       - name: Download and verify the official predecessor runtime
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           mkdir -p build/baseline build/downloads
-          gh release download "$PREVIOUS_TAG" --pattern "Vitalux-${PREVIOUS_TAG}-linux-x86_64.zip" --pattern "Vitalux-${PREVIOUS_TAG}-SHA256SUMS.txt" --dir build/downloads
+          gh release download "$PREVIOUS_TAG" --pattern "Vitalux-${PREVIOUS_TAG}-SHA256SUMS.txt" --dir build/downloads --clobber
+          if [[ ! -s "build/downloads/Vitalux-${PREVIOUS_TAG}-linux-x86_64.zip" ]]; then
+            gh release download "$PREVIOUS_TAG" --pattern "Vitalux-${PREVIOUS_TAG}-linux-x86_64.zip" --dir build/downloads
+          fi
           python - <<'PY'
           import hashlib, os, pathlib, runpy
           root = pathlib.Path('build/downloads')
@@ -72,7 +81,8 @@ jobs:
       - name: Assemble the stable portable package
         run: |
           set -euo pipefail
-          python scripts/prepare-release.py "build/baseline/Vitalux-${PREVIOUS_TAG}" "build/staged/Vitalux-${TAG}"
+          python scripts/prepare-release.py "build/staged/Vitalux-${TAG}"
+          python scripts/check-distribution.py "build/staged/Vitalux-${TAG}"
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" -c 'from PySide6.QtOpenGLWidgets import QOpenGLWidget; from PySide6.QtQuickWidgets import QQuickWidget; from PySide6.QtTest import QTest; import psutil'
       - name: Run every regression with the shipped Python and Qt
@@ -81,6 +91,13 @@ jobs:
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-regressions.py --output "$GITHUB_WORKSPACE/build/regressions"
+      - name: Check repeated audio playback and idle recovery
+        id: audio
+        run: |
+          set -euo pipefail
+          STAGED="$PWD/build/staged/Vitalux-${TAG}"
+          cd "$STAGED"
+          LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/check-ui-audio.py --output "$GITHUB_WORKSPACE/build/audio-checks"
       - name: Check all five native renderers and startup windows
         id: graphics
         run: |
@@ -88,12 +105,13 @@ jobs:
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-graphics-checks.py --output "$GITHUB_WORKSPACE/build/graphics-checks"
-      - name: Expose graphics failure details for diagnosis
-        if: failure() && steps.graphics.outcome == 'failure'
+      - name: Expose native validation failures for diagnosis
+        if: failure() && (steps.graphics.outcome == 'failure' || steps.audio.outcome == 'failure')
         run: |
           python - <<'PY'
           from pathlib import Path
-          for log in sorted(Path('build/graphics-checks').glob('*.log')):
+          logs = list(Path('build/graphics-checks').glob('*.log')) + list(Path('build/audio-checks').glob('*.log'))
+          for log in sorted(logs):
               tail = '\n'.join(log.read_text(errors='replace').splitlines()[-18:])
               escaped = tail.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
               print(f'::error title={log.name}::{escaped}', flush=True)
@@ -124,10 +142,15 @@ jobs:
           bash -n "$VITALUX_INTEGRATION_ROOT/.local/bin/vitalux"
           APPDIR="$EXTRACT" APPIMAGE="$IMAGE" bash "$EXTRACT/AppRun" --uninstall
           test ! -e "$XDG_DATA_HOME/applications/vitalux.desktop"
+      - uses: actions/cache@v4
+        with:
+          path: build/third-party-sources
+          key: vitalux-third-party-sources-v1-${{ hashFiles('third_party/sources.lock.json') }}
       - name: Build full and manual update ZIPs with checksums
         run: |
           set -euo pipefail
           python scripts/create-release-archives.py "build/staged/Vitalux-${TAG}" "build/baseline/Vitalux-${PREVIOUS_TAG}" dist "$PREVIOUS_VERSION"
+          python scripts/bundle-third-party.py --runtime-root "build/staged/Vitalux-${TAG}" --output dist
           (cd dist && sha256sum *.AppImage *.zip > "Vitalux-${TAG}-SHA256SUMS.txt")
           unzip -tq "dist/Vitalux-${TAG}-linux-x86_64.zip"
           python scripts/check-release-update.py "build/baseline/Vitalux-${PREVIOUS_TAG}" "dist/Vitalux-${TAG}-linux-x86_64.zip"
@@ -139,6 +162,7 @@ jobs:
           path: |
             build/regressions/
             build/graphics-checks/
+            build/audio-checks/
             build/source-preview-checks/
           retention-days: 30
       - name: Preserve release packages

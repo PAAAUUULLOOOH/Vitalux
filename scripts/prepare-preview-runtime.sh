@@ -46,6 +46,8 @@ fi
 for VITALUX_RUNTIME_PART in lib tools-lib licenses; do
   if [ ! -e "$VITALUX_RUNTIME_ROOT/$VITALUX_RUNTIME_PART" ]; then
     mv -- "$VITALUX_RUNTIME_STAGE/$VITALUX_RUNTIME_PART" "$VITALUX_RUNTIME_ROOT/$VITALUX_RUNTIME_PART"
+  elif [ "$VITALUX_RUNTIME_PART" = licenses ]; then
+    cp --recursive --no-clobber -- "$VITALUX_RUNTIME_STAGE/licenses/." "$VITALUX_RUNTIME_ROOT/licenses/"
   fi
 done
 mkdir -p bin

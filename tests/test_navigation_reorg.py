@@ -69,7 +69,9 @@ def main():
             assert pref.content.indexOf(pref._settings_cards['appearance'][0]) < pref.content.indexOf(pref._settings_cards['hud'][0])
             assert not hasattr(pref, 'language_combo')
             assert not pref._settings_cards['general']
-            assert pref.content.indexOf(pref._settings_cards['render'][0]) > pref.content.indexOf(pref._settings_cards['energy'][0])
+            assert pref.content.indexOf(pref.advanced) == pref.content.count()-1
+            assert pref.advanced.isAncestorOf(pref._settings_cards['render'][0])
+            assert pref.advanced.isAncestorOf(pref._maintenance_card)
             assert not hasattr(gpu, 'diagnostic_shortcut')
             assert not hasattr(gpu, 'lab_panel') or gpu.lab_panel is None
             assert diag.lab_panel is None
@@ -90,12 +92,13 @@ def main():
             assert pref.search_overlay.expanded
             assert pref.search_results.count() >= 1
             pref.choose_search_result(pref.search_results.item(0))
-            app.processEvents()
+            qwait(550)
             assert pref.render_combo.hasFocus()
             assert window.stack.currentWidget().verticalScrollBar().value() > 0
             qwait(320)
-            assert not pref.search.text()
-            assert not pref.search_overlay.expanded
+            assert pref.search.text() == 'Vulk'
+            assert pref.search_overlay.expanded
+            assert pref.advanced.expanded
             assert pref.background_performance_note.isHidden()
             diag.select_area('hardware', 'pcie')
             assert diag.tabs.tabText(diag.tabs.currentIndex()) == 'PCIe Guardian'

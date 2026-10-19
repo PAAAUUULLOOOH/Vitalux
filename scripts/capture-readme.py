@@ -32,14 +32,14 @@ def main():
     output.parent.mkdir(parents=True, exist_ok=True)
 
     # Config is isolated by the workflow's XDG_CONFIG_HOME, never a real user's.
-    settings.set("theme", "glass")
+    settings.set("theme", "black_glass_gold")
     settings.set("sidebar_collapsed", False)
     i18n.set_lang("en")
     application = QApplication([])
     application.setQuitOnLastWindowClosed(False)
     application.setApplicationName("Vitalux")
     info = distro.info()
-    theme.set_mode("glass")
+    theme.set_mode("black_glass_gold")
     theme.set_accent(info["color"])
     application.setStyleSheet(theme.stylesheet())
     application.setWindowIcon(app_icon())

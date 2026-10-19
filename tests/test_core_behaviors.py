@@ -48,6 +48,11 @@ def test_settings():
             replacement['colors'].append({'color': '#ffffff'})
             assert settings.get('colors') == [{'color': '#123456'}], (
                 'Changes to caller data must not mutate the cached settings')
+            borrowed = settings.get('colors')
+            borrowed[0]['color'] = '#ffffff'
+            batch = settings.get_many({'colors': []})
+            batch['colors'].clear()
+            assert settings.get('colors') == [{'color': '#123456'}]
     finally:
         settings.PATH = original
 

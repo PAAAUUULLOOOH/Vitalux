@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""Overlay current source onto a verified official portable runtime."""
+"""Assemble current source with the checksum-locked portable runtime."""
 import argparse
 from pathlib import Path
 import shutil
 import sys
 import sysconfig
+import hashlib
+import tarfile
 
 
-def prepare(baseline, target):
+def prepare(target):
     import PySide6
     from vitalux import __version__
     if sys.version_info[:2] != (3, 12) or PySide6.__version__ != '6.12.0':
@@ -16,20 +18,25 @@ def prepare(baseline, target):
     if target.exists():
         raise FileExistsError(target)
     ignore = shutil.ignore_patterns('__pycache__', '*.pyc', '*.pyo')
-    shutil.copytree(baseline, target, ignore=ignore)
-    for folder in ('vitalux', 'assets', 'scripts', 'tests', 'packaging'):
+    target.mkdir(parents=True)
+    archive = source/'portable-runtime/vitalux-linux-x86_64.tar.xz'
+    expected = (source/'portable-runtime/SHA256SUMS').read_text().split()[0]
+    with archive.open('rb') as stream:
+        if hashlib.file_digest(stream, 'sha256').hexdigest() != expected:
+            raise RuntimeError('Checked-in runtime SHA-256 mismatch')
+    with tarfile.open(archive) as bundled:
+        bundled.extractall(target, filter='data')
+    shutil.copytree(source/'licenses', target/'licenses', dirs_exist_ok=True, ignore=ignore)
+    for folder in ('vitalux', 'assets', 'scripts', 'tests', 'packaging', 'third_party'):
         shutil.rmtree(target/folder, ignore_errors=True)
         shutil.copytree(source/folder, target/folder, ignore=ignore)
     for name in ('run.sh', 'Portable-pruefen.sh', 'README.md', 'USER-GUIDE.md',
                  'CHANGELOG.md', 'CHANGELOG.en.md', 'Designs-testen.sh',
                  'Obsidian-Gold.sh', 'Champagne-Glass.sh', 'Aurora-Gold.sh',
-                 'DESIGN-VORSCHAU.md', 'NEUSTART-ANLEITUNG.md'):
+                 'DESIGN-VORSCHAU.md', 'NEUSTART-ANLEITUNG.md', 'requirements-dev.txt',
+                 'LICENSE-NOTICE.md', 'THIRD-PARTY.md'):
         shutil.copy2(source/name, target/name)
     shutil.copy2(source/'bin/fio', target/'bin/fio')
-    for name in ('DESIGN-BUILD.json', 'START-HIER.txt', 'README-GITHUB-RELEASE.md',
-                 'Vitalux-installieren.sh', 'Vitalux-deinstallieren.sh',
-                 'bin/vitalux-gpu-engine', 'LICENSES/LACT-MIT.txt'):
-        (target/name).unlink(missing_ok=True)
     # Matching development modules allow the exact shipped interpreter to run
     # the complete regression suite; users need no system Python or pip.
     stdlib = target/'runtime/lib/python3.12'
@@ -49,8 +56,7 @@ def prepare(baseline, target):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('baseline', type=Path)
     parser.add_argument('target', type=Path)
     args = parser.parse_args()
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    prepare(args.baseline.resolve(), args.target.resolve())
+    prepare(args.target.resolve())

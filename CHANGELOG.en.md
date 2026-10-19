@@ -1,5 +1,12 @@
 # Vitalux – Changes
 
+## [v0.9.5.6] - 2026-10-19
+- Fixed theme palettes and backgrounds remain grey and disabled; scrolling over closed dropdowns no longer changes their selection.
+- A softer crystal chime accompanies buttons, selections and dropdowns, with reliable repeated playback after idle periods and during rapid clicks.
+- Settings search glides to recognized matches and stays visible for five seconds after selection before closing smoothly.
+- Graphics renderers and Maintenance now live in the animated Advanced settings section at the bottom; matching searches expand it automatically.
+- Theme previews gently enlarge on hover, and a clearer slow satin reflection moves across the original wordmark.
+
 ## [v0.9.5.5] - 2026-10-19
 - Choose ten themes through native preview tiles; Obsidian Gold, Champagne Glass and Aurora Gold are now included in the stable release.
 - Fixed accent and background options explain their restrictions inside the open dropdown; unavailable choices stay grey and cannot change the design.

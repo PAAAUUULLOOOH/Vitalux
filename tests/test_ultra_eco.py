@@ -52,6 +52,7 @@ def run():
             host = Host()
             pref = PreferencesPage(host)
             pref.show()
+            pref.advanced.setExpanded(True, animate=False)
             app.processEvents()
             assert pref.eco_toggle.isEnabled()
             assert not pref.eco_toggle.isChecked()

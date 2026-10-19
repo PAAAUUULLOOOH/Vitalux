@@ -75,10 +75,10 @@ SLIDES = [
     ),
     (
         "Darstellung und Einstellungen",
-        "Standardmäßig startet Vitalux mit Glass und Vitalux Blau. Die Lupe bleibt geschlossen am Seitenanfang und folgt geöffnet beim Scrollen. Die Suche wächst mit der Eingabe, schließt nach fünf Sekunden oder Klick außerhalb sanft. Geänderte Einstellungen lassen sich gezielt zurücksetzen.",
+        "Die Einstellungssuche gleitet zu eindeutig erkannten Treffern. Nach der Auswahl bleibt die Leiste fünf Sekunden sichtbar und schließt dann weich. Grafik-Renderer und Wartung findest du ganz unten unter Erweiterte Einstellungen; Suchtreffer klappen diesen Bereich automatisch auf.",
         "Bei anpassbaren Farbschemata wählst du integrierte Hintergründe oder eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
-        "Der Glasklang reagiert nur auf Vitalux-Buttons, auch per Tastatur. In den Einstellungen kannst du die Lautstärke ändern oder den Klang abschalten.",
-        "Zehn Vorschaukacheln wählen das Farbschema mit einer sanften Überblendung. Die vier Gold-/Glas-Designs haben feste Paletten und Hintergründe. Öffne ihre grauen Dropdowns, um die Erklärung direkt über den nicht verfügbaren Optionen zu lesen.",
+        "Ein kurzer Kristallklang begleitet Vitalux-Buttons, Auswahlen und das Öffnen von Dropdowns, auch per Tastatur. Lautstärke und Stummschaltung findest du in den Einstellungen. Geschlossene Dropdowns ändern ihre Auswahl beim Scrollen nicht.",
+        "Die zehn Designvorschauen vergrößern sich beim Darüberfahren sanft. Feste Paletten und Hintergründe stehen grau in deaktivierten Feldern. Der originale Vitalux-Schriftzug trägt einen langsam wandernden Lichtreflex.",
         "settings",
     ),
     (

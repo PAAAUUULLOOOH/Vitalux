@@ -14,17 +14,19 @@ Use **Edit layout** on Overview to arrange cards. Drives loads SMART data asynch
 
 Choose one of ten preview tiles in **Settings → Appearance**. The transition preserves your page, scroll position and running measurements. Logos, sidebar text and symbols share the effective palette.
 
-Obsidian Gold, Champagne Glass, Black Glass Gold and Aurora Gold use fixed palettes and backgrounds. Their grey dropdowns remain openable: the explanation appears inside, above unavailable options. Holographic also has a fixed HUD background. Personal accent and background selections remain saved for compatible themes.
+Obsidian Gold, Champagne Glass, Black Glass Gold and Aurora Gold use fixed palettes and backgrounds. Their grey fields are disabled and cannot be opened. Holographic also has a fixed HUD background. Personal accent and background selections remain saved for compatible themes.
 
-The original wordmark has a subtle metallic reflection; outer logo bands rotate slowly. **Animations** provides smooth, reduced and off profiles. **Ultra Eco** uses a simple skin, CPU rendering and a ten-second sampling interval, preserving the previous appearance settings for later.
+Theme previews gently enlarge on hover without moving surrounding tiles. The original wordmark has a slow, clearly visible satin reflection; outer logo bands rotate slowly. **Animations** provides smooth, reduced and off profiles. **Ultra Eco** uses a simple skin, CPU rendering and a ten-second sampling interval, preserving the previous appearance settings for later.
 
 ## Search and sound
 
-Click the magnifier in Settings. Search grows with the text, adapts to the available width and shows matching settings. Choose a result to jump to its control. Open, close and interrupted transitions remain smooth. Escape, an outside click or five idle seconds closes the field.
+Click the magnifier in Settings. Search grows with the text, adapts to the available width and shows matching settings. Clear predictions glide to the control automatically while you keep typing. Choose a result to focus its control; the search field then remains visible for five seconds and closes smoothly. Open, close and interrupted transitions remain smooth. Escape, an outside click or five idle seconds closes the field.
 
-**Glass sound on clicks** applies only to Vitalux buttons, including keyboard activation. Adjust **Volume** or switch it off. It does not monitor other applications or make empty-space clicks audible. Desktop audio uses PulseAudio or PipeWire's PulseAudio-compatible service.
+**Glass sound on clicks** gives buttons, selections and opening dropdowns a short crystal sound, including keyboard activation. Adjust **Volume** or switch it off. It stays within Vitalux. A closed dropdown ignores the mouse wheel, so page scrolling cannot accidentally change a setting. Desktop audio uses PulseAudio or PipeWire's PulseAudio-compatible service.
 
 ## Graphics and MiniHUD
+
+**Advanced settings** is the final card at the bottom of Settings. Click its header to expand or collapse it smoothly. It contains graphics rendering and **Maintenance** (clear Vitalux caches or reset personal preferences). Searching for these controls opens the card automatically.
 
 CPU rendering is the stable default. Experimental OpenGL, X11/OpenGL, Wayland/OpenGL and Wayland/Vulkan profiles depend on working drivers and a suitable session. Apply a renderer change with **Restart now**. A failed startup falls back to CPU. X11 and Wayland select a window-system plugin; they do not change your desktop login session.
 

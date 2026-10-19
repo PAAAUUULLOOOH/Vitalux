@@ -1,0 +1,100 @@
+[
+  {
+    "name": "pyside-setup",
+    "version": "6.12.0",
+    "url": "https://github.com/pyside/pyside-setup/archive/refs/tags/v6.12.0.zip",
+    "sha256": "d69357c3d318deae6e0d85b640d457cd87dc767f26b605201a3ec12558dc3fc2",
+    "filename": "pyside-setup-6.12.0.zip"
+  },
+  {
+    "name": "qtimageformats",
+    "version": "6.12.0",
+    "url": "https://github.com/qt/qtimageformats/archive/refs/tags/v6.12.0.zip",
+    "sha256": "0bf1224960a02ef3d91f60ccf3964f721b73c5f66bbdeafaf0919f4c045cadf8",
+    "filename": "qtimageformats-6.12.0.zip"
+  },
+  {
+    "name": "cpython",
+    "version": "3.12.7",
+    "url": "https://github.com/python/cpython/archive/refs/tags/v3.12.7.zip",
+    "sha256": "d712e33f225be8d339f7e75bedead19e4d989793b5c642a028c2db4fae530d4a",
+    "filename": "cpython-3.12.7.zip"
+  },
+  {
+    "name": "psutil",
+    "version": "7.2.2",
+    "url": "https://github.com/giampaolo/psutil/archive/refs/tags/release-7.2.2.zip",
+    "sha256": "79f41465debe0ea73efa44386e17dddbb4925f2ff0c3c543adf533b2bb5ac7d0",
+    "filename": "psutil-7.2.2.zip"
+  },
+  {
+    "name": "icu",
+    "version": "73.2",
+    "url": "https://github.com/unicode-org/icu/archive/refs/tags/release-73-2.zip",
+    "sha256": "4b6c4a79b0648d228d505601e58780a59e9ad4eaad54be75cc637bd635aa46d6",
+    "filename": "icu-73.2.zip"
+  },
+  {
+    "name": "type2-runtime",
+    "version": "fedfad5",
+    "url": "https://github.com/AppImage/type2-runtime/archive/fedfad5.zip",
+    "sha256": "7959245a48be03e7b1fe9eeae5ef18ec0df4aef59cfac283df5d888c2b479a13",
+    "filename": "type2-runtime-fedfad5.zip"
+  },
+  {
+    "name": "qtbase",
+    "version": "6.12.0",
+    "url": "https://github.com/qt/qtbase/archive/refs/tags/v6.12.0.zip",
+    "sha256": "8861ed0c46aab8c06b4db94b76a05caa0d08ecd6558c97c73411de33fc5fd7fc",
+    "filename": "qtbase-6.12.0.zip"
+  },
+  {
+    "name": "qtdeclarative",
+    "version": "6.12.0",
+    "url": "https://github.com/qt/qtdeclarative/archive/refs/tags/v6.12.0.zip",
+    "sha256": "774633da27fd50f7124a95d8cdf299ba4c450f5a3bcea0a80406a8be6fdcf5fb",
+    "filename": "qtdeclarative-6.12.0.zip"
+  },
+  {
+    "name": "qtsvg",
+    "version": "6.12.0",
+    "url": "https://github.com/qt/qtsvg/archive/refs/tags/v6.12.0.zip",
+    "sha256": "b24b8ea231b22fdcf9277e688cc4189cf43a3a1e76a93a79b42683cf7415eb3c",
+    "filename": "qtsvg-6.12.0.zip"
+  },
+  {
+    "name": "qtwayland",
+    "version": "6.12.0",
+    "url": "https://github.com/qt/qtwayland/archive/refs/tags/v6.12.0.zip",
+    "sha256": "c6f0fc97bc62b1b8f36d47a8f838271f6852a0f3a4ae56213f36e9c795066471",
+    "filename": "qtwayland-6.12.0.zip"
+  },
+  {
+    "name": "libfuse",
+    "version": "3.15.0",
+    "filename": "fuse-3.15.0.tar.xz",
+    "url": "https://github.com/libfuse/libfuse/releases/download/fuse-3.15.0/fuse-3.15.0.tar.xz",
+    "sha256": "70589cfd5e1cff7ccd6ac91c86c01be340b227285c5e200baa284e401eea2ca0"
+  },
+  {
+    "name": "squashfuse",
+    "version": "0.5.2",
+    "filename": "squashfuse-0.5.2.tar.gz",
+    "url": "https://github.com/vasi/squashfuse/archive/0.5.2.tar.gz",
+    "sha256": "db0238c5981dabbd80ee09ae15387f390091668ca060a7bc38047912491443d3"
+  },
+  {
+    "name": "libaio",
+    "version": "0.3.113",
+    "filename": "libaio-0.3.113.tar.gz",
+    "url": "https://deb.debian.org/debian/pool/main/liba/libaio/libaio_0.3.113.orig.tar.gz",
+    "sha256": "2c44d1c5fd0d43752287c9ae1eb9c023f04ef848ea8d4aafa46e9aedb678200b"
+  },
+  {
+    "name": "fio",
+    "version": "3.43",
+    "filename": "fio-3.43-build-source.tar.gz",
+    "local_path": "licenses/source/fio-3.43-build-source.tar.gz",
+    "sha256": "b5d7ab469eecb897ca6cb50782b4752ccd9eb63b34399d8a28431ab562fb011a"
+  }
+]

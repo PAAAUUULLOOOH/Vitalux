@@ -1,0 +1,8 @@
+# Preserve verbatim upstream legal texts, including original whitespace.
+licenses/upstream/** -text -whitespace
+licenses/runtime/** -text -whitespace
+licenses/system-libraries/** -text -whitespace
+licenses/appimage-dependencies/** -text -whitespace
+licenses/*.txt -text -whitespace
+portable-runtime/*.xz binary
+packaging/runtime/runtime-x86_64 binary
