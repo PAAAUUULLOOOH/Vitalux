@@ -170,7 +170,8 @@ class DiagnosticCenter(Page):
         diagnostics_card.body.addWidget(label('Wähle eine Prüfung aus; die Ergebnisse erscheinen direkt darunter.', 'muted', wrap=True))
         diagnostics_card.body.addWidget(self.tabs)
         self.content.addWidget(diagnostics_card)
-        self.lab_panel = None  # Compatibility: no optional Insights panel        reports_section = Card('Diagnose & Berichte')
+        self.lab_panel = None  # Compatibility: no optional Insights panel
+        reports_section = Card('Diagnose & Berichte')
         reports_section.body.addWidget(reports_card)
         reports_section.body.addWidget(label(
             'Berichte werden nur auf ausdrücklichen Klick gespeichert. '
