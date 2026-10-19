@@ -30,7 +30,7 @@ class DummyManager(QObject):
 def main():
     app = QApplication.instance() or QApplication([])
     original = settings.PATH
-    start = Sampler.start
+    original_start = Sampler.start
     window = None
     with tempfile.TemporaryDirectory(prefix="vitalux-navigation-") as root:
         settings.PATH = str(Path(root) / "settings.json")
@@ -42,53 +42,49 @@ def main():
             Sampler.start = lambda self: None
             window = MainWindow(
                 {'name':'TestLinux', 'short':'Test', 'version':'2026.10',
-                 'color':'#4f8cff'},
-                QPixmap(96,96), DummyManager())
+                 'color':'#4f8cff'}, QPixmap(96,96), DummyManager())
+            window.resize(1280, 780)
             window.show()
             app.processEvents()
             assert len(window.pages) == 12
             pref = next(page for title,page in window.pages if title == 'Einstellungen')
             diag = next(page for title,page in window.pages if title == 'Diagnostic Center')
             gpu = next(page for title,page in window.pages if title == 'Grafik')
-            assert window.nav_footer.layout().indexOf(window.nav_buttons[9]) >= 0
-            assert window.nav_footer.layout().indexOf(window.nav_buttons[10]) >= 0
-            assert window.nav_footer.layout().indexOf(window.nav_buttons[11]) >= 0
-            assert pref.section_nav.keys == [
-                'appearance','hud','monitoring','energy','general','render']
-            assert diag.nav.keys == [
-                'quick','hardware','system','performance','history','reports']
-            assert not hasattr(pref, 'render_advanced_toggle')
+            assert not hasattr(window, 'nav_footer')
+            assert not hasattr(window, 'nav_headers')
+            assert all(window.nav_host.layout().indexOf(b) >= 0 for b in window.nav_buttons)
+            assert not hasattr(pref, 'section_nav')
+            assert not hasattr(diag, 'nav')
+            assert pref.SEARCH_CATEGORIES['general'] == 'Allgemein'
+            assert pref.content.indexOf(pref._settings_cards['appearance'][0]) < pref.content.indexOf(pref._settings_cards['general'][0])
+            assert pref.content.indexOf(pref._settings_cards['general'][0]) < pref.content.indexOf(pref._settings_cards['hud'][0])
+            assert pref.content.indexOf(pref._settings_cards['render'][0]) > pref.content.indexOf(pref._settings_cards['energy'][0])
+            assert not hasattr(gpu, 'diagnostic_shortcut')
             assert not hasattr(gpu, 'lab_panel') or gpu.lab_panel is None
             assert diag.lab_panel is not None
             assert set(diag.texts) == {key for key,_,_ in diag.SECTIONS}
+            assert diag.tabs.count() == len(diag.SECTIONS)
+            assert diag.report_source.count() == len(diag.SECTIONS)
+            window.nav_buttons[9].click()
+            app.processEvents()
             pref.search.setText('Vulkan')
             assert pref.search_results.count() >= 1
             pref.choose_search_result(pref.search_results.item(0))
-            assert pref.section_nav.current_key() == 'render'
-            pref.section_nav.select('general')
-            assert pref.language_combo.currentData() in ('de','en')
-            assert settings.get('settings_section') == 'general'
-            window._switch_page(2)
-            gpu.diagnostic_shortcut.click()
-            assert window.pages[window.stack.currentIndex()][0] == 'Diagnostic Center'
-            assert diag.nav.current_key() == 'hardware'
-            assert diag.category_tabs['hardware'].tabText(
-                diag.category_tabs['hardware'].currentIndex()) == 'PCIe Guardian'
-            diag.select_area('performance')
-            assert diag.lab_panel is not None
+            app.processEvents()
+            assert pref.render_combo.hasFocus()
+            assert window.stack.currentWidget().verticalScrollBar().value() > 0
+            assert not pref.search.text()
+            assert pref.background_performance_note.isHidden()
+            diag.select_area('hardware', 'pcie')
+            assert diag.tabs.tabText(diag.tabs.currentIndex()) == 'PCIe Guardian'
             assert diag.lab_panel.focus.text()
-            diag.select_area('reports')
-            assert diag.report_source.count() == len(diag.SECTIONS)
-            assert not diag.worker
-            diag.nav.select('history')
-            assert 'Ereignis-Timeline' in [
-                widget.title() for widget in diag.nav.stack.currentWidget().findChildren(
-                    __import__('PySide6.QtWidgets',fromlist=['QGroupBox']).QGroupBox)]
-            print('Navigation categories, search, pinned footer and Insights relocation: OK')
+            assert diag.worker is None
+            print('Original sidebar, searchable settings, diagnostic tabs and GPU safe: OK')
         finally:
-            Sampler.start = start
+            Sampler.start = original_start
             if window:
                 window._force_quit = True
+                window.sampler.requestInterruption()
                 window.close()
             settings.PATH = original
 
