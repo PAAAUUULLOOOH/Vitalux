@@ -90,7 +90,7 @@ def main():
             app.processEvents()
             assert pref.render_combo.hasFocus()
             assert window.stack.currentWidget().verticalScrollBar().value() > 0
-            QTest.qWait(320)
+            qwait(320)
             assert not pref.search.text()
             assert not pref.search_overlay.expanded
             assert pref.background_performance_note.isHidden()
