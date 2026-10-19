@@ -56,6 +56,7 @@ class SectionNav(QWidget):
             layout = QVBoxLayout(page)
             layout.setContentsMargins(0, 0, 0, 0)
             layout.setSpacing(14)
+            layout.addStretch(1)  # Preserve natural card heights.
             self.pages[key] = layout
             self.stack.addWidget(page)
         rail_lay.addStretch(1)
@@ -75,10 +76,10 @@ class SectionNav(QWidget):
         return self.keys[self.stack.currentIndex()]
 
     def add(self, key, widget):
-        self.pages[key].addWidget(widget)
+        self.pages[key].insertWidget(self.pages[key].count() - 1, widget, 0, Qt.AlignTop)
 
     def add_layout(self, key, layout):
-        self.pages[key].addLayout(layout)
+        self.pages[key].insertLayout(self.pages[key].count() - 1, layout)
 
     def retranslate(self):
         for key, title in self.labels.items():
