@@ -636,11 +636,14 @@ class GpuPage(Page):
         super().__init__("Grafik", "GPU-Auslastung, Videospeicher und Sensoren")
         self.cards = []
         self._mesa = system_static().get("mesa")
+        self.diagnostic_shortcut = QPushButton('PCIe- und GPU-Diagnose öffnen →')
+        self.diagnostic_shortcut.setObjectName('ghostBtn')
         self.none = Card()
         self.none.body.addWidget(label(
             "Keine GPU-Daten gefunden. Unterstützt werden NVIDIA, AMD und Intel, "
             "soweit Linux entsprechende Sensorwerte liefert.", wrap=True))
         self.content.addWidget(self.none)
+        self.content.addWidget(self.diagnostic_shortcut)
         self.lab_panel = None
         if lab is not None and open_focus is not None:
             from .insight_ui import MonitoringLabPanel
@@ -652,10 +655,7 @@ class GpuPage(Page):
         self.none.setVisible(not gpus)
         while len(self.cards) < len(gpus):
             card = GpuCard()
-            if self.lab_panel is None:
-                self.content.addWidget(card)
-            else:
-                self.content.insertWidget(self.content.indexOf(self.lab_panel), card)
+            self.content.insertWidget(self.content.indexOf(self.diagnostic_shortcut), card)
             self.cards.append(card)
         for i, card in enumerate(self.cards):
             card.setVisible(i < len(gpus))
@@ -720,12 +720,12 @@ class DiskPage(Page):
         self.read, self.write = KeyValue("Lesen"), KeyValue("Schreiben")
         io.body.addWidget(self.read)
         io.body.addWidget(self.write)
-        self.content.addLayout(_row(self.hw, io))
+        self.content.addLayout(_row(self.hw, self.parts))
+        self.content.addWidget(io)
         io_graph = Card('Laufwerksaktivität')
         self.io_graph = ChartPanel(['Lesen', 'Schreiben'], [theme.accent(), theme.secondary_accent()], mode='rate')
         io_graph.body.addWidget(self.io_graph)
         self.content.addWidget(io_graph)
-        self.content.addWidget(self.parts)
         self.smart_card = SmartPane()
         self.smart_button = self.smart_card.button
         self.smart_status = self.smart_card.status
@@ -818,8 +818,6 @@ class NetworkPage(Page):
         graph = Card("Netzwerk-Verlauf")
         self.graph = ChartPanel(['Download', 'Upload'], [theme.accent(), theme.secondary_accent()], mode='rate')
         graph.body.addWidget(self.graph)
-        self.content.addWidget(graph)
-
         rates = Card("Aktuelle Übertragungsraten")
         self.down = KeyValue("Download")
         self.up = KeyValue("Upload")
@@ -828,7 +826,12 @@ class NetworkPage(Page):
 
         self.ifaces_card = Card("Netzwerkschnittstellen")
         self.iface_rows = {}
-        self.content.addLayout(_row(rates, self.ifaces_card))
+        self.content.addWidget(rates)
+        self.content.addWidget(graph)
+        self.content.addWidget(self.ifaces_card)
+        self.diagnostic_shortcut = QPushButton('Netzwerkdiagnose öffnen →')
+        self.diagnostic_shortcut.setObjectName('ghostBtn')
+        self.content.addWidget(self.diagnostic_shortcut)
 
     def refresh(self, d, h):
         net = d["net"]
