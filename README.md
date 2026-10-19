@@ -41,14 +41,14 @@ Vitalux vereint Systemüberwachung, Live-Diagramme, Datenträgeranalyse und eine
 | --- | --- |
 | **Übersicht** | Live-Dashboard, Systemzustand, CPU-/GPU-/RAM-Auslastung, Laufwerke, Netzwerk und Systemlaufzeit |
 | **Prozessor** | Kerne, Threads, aktuelle Auslastung und Taktraten, verfügbare Temperaturen und Verläufe |
-| **Grafik** | GPU-/VRAM-Telemetrie, Taktraten, Sensoren, PCIe-/Treiberinformationen und Vitalux Insights |
+| **Grafik** | GPU-/VRAM-Telemetrie, Taktraten, Sensoren und PCIe-/Treiberinformationen |
 | **Arbeitsspeicher** | Auslastung, belegter und verfügbarer Speicher sowie zeitlicher Verlauf |
 | **Netzwerk** | Schnittstellen, IP-Adressen, aktuelle Up-/Downloadraten und Datenverkehr |
 | **Laufwerke** | Datenträger, Partitionen, Belegung, SMART-Diagnose und fio-Benchmarks |
 | **Sensoren** | Verfügbare Temperaturen, Lüfterdrehzahlen, Spannungen, Leistungsaufnahme und Frequenzen |
-| **Diagnostic Center** | Systemcheck, Fehler-, Anzeige-, PCIe-, Temperatur-, Netzwerk- und Prozessdiagnose sowie lokale Berichte |
+| **Diagnostic Center** | Sechs Unterbereiche für System-/Hardwarediagnose, Performance & Insights, Verlauf und Berichte |
 | **System** | Distribution, Kernel, Desktop-/Sitzungsinformationen, Mesa, Treiber und Hardwaredetails |
-| **Einstellungen** | Designs, Farben, Ultra-Eco-Schalter, MiniHUD, Rendering und Warnungen |
+| **Einstellungen** | Sechs Unterbereiche mit Suche: Darstellung, MiniHUD, Warnungen, Ultra Eco, Allgemein und zuletzt Rendering |
 | **Updates** | Offizielle GitHub-Releases prüfen, Neuerungen anzeigen und Aktualisierungen bestätigen |
 | **Info** | Versionsinformationen, Mitwirkende und integrierte, bebilderte Anleitung |
 
@@ -157,9 +157,9 @@ VITALUX_RENDERER=software ./run.sh
 
 ### Diagnostic Center und MiniHUD
 
-**Diagnostic Center** bietet Systemcheck, Crash Investigator, DisplayDoctor, PCIe Guardian, Thermal Compass, NetworkPulse, Process Spotlight, ChangeRadar und die optional aktivierbare Blackbox. Unter **Diagnose & Berichte** liegen jetzt die manuellen Exporte für Systembericht (TXT/JSON), Fehlerbericht und Diagnoseergebnisse. Externer Ping und Blackbox starten nur nach ausdrücklicher Aktivierung.
+**Diagnostic Center** ist jetzt in Schnellcheck, Hardwarediagnose, Systemdiagnose, Performance & Insights, Verlauf & Überwachung und Berichte gegliedert. Vitalux Insights (inklusive Gaming Session Analyzer) liegt nicht mehr im GPU-Reiter. Diagnose- und Fehlerberichte bleiben lokal; Ping und Blackbox sind nur nach ausdrücklicher Aktivierung möglich.
 
-**MiniHUD** ist ein frei positionierbares, separates Desktop-Fenster mit drei Größen und wählbaren Sensoren (CPU, GPU, RAM, VRAM, Temperaturen). Aktivierung unter **Einstellungen → MiniHUD** oder über das Tray-Menü; keine zusätzliche Sensorabfrage. Unter Wayland hängt die Darstellung über Vollbildspielen vom Compositor ab. Die erweiterten Render-Optionen bleiben unverändert unter **Grafik-Rendering** – ohne zusätzlichen Unterpunkt.
+**MiniHUD** bleibt ein frei positionierbares Live-Fenster mit drei Größen und wählbaren Sensoren. Aktivierung unter **Einstellungen → MiniHUD & Fenster** oder über das Tray-Menü; keine zusätzliche Sensorabfrage. Unter Wayland hängt die Darstellung über Vollbildspielen vom Compositor ab. **Grafik-Rendering** steht als letzter Einstellungsbereich. Die Seitenleiste hält Einstellungen, Updates und Info unten erreichbar. Eine Einstellungssuche und direkte Links von GPU/Netzwerk zur Diagnose verkürzen die Navigation.
 
 ## Download
 
