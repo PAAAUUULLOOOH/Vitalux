@@ -773,7 +773,7 @@ class MainWindow(QMainWindow):
         if enabled:
             self._mini_hud.apply_settings()
             self._mini_hud.show()
-                self._mini_hud.update_sample(self.last_sample)
+            self._mini_hud.update_sample(self.last_sample)
         else:
             self._mini_hud.hide()
         pref = next((p for title, p in self.pages if title == 'Einstellungen'), None)
