@@ -14,24 +14,13 @@ def sample(cpu=55, gpu=88, vram=6, temp=65, clock=2450, gpu_name="RX 9070 XT"):
     }
 
 
-def test_detective_and_events():
+def test_detective_without_removed_timeline():
     lab = MonitoringLab(max_samples=30)
-    lab.ingest(sample(gpu=45), timestamp="2026-10-18T12:00:00+02:00")
+    lab.ingest(sample(gpu=45))
     assert lab.detective()
-    assert lab.events == lab.events
-    lab.ingest(sample(gpu=99, vram=15, temp=98),
-               limits={"gpu_temp": 90}, timestamp="2026-10-18T12:00:01+02:00")
-    names = [e["title"] for e in lab.events]
-    assert "GPU-Auslastung über 95 %" in names
-    assert "Videospeicher über 90 %" in names
-    assert "GPU-Temperatur überschreitet Warnwert" in names
-    count = len(lab.events)
-    lab.ingest(sample(gpu=99, vram=15, temp=99), limits={"gpu_temp":90})
-    assert len(lab.events) == count, "No event spam while still above threshold"
-    assert all("möglich" in text or "Warnwert" in text or "Messwerte" in text
-               for _, text, _ in lab.detective({"gpu_temp":90}))
-    lab.ingest(sample(gpu=None, vram=3, temp=None))
-    assert any(e["title"] == "GPU-Sensor ausgefallen" for e in lab.events)
+    lab.ingest(sample(gpu=99, vram=15, temp=98))
+    assert lab.detective({"gpu_temp": 90})
+    assert not hasattr(lab, "events")
     for i in range(50):
         lab.ingest(sample(gpu=i))
     assert len(lab.history) == 30
@@ -64,23 +53,6 @@ def test_games_and_profiles():
         raise AssertionError("Cannot stop twice")
 
 
-def test_snapshots_persist_and_compare():
-    with tempfile.TemporaryDirectory() as tmp:
-        p = Path(tmp) / "insights-snapshots.json"
-        lab = MonitoringLab(snapshot_path=p)
-        lab.snapshot(0, sample(gpu=40))
-        lab.snapshot(1, sample(gpu=70))
-        result = dict((name, delta) for name,a,b,delta in lab.comparison())
-        assert result["gpu_usage"] == 30
-        assert json.loads(p.read_text())["snapshots"][0]["gpu"] == "RX 9070 XT"
-        reopened = MonitoringLab(snapshot_path=p)
-        assert reopened.comparison() == lab.comparison()
-        reopened.snapshot(1, sample(gpu=70, gpu_name="Other GPU"))
-        assert reopened.comparison() == [], "Do not compare different GPU devices"
-        p.write_text("{invalid", encoding="utf-8")
-        assert MonitoringLab(snapshot_path=p).snapshots == [None, None]
-
-
 def test_mangohud_fps_source():
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "mangohud.csv"
@@ -111,8 +83,7 @@ def test_mangohud_fps_source():
 
 
 if __name__ == "__main__":
-    test_detective_and_events()
+    test_detective_without_removed_timeline()
     test_games_and_profiles()
-    test_snapshots_persist_and_compare()
     test_mangohud_fps_source()
-    print("Detective, gaming, comparisons, timeline and MangoHud: PASS")
+    print("Detective, gaming and MangoHud without removed features: PASS")
