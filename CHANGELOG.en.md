@@ -1,5 +1,11 @@
 # Vitalux – Changes
 
+## [v0.9.4.10] - 2026-10-19
+- Kept Settings and Diagnostic Center cards at their natural height instead of leaving oversized empty spaces.
+- Made settings search results and diagnostic report selection more compact.
+- Preserved the full v0.9.4.9 navigation, search, direct links and all existing functionality.
+
+
 ## [v0.9.4.9] - 2026-10-19
 - Grouped the sidebar while keeping Settings, Updates and Info pinned at the bottom.
 - Organized Settings into six sections: Appearance, MiniHUD & window, Monitoring & alerts, Performance & energy, General, and Graphics rendering last.
