@@ -782,6 +782,8 @@ class MainWindow(QMainWindow):
         if enabled:
             self._mini_hud.apply_settings()
             self._mini_hud.show()
+            if settings.get('mini_hud_on_top', True):
+                self._mini_hud.raise_()
             self._mini_hud.update_sample(self.last_sample)
         else:
             self._mini_hud.hide()
@@ -796,6 +798,10 @@ class MainWindow(QMainWindow):
             hud.apply_settings()
             if visible:
                 hud.show()
+                if settings.get('mini_hud_on_top', True):
+                    # Reassert the stacking request after Wayland/KWin remaps
+                    # the Tool window when its flags are changed.
+                    hud.raise_()
                 hud.update_sample(self.last_sample)
 
     def open_focus_window(self):
