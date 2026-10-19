@@ -175,11 +175,11 @@ class FloatingSettingsSearch(QWidget):
 
     def _typed(self, _):
         self.idle_timer.start()
-        self._animate(self._wanted_width())
 
     def _text_changed(self, _):
         if self._expanded:
-            self._sync_geometry()
+            self.idle_timer.start()
+            self._animate(self._wanted_width())
 
     def suggestions_changed(self):
         """Call after the result list changes; keep the overlay centered."""
