@@ -55,6 +55,10 @@ def main():
     print(f"Vitalux: Fensterplattform={app.platformName()}, "
           f"Grafik-Backend={win.render_backend_active}, "
           f"Fenstergröße={win.width()}x{win.height()} logisch", flush=True)
+    # Resolve the final widget/layout size before the first native map on X11.
+    win.ensurePolished()
+    win.centralWidget().ensurePolished()
+    win.layout().activate()
     win.show()
     # A native driver crash while initializing any GPU backend leaves a marker;
     # next launch automatically selects the known-working CPU renderer.
@@ -62,8 +66,7 @@ def main():
     if renderer.warning():
         QTimer.singleShot(0, lambda: win.statusBar().showMessage(renderer.warning(), 16000))
     QTimer.singleShot(0, manager.check)
-    # Let the window appear and the update check start before offering the
-    # optional tutorial. Only the first run (or an explicit 'Later') prompts.
+    # The guide is mandatory on first launch; afterwards it stays available under Info.
     from .guide import offer_first_start_guide
     QTimer.singleShot(1800, lambda: offer_first_start_guide(win))
     result = app.exec()
