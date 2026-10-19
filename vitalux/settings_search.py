@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from PySide6.QtCore import QEvent, QPointF, QRectF, Qt, QTimer, QVariantAnimation, QEasingCurve
 from PySide6.QtGui import QColor, QPainter, QPen
-from PySide6.QtWidgets import QApplication, QHBoxLayout, QToolButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QApplication, QToolButton, QWidget
 from . import theme
 from .i18n import tr
 
@@ -13,7 +13,7 @@ class _SearchIcon(QToolButton):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedSize(40, 40)
+        self.setFixedSize(32, 32)
         self.setCursor(Qt.PointingHandCursor)
         self.setToolTip(tr('Einstellungen durchsuchen'))
         self.setObjectName('settingsFloatingMagnifier')
@@ -21,13 +21,14 @@ class _SearchIcon(QToolButton):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing, True)
-        c = QColor(theme.accent())
-        p = QPen(c, 2.4)
+        c = QColor(theme.MUTED)
+        c.setAlpha(176)
+        p = QPen(c, 1.75)
         p.setCapStyle(Qt.RoundCap)
         painter.setPen(p)
         painter.setBrush(Qt.NoBrush)
-        painter.drawEllipse(QRectF(10, 9, 14, 14))
-        painter.drawLine(QPointF(22, 22), QPointF(30, 30))
+        painter.drawEllipse(QRectF(8, 7, 12, 12))
+        painter.drawLine(QPointF(18, 18), QPointF(25, 25))
         painter.end()
 
 
@@ -35,7 +36,7 @@ class FloatingSettingsSearch(QWidget):
     """Theme-aware centered search. It never participates in page scrolling."""
 
     COLLAPSED = 0
-    DEFAULT_WIDTH = 212
+    DEFAULT_WIDTH = 110
     MAX_WIDTH = 500
 
     def __init__(self, field, suggestions, parent=None):
@@ -44,6 +45,7 @@ class FloatingSettingsSearch(QWidget):
         self._expanded = False
         self._closing = False
         self._width = 0
+        self.home_icon = None
         self.setObjectName('settingsFloatingSearch')
         self.setAttribute(Qt.WA_TranslucentBackground, True)
         self.setAttribute(Qt.WA_NoSystemBackground, True)
@@ -55,17 +57,15 @@ class FloatingSettingsSearch(QWidget):
         self.field.hide()
         self.suggestions.hide()
 
-        root = QVBoxLayout(self)
-        root.setContentsMargins(0, 0, 0, 0)
-        root.setSpacing(5)
-        row = QHBoxLayout()
-        row.setContentsMargins(0, 0, 0, 0)
-        row.setSpacing(5)
-        row.addWidget(self.icon, 0, Qt.AlignVCenter)
-        row.addWidget(self.field, 0, Qt.AlignVCenter)
-        root.addLayout(row)
-        root.addWidget(self.suggestions)
-        self.setFixedSize(40, 40)
+        # Absolute child geometry avoids repeated Qt layout invalidation on every
+        # animation frame (which otherwise makes transitions visually jump).
+        self.field.setParent(self)
+        self.suggestions.setParent(self)
+        self.icon.move(0, 0)
+        self.field.move(37, 0)
+        self.field.setFixedHeight(32)
+        self.setFixedSize(32, 32)
+        self.hide()
 
         self.animation = QVariantAnimation(self)
         self.animation.setDuration(280)
@@ -94,8 +94,9 @@ class FloatingSettingsSearch(QWidget):
             if app is not None:
                 app.installEventFilter(self)
         self._position()
-        self.show()
-        self.raise_()
+        if self._expanded:
+            self.show()
+            self.raise_()
 
     def refresh_theme(self):
         card = QColor(theme.CARD)
@@ -110,10 +111,10 @@ class FloatingSettingsSearch(QWidget):
         self.field.setStyleSheet(
             'QLineEdit#settingsSearch {'
             f'background: {bg}; color: {foreground}; border: 1px solid {outline};'
-            f'border-radius: 18px; padding: 6px 14px; selection-background-color: {selection};'
+            f'border-radius: 16px; padding: 4px 11px; selection-background-color: {selection};'
             '}'
         )
-        self.field.setFixedHeight(38)
+        self.field.setFixedHeight(32)
         self.suggestions.setStyleSheet(
             'QListWidget#settingsSearchResults {'
             f'background: {bg}; color: {foreground}; border: 1px solid {outline};'
@@ -142,14 +143,16 @@ class FloatingSettingsSearch(QWidget):
 
     def _sync_geometry(self):
         result_height = (self.suggestions.height() + 5
-                         if self._expanded and not self.suggestions.isHidden() else 0)
-        self.setFixedSize(40 + (5 + self._width if self._width > 0 else 0),
-                          40 + result_height)
+                         if self._expanded and self.suggestions.isVisible() else 0)
+        width = 32 + (5 + self._width if self._width > 0 else 0)
+        self.setFixedSize(width, 32 + result_height)
+        self.icon.move(0, 0)
+        self.field.setGeometry(37, 0, self._width, 32)
+        self.suggestions.setGeometry(0, 37, width, self.suggestions.height())
         self._position()
 
     def _on_frame(self, value):
         self._width = max(0, int(value))
-        self.field.setFixedWidth(self._width)
         self._sync_geometry()
 
     def _animate(self, end):
@@ -168,10 +171,13 @@ class FloatingSettingsSearch(QWidget):
             self.suggestions.hide()
             self._closing = False
             self._sync_geometry()
+            self.hide()
+            if self.home_icon is not None:
+                self.home_icon.show()
 
     def _wanted_width(self):
         advance = self.field.fontMetrics().horizontalAdvance(self.field.text())
-        return max(self.DEFAULT_WIDTH, min(self.MAX_WIDTH, advance + 96))
+        return min(self.MAX_WIDTH, max(self.DEFAULT_WIDTH, 105 + advance))
 
     def _typed(self, _):
         self.idle_timer.start()
@@ -199,6 +205,9 @@ class FloatingSettingsSearch(QWidget):
             return
         self._expanded = True
         self._closing = False
+        if self.home_icon is not None:
+            self.home_icon.hide()
+        self.show()
         self.field.show()
         self.field.setFocus(Qt.ShortcutFocusReason)
         self.idle_timer.start()
