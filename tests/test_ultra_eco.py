@@ -63,7 +63,9 @@ def run():
             assert theme.mode() == 'minimal'
             assert eco.interval() == 10
             assert renderer.desired() == renderer.SOFTWARE
-            assert pref.eco_restart_button.isVisible()
+            # Software renderer is already active, so enabling Ultra Eco does
+            # not require a restart. Only pending backend changes show buttons.
+            assert not pref.eco_restart_button.isVisible()
             assert not pref.render_restart_button.isVisible()
             assert host.restarts == 0, 'Never restart automatically on toggle'
             assert renderer.prepare_start() == renderer.SOFTWARE
