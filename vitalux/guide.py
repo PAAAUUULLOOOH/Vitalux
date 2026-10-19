@@ -105,7 +105,7 @@ class GuideIllustration(QWidget):
 
     NAV = [
         "Übersicht", "Prozessor", "Grafik", "Arbeitsspeicher", "Netzwerk",
-        "Laufwerke", "Sensoren", "System", "Einstellungen", "Updates", "Info",
+        "Laufwerke", "Sensoren", "Diagnostic Center", "System", "Einstellungen", "Updates", "Info",
     ]
 
     def __init__(self, parent=None):
@@ -158,7 +158,7 @@ class GuideIllustration(QWidget):
         font.setPixelSize(12)
         p.setFont(font)
         for idx, title in enumerate(self.NAV):
-            y = 69 + idx * 25
+            y = 69 + idx * 23
             r = QRectF(24, y, 164, 23)
             nav_rects[title] = r
             p.setPen(Qt.NoPen)
@@ -223,6 +223,7 @@ class GuideIllustration(QWidget):
             "drives": QRectF(211, 205, 453, 116),
             "benchmark": tile_rects["SSD"],
             "sensors": nav_rects["Sensoren"],
+            "diagnostics": nav_rects["Diagnostic Center"],
             "settings": nav_rects["Einstellungen"],
             "updates": nav_rects["Updates"],
         }
