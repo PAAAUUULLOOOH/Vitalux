@@ -85,7 +85,7 @@ jobs:
           python scripts/check-distribution.py "build/staged/Vitalux-${TAG}"
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" -c 'from PySide6.QtOpenGLWidgets import QOpenGLWidget; from PySide6.QtQuickWidgets import QQuickWidget; from PySide6.QtTest import QTest; import psutil'
-      - name: Run every regression with the shipped Python and Qt
+      - name: Run every regression with the shipped Python and Qt and expose failures
         run: |
           set -euo pipefail
           STAGED="$PWD/build/staged/Vitalux-${TAG}"

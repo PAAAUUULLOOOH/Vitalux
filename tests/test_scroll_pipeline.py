@@ -7,7 +7,7 @@ from pathlib import Path
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0, os.getcwd())
 
-from PySide6.QtCore import QPoint, QPointF, QSize, Qt
+from PySide6.QtCore import QPoint, QPointF, QSize, Qt, QTimer
 from PySide6.QtGui import QColor, QImage, QWheelEvent
 from PySide6.QtWidgets import QApplication, QScrollArea, QVBoxLayout, QWidget
 
@@ -32,6 +32,7 @@ class RestartHost:
         self.restart_requested = False
         self._force_quit = False
         self._tray_click_timer = StopTimer()
+        self._close_retry = QTimer()
         self.allowed = allowed
 
     def close(self):

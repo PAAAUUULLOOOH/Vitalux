@@ -51,6 +51,9 @@ def main():
             print(('PASS ' if code == 0 else 'FAIL ')+test.name, flush=True)
             if code:
                 print(log[-8000:], flush=True)
+                if os.environ.get('GITHUB_ACTIONS') == 'true':
+                    detail = log[-12000:].replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+                    print(f'::error title={test.name}::{detail}', flush=True)
             return {'script': test.name, 'exit_code': code,
                     'seconds': round(time.monotonic()-started, 2)}
 
