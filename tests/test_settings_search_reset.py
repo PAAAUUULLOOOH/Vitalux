@@ -79,6 +79,7 @@ def check():
             assert floating.expanded and floating.field.isVisible()
             first_width = floating.width()
             assert first_width >= 145
+            assert floating.field.width() >= floating.DEFAULT_WIDTH, 'The input must visually expand, not just its parent widget'
             floating.field.setText('vulk')
             page.search_settings('vulk')
             assert page.search_results.count() > 0
@@ -86,6 +87,7 @@ def check():
             app.processEvents()
             qwait(330)
             assert floating.width() > first_width
+            assert floating.field.width() > floating.DEFAULT_WIDTH, 'Typing must enlarge the real input'
             assert abs((floating.x() + floating.width() / 2) - scroll.viewport().width() / 2) <= 2
 
             # The floating widget does not move with the settings content.
