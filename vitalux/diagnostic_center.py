@@ -7,12 +7,14 @@ from pathlib import Path
 
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-                               QPlainTextEdit, QTabWidget, QScrollArea, QFileDialog, QFrame)
+                               QPlainTextEdit, QTabWidget, QScrollArea, QFileDialog, QFrame, QComboBox)
 from .ui_locale import QPushButton, QCheckBox, QMessageBox
 from .widgets import Card, label
 from . import diagnostic_engine as engine, settings, theme
 from .i18n import tr
 from .pages import Page
+from .section_nav import SectionNav
+from .insight_ui import MonitoringLabPanel
 
 
 class DiagnosticWorker(QThread):
@@ -44,14 +46,37 @@ class DiagnosticCenter(Page):
         ('blackbox', 'Blackbox', 'Opt-in-Ereignisprotokoll mit Warnwertüberschreitungen.'),
     )
 
-    def __init__(self):
+    CATEGORIES = (
+        ('quick', 'Schnellcheck'),
+        ('hardware', 'Hardwarediagnose'),
+        ('system', 'Systemdiagnose'),
+        ('performance', 'Performance & Insights'),
+        ('history', 'Verlauf & Überwachung'),
+        ('reports', 'Berichte'),
+    )
+    GROUPS = {
+        'all': 'quick', 'system': 'quick',
+        'displays': 'hardware', 'pcie': 'hardware', 'thermal': 'hardware',
+        'crashes': 'system', 'network': 'system', 'processes': 'system',
+        'compare': 'history', 'blackbox': 'history',
+    }
+
+    def __init__(self, lab=None, open_focus=None):
         super().__init__('Diagnostic Center', 'Systemanalyse, Diagnose und lokale Berichte')
         self.last_sample = None
         self.worker = None
         self._reports = {}
         self.texts = {}
-        self.tabs = QTabWidget()
-        self.tabs.setObjectName('diagnosticsTabs')
+        self.nav = SectionNav(self.CATEGORIES)
+        self.category_tabs = {}
+        self.section_tabs = {}
+        self.last_section = 'all'
+        for key in ('quick', 'hardware', 'system', 'history'):
+            tabs = QTabWidget()
+            tabs.setObjectName('diagnosticsTabs')
+            tabs.setMinimumHeight(460)
+            self.category_tabs[key] = tabs
+        self.tabs = self.category_tabs['quick']
         intro = Card('Diagnostic Center · Linux-Systemanalyse')
         intro.body.addWidget(label('Gezielte, ausschließlich lesende Hardware- und Systemprüfungen. '
                                    'Die Ergebnisse sind Hinweise, keine automatischen Fehlerursachen. '
@@ -65,10 +90,16 @@ class DiagnosticCenter(Page):
         intro.body.addLayout(action_row)
         self.status = label('Bereit · bisher keine Diagnose gestartet', 'muted', wrap=True)
         intro.body.addWidget(self.status)
-        self.content.addWidget(intro)
+        self.nav.add('quick', intro)
 
         # Unified destination for every export previously in Settings.
         reports_card = Card('Diagnose & Berichte')
+        self.report_source = QComboBox()
+        self.report_source.setObjectName('diagnosticReportSource')
+        for key, title, _description in self.SECTIONS:
+            self.report_source.addItem(tr(title), key)
+        reports_card.body.addWidget(label('Diagnose für Export auswählen', 'strong'))
+        reports_card.body.addWidget(self.report_source)
         reports_card.body.addWidget(label(
             'Systemberichte, Fehlerdiagnose und die aktuelle Untersuchung als TXT/JSON – '
             'ausschließlich lokal gespeichert, ohne automatischen Upload.', 'muted', wrap=True))
@@ -87,7 +118,7 @@ class DiagnosticCenter(Page):
         reports_row.addWidget(self.error_report_btn)
         reports_row.addStretch(1)
         reports_card.body.addLayout(reports_row)
-        self.content.addWidget(reports_card)
+        self.nav.add('reports', reports_card)
 
         for key, title, description in self.SECTIONS:
             pane = QWidget()
@@ -137,16 +168,52 @@ class DiagnosticCenter(Page):
             readout.setMinimumHeight(340)
             layout.addWidget(readout, 1)
             self.texts[key] = readout
-            self.tabs.addTab(pane, tr(title))
-        self.tabs.setMinimumHeight(475)
-        self.content.addWidget(self.tabs)
-        self.content.addWidget(label('Hinweis: Journal- und Prozessausgaben sowie exportierte Berichte können private '
-                                     'Systemdaten enthalten. Es findet kein automatischer Upload statt. '
-                                     'Externe Netzwerkzugriffe erfolgen ausschließlich mit dem Ping-Button.',
-                                     'muted', wrap=True))
+            category = self.GROUPS[key]
+            tabs = self.category_tabs[category]
+            self.section_tabs[key] = (category, tabs.count())
+            tabs.addTab(pane, tr(title))
+        for category, tabs in self.category_tabs.items():
+            self.nav.add(category, tabs)
+        self.lab_panel = None
+        if lab is not None and open_focus is not None:
+            self.lab_panel = MonitoringLabPanel(lab, open_focus)
+            # Open performance tools, never add a new collapsible section.
+            self.lab_panel.show_advanced.setChecked(True)
+            self.lab_panel.show_advanced.hide()
+            timeline = self.lab_panel.timeline_group
+            self.lab_panel._tools = tuple(w for w in self.lab_panel._tools if w is not timeline)
+            self.lab_panel._advanced_visible(True)
+            self.nav.add('performance', self.lab_panel)
+            history_card = Card('Ereignis-Timeline')
+            history_card.body.addWidget(timeline)
+            timeline.show()
+            self.nav.add('history', history_card)
+        self.nav.add('reports', label(
+            'Berichte werden nur auf ausdrücklichen Klick gespeichert. '
+            'Journal- und Prozessdaten können persönliche Informationen enthalten.',
+            'muted', wrap=True))
+        self.nav.add('system', label(
+            'Der externe Ping wird nur über die separate Schaltfläche gestartet.',
+            'muted', wrap=True))
+        self.content.addWidget(self.nav)
+        self.nav.select(settings.get('diagnostic_category', 'quick'))
+        self.nav.changed.connect(lambda key: settings.set('diagnostic_category', key))
 
     def refresh(self, data, _hist):
         self.last_sample = data
+        if self.lab_panel is not None and self.nav.current_key() in ('performance', 'history'):
+            self.lab_panel.refresh(data)
+
+    def select_area(self, category, section=None):
+        """Open one category or a specific existing diagnostic check."""
+        self.nav.select(category)
+        if category in ('performance', 'history') and self.lab_panel is not None and self.last_sample:
+            self.lab_panel.refresh(self.last_sample)
+        if section in self.section_tabs:
+            group, index = self.section_tabs[section]
+            self.nav.select(group)
+            self.category_tabs[group].setCurrentIndex(index)
+            self.last_section = section
 
     def start_check(self, section):
         if self.worker is not None and self.worker.isRunning():
@@ -167,8 +234,9 @@ class DiagnosticCenter(Page):
         self.status.setText(f'Abgeschlossen · {datetime.now().strftime("%H:%M:%S")} · '
                             + dict((a,b) for a,b,_ in self.SECTIONS).get(key,key))
         self.scan_btn.setEnabled(True)
-        index = next((i for i, item in enumerate(self.SECTIONS) if item[0] == key), 0)
-        self.tabs.setCurrentIndex(index)
+        self.last_section = key
+        self.report_source.setCurrentIndex(self.report_source.findData(key))
+        self.select_area(self.GROUPS.get(key, 'quick'), key)
         # QThread is deleted after its finished signal, never during execution.
         self.worker = None
 
@@ -186,7 +254,7 @@ class DiagnosticCenter(Page):
         except (OSError, ValueError) as exc:
             text = f'Vergleichsbasis konnte nicht gespeichert werden: {exc}'
         self.texts['compare'].setPlainText(text)
-        self.tabs.setCurrentIndex(next(i for i, item in enumerate(self.SECTIONS) if item[0] == 'compare'))
+        self.select_area('history', 'compare')
 
     def clear_blackbox(self):
         answer = QMessageBox.question(self, 'Vitalux Blackbox', 'Alle gespeicherten Blackbox-Ereignisse lokal löschen?',
@@ -196,8 +264,7 @@ class DiagnosticCenter(Page):
         self.texts['blackbox'].setPlainText(engine.blackbox_clear())
 
     def export_report(self):
-        idx = self.tabs.currentIndex()
-        key = self.SECTIONS[idx][0]
+        key = self.report_source.currentData() or self.last_section
         content = self._reports.get(key)
         if not content:
             content = self.texts[key].toPlainText()
@@ -266,5 +333,12 @@ class DiagnosticCenter(Page):
             QMessageBox.information(self, 'Vitalux', tr('Fehlerbericht gespeichert.'))
 
     def retranslate(self):
-        for index, (_key, title, _description) in enumerate(self.SECTIONS):
-            self.tabs.setTabText(index, tr(title))
+        self.nav.retranslate()
+        for key, title, _description in self.SECTIONS:
+            category, index = self.section_tabs[key]
+            self.category_tabs[category].setTabText(index, tr(title))
+            position = self.report_source.findData(key)
+            if position >= 0:
+                self.report_source.setItemText(position, tr(title))
+        if self.lab_panel is not None:
+            self.lab_panel.retranslate()
