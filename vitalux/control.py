@@ -2,9 +2,9 @@
 import json
 from datetime import datetime
 
-from PySide6.QtCore import Qt, Signal, QSize
+from PySide6.QtCore import Qt, Signal, QSize, QTimer
 from PySide6.QtGui import QColor, QIntValidator
-from PySide6.QtWidgets import (QColorDialog, QFrame, QGridLayout, QHBoxLayout, QInputDialog, QLabel, QLineEdit, QListWidget, QSizePolicy, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QColorDialog, QFrame, QGridLayout, QHBoxLayout, QInputDialog, QLabel, QLineEdit, QListWidget, QScrollArea, QSizePolicy, QVBoxLayout, QWidget)
 from .ui_locale import QCheckBox, QComboBox, QDialog, QFileDialog, QListWidgetItem, QMessageBox, QPushButton
 
 from . import __version__, settings, theme, motion, backdrops, user_background, wallpaper_accents, renderer, eco, i18n
@@ -12,7 +12,6 @@ from .pages import Page
 from .sensors import fmt_bytes, fmt_rate, system_static
 from .widgets import Card, KeyValue, Meter, label
 from .i18n import tr
-from .section_nav import SectionNav
 
 
 class SensorsPage(Page):
@@ -172,15 +171,8 @@ class PreferencesPage(Page):
     def __init__(self, window):
         super().__init__('Einstellungen', 'Design, Messintervall, Dashboard und Datenexport')
         self.window = window
-        # Six direct subcategories reuse every original control and saved setting.
-        self.section_nav = SectionNav([
-            ('appearance', 'Darstellung'),
-            ('hud', 'MiniHUD & Fenster'),
-            ('monitoring', 'Monitoring & Warnungen'),
-            ('energy', 'Leistung & Energie'),
-            ('general', 'Allgemein'),
-            ('render', 'Grafik-Rendering'),
-        ])
+        # One continuous settings page; no extra section navigation.
+        self._settings_cards = {key: [] for key in ('appearance', 'general', 'hud', 'monitoring', 'energy', 'render')}
         self.search = QLineEdit()
         self.search.setObjectName('settingsSearch')
         self.search.setPlaceholderText(tr('Einstellungen durchsuchen …'))
@@ -193,7 +185,6 @@ class PreferencesPage(Page):
         self.search_results.itemClicked.connect(self.choose_search_result)
         self.content.addWidget(self.search)
         self.content.addWidget(self.search_results)
-        self.content.addWidget(self.section_nav)
         self._search_targets = []
         look = Card('Erscheinungsbild')
         self.mode = QComboBox()
@@ -334,6 +325,14 @@ class PreferencesPage(Page):
         self.background_preview.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
         self.background_preview.setFixedHeight(120)
         picture_layout.addWidget(self.background_preview)
+        self.background_performance_note = label(
+            'Leistungshinweis: Eigene Hintergrundbilder können besonders bei hoher Auflösung '
+            'und aktivierten Glaseffekten zusätzliche Systemressourcen beanspruchen. '
+            'Dadurch sind Ruckler oder eine verzögerte Darstellung möglich. '
+            'Für eine optimale Leistung empfehlen wir die integrierten Vitalux-Hintergründe.',
+            'muted', wrap=True)
+        self.background_performance_note.setObjectName('backgroundPerformanceNote')
+        picture_layout.addWidget(self.background_performance_note)
         look.body.addWidget(custom_area)
         self.refresh_background_images()
         look.body.addWidget(label(
@@ -353,7 +352,7 @@ class PreferencesPage(Page):
         r_motion.addStretch(1)
         look.body.addLayout(r_motion)
         look.body.addWidget(label('Übergänge anpassen: weich, verkürzt oder ohne Animation.', 'muted', wrap=True))
-        self.section_nav.add('appearance', look)
+        self._settings_cards['appearance'].append(look)
 
         # A genuine toggle, not another GPU backend or a destructive theme switch.
         # Original theme, wallpaper, accent, motion and render choice remain saved.
@@ -373,7 +372,7 @@ class PreferencesPage(Page):
         self.eco_restart_button.setObjectName('primaryBtn')
         self.eco_restart_button.clicked.connect(self.restart_for_eco)
         eco_card.body.addWidget(self.eco_restart_button, 0, Qt.AlignLeft)
-        self.section_nav.add('energy', eco_card)
+        self._settings_cards['energy'].append(eco_card)
 
         render_card = Card('Grafik-Rendering')
         render_row = QHBoxLayout()
@@ -390,8 +389,7 @@ class PreferencesPage(Page):
         render_row.addStretch(1)
         render_card.body.addLayout(render_row)
         render_card.body.addWidget(label(
-            'Qt Raster nutzt CPU-Zeichnung mit zwischengespeicherten Hintergründen und reduziert nur die Funkeln-Animation. '
-            'Wayland und X11 bleiben experimentelle GPU-Modi; Diagramme und Qt-Widgets nutzen weiter die CPU.',
+            'Wayland und X11 bleiben experimentelle GPU-Modi; Diagramme und Qt-Widgets nutzen weiterhin die CPU.',
             'muted', wrap=True))
         render_card.body.addWidget(label(
             'Für den Wechsel Jetzt neu starten klicken. Wayland setzt eine Wayland-Sitzung, '
@@ -404,7 +402,7 @@ class PreferencesPage(Page):
         self.render_restart_button.clicked.connect(self.restart_for_renderer)
         render_card.body.addWidget(self.render_restart_button, 0, Qt.AlignLeft)
         self._refresh_renderer_status()
-        self.section_nav.add('render', render_card)
+        self._settings_cards['render'].append(render_card)
 
         monitor = Card('Live-Monitoring')
         row = QHBoxLayout()
@@ -418,7 +416,7 @@ class PreferencesPage(Page):
         row.addStretch()
         monitor.body.addLayout(row)
         monitor.body.addWidget(label('Die Diagramme bieten 60 Sekunden, 5 Minuten und 15 Minuten Verlauf sowie einzeln schaltbare Datenreihen.', 'muted', wrap=True))
-        self.section_nav.add('monitoring', monitor)
+        self._settings_cards['monitoring'].append(monitor)
         tray = Card('Systemleiste')
         self.close_to_tray = QCheckBox('Fenster schließen → in Systemleiste weiterlaufen')
         self.close_to_tray.setChecked(bool(settings.get('close_to_tray', True)))
@@ -426,7 +424,7 @@ class PreferencesPage(Page):
         self.close_to_tray.toggled.connect(lambda enabled: self._set_preference('close_to_tray', enabled))
         tray.body.addWidget(self.close_to_tray)
         tray.body.addWidget(label('Tray-Hover: CPU-, GPU- und RAM-Auslastung sowie Temperaturen. Im Kontextmenü öffnet sich zusätzlich eine kompakte Live-Vorschau.', 'muted', wrap=True))
-        self.section_nav.add('hud', tray)
+        self._settings_cards['hud'].append(tray)
 
         hud = Card('MiniHUD · kompakte Live-Anzeige')
         hud.body.addWidget(label('Separates Desktop-Fenster mit den vorhandenen Vitalux-Messwerten. '                                 'Auch bei verborgenem Hauptfenster nutzbar; keine zusätzliche Sensorabfrage.', 'muted', wrap=True))
@@ -472,7 +470,7 @@ class PreferencesPage(Page):
         hud.body.addLayout(metric_grid)
         hud.body.addWidget(label('Wayland: Das HUD ist ein normales Qt-Fenster. Im echten Spielvollbild ist '                                 'die Einblendung nicht garantiert. Ultra Eco reduziert auch die HUD-Darstellung.',
                                  'muted', wrap=True))
-        self.section_nav.add('hud', hud)
+        self._settings_cards['hud'].append(hud)
 
         notifications = Card('Hardware-Warnungen')
         self.alert_toggle = QCheckBox('Grenzwert-Warnungen aktivieren')
@@ -503,7 +501,7 @@ class PreferencesPage(Page):
             self.alert_boxes[key] = value
             self.alert_labels[key] = text
         notifications.body.addLayout(threshold_grid)
-        self.section_nav.add('monitoring', notifications)
+        self._settings_cards['monitoring'].append(notifications)
 
         # Only visible when the *preferences* deviate from the original values.
         # Dashboard tile positions, update source and language are intentionally
@@ -528,8 +526,8 @@ class PreferencesPage(Page):
         general_card.body.addWidget(label('Sprache und allgemeines Verhalten. '
                                           'Die meisten Änderungen werden sofort übernommen.',
                                           'muted', wrap=True))
-        self.section_nav.add('general', general_card)
-        self.section_nav.add_layout('general', restore_row)
+        self._settings_cards['general'].append(general_card)
+        self._restore_row = restore_row
         self._refresh_restore_button()
         self._search_targets = [
             ('appearance', 'Farbschema Glass Black Glass Gold', self.mode),
@@ -546,37 +544,58 @@ class PreferencesPage(Page):
             ('energy', 'Ultra Eco Ressourcenschonung Neustarten', self.eco_toggle),
             ('general', 'Sprache Deutsch Englisch Language', self.language_combo),
             ('general', 'Standardwerte wiederherstellen Zurücksetzen', self.restore_button),
-            ('render', 'Grafik Rendering Backend Qt Raster CPU OpenGL Wayland Vulkan X11', self.render_combo),
+            ('render', 'Grafik Rendering Backend CPU OpenGL Wayland Vulkan X11', self.render_combo),
         ]
-        self.section_nav.select(settings.get('settings_section', 'appearance'))
-        self.section_nav.changed.connect(lambda key: settings.set('settings_section', key))
+        # Order from frequent to advanced; rendering must remain at the bottom.
+        for category in ('appearance', 'general', 'hud', 'monitoring', 'energy', 'render'):
+            cards = (list(reversed(self._settings_cards[category])) if category == 'hud'
+                     else self._settings_cards[category])
+            for card in cards:
+                self.content.addWidget(card)
+            if category == 'general':
+                self.content.addLayout(self._restore_row)
+
+    SEARCH_CATEGORIES = {
+        'appearance': 'Darstellung', 'general': 'Allgemein',
+        'hud': 'MiniHUD & Fenster', 'monitoring': 'Monitoring & Warnungen',
+        'energy': 'Leistung & Energie', 'render': 'Grafik-Rendering',
+    }
 
     def search_settings(self, query):
-        """Real search results navigate directly to existing options."""
+        """Find a concrete setting, without searching other app pages."""
         self.search_results.clear()
         words = query.casefold().split()
         if not words:
             self.search_results.hide()
             return
         for index, (key, terms, _target) in enumerate(self._search_targets):
-            haystack = (terms + ' ' + self.section_nav.labels[key]).casefold()
+            haystack = (terms + ' ' + self.SEARCH_CATEGORIES[key]).casefold()
             if all(word in haystack for word in words):
-                item = QListWidgetItem(tr(terms.split(' ')[0]) + '  ·  ' + tr(self.section_nav.labels[key]))
-                item.setData(Qt.UserRole, key)
-                item.setData(Qt.UserRole + 1, index)
+                item = QListWidgetItem(tr(terms.split(' ')[0]) + '  ·  ' +
+                                       tr(self.SEARCH_CATEGORIES[key]))
+                item.setData(Qt.UserRole, index)
                 self.search_results.addItem(item)
         self.search_results.setFixedHeight(min(156, 34 * self.search_results.count() + 7))
         self.search_results.setVisible(bool(self.search_results.count()))
 
     def choose_search_result(self, item):
-        self.section_nav.select(item.data(Qt.UserRole))
-        index = item.data(Qt.UserRole + 1)
-        if isinstance(index, int) and 0 <= index < len(self._search_targets):
-            self._search_targets[index][2].setFocus(Qt.OtherFocusReason)
+        index = item.data(Qt.UserRole)
+        if not isinstance(index, int) or not (0 <= index < len(self._search_targets)):
+            return
+        target = self._search_targets[index][2]
         self.search_results.hide()
+        scroll = self.parentWidget()
+        while scroll is not None and not isinstance(scroll, QScrollArea):
+            scroll = scroll.parentWidget()
+        if scroll is not None:
+            scroll.ensureWidgetVisible(target, 24, 80)
+        target.setFocus(Qt.OtherFocusReason)
+        original = target.styleSheet()
+        target.setStyleSheet(original + 'border: 2px solid ' + theme.accent() + ';')
+        QTimer.singleShot(1400, lambda w=target, old=original: w.setStyleSheet(old))
+        self.search.clear()
 
     def retranslate(self):
-        self.section_nav.retranslate()
         self.search.setPlaceholderText(tr('Einstellungen durchsuchen …'))
         self.language_combo.blockSignals(True)
         self.language_combo.setCurrentIndex(self.language_combo.findData(i18n.lang()))
@@ -636,8 +655,6 @@ class PreferencesPage(Page):
         selected = self.render_combo.currentData()
         if selected != active:
             status = tr('Rendering-Wechsel vorgemerkt – bitte Vitalux neu starten.')
-        elif active == renderer.QT_RASTER:
-            status = tr('Aktiv: Qt Raster (Energiesparmodus)')
         elif active == renderer.OPENGL:
             status = tr('Aktiv: OpenGL-GPU-Rendering (experimentell)')
         elif active in renderer.QUICK_MODES:
@@ -1009,10 +1026,15 @@ class PreferencesPage(Page):
         self.remove_background_button.setEnabled(count > 0)
         self.background_fit_combo.setEnabled(count > 0)
         self.background_preview.setVisible(custom and count > 0)
+        self.background_performance_note.setVisible(custom)
         if custom and count:
-            self.background_preview.setPixmap(user_background.draw(
-                QSize(320, 120), self.background_image_combo.currentData(),
-                self.background_fit_combo.currentData() or 'cover'))
+            picture = (self.background_image_combo.currentData(),
+                       self.background_fit_combo.currentData() or 'cover')
+            if picture != getattr(self, '_background_preview_key', None):
+                self.background_preview.setPixmap(user_background.draw(QSize(320, 120), *picture))
+                self._background_preview_key = picture
+        else:
+            self._background_preview_key = None
 
     def add_background_image(self):
         names, _ = QFileDialog.getOpenFileNames(self, tr('Bilder auswählen'), '', 'Bilder (*.png *.jpg *.jpeg *.webp *.bmp)')
