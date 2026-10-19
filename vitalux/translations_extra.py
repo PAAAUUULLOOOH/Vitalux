@@ -943,3 +943,8 @@ EN_MORE.update({
     'Standardmäßig startet Vitalux mit Glass und Vitalux Blau. Die mittige Lupe öffnet eine schwebende Suche für Einstellungen mit Vorschlägen; sie schließt nach fünf Sekunden oder Klick außerhalb sanft. Darstellung, MiniHUD und Warnungen lassen sich einzeln zurücksetzen, wenn sie geändert wurden.':
         'Vitalux defaults to Glass with Vitalux Blue. The centered magnifier opens floating settings search with suggestions; it smoothly closes after five seconds or when clicking elsewhere. Appearance, MiniHUD and alerts can each be reset after changes.',
 })
+
+EN_MORE.update({
+    'Alle Darstellungs-, MiniHUD-, Überwachungs- und Warnungseinstellungen zurücksetzen? Dashboard-Anordnung, importierte Bilder und Sprache bleiben erhalten.':
+        'Reset appearance, MiniHUD, monitoring and alert settings? Dashboard layout, imported images and language will be preserved.',
+})
