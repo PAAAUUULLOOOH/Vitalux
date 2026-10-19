@@ -20,6 +20,9 @@ def main():
     output.mkdir(parents=True, exist_ok=True)
     env = os.environ.copy()
     env['LIBGL_ALWAYS_SOFTWARE'] = '1'
+    # Bound Mesa's software worker pools on shared CI machines. This changes
+    # test-driver scheduling, not rendering quality or Vitalux's runtime.
+    env.setdefault('LP_NUM_THREADS', '2')
     programs = {}
     icd = None
     if args.sysroot:
@@ -58,22 +61,51 @@ def main():
             if not select.select([read_fd], [], [], 15)[0]:
                 raise RuntimeError('Xvfb did not allocate a display')
             env['DISPLAY'] = ':'+os.read(read_fd, 32).decode().strip()
-            env['WAYLAND_DISPLAY'] = 'wayland-vitalux-test'
             help_text = subprocess.check_output([programs['weston'], '--help'], env=env,
                                                 stderr=subprocess.STDOUT, text=True)
-            renderer = ['--renderer=gl'] if '--renderer=' in help_text else ['--use-gl']
-            weston = subprocess.Popen([programs['weston'], '--backend=headless-backend.so',
-                '--shell=kiosk-shell.so', '--socket='+env['WAYLAND_DISPLAY'],
-                '--width=1600', '--height=1100', '--no-config', '--idle-time=0', *renderer],
-                env=env, stdout=streams[1], stderr=subprocess.STDOUT)
-            processes.append(weston)
-            deadline = time.monotonic()+20
-            while not (runtime/env['WAYLAND_DISPLAY']).exists():
-                if weston.poll() is not None or time.monotonic() > deadline:
-                    raise RuntimeError('Weston startup failed; see '+str(output/'weston.log'))
-                time.sleep(.1)
-            subprocess.run([sys.executable, str(Path(__file__).with_name('check-graphics-startup.py')),
-                            '--output', str(output)], env=env, check=True, timeout=240)
+            compositor_renderer = ['--renderer=gl'] if '--renderer=' in help_text else ['--use-gl']
+            sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+            from vitalux import renderer
+            results = []
+            for mode in renderer.CHOICES:
+                weston = None
+                try:
+                    if renderer.display_api(mode) == 'wayland':
+                        # Each client gets a fresh compositor, so GL/Vulkan
+                        # resources and protocol state cannot leak across modes.
+                        env['WAYLAND_DISPLAY'] = 'wayland-vitalux-'+mode
+                        weston = subprocess.Popen([programs['weston'], '--backend=headless-backend.so',
+                            '--shell=kiosk-shell.so', '--socket='+env['WAYLAND_DISPLAY'],
+                            '--width=1600', '--height=1100', '--no-config', '--idle-time=0',
+                            *compositor_renderer], env=env, stdout=streams[1], stderr=subprocess.STDOUT)
+                        processes.append(weston)
+                        deadline = time.monotonic()+20
+                        while not (runtime/env['WAYLAND_DISPLAY']).exists():
+                            if weston.poll() is not None or time.monotonic() > deadline:
+                                raise RuntimeError('Weston startup failed; see '+str(output/'weston.log'))
+                            time.sleep(.1)
+                    check = subprocess.run([sys.executable,
+                        str(Path(__file__).with_name('check-graphics-startup.py')),
+                        '--mode', mode, '--output', str(output)], env=env,
+                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=60)
+                    (output/(mode+'-runner.log')).write_text(check.stdout)
+                    print(check.stdout, end='', flush=True)
+                    if check.returncode:
+                        status = weston.poll() if weston else None
+                        message = f'{mode}: validation exit {check.returncode}; compositor status {status}'
+                        with (output/(mode+'-runner.log')).open('a') as failure_log:
+                            failure_log.write('\n'+message+'\n')
+                        raise RuntimeError(message)
+                    results.extend(json.loads((output/'results.json').read_text()))
+                finally:
+                    if weston is not None and weston.poll() is None:
+                        weston.terminate()
+                        try:
+                            weston.wait(timeout=5)
+                        except subprocess.TimeoutExpired:
+                            weston.kill()
+                            weston.wait()
+            (output/'results.json').write_text(json.dumps(results, indent=2)+'\n')
         finally:
             if write_fd is not None:
                 os.close(write_fd)

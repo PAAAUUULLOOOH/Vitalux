@@ -159,6 +159,7 @@ def child(mode, output):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--child')
+    parser.add_argument('--mode', help='Validate one renderer in an isolated compositor session')
     parser.add_argument('--output', type=Path, default=ROOT/'build/graphics-checks')
     args = parser.parse_args()
     output = args.output.resolve()
@@ -167,7 +168,10 @@ def main():
         return child(args.child, output)
     from vitalux import renderer
     results = []
-    for mode in renderer.CHOICES:
+    modes = (args.mode,) if args.mode else renderer.CHOICES
+    if any(mode not in renderer.CHOICES for mode in modes):
+        parser.error('Unknown renderer')
+    for mode in modes:
         with tempfile.TemporaryDirectory(prefix='graphics-profile-') as folder:
             env = os.environ.copy()
             for key, part in (('XDG_CONFIG_HOME', 'config'), ('XDG_STATE_HOME', 'state'),
