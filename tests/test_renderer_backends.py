@@ -14,7 +14,7 @@ os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget
 from vitalux import renderer, settings
-from vitalux.glass import AmbientScene, EfficientRasterScene, create_ambient_scene
+from vitalux.glass import AmbientScene, create_ambient_scene
 
 GL_SMOKE = os.environ.get('VITALUX_GL_SMOKE') == '1'
 
@@ -35,17 +35,13 @@ def run():
             assert not plain.grab().isNull()
             plain.close()
 
+            # Older saved Qt Raster profiles automatically migrate to CPU.
             settings.set('render_backend', renderer.QT_RASTER)
-            assert renderer.prepare_start() == renderer.QT_RASTER
-            raster = create_ambient_scene()
-            assert isinstance(raster, EfficientRasterScene)
-            assert raster.render_backend == renderer.QT_RASTER
-            assert raster._wallpaper_timer.interval() == 500
-            raster.resize(300, 210)
-            raster.show()
-            app.processEvents()
-            assert not raster.grab().isNull()
-            raster.close()
+            assert renderer.prepare_start() == renderer.SOFTWARE
+            assert settings.get('render_backend') == renderer.SOFTWARE
+            migrated = create_ambient_scene()
+            assert isinstance(migrated, AmbientScene)
+            migrated.close()
             settings.set('render_backend', renderer.SOFTWARE)
 
             if GL_SMOKE:
