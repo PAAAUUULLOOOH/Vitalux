@@ -1,5 +1,14 @@
 # Vitalux – Änderungen
 
+## [v0.9.5.1] - 2026-10-19
+- Die ursprüngliche, kompakte Seitenleiste ist zurück: alle Reiter ohne zusätzliche Gruppen und feste Untermenüs.
+- Einstellungen wieder auf einer scrollbaren Seite; Allgemein direkt nach Darstellung, Grafik-Rendering ganz unten.
+- Die Suche arbeitet ausschließlich innerhalb der Einstellungen und springt mit kurzer Hervorhebung zur gefundenen Option.
+- Diagnostic Center zeigt Diagnose, Performance-Analyse, Verlauf und Berichte ohne zusätzliche Unterkategorie-Navigation.
+- Qt Raster aus der Backend-Auswahl entfernt; ältere gespeicherte Qt-Raster-Profile werden sicher auf CPU umgestellt.
+- Eigene Hintergrundbilder zeigen einen dezenten Leistungshinweis; unveränderte Vorschauen werden nicht wiederholt berechnet.
+- Dashboard-Kacheln, bestehende Farbschemata und GPU-Sicherheitsprüfungen bleiben erhalten.
+
 ## [v0.9.5.0] - 2026-10-19
 - Unterkategorien in Einstellungen und Diagnostic Center optisch verdichtet: Karten bleiben in ihrer natürlichen Höhe statt große Leerflächen zu erzeugen.
 - Einstellungssuche zeigt Treffer kompakt; der Berichtsexport nutzt eine passend breite Auswahl.
