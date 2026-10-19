@@ -12,6 +12,8 @@ from .pages import Page
 from .sensors import fmt_bytes, fmt_rate, system_static
 from .widgets import Card, KeyValue, Meter, label
 from .i18n import tr
+from .mini_hud import DEFAULT_KEYS
+from .settings_search import FloatingSettingsSearch
 
 
 class SensorsPage(Page):
@@ -166,6 +168,15 @@ class PreferencesPage(Page):
         'render_backend': renderer.SOFTWARE, 'ultra_eco': False,
         'interval': 1, 'close_to_tray': True, 'alerts_enabled': False,
         'cpu_temp': 90, 'gpu_temp': 90, 'ram_usage': 90, 'disk_usage': 95,
+        'mini_hud_enabled': False, 'mini_hud_layout': 'compact',
+        'mini_hud_opacity': 90, 'mini_hud_on_top': True,
+        'mini_hud_metrics': list(DEFAULT_KEYS),
+    }
+    SECTION_DEFAULTS = {
+        'appearance': ('theme', 'accent', 'motion', 'background_style', 'custom_background_fit'),
+        'hud': ('mini_hud_enabled', 'mini_hud_layout', 'mini_hud_opacity',
+                'mini_hud_on_top', 'mini_hud_metrics'),
+        'alerts': ('alerts_enabled', 'cpu_temp', 'gpu_temp', 'ram_usage', 'disk_usage'),
     }
 
     def __init__(self, window):
@@ -173,6 +184,7 @@ class PreferencesPage(Page):
         self.window = window
         # One continuous settings page; no extra section navigation.
         self._settings_cards = {key: [] for key in ('appearance', 'general', 'hud', 'monitoring', 'energy', 'render')}
+        self._reset_buttons = {}
         self.search = QLineEdit()
         self.search.setObjectName('settingsSearch')
         self.search.setPlaceholderText(tr('Einstellungen durchsuchen …'))
@@ -183,8 +195,10 @@ class PreferencesPage(Page):
         self.search_results.setVisible(False)
         self.search_results.itemActivated.connect(self.choose_search_result)
         self.search_results.itemClicked.connect(self.choose_search_result)
-        self.content.addWidget(self.search)
-        self.content.addWidget(self.search_results)
+        # The overlay is parented to the scroll viewport when the page is embedded.
+        # A reserved top margin ensures the pinned control never covers a settings card.
+        self.search_overlay = FloatingSettingsSearch(self.search, self.search_results, self)
+        self.content.addSpacing(54)
         self._search_targets = []
         look = Card('Erscheinungsbild')
         self.mode = QComboBox()
@@ -352,6 +366,7 @@ class PreferencesPage(Page):
         r_motion.addStretch(1)
         look.body.addLayout(r_motion)
         look.body.addWidget(label('Übergänge anpassen: weich, verkürzt oder ohne Animation.', 'muted', wrap=True))
+        self._add_section_reset(look.body, 'appearance', 'Darstellung zurücksetzen')
         self._settings_cards['appearance'].append(look)
 
         # A genuine toggle, not another GPU backend or a destructive theme switch.
@@ -470,6 +485,7 @@ class PreferencesPage(Page):
         hud.body.addLayout(metric_grid)
         hud.body.addWidget(label('Wayland: Das HUD ist ein normales Qt-Fenster. Im echten Spielvollbild ist '                                 'die Einblendung nicht garantiert. Ultra Eco reduziert auch die HUD-Darstellung.',
                                  'muted', wrap=True))
+        self._add_section_reset(hud.body, 'hud', 'MiniHUD zurücksetzen')
         self._settings_cards['hud'].append(hud)
 
         notifications = Card('Hardware-Warnungen')
@@ -501,6 +517,7 @@ class PreferencesPage(Page):
             self.alert_boxes[key] = value
             self.alert_labels[key] = text
         notifications.body.addLayout(threshold_grid)
+        self._add_section_reset(notifications.body, 'alerts', 'Warnwerte zurücksetzen')
         self._settings_cards['monitoring'].append(notifications)
 
         # Only visible when the *preferences* deviate from the original values.
@@ -552,8 +569,8 @@ class PreferencesPage(Page):
                      else self._settings_cards[category])
             for card in cards:
                 self.content.addWidget(card)
-            if category == 'general':
-                self.content.addLayout(self._restore_row)
+        # A single global reset at the absolute bottom of all settings.
+        self.content.addLayout(self._restore_row)
 
     SEARCH_CATEGORIES = {
         'appearance': 'Darstellung', 'general': 'Allgemein',
@@ -561,39 +578,131 @@ class PreferencesPage(Page):
         'energy': 'Leistung & Energie', 'render': 'Grafik-Rendering',
     }
 
+    def install_search_overlay(self, scroll):
+        self.search_overlay.install_on(scroll)
+
+    @staticmethod
+    def _search_normalize(text):
+        import unicodedata
+        normalized = unicodedata.normalize('NFKD', str(text).casefold())
+        return ''.join(c for c in normalized if not unicodedata.combining(c)).replace('ß', 'ss')
+
     def search_settings(self, query):
-        """Find a concrete setting, without searching other app pages."""
+        """Predict full or partial settings names; never search outside Settings."""
+        from difflib import SequenceMatcher
         self.search_results.clear()
-        words = query.casefold().split()
-        if not words:
+        tokens = self._search_normalize(query).split()
+        if not tokens:
             self.search_results.hide()
+            self.search_overlay.suggestions_changed()
             return
+
+        ranked = []
         for index, (key, terms, _target) in enumerate(self._search_targets):
-            haystack = (terms + ' ' + self.SEARCH_CATEGORIES[key]).casefold()
-            if all(word in haystack for word in words):
-                item = QListWidgetItem(tr(terms.split(' ')[0]) + '  ·  ' +
-                                       tr(self.SEARCH_CATEGORIES[key]))
-                item.setData(Qt.UserRole, index)
-                self.search_results.addItem(item)
-        self.search_results.setFixedHeight(min(156, 34 * self.search_results.count() + 7))
-        self.search_results.setVisible(bool(self.search_results.count()))
+            haystack = self._search_normalize(terms + ' ' + self.SEARCH_CATEGORIES[key])
+            parts = haystack.split()
+            matches = []
+            for token in tokens:
+                options = [
+                    4 if word == token else 3 if word.startswith(token) else
+                    2 if token in word else
+                    1 if len(token) >= 3 and SequenceMatcher(None, token, word).ratio() >= .72
+                    else 0
+                    for word in parts
+                ]
+                if not options or max(options) == 0:
+                    break
+                matches.append(max(options))
+            if len(matches) == len(tokens):
+                ranked.append((sum(matches), index, key, terms))
+        ranked.sort(key=lambda entry: (-entry[0], entry[1]))
+        for _score, index, key, terms in ranked[:7]:
+            item = QListWidgetItem(tr(terms.split(' ')[0]) + '  ·  ' +
+                                   tr(self.SEARCH_CATEGORIES[key]))
+            item.setData(Qt.UserRole, index)
+            self.search_results.addItem(item)
+        self.search_results.setFixedHeight(min(156, 31 * self.search_results.count() + 7))
+        self.search_results.setVisible(bool(self.search_results.count()) and
+                                       self.search_overlay.expanded)
+        self.search_overlay.suggestions_changed()
 
     def choose_search_result(self, item):
         index = item.data(Qt.UserRole)
         if not isinstance(index, int) or not (0 <= index < len(self._search_targets)):
             return
         target = self._search_targets[index][2]
-        self.search_results.hide()
+        self.search_overlay.close_search()
         scroll = self.parentWidget()
         while scroll is not None and not isinstance(scroll, QScrollArea):
             scroll = scroll.parentWidget()
         if scroll is not None:
-            scroll.ensureWidgetVisible(target, 24, 80)
+            scroll.ensureWidgetVisible(target, 24, 90)
         target.setFocus(Qt.OtherFocusReason)
         original = target.styleSheet()
         target.setStyleSheet(original + 'border: 2px solid ' + theme.accent() + ';')
         QTimer.singleShot(1400, lambda w=target, old=original: w.setStyleSheet(old))
-        self.search.clear()
+
+    def _add_section_reset(self, body, section, title):
+        row = QHBoxLayout()
+        row.addStretch(1)
+        button = QPushButton(title)
+        button.setObjectName('ghostBtn')
+        button.clicked.connect(lambda _=False, key=section: self.reset_category(key))
+        row.addWidget(button)
+        body.addLayout(row)
+        self._reset_buttons[section] = button
+
+    @staticmethod
+    def _select_without_signal(widget, data):
+        widget.blockSignals(True)
+        index = widget.findData(data)
+        if index >= 0:
+            widget.setCurrentIndex(index)
+        widget.blockSignals(False)
+
+    @staticmethod
+    def _check_without_signal(widget, checked):
+        widget.blockSignals(True)
+        widget.setChecked(bool(checked))
+        widget.blockSignals(False)
+
+    def reset_category(self, section):
+        """Restore only the selected group, preserving user assets and layouts."""
+        keys = self.SECTION_DEFAULTS.get(section)
+        if keys is None:
+            return
+        changes = {key: self.DEFAULTS[key] for key in keys}
+        if not settings.set_many(changes):
+            return
+        if section == 'appearance':
+            self._select_without_signal(self.mode, self.DEFAULTS['theme'])
+            self._select_without_signal(self.accent_combo, self.DEFAULTS['accent'])
+            self._select_without_signal(self.motion_combo, self.DEFAULTS['motion'])
+            self._select_without_signal(self.background_combo, self.DEFAULTS['background_style'])
+            self._select_without_signal(self.background_fit_combo, self.DEFAULTS['custom_background_fit'])
+            self.sync_background_controls()
+            self.window.apply_appearance()
+            self.refresh_appearance()
+        elif section == 'hud':
+            self._check_without_signal(self.hud_on, False)
+            self._check_without_signal(self.hud_top, True)
+            self._select_without_signal(self.hud_size, 'compact')
+            self._select_without_signal(self.hud_opacity, 90)
+            for key, box in self.hud_metrics.items():
+                self._check_without_signal(box, key in DEFAULT_KEYS)
+            toggle = getattr(self.window, 'set_mini_hud_enabled', None)
+            if callable(toggle):
+                toggle(False)
+            refresh = getattr(self.window, 'refresh_mini_hud', None)
+            if callable(refresh):
+                refresh()
+        else:
+            self._check_without_signal(self.alert_toggle, False)
+            for key, box in self.alert_boxes.items():
+                box.blockSignals(True)
+                box.setValue(self.DEFAULTS[key])
+                box.blockSignals(False)
+        self._refresh_restore_button()
 
     def retranslate(self):
         self.search.setPlaceholderText(tr('Einstellungen durchsuchen …'))
@@ -617,6 +726,7 @@ class PreferencesPage(Page):
         else:
             # Standalone settings pages may not have a MiniHUD window.
             settings.set('mini_hud_enabled', bool(enabled))
+        self._refresh_restore_button()
 
     def sync_hud_controls(self):
         if not hasattr(self, 'hud_on'):
@@ -624,6 +734,7 @@ class PreferencesPage(Page):
         self.hud_on.blockSignals(True)
         self.hud_on.setChecked(bool(settings.get('mini_hud_enabled', False)))
         self.hud_on.blockSignals(False)
+        self._refresh_restore_button()
 
     def change_hud_size(self, *_):
         self.change_hud_option('mini_hud_layout', self.hud_size.currentData())
@@ -633,13 +744,17 @@ class PreferencesPage(Page):
         refresh = getattr(self.window, 'refresh_mini_hud', None)
         if callable(refresh):
             refresh()
+        self._refresh_restore_button()
 
     def change_hud_metrics(self, *_):
         choices = [key for key, box in self.hud_metrics.items() if box.isChecked()]
         if not choices:
             return
         settings.set('mini_hud_metrics', choices)
-        self.window.refresh_mini_hud()
+        refresh = getattr(self.window, 'refresh_mini_hud', None)
+        if callable(refresh):
+            refresh()
+        self._refresh_restore_button()
 
     def _refresh_renderer_status(self):
         active = getattr(self.window, 'render_backend_active', renderer.SOFTWARE)
@@ -713,10 +828,13 @@ class PreferencesPage(Page):
         self._refresh_restore_button()
 
     def _refresh_restore_button(self):
-        self.restore_button.setVisible(any(
-            settings.get(key, default) != default
-            for key, default in self.DEFAULTS.items()
-        ))
+        values = settings.get_many(self.DEFAULTS)
+        for section, keys in self.SECTION_DEFAULTS.items():
+            button = self._reset_buttons.get(section)
+            if button is not None:
+                button.setVisible(any(values[key] != self.DEFAULTS[key] for key in keys))
+        self.restore_button.setVisible(
+            any(values[key] != default for key, default in self.DEFAULTS.items()))
 
     def restore_defaults(self):
         answer = QMessageBox.question(
@@ -766,6 +884,18 @@ class PreferencesPage(Page):
             box.blockSignals(True)
             box.setValue(self.DEFAULTS[key])
             box.blockSignals(False)
+        self._check_without_signal(self.hud_on, False)
+        self._check_without_signal(self.hud_top, True)
+        self._select_without_signal(self.hud_size, 'compact')
+        self._select_without_signal(self.hud_opacity, 90)
+        for key, box in self.hud_metrics.items():
+            self._check_without_signal(box, key in DEFAULT_KEYS)
+        toggle = getattr(self.window, 'set_mini_hud_enabled', None)
+        if callable(toggle):
+            toggle(False)
+        refresh = getattr(self.window, 'refresh_mini_hud', None)
+        if callable(refresh):
+            refresh()
         self.window.set_interval(eco.interval())
         self.window.apply_appearance()
         self.refresh_appearance()
@@ -810,6 +940,8 @@ class PreferencesPage(Page):
         self.accent_preview.setStyleSheet(f'background: {theme.accent()}; border-radius: 7px;')
         self.sync_background_controls()
         self._refresh_renderer_status()
+        self.search_overlay.refresh_theme()
+        self._refresh_restore_button()
 
     def change_mode(self, *_):
         if eco.enabled():
