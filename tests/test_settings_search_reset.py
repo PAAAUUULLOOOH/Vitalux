@@ -71,14 +71,14 @@ def check():
             assert all(button.isHidden() for button in page._reset_buttons.values())
             assert page.restore_button.isHidden()
 
-            # Accent-colored icon is centered until opening the search.
-            x = floating.x()
-            assert abs((x + floating.width() / 2) - scroll.viewport().width() / 2) <= 2
-            floating.icon.click()
+            # Resting icon belongs to page content; open overlay floats above viewport.
+            assert page.search_home.isVisible()
+            assert floating.isHidden()
+            page.search_home.click()
             qwait(330)
             assert floating.expanded and floating.field.isVisible()
             first_width = floating.width()
-            assert first_width >= 240
+            assert first_width >= 145
             floating.field.setText('vulk')
             page.search_settings('vulk')
             assert page.search_results.count() > 0
@@ -102,11 +102,14 @@ def check():
             qwait(330)
             assert not floating.expanded and not floating.field.text()
             assert page.render_combo.hasFocus()
-            floating.icon.click()
+            scroll.verticalScrollBar().setValue(0)
+            app.processEvents()
+            page.search_home.click()
             qwait(330)
             floating.close_search()
             qwait(330)
-            assert not floating.expanded and floating.width() == 40
+            assert not floating.expanded and floating.width() == 32
+            assert floating.isHidden()
 
             # Exactly three groups have their own reset and only when changed.
             settings.set('custom_backgrounds', [{'file':'preserve.png','name':'Do not delete'}])
