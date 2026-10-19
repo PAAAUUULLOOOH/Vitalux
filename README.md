@@ -46,7 +46,7 @@ Vitalux vereint Systemüberwachung, Live-Diagramme, Datenträgeranalyse und eine
 | **Netzwerk** | Schnittstellen, IP-Adressen, aktuelle Up-/Downloadraten und Datenverkehr |
 | **Laufwerke** | Datenträger, Partitionen, Belegung, SMART-Diagnose und fio-Benchmarks |
 | **Sensoren** | Verfügbare Temperaturen, Lüfterdrehzahlen, Spannungen, Leistungsaufnahme und Frequenzen |
-| **Diagnostic Center** | Sechs Unterbereiche für System-/Hardwarediagnose, Performance & Insights, Verlauf und Berichte |
+| **Diagnostic Center** | Einheitliche Diagnosekachel für Gesamtcheck, Einzelanalysen, Performance & Insights und Berichte |
 | **System** | Distribution, Kernel, Desktop-/Sitzungsinformationen, Mesa, Treiber und Hardwaredetails |
 | **Einstellungen** | Scrollbare Optionen mit schwebender Glass-Suche, gezieltem Zurücksetzen und Grafik-Rendering |
 | **Updates** | Offizielle GitHub-Releases prüfen, Neuerungen anzeigen und Aktualisierungen bestätigen |
@@ -156,11 +156,11 @@ VITALUX_RENDERER=software ./run.sh
 
 ### Diagnostic Center und MiniHUD
 
-**Diagnostic Center** vereint Hardware- und Systemprüfungen, Performance & Insights, Verlauf und lokale Berichte auf einer Seite. Vorhandene Diagnose-Register bleiben nutzbar; Ping und Blackbox starten nur nach ausdrücklicher Aktivierung.
+**Diagnostic Center** vereint Gesamtcheck, Einzeldiagnosen, Performance & Insights und lokale Berichte in einer durchgehenden Kachel. Vorhandene Diagnose-Register bleiben nutzbar; Ping und Blackbox starten nur nach ausdrücklicher Aktivierung.
 
-**MiniHUD** bietet drei Größen, auswählbare Sensoren und Deckkraft. Aktivierung über **Einstellungen → MiniHUD & Fenster** oder die Systemleiste. Unter Wayland entscheidet der Compositor über die Darstellung über Vollbildspielen.
+**MiniHUD** bietet drei Größen, auswählbare Sensoren und transparente Oberflächen mit 50–100 % Deckkraft. Aktivierung über **Einstellungen → MiniHUD & Fenster** oder die Systemleiste. Unter Wayland entscheidet der Compositor über die Darstellung über Vollbildspielen.
 
-**Einstellungen** sind auf einer Seite angeordnet: Darstellung, Allgemein, MiniHUD & Fenster, Monitoring & Warnungen, Leistung & Energie und abschließend Grafik-Rendering. Ein Klick auf die mittige Lupe öffnet die leicht transparente Suche mit Sofortvorschlägen. Sie bleibt beim Scrollen oben, passt ihre Breite dem Text an und schließt nach fünf Sekunden ohne Eingabe oder bei einem Klick außerhalb mit sanfter Animation. Nur geänderte Darstellung-, MiniHUD- und Warnungsbereiche bieten einen eigenen Reset; der Gesamtrücksetzknopf steht am Seitenende. DE/EN ist in der Seitenleiste erreichbar.
+**Einstellungen** sind auf einer Seite angeordnet: Darstellung, MiniHUD & Fenster, Monitoring & Warnungen, Leistung & Energie und abschließend Grafik-Rendering. Ein Klick auf die mittige Lupe öffnet die leicht transparente Suche mit Sofortvorschlägen. Sie bleibt nur geöffnet beim Scrollen oben sichtbar, wächst mit dem Text und schließt nach fünf Sekunden Inaktivität oder Klick außerhalb sanft; die geschlossene Lupe gehört wieder zum Seitenanfang. Nur geänderte Darstellung-, MiniHUD- und Warnungsbereiche bieten einen eigenen Reset; der Gesamtrücksetzknopf steht am Seitenende. DE/EN ist ausschließlich unten in der Seitenleiste erreichbar. Unter Grafik-Rendering gibt es getrennte Aktionen zum Leeren des Vitalux-Caches und – nach Rückfrage – zum Löschen persönlicher Einstellungen. Der Systemzustand bezieht mehr Last- und Speicherwerte, alle Laufwerksfüllstände und vorhandene echte SMART-Befunde ein; Benchmarks sind ohne Vergleichsbasis kein Gesundheitsnachweis.
 
 ## Download
 
