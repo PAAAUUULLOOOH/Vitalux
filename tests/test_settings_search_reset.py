@@ -8,10 +8,19 @@ os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0, os.getcwd())
 
 from PySide6.QtCore import Qt
-from PySide6.QtTest import QTest
+import time
 from PySide6.QtWidgets import QApplication, QScrollArea, QWidget
 from vitalux import i18n, settings, theme
 from vitalux.control import PreferencesPage
+
+
+def qwait(milliseconds):
+    """Pump the real Qt event loop without requiring the optional QtTest wheel."""
+    deadline = time.monotonic() + milliseconds / 1000.0
+    while time.monotonic() < deadline:
+        QApplication.processEvents()
+        time.sleep(.01)
+
 
 
 class Host(QWidget):
@@ -66,7 +75,7 @@ def check():
             x = floating.x()
             assert abs((x + floating.width() / 2) - scroll.viewport().width() / 2) <= 2
             floating.icon.click()
-            QTest.qWait(330)
+            qwait(330)
             assert floating.expanded and floating.field.isVisible()
             first_width = floating.width()
             assert first_width >= 240
