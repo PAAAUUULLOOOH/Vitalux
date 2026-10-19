@@ -2,7 +2,7 @@
 
 Wayland/X11 select the Qt QPA window-system plugin. OpenGL/Vulkan use the
 Qt Quick RHI internally, but have no separate Qt Quick menu item.
-CPU and Qt Raster use native QWidget/QPainter drawing.
+CPU mode uses native QWidget/QPainter drawing.
 """
 import os
 import subprocess
@@ -18,12 +18,11 @@ WAYLAND_OPENGL = 'wayland_opengl'
 WAYLAND_VULKAN = 'wayland_vulkan'
 X11_OPENGL = 'x11_opengl'
 
-CHOICES = (SOFTWARE, QT_RASTER, OPENGL, WAYLAND_OPENGL, WAYLAND_VULKAN, X11_OPENGL)
+CHOICES = (SOFTWARE, OPENGL, WAYLAND_OPENGL, WAYLAND_VULKAN, X11_OPENGL)
 QUICK_MODES = (WAYLAND_OPENGL, WAYLAND_VULKAN, X11_OPENGL)
 GPU_MODES = (OPENGL,) + QUICK_MODES
 DESCRIPTIONS = {
     SOFTWARE: 'CPU · Standard (stabil)',
-    QT_RASTER: 'Qt Raster · Energiesparmodus',
     OPENGL: 'OpenGL · GPU-Test (experimentell)',
     WAYLAND_OPENGL: 'Wayland · OpenGL (experimentell)',
     WAYLAND_VULKAN: 'Wayland · Vulkan (experimentell)',
@@ -38,14 +37,14 @@ def desired():
     if eco.enabled():
         return SOFTWARE  # No GPU surface or Qt Quick pipeline in Ultra Eco.
     forced = os.environ.get('VITALUX_RENDERER', '').strip().lower()
-    if forced == LEGACY_QTQUICK:
-        return QT_RASTER
+    if forced in (LEGACY_QTQUICK, QT_RASTER):
+        return SOFTWARE
     if forced in CHOICES:
         return forced
     saved = settings.get('render_backend', SOFTWARE)
-    if saved == LEGACY_QTQUICK:
-        settings.set('render_backend', QT_RASTER)
-        return QT_RASTER
+    if saved in (LEGACY_QTQUICK, QT_RASTER):
+        settings.set('render_backend', SOFTWARE)
+        return SOFTWARE
     return saved if saved in CHOICES else SOFTWARE
 
 
@@ -113,7 +112,7 @@ def prepare_start():
     _preflight_ok = False
     _restore_environment()
     selected = desired()
-    if selected in (SOFTWARE, QT_RASTER):
+    if selected == SOFTWARE:
         successful_start()
         return selected
     if settings.get('gpu_boot_pending', False):
