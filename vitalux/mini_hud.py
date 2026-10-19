@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import math
 from PySide6.QtCore import Qt, Signal, QEvent
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
                                QGridLayout, QProgressBar, QFrame)
 from . import eco, settings, theme
@@ -28,6 +29,7 @@ class MiniHUD(QWidget):
         self.setWindowTitle('Vitalux · MiniHUD')
         self.setObjectName('vitaluxMiniHUD')
         self.setAttribute(Qt.WA_DeleteOnClose, False)
+        self.setAttribute(Qt.WA_TranslucentBackground, True)
         self.latest = None
         self._rows = {}
         self.setMinimumSize(200, 62)
@@ -127,8 +129,13 @@ class MiniHUD(QWidget):
         self.setMaximumSize(440, 550)
         self.setFixedSize(290 if mode == 'minimal' else 325, 44 + rows * (65 if mode == 'extended' else 52))
         self.setWindowFlag(Qt.WindowStaysOnTopHint, bool(settings.get('mini_hud_on_top', True)))
-        opacity = 1.0 if eco.enabled() else max(0.4, min(1.0, float(settings.get('mini_hud_opacity', 90))/100))
-        self.setWindowOpacity(opacity)
+        # Wayland may ignore setWindowOpacity() entirely. Paint the HUD surfaces
+        # with real alpha instead; text stays solid/readable at 50%.
+        opacity = 1.0 if eco.enabled() else max(0.5, min(1.0, float(settings.get('mini_hud_opacity', 90)) / 100))
+        self.setWindowOpacity(1.0)
+        def layer(hex_color):
+            c = QColor(hex_color)
+            return f'rgba({c.red()}, {c.green()}, {c.blue()}, {round(255 * opacity)})'
         accent = '#4f8cff' if eco.enabled() else theme.accent()
         light = theme.mode() == 'light' and not eco.enabled()
         # 0.9.4.7 live palette, not the old, extra-dark 0.9.4.0 test skin.
@@ -138,7 +145,7 @@ class MiniHUD(QWidget):
         valuecolor = theme.TEXT if not eco.enabled() else '#f3f5f9'
         closecolor = theme.MUTED if not eco.enabled() else '#b7c4d0'
         self.setStyleSheet('''
-            QWidget#vitaluxMiniHUD { background-color: %s; }
+            QWidget#vitaluxMiniHUD { background: transparent; }
             QFrame#hudSurface { background-color: %s; border: 1px solid %s; border-radius: %spx; }
             QFrame#hudCell { background-color: %s; border: none; border-radius: 5px; }
             QLabel#hudBrand { color: %s; font-size: 11px; font-weight: bold; border: none; }
@@ -147,8 +154,9 @@ class MiniHUD(QWidget):
             QPushButton { color: %s; background: transparent; border: none; font-size: 19px; }
             QProgressBar { background: #364455; border: none; border-radius: 2px; }
             QProgressBar::chunk { background: %s; border: none; border-radius: 2px; }
-        ''' % (bg,bg,accent if not eco.enabled() else '#555555', '0' if eco.enabled() else '9',
-               cellbg,accent,caption,valuecolor,closecolor,accent))
+        ''' % (layer(bg),layer(bg),accent if not eco.enabled() else '#555555',
+               '0' if eco.enabled() else '9',layer(cellbg),
+               accent,caption,valuecolor,closecolor,accent))
         self.update_sample(self.latest)
 
     def update_sample(self, sample):
