@@ -237,6 +237,8 @@ class MainWindow(QMainWindow):
             scroll.viewport().setAutoFillBackground(False)
             page.setAutoFillBackground(False)
             scroll.setWidget(page)
+            if name == 'Einstellungen':
+                page.install_search_overlay(scroll)
             self.stack.addWidget(scroll)
         group.idClicked.connect(self._switch_page)
         group.button(index).setChecked(True)
@@ -253,12 +255,14 @@ class MainWindow(QMainWindow):
         self.lang_host = lang_host
         langs = QHBoxLayout(lang_host)
         langs.setContentsMargins(0, 0, 0, 0)
-        langs.setSpacing(6)
+        langs.setSpacing(3)
         langs.addStretch(1)
         for code in ("de", "en"):
             b = QPushButton(code.upper())
             b.setObjectName("langBtn")
             b.setCheckable(True)
+            b.setFixedSize(31, 28)
+            b.setToolTip('Deutsch' if code == 'de' else 'English')
             b.setChecked(i18n.lang() == code)
             b.setCursor(Qt.PointingHandCursor)
             b.clicked.connect(lambda _=False, c=code: self.set_language(c))
@@ -630,7 +634,8 @@ class MainWindow(QMainWindow):
         compact = self._sidebar_collapsed
         self.sidebar_layout.setContentsMargins(*( (8,55,8,12) if compact else (16,21,16,16) ))
         self.sidebar_brand.setVisible(not compact)
-        self.lang_host.setVisible(not compact)
+        # Keep DE/EN reachable even while the sidebar is collapsed.
+        self.lang_host.setVisible(True)
         self.sidebar_version.setVisible(not compact)
         self.nav_host.layout().setContentsMargins(1,2,1 if compact else 3,2)
         for btn in self.nav_buttons:btn.set_compact(compact)
