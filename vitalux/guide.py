@@ -46,7 +46,7 @@ SLIDES = [
         "Hier erfährst du, wie stark deine Hardware gerade beansprucht wird.",
         "Beim Prozessor findest du Auslastung, Takt und verfügbare Temperaturen.",
         "Der Grafik-Reiter vereint Auslastung, Videospeicher, Taktraten, Spannung und Temperatur. Technische Details und Live-Diagramme sind aufklappbar.",
-        "Unter Vitalux Insights findest du Performance Detective, Gaming-Aufzeichnungen und Vergleichsmessungen.",
+        "Unter Diagnostic Center → Performance & Insights findest du Performance Detective, Gaming-Aufzeichnungen und Vergleichsmessungen.",
         "hardware",
     ),
     (
@@ -75,16 +75,16 @@ SLIDES = [
     ),
     (
         "Darstellung und Einstellungen",
-        "Standardmäßig startet Vitalux mit Glass und Vitalux Blau. Gespeicherte persönliche Einstellungen bleiben erhalten.",
+        "Standardmäßig startet Vitalux mit Glass und Vitalux Blau. Die Einstellungen sind in sechs Unterbereiche aufgeteilt; eine Suche findet Optionen direkt.",
         "Wähle einen von 14 integrierten Hintergründen oder importiere eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
-        "Unter Leistung & Energie schaltest du Ultra Eco ein oder aus: ein primitiver, flacher Skin ohne Effekte, CPU-Rendering und 10 Sekunden Messintervall. Die Anwendung zeichnet verborgen keine Diagramme neu. Mit Jetzt neu starten übernimmst du GPU-/CPU-Wechsel; vorherige Einstellungen bleiben erhalten. Grafik-Rendering bietet weiterhin CPU, Qt Raster und experimentelle GPU-Modi.",
+        "Unter Einstellungen → Leistung & Energie schaltest du Ultra Eco ein oder aus: ein primitiver, flacher Skin ohne Effekte, CPU-Rendering und 10 Sekunden Messintervall. Die Anwendung zeichnet verborgen keine Diagramme neu. Mit Jetzt neu starten übernimmst du GPU-/CPU-Wechsel; vorherige Einstellungen bleiben erhalten. Grafik-Rendering bietet weiterhin CPU, Qt Raster und experimentelle GPU-Modi.",
         "Sieben Farbschemata bleiben verfügbar und werden nach dem Abschalten von Ultra Eco wiederhergestellt. Black Glass sperrt eigene Akzente, Black Glass Gold alle Akzente und zeigt Diagramme samt RAM-Beschriftungen in Goldtönen; Holographic bleibt ein HUD ohne Glas. Automatische Hintergrundfarbe benötigt ein eigenes Bild.",
         "settings",
     ),
     (
         "Diagnostic Center und MiniHUD",
-        "Im neuen Diagnostic Center findest du lokale Systemchecks, Crash Investigator, DisplayDoctor, PCIe Guardian, Thermal Compass, NetworkPulse, Process Spotlight, ChangeRadar und Blackbox.",
-        "Unter Diagnose & Berichte kannst du weiterhin System- und Fehlerberichte lokal als TXT/JSON exportieren. Ein externer Ping wird nur per Klick ausgelöst.",
+        "Das Diagnostic Center ordnet Schnellcheck, Hardware- und Systemdiagnose, Performance & Insights, Verlauf & Überwachung sowie Berichte in sechs Bereiche. Die Prüfungen bleiben unverändert.",
+        "Unter Diagnostic Center → Berichte kannst du weiterhin System- und Fehlerberichte lokal als TXT/JSON exportieren. Externer Ping nur per Klick.",
         "Das MiniHUD lässt sich in den Einstellungen oder über die Systemleiste aktivieren. Drei Größen, Sensoren, Deckkraft und Vordergrundmodus sind wählbar.",
         "Das MiniHUD nutzt bestehende Messwerte. Wayland/KWin entscheidet, ob es über einem Vollbildspiel sichtbar bleibt.",
         "diagnostics",
@@ -94,7 +94,7 @@ SLIDES = [
         "Vitalux prüft automatisch beim Start und etwa alle sechs Stunden auf Updates.",
         "Bei einem Update glüht das Vitalux-Logo in der App und im Tray. Der Updates-Reiter pulsiert; eine Tray-Nachricht nennt die Version.",
         "Vor dem Aktualisieren siehst du die Neuerungen; erst „Jetzt aktualisieren“ startet den Download.",
-        "Ereignis-Timeline, anklickbare Hardware-Übersicht und Fokusmodus für den zweiten Monitor findest du im Grafik-Reiter unter Vitalux Insights.",
+        "Unter Diagnostic Center findest du Performance & Insights mit Hardwareübersicht und Fokusmodus sowie unter Verlauf & Überwachung die Ereignis-Timeline.",
         "updates",
     ),
 ]
@@ -104,8 +104,8 @@ class GuideIllustration(QWidget):
     """Draw a scalable *schematic* dashboard with callout arrows, not fake live data."""
 
     NAV = [
-        "Übersicht", "Prozessor", "Grafik", "Arbeitsspeicher", "Netzwerk",
-        "Laufwerke", "Sensoren", "Diagnostic Center", "System", "Einstellungen", "Updates", "Info",
+        "Übersicht", "Prozessor", "Grafik", "Arbeitsspeicher", "Laufwerke",
+        "Netzwerk", "Sensoren", "Diagnostic Center", "System", "Einstellungen", "Updates", "Info",
     ]
 
     def __init__(self, parent=None):
