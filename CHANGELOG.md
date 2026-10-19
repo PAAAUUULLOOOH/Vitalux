@@ -1,5 +1,13 @@
 # Vitalux – Änderungen
 
+## [v0.9.5.4] - 2026-10-19
+- Einstellungssuche sanfter und breit genug für den vollständigen Platzhalter; Lupensymbol verkleinert.
+- Unzuverlässige MiniHUD-Vordergrundoption entfernt, KDE/Wayland-Einschränkungen erläutert.
+- Diagnostic Center in eigenständige Kacheln für Systemanalyse, Einzelprüfungen und Berichte gegliedert; Insights-Oberfläche entfernt.
+- Überflüssige Live-Tray-Vorschau entfernt; Systeminformationen im Tooltip bleiben verfügbar.
+- Erststart-Anleitung wird automatisch einmal geöffnet; X11-/GPU-Startvorbereitung verbessert.
+- README deutlich kompakter und Anleitung aktualisiert.
+
 ## [v0.9.5.3] - 2026-10-19
 - Systemzustand präziser: CPU-/GPU-Last, Temperaturen, RAM, Swap, VRAM, Belegung aller Laufwerke und tatsächliche SMART-Warnungen fließen ein. Fehlende SMART-Befunde werden nicht als gesund bewertet.
 - Einstellungssuche mit kleinerer dezenter Lupe, sichtbarer Animation und dynamischer Feldbreite. Geschlossen bleibt die Lupe am Seitenanfang; nur die geöffnete Suche schwebt beim Scrollen mit.
