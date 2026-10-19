@@ -8,10 +8,19 @@ sys.path.insert(0, os.getcwd())
 
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtGui import QPixmap
-from PySide6.QtTest import QTest
+import time
 from PySide6.QtWidgets import QApplication
 from vitalux import i18n, settings, theme
 from vitalux.window import MainWindow, Sampler
+
+
+def qwait(milliseconds):
+    """Pump the real Qt event loop without requiring the optional QtTest wheel."""
+    deadline = time.monotonic() + milliseconds / 1000.0
+    while time.monotonic() < deadline:
+        QApplication.processEvents()
+        time.sleep(.01)
+
 
 
 class DummyManager(QObject):
@@ -72,7 +81,7 @@ def main():
             assert pref.search_overlay.icon.isVisible()
             assert not pref.search_overlay.expanded
             pref.search_overlay.icon.click()
-            QTest.qWait(320)
+            qwait(320)
             pref.search.setText('Vulk')
             pref.search_settings('Vulk')
             assert pref.search_overlay.expanded
