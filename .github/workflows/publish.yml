@@ -3,6 +3,7 @@ name: Vitalux – Automatische Veröffentlichung
 # The named publish commit is authorized to run the release on main.
 # Ordinary source pushes do not publish; workflow_dispatch is also available. MiniHUD, Diagnostic Center guide, quiet shutdown, and staged diagnostic UI imports are regression-tested.
 on:
+  # Category-aware regression checks for the reorganized Qt settings UI.
   workflow_dispatch:
   push:
     branches: [main]
