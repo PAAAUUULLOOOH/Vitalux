@@ -871,3 +871,44 @@ EN_MORE.update({
     'Separates Desktop-Fenster mit den vorhandenen Vitalux-Messwerten. Auch bei verborgenem Hauptfenster nutzbar; keine zusätzliche Sensorabfrage.':
         'A separate desktop window showing the same Vitalux samples, also when the main window is hidden. No additional sensor polling.',
 })
+
+# Category navigation introduced in v0.9.4.9.
+EN_MORE.update({
+    'Darstellung': 'Appearance',
+    'MiniHUD & Fenster': 'MiniHUD & window',
+    'Monitoring & Warnungen': 'Monitoring & alerts',
+    'Leistung & Energie': 'Performance & energy',
+    'Allgemein': 'General',
+    'Einstellungen durchsuchen …': 'Search settings …',
+    'Sprache & Allgemein': 'Language & general',
+    'Sprache': 'Language',
+    'Sprache und allgemeines Verhalten. Die meisten Änderungen werden sofort übernommen.':
+        'Language and general application preferences. Most changes take effect immediately.',
+    'STARTSEITE': 'HOME',
+    'HARDWARE & SYSTEM': 'HARDWARE & SYSTEM',
+    'DIAGNOSE & ANALYSE': 'DIAGNOSTICS & ANALYSIS',
+    'Schnellcheck': 'Quick checks',
+    'Hardwarediagnose': 'Hardware diagnostics',
+    'Systemdiagnose': 'System diagnostics',
+    'Performance & Insights': 'Performance & insights',
+    'Verlauf & Überwachung': 'History & monitoring',
+    'Berichte': 'Reports',
+    'Diagnose für Export auswählen': 'Select diagnostics to export',
+    'Berichte werden nur auf ausdrücklichen Klick gespeichert. Journal- und Prozessdaten können persönliche Informationen enthalten.':
+        'Reports are saved only when requested. Journal and process data may contain personal information.',
+    'Der externe Ping wird nur über die separate Schaltfläche gestartet.':
+        'External ping runs only when explicitly requested.',
+    'Ereignis-Timeline': 'Event timeline',
+    'PCIe- und GPU-Diagnose öffnen →': 'Open PCIe and GPU diagnostics →',
+    'Netzwerkdiagnose öffnen →': 'Open network diagnostics →',
+    'Standardmäßig startet Vitalux mit Glass und Vitalux Blau. Die Einstellungen sind in sechs Unterbereiche aufgeteilt; eine Suche findet Optionen direkt.':
+        'Vitalux defaults to Glass with Vitalux Blue. Settings are organized into six sections with a direct search.',
+    'Unter Diagnostic Center → Performance & Insights findest du Performance Detective, Gaming-Aufzeichnungen und Vergleichsmessungen.':
+        'Performance Detective, gaming sessions, and comparisons are now under Diagnostic Center → Performance & insights.',
+    'Das Diagnostic Center ordnet Schnellcheck, Hardware- und Systemdiagnose, Performance & Insights, Verlauf & Überwachung sowie Berichte in sechs Bereiche. Die Prüfungen bleiben unverändert.':
+        'Diagnostic Center groups quick checks, hardware and system diagnostics, performance analysis, history and reports into six sections. Existing checks are preserved.',
+    'Unter Diagnostic Center → Berichte kannst du weiterhin System- und Fehlerberichte lokal als TXT/JSON exportieren. Externer Ping nur per Klick.':
+        'Under Diagnostic Center → Reports, export local system and error reports as TXT/JSON. External ping is opt-in.',
+    'Unter Diagnostic Center findest du Performance & Insights mit Hardwareübersicht und Fokusmodus sowie unter Verlauf & Überwachung die Ereignis-Timeline.':
+        'Diagnostic Center hosts Performance & insights with hardware map and focus mode, while History & monitoring includes the event timeline.'
+})
