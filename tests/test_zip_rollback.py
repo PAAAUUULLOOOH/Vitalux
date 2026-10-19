@@ -3,6 +3,8 @@ from pathlib import Path
 import json
 import tempfile
 import sys
+from unittest.mock import patch
+from zipfile import ZipFile, ZipInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -36,5 +38,32 @@ def check_zip_restore():
         print("ZIP rollback restores application, launcher, and assets: PASS")
 
 
+def check_zip_permissions():
+    with tempfile.TemporaryDirectory(prefix='vitalux-zip-modes-') as directory:
+        root = Path(directory)/'installed'
+        (root/'vitalux').mkdir(parents=True)
+        (root/'vitalux/__main__.py').write_text('old=True\n')
+        archive = Path(directory)/'release.zip'
+        with ZipFile(archive, 'w') as zipped:
+            for name, content, mode in (
+                    ('vitalux/__main__.py', 'new=True\n', 0o644),
+                    ('run.sh', '#!/bin/sh\nexit 0\n', 0o755),
+                    ('runtime/bin/python3.12', 'test interpreter', 0o4755)):
+                item = ZipInfo('Vitalux-test/'+name)
+                item.external_attr = mode << 16
+                zipped.writestr(item, content)
+        def download(url, output, *args):
+            import shutil
+            shutil.copyfile(archive, output)
+        with patch.object(updater, '_download_verified', download), patch.dict('os.environ', {}, clear=False):
+            import os
+            os.environ.pop('APPIMAGE', None)
+            updater.install('https://example.invalid/verified.zip', root=str(root), sha256='0'*64)
+        assert (root/'run.sh').stat().st_mode & 0o7777 == 0o755
+        assert (root/'runtime/bin/python3.12').stat().st_mode & 0o7777 == 0o755
+        print('ZIP executable modes restored; special permission bits removed: PASS')
+
+
 if __name__ == "__main__":
     check_zip_restore()
+    check_zip_permissions()

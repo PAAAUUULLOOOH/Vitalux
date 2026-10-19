@@ -77,25 +77,23 @@ def check():
         data = _get_release()
     except urllib.error.HTTPError as e:
         if e.code == 404:
-            return {"ok": False, "error": "Noch keine Vitalux-Version über GitHub Releases veröffentlicht."}
+            return {"ok": False, "error": tr("Noch keine Vitalux-Version über GitHub Releases veröffentlicht.")}
         return {"ok": False, "error": f"GitHub: HTTP {e.code}"}
     except (urllib.error.URLError, OSError, TimeoutError) as exc:
         reason = getattr(exc, "reason", exc)
         if isinstance(reason, ssl.SSLCertVerificationError):
-            message = ("GitHub-Zertifikat konnte nicht geprüft werden. "
-                       "Bitte Systemzeit und CA-Zertifikate prüfen. "
-                       f"Details: {reason}")
+            message = tr('GitHub-Zertifikat konnte nicht geprüft werden. Bitte Systemzeit und CA-Zertifikate prüfen. Details: {reason}').format(reason=reason)
         elif isinstance(reason, socket.gaierror):
-            message = f"GitHub-DNS-Auflösung fehlgeschlagen: {reason}"
+            message = tr('GitHub-DNS-Auflösung fehlgeschlagen: {reason}').format(reason=reason)
         else:
-            message = f"GitHub ist nicht erreichbar: {reason}"
+            message = tr('GitHub ist nicht erreichbar: {reason}').format(reason=reason)
         return {"ok": False, "error": str(message)[:320]}
     except (ValueError, TypeError):
         return {"ok": False, "error": tr("Unerwartete Antwort von GitHub.")}
 
     tag = str(data.get("tag_name", ""))
     if not re.fullmatch(r"v\d+\.\d+\.\d+(?:\.\d+)?", tag):
-        return {"ok": False, "error": "Ungültige Versionsangabe bei GitHub."}
+        return {"ok": False, "error": tr("Ungültige Versionsangabe bei GitHub.")}
     is_appimage = bool(os.environ.get("APPIMAGE"))
     # A current/older release is not an update even while its artifacts build.
     if _ver(tag) <= _ver(__version__):
@@ -111,14 +109,14 @@ def check():
     if not item:
         # When a release was just published, the AppImage may still be building.
         return {"ok": False, "error":
-                "Das offizielle Vitalux-Update wird auf GitHub noch erstellt oder ist nicht verfügbar."}
+                tr("Das offizielle Vitalux-Update wird auf GitHub noch erstellt oder ist nicht verfügbar.")}
     download_url = str(item.get('browser_download_url', ''))
     expected_url = f"https://github.com/{repo}/releases/download/{tag}/{expected_name}"
     if download_url != expected_url:
-        return {"ok": False, "error": "Ungültige Adresse der Vitalux-Release-Datei."}
+        return {"ok": False, "error": tr("Ungültige Adresse der Vitalux-Release-Datei.")}
     checksum = str(item.get('digest') or '')
     if not re.fullmatch(r'sha256:[0-9a-fA-F]{64}', checksum):
-        return {"ok": False, "error": 'GitHub Release liefert keine SHA-256-Prüfsumme für die Programmdatei.'}
+        return {"ok": False, "error": tr('GitHub Release liefert keine SHA-256-Prüfsumme für die Programmdatei.')}
     return {"ok": True, "latest": tag.lstrip('vV'), "notes": (data.get('body') or '').strip(),
             "url": download_url, "sha256": checksum.split(':', 1)[1].lower(),
             "kind": "appimage" if is_appimage else "zip", "newer": _ver(tag) > _ver(__version__)}
@@ -127,23 +125,23 @@ def check():
 def _download_verified(url, output_path, sha256, progress, download_limit):
     """Stream to disk with size cap and SHA-256 check (digest taken from GitHub Releases API)."""
     if not re.fullmatch('[0-9a-fA-F]{64}', sha256 or ''):
-        raise RuntimeError('SHA-256-Prüfsumme fehlt. Update aus Sicherheitsgründen abgebrochen.')
+        raise RuntimeError(tr('SHA-256-Prüfsumme fehlt. Update aus Sicherheitsgründen abgebrochen.'))
     digest = hashlib.sha256()
     length = 0
     request = urllib.request.Request(url, headers={'User-Agent': HEADERS['User-Agent']})
     with _github_request(request, timeout=45) as response, open(output_path, 'wb') as f:
         if response.geturl().split(':', 1)[0] != 'https':
-            raise RuntimeError('Update-Download ohne HTTPS abgebrochen.')
+            raise RuntimeError(tr('Update-Download ohne HTTPS abgebrochen.'))
         total = int(response.headers.get('Content-Length') or '0')
         if total > download_limit:
-            raise RuntimeError('Updatepaket überschreitet Größenlimit.')
+            raise RuntimeError(tr('Updatepaket überschreitet Größenlimit.'))
         while True:
             chunk = response.read(1024 * 1024)
             if not chunk:
                 break
             length += len(chunk)
             if length > download_limit:
-                raise RuntimeError('Updatepaket überschreitet Größenlimit.')
+                raise RuntimeError(tr('Updatepaket überschreitet Größenlimit.'))
             f.write(chunk)
             digest.update(chunk)
             if total:
@@ -151,7 +149,7 @@ def _download_verified(url, output_path, sha256, progress, download_limit):
         f.flush()
         os.fsync(f.fileno())
     if digest.hexdigest() != sha256.lower():
-        raise RuntimeError('Sicherheitsprüfung fehlgeschlagen: SHA-256 stimmt nicht überein.')
+        raise RuntimeError(tr('Sicherheitsprüfung fehlgeschlagen: SHA-256 stimmt nicht überein.'))
 
 
 def appimage_path():
@@ -161,10 +159,10 @@ def appimage_path():
 def _stage_appimage(url, sha256, progress):
     target = os.path.realpath(appimage_path())
     if not target or not os.path.isfile(target):
-        raise RuntimeError('Vitalux ist nicht als AppImage gestartet.')
+        raise RuntimeError(tr('Vitalux ist nicht als AppImage gestartet.'))
     folder = os.path.dirname(target)
     if not os.access(folder, os.W_OK):
-        raise RuntimeError('AppImage liegt in einem schreibgeschützten Ordner. Bitte Vitalux im Benutzerordner installieren.')
+        raise RuntimeError(tr('AppImage liegt in einem schreibgeschützten Ordner. Bitte Vitalux im Benutzerordner installieren.'))
     fd, staged = tempfile.mkstemp(prefix='.vitalux-next-', suffix='.AppImage', dir=folder)
     os.close(fd)
     try:
@@ -172,7 +170,7 @@ def _stage_appimage(url, sha256, progress):
         with open(staged, 'rb') as f:
             head = f.read(11)
         if not head.startswith(b'\x7fELF') or head[8:11] != b'AI\x02':
-            raise RuntimeError('Heruntergeladene Datei ist kein gültiges AppImage vom Typ 2.')
+            raise RuntimeError(tr('Heruntergeladene Datei ist kein gültiges AppImage vom Typ 2.'))
         os.chmod(staged, 0o755)
         progress(95.)
         return staged
@@ -185,7 +183,7 @@ def activate_appimage_update(staged):
     """External /bin/sh helper survives unmounting old AppImage and replaces file atomically."""
     target = os.path.realpath(appimage_path())
     if not os.path.isfile(target) or os.path.dirname(staged) != os.path.dirname(target):
-        raise RuntimeError('AppImage-Update konnte nicht sicher vorbereitet werden.')
+        raise RuntimeError(tr('AppImage-Update konnte nicht sicher vorbereitet werden.'))
     cache = os.path.join(os.environ.get('XDG_CACHE_HOME') or os.path.expanduser('~/.cache'), 'vitalux')
     os.makedirs(cache, mode=0o700, exist_ok=True)
     fd, script = tempfile.mkstemp(prefix='apply-update-', suffix='.sh', dir=cache)
@@ -305,7 +303,7 @@ def _install_from_directory(src, root, progress):
     root = os.path.abspath(root)
     pkg = os.path.join(root, APP_ID)
     if not os.path.isdir(pkg):
-        raise RuntimeError('Bestehende Vitalux-Installation nicht gefunden.')
+        raise RuntimeError(tr('Bestehende Vitalux-Installation nicht gefunden.'))
     # Preserve launcher/scripts and their last-known-good content for rollback.
     root_files = [name for name in os.listdir(src)
                   if name not in SKIP and name != APP_ID and not name.startswith('.')
@@ -317,7 +315,7 @@ def _install_from_directory(src, root, progress):
     try:
         shutil.copytree(os.path.join(src, APP_ID), stage_pkg, ignore=shutil.ignore_patterns('__pycache__'))
         if not os.path.isfile(os.path.join(stage_pkg, '__main__.py')):
-            raise RuntimeError('Update enthält kein ausführbares Vitalux-Modul.')
+            raise RuntimeError(tr('Update enthält kein ausführbares Vitalux-Modul.'))
         _stage_backup(root, root_files)
         progress(89)
         os.replace(pkg, former)
@@ -388,7 +386,7 @@ def restore_previous(root=None, restore_settings=True):
     """
     root = root or app_root()
     if not backup_available(root):
-        raise RuntimeError('Keine vorherige Version gesichert.')
+        raise RuntimeError(tr('Keine vorherige Version gesichert.'))
     backup = os.path.join(root, '.backup')
     target = os.path.join(root, APP_ID)
     stage = tempfile.mkdtemp(prefix='.vitalux-rollback-', dir=root)
@@ -425,13 +423,20 @@ def install(url, root=None, progress=lambda p: None, sha256=None):
         with zipfile.ZipFile(zpath) as z:
             members = z.infolist()
             if len(members) > 12000 or sum(item.file_size for item in members) > 1200 * 1024 * 1024:
-                raise RuntimeError('Updatepaket ist zu groß.')
+                raise RuntimeError(tr('Updatepaket ist zu groß.'))
             for item in members:
                 path = PurePosixPath(item.filename)
                 unix_mode = item.external_attr >> 16
                 if path.is_absolute() or '..' in path.parts or stat.S_ISLNK(unix_mode) or '\\' in item.filename:
-                    raise RuntimeError('Unsicherer Pfad im Updatepaket.')
+                    raise RuntimeError(tr('Unsicherer Pfad im Updatepaket.'))
             z.extractall(extracted)
+            # zipfile does not restore Unix execute bits. Keep the official
+            # launcher and interpreter runnable, without accepting special bits.
+            for item in members:
+                destination = os.path.join(extracted, item.filename)
+                mode = (item.external_attr >> 16) & 0o777
+                if mode and os.path.isfile(destination):
+                    os.chmod(destination, mode)
         progress(85)
         src = _find_root(extracted)
         if not src:

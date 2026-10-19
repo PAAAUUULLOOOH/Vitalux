@@ -1,5 +1,18 @@
 # Vitalux – Änderungen
 
+## [v0.9.5.5] - 2026-10-19
+- Zehn Farbschemata über native Vorschaukacheln auswählen; Obsidian Gold, Champagne Glass und Aurora Gold sind jetzt im stabilen Release enthalten.
+- Feste Akzent- und Hintergrundoptionen werden direkt im geöffneten Dropdown erklärt; nicht verfügbare Einträge bleiben grau und unveränderbar.
+- Einstellungssuche mit synchronisiertem Ein-/Ausblenden, weicher Größenanpassung, unterbrechbaren Übergängen, Escape und fünf Sekunden Inaktivitätszeit.
+- Farbschema-, Akzent- und Hintergrundwechsel mit Überblendung in voller Auflösung; Messdaten, Seitenauswahl und Scrollposition bleiben erhalten.
+- Neue einheitliche Vektorsymbole in der Seitenleiste; Schrift, Symbole, Logo und Originalschriftzug folgen der wirksamen Farbpalette.
+- Originalschriftzug mit dezenter metallischer Lichtreflexion und ruhigen Pausen; äußere Logo-Streifen drehen sich weiterhin langsam.
+- Kurzer Glasklang ausschließlich bei Vitalux-Buttons, auch per Tastatur; Lautstärke und Stummschaltung sind einstellbar.
+- Weniger Dateizugriffe und unnötige Neuzeichnungen durch Logo-/Icon-Caches und pausierende, unsichtbare Oberflächen; Darstellungsqualität und Messhistorie bleiben erhalten.
+- Kurz aufblinkendes Startfenster behoben; CPU, OpenGL, X11/OpenGL sowie Wayland/OpenGL und Wayland/Vulkan mit echten Framebuffern geprüft.
+- Normale Quellcode-ZIPs und stabile Pakete starten mit aktiver Update-Funktion; explizite Designvorschauen behalten ihr isoliertes Profil.
+- Deutsche und englische Changelogs folgen der ausgewählten Sprache; Anleitung, fehlende Übersetzungen und kompakte englische README aktualisiert.
+
 ## [v0.9.5.4] - 2026-10-19
 - Einstellungssuche sanfter und breit genug für den vollständigen Platzhalter; Lupensymbol verkleinert.
 - Unzuverlässige MiniHUD-Vordergrundoption entfernt, KDE/Wayland-Einschränkungen erläutert.

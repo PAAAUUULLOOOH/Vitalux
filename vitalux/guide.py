@@ -76,9 +76,9 @@ SLIDES = [
     (
         "Darstellung und Einstellungen",
         "Standardmäßig startet Vitalux mit Glass und Vitalux Blau. Die Lupe bleibt geschlossen am Seitenanfang und folgt geöffnet beim Scrollen. Die Suche wächst mit der Eingabe, schließt nach fünf Sekunden oder Klick außerhalb sanft. Geänderte Einstellungen lassen sich gezielt zurücksetzen.",
-        "Wähle einen von 14 integrierten Hintergründen oder importiere eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
-        "Unter Einstellungen → Leistung & Energie schaltest du Ultra Eco ein oder aus: ein primitiver, flacher Skin ohne Effekte, CPU-Rendering und 10 Sekunden Messintervall. Die Anwendung zeichnet verborgen keine Diagramme neu. Mit Jetzt neu starten übernimmst du GPU-/CPU-Wechsel; vorherige Einstellungen bleiben erhalten. Grafik-Rendering bietet CPU und experimentelle GPU-Modi.",
-        "Sieben Farbschemata bleiben verfügbar und werden nach dem Abschalten von Ultra Eco wiederhergestellt. Black Glass sperrt eigene Akzente, Black Glass Gold alle Akzente und zeigt Diagramme samt RAM-Beschriftungen in Goldtönen; Holographic bleibt ein HUD ohne Glas. Automatische Hintergrundfarbe benötigt ein eigenes Bild.",
+        "Bei anpassbaren Farbschemata wählst du integrierte Hintergründe oder eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
+        "Der Glasklang reagiert nur auf Vitalux-Buttons, auch per Tastatur. In den Einstellungen kannst du die Lautstärke ändern oder den Klang abschalten.",
+        "Zehn Vorschaukacheln wählen das Farbschema mit einer sanften Überblendung. Die vier Gold-/Glas-Designs haben feste Paletten und Hintergründe. Öffne ihre grauen Dropdowns, um die Erklärung direkt über den nicht verfügbaren Optionen zu lesen.",
         "settings",
     ),
     (
@@ -94,7 +94,7 @@ SLIDES = [
         "Vitalux prüft automatisch beim Start und etwa alle sechs Stunden auf Updates.",
         "Bei einem Update glüht das Vitalux-Logo in der App und im Tray. Der Updates-Reiter pulsiert; eine Tray-Nachricht nennt die Version.",
         "Vor dem Aktualisieren siehst du die Neuerungen; erst „Jetzt aktualisieren“ startet den Download.",
-        "Das Diagnostic Center bietet unabhängige Prüfkacheln und den lokalen Export von Diagnoseberichten.",
+        "Der Changelog und die Update-Hinweise folgen deiner ausgewählten Sprache. Die bisherige Versionshistorie bleibt auch nach dem Update offline verfügbar.",
         "updates",
     ),
 ]

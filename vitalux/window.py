@@ -11,7 +11,7 @@ from .i18n import tr
 from .pages import CpuPage, DiskPage, GpuPage, MemoryPage, NetworkPage, OverviewPage, SystemPage
 from .pages_extra import InfoPage, UpdatePage
 from .control import SensorsPage, PreferencesPage
-from .brand import PulseCore, TrayPulse, app_icon, sync_installed_icon, wordmark_pixmap
+from .brand import PulseCore, TrayPulse, Wordmark, app_icon, sync_installed_icon
 from .widgets import NavButton, SidebarToggle, ChartPanel, Gauge, label
 from .glass import AmbientScene, GlassSidebar, GlassSurface, create_ambient_scene
 from .sidebar_transition import SidebarTransition, SidebarFreeze
@@ -124,6 +124,8 @@ class MainWindow(QMainWindow):
         manager.changed.connect(self._sync_glow)
         manager.restart.connect(self.quit_from_tray)
         self._build(0)
+        self._appearance_key = self._appearance_signature()
+        self._appearance_overlay = None
         if settings.get('mini_hud_enabled', False):
             self.set_mini_hud_enabled(True)
 
@@ -172,10 +174,9 @@ class MainWindow(QMainWindow):
         self.pulse_core = PulseCore(size=132, parent=brand)
         brand_lay.addWidget(self.pulse_core, 0, Qt.AlignHCenter)
         brand_lay.addSpacing(4)
-        mark = label(align=Qt.AlignHCenter)
+        mark = Wordmark()
         mark.setObjectName('wordmarkWrap')
         mark.setFixedSize(200, 42)
-        mark.setPixmap(wordmark_pixmap(200, 42))
         self.brand_mark = mark
         brand_lay.addWidget(mark, 0, Qt.AlignHCenter)
         brand_lay.addSpacing(7)
@@ -663,7 +664,7 @@ class MainWindow(QMainWindow):
             return
         # While hidden in the tray, keep collecting data and checking alarms,
         # but skip all widget/chart paints until the window is shown again.
-        if eco.enabled() and (not self.isVisible() or self.isMinimized()):
+        if not self.isVisible() or self.isMinimized():
             return
         page = self.pages[self.stack.currentIndex()][1]
         try:
@@ -675,13 +676,30 @@ class MainWindow(QMainWindow):
                 log_exception(type(exc), exc, exc.__traceback__)
                 self._last_refresh_error = signature
 
+    @staticmethod
+    def _appearance_signature():
+        return tuple(settings.get_many(dict(theme='glass', accent='#4f8cff',
+            background_style='theme_default', custom_background_selected='',
+            custom_background_fit='cover', ultra_eco=False)).values())
+
     def apply_appearance(self):
         """Restyle in-place; keep selected page, benchmark worker and scroll intact."""
+        next_key = self._appearance_signature()
+        before = None
+        if (self.isVisible() and not self.isMinimized() and motion.duration(300)
+                and getattr(self, '_appearance_key', next_key) != next_key):
+            before = self.grab()
+        overlay = getattr(self, '_appearance_overlay', None)
+        if overlay is not None:
+            overlay.finish()
+        self._appearance_overlay = None
         theme.set_mode(eco.theme_name())
         user_accent = settings.get('accent', '#4f8cff')
         theme.set_accent('#4f8cff' if eco.enabled() else resolve_accent(user_accent, self.distro['color']))
-        QApplication.instance().setStyleSheet(theme.stylesheet())
-        self.brand_mark.setPixmap(wordmark_pixmap(200, 42))
+        stylesheet = theme.stylesheet()
+        if QApplication.instance().styleSheet() != stylesheet:
+            QApplication.instance().setStyleSheet(stylesheet)
+        self.brand_mark.sync_theme()
         self.pulse_core.sync_theme()
         current_icon = app_icon()
         QApplication.instance().setWindowIcon(current_icon)
@@ -729,6 +747,18 @@ class MainWindow(QMainWindow):
         pref = next((page for title, page in self.pages if title == 'Einstellungen'), None)
         if pref is not None and hasattr(pref, 'refresh_appearance'):
             pref.refresh_appearance()
+        self._appearance_key = next_key
+        if before is not None and motion.duration(300):
+            from .appearance_transition import AppearanceTransition
+            self.layout().activate()
+            after = self.grab()
+            overlay = AppearanceTransition(self, before, after)
+            self._appearance_overlay = overlay
+            def clear_overlay():
+                if self._appearance_overlay is overlay:
+                    self._appearance_overlay = None
+            overlay.finished.connect(clear_overlay)
+            overlay.start()
 
     def _check_alerts(self, sample):
         preferences = settings.get_many(dict(

@@ -44,7 +44,7 @@ def run():
             assert page.custom_accent_button.isEnabled()
             assert page.accent_combo.model().item(custom).isEnabled()
 
-            page.mode.setCurrentIndex(page.mode.findData("black_glass"))
+            page.select_design("black_glass")
             app.processEvents()
             assert page.accent_combo.isEnabled(), "Built-in colors must remain available"
             assert page.accent_combo.model().item(preset).isEnabled()
@@ -58,7 +58,7 @@ def run():
             assert settings.get("custom_accents") == [
                 {"name": "Mein Petrol", "color": "#123456"}]
 
-            page.mode.setCurrentIndex(page.mode.findData("glass"))
+            page.select_design("glass")
             app.processEvents()
             assert page.custom_accent_button.isEnabled()
             assert page.accent_combo.model().item(custom).isEnabled()

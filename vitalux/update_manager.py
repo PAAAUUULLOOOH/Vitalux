@@ -56,7 +56,7 @@ class UpdateManager(QObject):
 
     def __init__(self):
         super().__init__()
-        self.status = "idle"      # idle, checking, uptodate, available, error, installing, installed
+        self.status = 'preview' if os.environ.get('VITALUX_LOCAL_PREVIEW') == '1' else 'idle'
         self.latest = self.notes = self.url = self.error = self.sha256 = ""
         self.pending_path = None
         self._thread = None
@@ -64,7 +64,8 @@ class UpdateManager(QObject):
         self._timer = QTimer(self)
         self._timer.setInterval(6 * 3600 * 1000)       # alle 6 Stunden prüfen
         self._timer.timeout.connect(self.check)
-        self._timer.start()
+        if self.status != 'preview':
+            self._timer.start()
 
     @property
     def available(self):
@@ -78,6 +79,8 @@ class UpdateManager(QObject):
         worker.start()
 
     def check(self):
+        if os.environ.get('VITALUX_LOCAL_PREVIEW') == '1':
+            return
         if self.status in ("checking", "installing"):
             return
         self.status = "checking"
@@ -97,6 +100,8 @@ class UpdateManager(QObject):
         self.changed.emit()
 
     def install(self):
+        if os.environ.get('VITALUX_LOCAL_PREVIEW') == '1':
+            return
         if self.status != "available" or not self.url:
             return
         self.status = "installing"

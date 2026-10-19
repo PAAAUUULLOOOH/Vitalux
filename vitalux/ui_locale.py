@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (QLabel as _QLabel, QPushButton as _QPushButton,
     QListWidgetItem as _QListWidgetItem, QMessageBox as _QMessageBox,
     QFileDialog as _QFileDialog, QSizePolicy as _QSizePolicy)
 from .i18n import tr
-from PySide6.QtCore import Qt, QRectF, QSize
+from PySide6.QtCore import Qt, QRectF, QSize, QVariantAnimation, QEasingCurve
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen, QPalette
 
 
@@ -37,7 +37,49 @@ class QPushButton(_QPushButton):
     def __init__(self, text='', *args, **kwargs):
         self._original = original_text(text)
         self._tip_original = None
+        self._edge_amount = 0.0
+        self._edge_animation = None
         super().__init__(localized(text), *args, **kwargs)
+    def _edge_frame(self, value):
+        self._edge_amount = float(value)
+        self.update()
+    def _edge_to(self, value):
+        if type(self) is not QPushButton:
+            return  # Custom-painted navigation has its own hover compositor.
+        from . import motion
+        if self._edge_animation is None:
+            self._edge_animation = QVariantAnimation(self)
+            self._edge_animation.setEasingCurve(QEasingCurve.OutCubic)
+            self._edge_animation.valueChanged.connect(self._edge_frame)
+        self._edge_animation.stop()
+        duration = motion.duration(160)
+        if not duration:
+            self._edge_frame(value)
+            return
+        self._edge_animation.setDuration(duration)
+        self._edge_animation.setStartValue(self._edge_amount)
+        self._edge_animation.setEndValue(float(value))
+        self._edge_animation.start()
+    def enterEvent(self, event):
+        self._edge_to(1.0)
+        super().enterEvent(event)
+    def leaveEvent(self, event):
+        self._edge_to(0.0)
+        super().leaveEvent(event)
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        if self._edge_amount > .01 and self.isEnabled():
+            from . import theme
+            painter = QPainter(self)
+            painter.setRenderHint(QPainter.Antialiasing)
+            rect = QRectF(self.rect()).adjusted(1, 1, -1, -1)
+            color = QColor(theme.accent())
+            color.setAlpha(round((155 if self.isDown() else 70)*self._edge_amount))
+            painter.setPen(QPen(color, 1.1))
+            painter.setBrush(Qt.NoBrush)
+            radius = 2 if theme.mode() == 'holographic' else 10
+            painter.drawRoundedRect(rect, radius, radius)
+            painter.end()
     def setText(self, text):
         self._original = original_text(text)
         super().setText(localized(text))

@@ -33,9 +33,10 @@ esac
 if [[ -n "${APPIMAGE:-}" && -f "${APPIMAGE}.previous" && -f "$BASE/packaging/appimage-rollback-watch.sh" ]]; then
   exec bash "$BASE/packaging/appimage-rollback-watch.sh" "$BASE" "$APPIMAGE" "$@"
 fi
-TARGET="$HOME/.local/opt/vitalux/Vitalux.AppImage"
-LAUNCHER="$HOME/.local/bin/vitalux"
-DESKTOP="${XDG_DATA_HOME:-$HOME/.local/share}/applications/vitalux.desktop"
+INTEGRATION_ROOT="${VITALUX_INTEGRATION_ROOT:-$HOME}"
+TARGET="$INTEGRATION_ROOT/.local/opt/vitalux/Vitalux.AppImage"
+LAUNCHER="$INTEGRATION_ROOT/.local/bin/vitalux"
+DESKTOP="${XDG_DATA_HOME:-$INTEGRATION_ROOT/.local/share}/applications/vitalux.desktop"
 integrated() {
   [[ -s "$TARGET" && -x "$TARGET" && -s "$DESKTOP" && -x "$LAUNCHER" ]] && grep -Fq "$LAUNCHER" "$DESKTOP"
 }
@@ -47,10 +48,16 @@ if [[ -n "${APPIMAGE:-}" && -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]] && ! integr
   CHOICE=${PIPESTATUS[0]}
   set -e
   if [[ "$CHOICE" == 80 ]]; then
+    TITLE='Vitalux – First start'
+    QUESTION='Install Vitalux in the application menu?'
+    if [[ "${LANG:-}" == de* ]]; then
+      TITLE='Vitalux – Erster Start'
+      QUESTION='Vitalux im Anwendungsmenü installieren?'
+    fi
     if command -v kdialog >/dev/null 2>&1; then
-      if kdialog --title 'Vitalux – Erster Start' --yesno 'Vitalux im Anwendungsmenü installieren?' ; then CHOICE=0; else CHOICE=1; fi
+      if kdialog --title "$TITLE" --yesno "$QUESTION" ; then CHOICE=0; else CHOICE=1; fi
     elif command -v zenity >/dev/null 2>&1; then
-      if zenity --question --title='Vitalux – Erster Start' --text='Vitalux im Anwendungsmenü installieren?'; then CHOICE=0; else CHOICE=1; fi
+      if zenity --question --title="$TITLE" --text="$QUESTION"; then CHOICE=0; else CHOICE=1; fi
     else
       echo "Vitalux: Installationsdialog nicht verfügbar. Manuelle Installation: AppImage --install (Log: $STATE/installation.log)" >&2
     fi

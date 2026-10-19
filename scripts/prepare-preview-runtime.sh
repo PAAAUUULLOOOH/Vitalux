@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Unpack the checked-in portable runtime locally. No Python or network needed.
+set -euo pipefail
+VITALUX_RUNTIME_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+VITALUX_RUNTIME_ARCHIVE="$VITALUX_RUNTIME_ROOT/portable-runtime/vitalux-linux-x86_64.tar.xz"
+cd -- "$VITALUX_RUNTIME_ROOT"
+
+if [[ "$(uname -s)" != Linux || "$(uname -m)" != x86_64 ]]; then
+  printf 'Diese Designvorschau benötigt Linux x86-64.\n' >&2
+  exit 1
+fi
+
+mkdir -p .runtime
+if command -v flock >/dev/null 2>&1; then
+  exec 9>.runtime/install.lock
+  flock 9
+fi
+# Another launcher may have finished unpacking while this one waited.
+if [ -f runtime/bin/python3.12 ]; then
+  chmod u+x runtime/bin/python3.12
+  exit 0
+fi
+
+for VITALUX_RUNTIME_TOOL in tar xz sha256sum; do
+  if ! command -v "$VITALUX_RUNTIME_TOOL" >/dev/null 2>&1; then
+    printf 'Zum Entpacken der enthaltenen Laufzeit fehlt das Systemwerkzeug: %s\n' "$VITALUX_RUNTIME_TOOL" >&2
+    exit 1
+  fi
+done
+
+printf 'Enthaltene Python-/Qt-Laufzeit wird geprüft und einmalig entpackt …\n'
+if ! (cd portable-runtime && sha256sum --check SHA256SUMS); then
+  printf 'Das Laufzeitpaket ist beschädigt. Bitte die ZIP erneut vollständig entpacken.\n' >&2
+  exit 1
+fi
+VITALUX_RUNTIME_STAGE="$(mktemp -d "$VITALUX_RUNTIME_ROOT/.runtime/extract.XXXXXX")"
+trap 'rm -rf -- "$VITALUX_RUNTIME_STAGE"' EXIT
+tar --extract --xz --file "$VITALUX_RUNTIME_ARCHIVE" \
+  --directory "$VITALUX_RUNTIME_STAGE" --no-same-owner --no-same-permissions
+if [ ! -f "$VITALUX_RUNTIME_STAGE/runtime/bin/python3.12" ]; then
+  printf 'Das Laufzeitpaket enthält kein Python.\n' >&2
+  exit 1
+fi
+# Keep existing local files intact; publish Python last so a failed extraction
+# cannot leave an apparently ready runtime behind.
+for VITALUX_RUNTIME_PART in lib tools-lib licenses; do
+  if [ ! -e "$VITALUX_RUNTIME_ROOT/$VITALUX_RUNTIME_PART" ]; then
+    mv -- "$VITALUX_RUNTIME_STAGE/$VITALUX_RUNTIME_PART" "$VITALUX_RUNTIME_ROOT/$VITALUX_RUNTIME_PART"
+  fi
+done
+mkdir -p bin
+if [ ! -e bin/fio.real ]; then
+  mv -- "$VITALUX_RUNTIME_STAGE/bin/fio.real" bin/fio.real
+fi
+if [ -e runtime ]; then
+  printf 'Der vorhandene Ordner runtime ist unvollständig. Bitte die Test-ZIP in einen neuen Ordner entpacken.\n' >&2
+  exit 1
+fi
+mv -- "$VITALUX_RUNTIME_STAGE/runtime" runtime
+chmod u+x runtime/bin/python3.12 bin/fio bin/fio.real
+printf 'Python und Qt sind bereit. Vitalux startet.\n'

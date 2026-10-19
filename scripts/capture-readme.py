@@ -34,7 +34,7 @@ def main():
     # Config is isolated by the workflow's XDG_CONFIG_HOME, never a real user's.
     settings.set("theme", "glass")
     settings.set("sidebar_collapsed", False)
-    i18n.set_lang("de")
+    i18n.set_lang("en")
     application = QApplication([])
     application.setQuitOnLastWindowClosed(False)
     application.setApplicationName("Vitalux")

@@ -1,13 +1,14 @@
 import math
 
 from PySide6.QtCore import QPointF, QRectF, QSize, Qt, QTimer, QVariantAnimation, QEasingCurve
-from PySide6.QtGui import QBrush, QColor, QConicalGradient, QFont, QLinearGradient, QPainter, QPainterPath, QPen, QPolygonF
+from PySide6.QtGui import QBrush, QColor, QConicalGradient, QFont, QFontMetrics, QLinearGradient, QPainter, QPainterPath, QPen, QPolygonF
 from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget, QGraphicsDropShadowEffect
 from .ui_locale import QLabel, QPushButton, QComboBox, QCheckBox, paint_check_indicator
 
-from . import theme, motion, holographic
+from . import theme, motion, holographic, premium
 from .glass import GlassSurface, paint_glass_body, rgba
 from .i18n import tr
+from .nav_icons import GLYPHS, paint_icon
 
 
 def label(text="", name=None, align=None, wrap=False):
@@ -226,6 +227,12 @@ class Gauge(QWidget):
             p.end()
             return
         p.setRenderHint(QPainter.Antialiasing)
+        if theme.mode() in premium.KEYS:
+            value = self._render_value
+            premium.paint_gauge(p, self, value, self.text,
+                                self._ring_color(value or 0))
+            p.end()
+            return
         side = min(self.width(), self.height())
         pen_w = max(9.0, side * 0.08)
         rect = QRectF((self.width() - side) / 2 + pen_w / 2, (self.height() - side) / 2 + pen_w / 2,
@@ -385,7 +392,9 @@ class HistoryGraph(QWidget):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
         outer = QRectF(self.rect()).adjusted(2, 2, -2, -2)
-        if theme.mode() == "holographic":
+        if theme.mode() in premium.KEYS:
+            premium.paint_panel(p, self, outer, compact=True)
+        elif theme.mode() == "holographic":
             holographic.paint_chart_frame(p, outer, theme.accent())
         elif theme.mode() == "black_glass_gold":
             p.setPen(QPen(QColor("#98743b"), 1.1))
@@ -542,6 +551,16 @@ class ChartSeriesCheckBox(QCheckBox):
         self.series_color = color
         self.update()
 
+    def sizeHint(self):
+        font = QFont(self.font())
+        font.setBold(True)
+        metrics = QFontMetrics(font)
+        return QSize(metrics.horizontalAdvance(self.text()) + 32,
+                     max(24, metrics.height()+6))
+
+    def minimumSizeHint(self):
+        return self.sizeHint()
+
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
@@ -608,6 +627,8 @@ class ChartPanel(QWidget):
         layout.addLayout(live)
 
     def _palette_color(self, idx):
+        if theme.mode() in premium.KEYS:
+            return premium.palette()['series'][idx % 4]
         if theme.mode() == 'black_glass_gold':
             return ("#ffe5a0", "#e0b55d", "#f4cf81", "#ba8739")[idx % 4]
         role = self.color_roles[idx]
@@ -727,6 +748,7 @@ class NavButton(_SoftHover, QPushButton):
         super().__init__(text)
         self.glow = False
         self._update_version = ''
+        self.icon_key = GLYPHS.get(str(text).split('    ',1)[0].strip(), 'overview')
         self._compact = False
         self._caption_opacity = 1.0
         self._phase = 0.0
@@ -804,7 +826,7 @@ class NavButton(_SoftHover, QPushButton):
         font = self.font()
         font.setPixelSize(15)
         p.setFont(font)
-        p.drawText(QRectF(0 if self._compact else 7, 0, 44, self.height()), Qt.AlignCenter, glyph.strip())
+        paint_icon(p, self.icon_key, QRectF((44-20)/2 if self._compact else 19, (self.height()-20)/2, 20, 20), color)
         if not self._compact:
             font.setPixelSize(13)
             p.setFont(font)
@@ -826,13 +848,16 @@ class NavButton(_SoftHover, QPushButton):
             return
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
+        if self.isDown(): p.translate(0, .8)
         r = QRectF(self.rect()).adjusted(2.5, 2.5, -2.5, -2.5)
         checked = self.isChecked()
         hover_amount = 1.0 if self.hasFocus() else self._hover_amount
         hovered = hover_amount > .01
         # Keep the selected card stable; idle hover lighting fades in with a
         # low-alpha brush, rather than forcing a glass redraw every tick.
-        if theme.mode() == 'holographic':
+        if theme.mode() in premium.KEYS:
+            premium.paint_nav(p, self, r, checked, hover_amount)
+        elif theme.mode() == 'holographic':
             holographic.paint_nav(p, r, theme.accent(), selected=checked, hovered=hovered)
         elif checked:
             paint_glass_body(p, self, r, 11, compact=True, active=True)
@@ -881,7 +906,7 @@ class NavButton(_SoftHover, QPushButton):
             glyph, caption = '◈', text
         # Minimal glass node, anchored in the same place on every row.
         cx, cy = (r.center().x() if self._compact else r.left() + 21), r.center().y()
-        color = QColor(theme.accent()) if checked else QColor(theme.MUTED)
+        color = QColor(theme.accent() if checked else theme.blend(theme.accent(), theme.TEXT, .60+.32*hover_amount))
         aura = QColor(color); aura.setAlpha(43 if checked else 10)
         p.setPen(Qt.NoPen)
         p.setBrush(aura)
@@ -897,18 +922,13 @@ class NavButton(_SoftHover, QPushButton):
             p.drawEllipse(QRectF(cx - 13 - intensity*2, cy - 13 - intensity*2,
                                  26 + intensity*4, 26 + intensity*4))
         # Distinct category symbols stay recognizable in both wide and compact nav.
-        icon_font = QFont(self.font())
-        icon_font.setPixelSize(16)
-        icon_font.setBold(checked)
-        p.setFont(icon_font)
-        p.setPen(color)
-        p.drawText(QRectF(cx - 13, cy - 13, 26, 26), Qt.AlignCenter, glyph)
+        paint_icon(p, self.icon_key, QRectF(cx-10, cy-10, 20, 20), color)
 
         font = self.font()
         font.setBold(checked)
         font.setPixelSize(13)
         p.setFont(font)
-        ink = QColor(theme.TEXT if checked else theme.blend(theme.TEXT, theme.MUTED, hover_amount))
+        ink = QColor(color)
         ink.setAlphaF(self._caption_opacity)
         p.setPen(ink)
         if not self._compact:

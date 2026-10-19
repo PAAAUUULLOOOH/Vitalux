@@ -37,7 +37,10 @@ def resolve(style, theme_mode):
     from . import eco
     if eco.enabled():
         return 'minimal'  # No file decode, gradient, blur or animation.
-    if theme_mode == 'black_glass_gold' and style in ('theme_default', 'black_glass_gold'):
+    from . import theme
+    if theme_mode in theme.PREMIUM_MODES:
+        return theme_mode
+    if theme_mode == 'black_glass_gold':
         return 'black_glass'
     return style if style == 'custom_image' else (theme_mode if style not in KEYS or style == 'theme_default' else style)
 

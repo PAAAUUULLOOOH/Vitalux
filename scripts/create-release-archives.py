@@ -52,10 +52,11 @@ def main():
         for p in differences:
             put(z, p, current)
         z.writestr("README-UPDATE.txt",
-                   "Vitalux-Update fuer die ZIP-Version. Dateien nur in eine bestehende "
-                   "entpackte Vitalux-Installation der Vorversion uebernehmen; "
-                   "vorher sichern. Entfernte Dateien stehen in ENTFERNTE-DATEIEN.txt. "
-                   "NICHT auf AppImages anwenden; diese werden ueber GitHub aktualisiert.\n")
+                   "Manual update for the ZIP edition. Back up the previous version, "
+                   "then copy these files into its extracted application folder. "
+                   "Remove obsolete files listed in ENTFERNTE-DATEIEN.txt. "
+                   "For automatic verified updates, use the Updates page in Vitalux. "
+                   "Do not apply this archive to an AppImage.\n")
         z.writestr("ENTFERNTE-DATEIEN.txt", "\n".join(removed) + "\n")
     print(f"Created {changed.name} ({len(differences)} changed, {len(removed)} removed)")
 

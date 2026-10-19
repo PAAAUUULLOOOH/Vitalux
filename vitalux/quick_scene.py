@@ -38,10 +38,10 @@ class WallpaperProvider(QQuickImageProvider):
 class QuickAmbientScene(_AmbientSceneCore, QQuickWidget):
     """Real GPU scene graph for backgrounds with QWidget children on top."""
 
-    def __init__(self):
+    def __init__(self, parent=None):
         self._quick_ready = False
         self._generation = 0
-        super().__init__()
+        super().__init__(parent)
         # QQuickWidget composites its own backing texture; do not mark it as
         # a manually painted, opaque raster widget (can corrupt its surface).
         from PySide6.QtCore import Qt

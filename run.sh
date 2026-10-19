@@ -7,6 +7,14 @@ if ! cd -- "$(dirname -- "${BASH_SOURCE[0]}")"; then
   exit 1
 fi
 HERE="$PWD"
+# Explicit preview packages keep their isolated profile. Normal source ZIPs
+# run the stable app, with its regular settings and verified release updater.
+if [ -f "$HERE/DESIGN-BUILD.json" ] && [ -f "$HERE/Designs-testen.sh" ]; then
+  exec bash "$HERE/Designs-testen.sh" "$@"
+fi
+if [ ! -f "$HERE/runtime/bin/python3.12" ] && [ -f "$HERE/portable-runtime/vitalux-linux-x86_64.tar.xz" ]; then
+  bash "$HERE/scripts/prepare-preview-runtime.sh" || exit $?
+fi
 STATE_DIR="${XDG_STATE_HOME:-${HOME}/.local/state}/vitalux"
 mkdir -p -- "$STATE_DIR"
 LOG="$STATE_DIR/vitalux.log"
@@ -48,6 +56,7 @@ QMessageBox.critical(None,"Vitalux – Startfehler",sys.argv[1]+"\n\nDetails: "+
 }
 
 # Some extractors discard executable bits. Recover local permissions offline.
+chmod u+x -- "$HERE/run.sh" 2>/dev/null || true
 if [ -f "$PY" ] && [ ! -x "$PY" ]; then chmod u+x -- "$PY" 2>/dev/null || true; fi
 if [ -f "$HERE/bin/fio.real" ] && [ ! -x "$HERE/bin/fio.real" ]; then chmod u+x -- "$HERE/bin/fio.real" 2>/dev/null || true; fi
 if [ -f "$HERE/bin/fio" ] && [ ! -x "$HERE/bin/fio" ]; then chmod u+x -- "$HERE/bin/fio" 2>/dev/null || true; fi

@@ -1,5 +1,18 @@
 # Vitalux – Changes
 
+## [v0.9.5.5] - 2026-10-19
+- Choose ten themes through native preview tiles; Obsidian Gold, Champagne Glass and Aurora Gold are now included in the stable release.
+- Fixed accent and background options explain their restrictions inside the open dropdown; unavailable choices stay grey and cannot change the design.
+- Settings search now synchronizes its reveal and collapse, smoothly adapts its size, supports interrupted transitions and Escape, and closes after five idle seconds.
+- Native-resolution transitions blend theme, accent and background changes while retaining live measurements, the selected page and scroll position.
+- A coherent vector icon set replaces sidebar font symbols; captions, icons, logos and the original wordmark follow the effective palette.
+- The original wordmark gains a subtle metallic reflection with quiet pauses; the outer logo bands continue their slow rotation.
+- A short glass chime plays only when Vitalux buttons are activated, including keyboard activation; volume and mute controls are available.
+- Logo/icon caches and paused invisible surfaces reduce file access and redundant redraws while preserving visual quality and measurement history.
+- Fixed the small startup-window flash; CPU, OpenGL, X11/OpenGL, Wayland/OpenGL and Wayland/Vulkan are validated with real framebuffers.
+- Normal source ZIPs and stable packages start with release updates enabled; explicit design previews retain their isolated profile.
+- German and English changelogs follow the selected language; refreshed the guide, missing translations and compact English README.
+
 ## [v0.9.5.4] - 2026-10-19
 - Improved search animation and full placeholder visibility; smaller magnifier.
 - Removed unreliable MiniHUD always-on-top option under KDE/Wayland.

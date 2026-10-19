@@ -22,6 +22,8 @@ def main():
     app = QApplication(sys.argv)
     # Disable transient hover help across the entire application, not just navigation.
     app._vitalux_hover_guard = hover_hints.install(app)
+    from .ui_sound import install as install_ui_sound
+    install_ui_sound(app)
     # Hiding the final window must not kill the tray icon and sampler.
     # MainWindow.closeEvent explicitly quits on a genuine Exit command.
     app.setQuitOnLastWindowClosed(False)
@@ -38,7 +40,7 @@ def main():
     theme.set_mode('minimal' if eco.enabled() else requested_theme)
     if not eco.enabled() and requested_theme != theme.mode():
         settings.set('theme', theme.mode())  # Migrate removed/unknown themes to Glass.
-    user_accent = settings.get('accent', '#4f8cff')  # Vitalux Blue for new installs.
+    user_accent = settings.get('accent', '#4f8cff')
     from . import wallpaper_accents
     effective_accent = wallpaper_accents.effective_selection(user_accent)
     if effective_accent != user_accent:
@@ -52,6 +54,8 @@ def main():
     sensors.prime()
     manager = UpdateManager()
     win = MainWindow(info, logo, manager)
+    if os.environ.get('VITALUX_LOCAL_PREVIEW') == '1':
+        win.setWindowTitle('Vitalux · Design Preview · ' + theme.mode().replace('_', ' ').title())
     print(f"Vitalux: Fensterplattform={app.platformName()}, "
           f"Grafik-Backend={win.render_backend_active}, "
           f"Fenstergröße={win.width()}x{win.height()} logisch", flush=True)

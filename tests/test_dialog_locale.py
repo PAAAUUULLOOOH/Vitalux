@@ -1,6 +1,7 @@
 """Dialogs follow Vitalux's selected language, not Qt's host locale."""
 import os
 import sys
+import runpy
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0, os.getcwd())
 
@@ -40,6 +41,12 @@ for code, positive, negative in (('de', 'Ja', 'Nein'),
     assert seen['buttons'] == (positive, negative), (code, seen)
     assert seen['message'].startswith('Reset appearance' if code == 'en'
                                        else 'Alle Anzeige'), (code, seen)
+    first_run = runpy.run_path('packaging/appimage-first-run.py')
+    dialog, install, portable = first_run['create_dialog']()
+    assert install.text() == ('Install now' if code == 'en' else 'Jetzt installieren')
+    assert portable.text() == ('Run once' if code == 'en' else 'Nur einmal starten')
+    assert dialog.informativeText().startswith('Vitalux will' if code == 'en' else 'Vitalux wird')
+    dialog.close()
 
 set_lang('de')
 print('German and English confirmation popups and Yes/No controls: PASS')

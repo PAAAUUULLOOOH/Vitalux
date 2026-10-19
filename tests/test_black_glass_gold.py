@@ -36,14 +36,17 @@ def run():
         page = PreferencesPage(host)
         page.show()
         app.processEvents()
-        assert page.mode.findData("holographic") >= 0
-        assert page.mode.findData("black_glass") >= 0
-        assert page.mode.findData("black_glass_gold") >= 0
-        assert not page.accent_combo.isEnabled()
+        assert "holographic" in {tile.key for tile in page.design_tiles}
+        assert "black_glass" in {tile.key for tile in page.design_tiles}
+        assert "black_glass_gold" in {tile.key for tile in page.design_tiles}
+        assert page.accent_combo.isLocked()
         assert not page.custom_accent_button.isEnabled()
+        assert page.background_combo.isLocked()
+        assert not hasattr(page, 'background_lock_note')
+        assert resolve('custom_image', 'black_glass_gold') == 'black_glass'
         page.change_accent("#ef4444")
         assert settings.get("accent") == "#f472b6"
-        page.mode.setCurrentIndex(page.mode.findData("glass"))
+        page.select_design("glass")
         app.processEvents()
         assert page.accent_combo.isEnabled()
         assert settings.get("accent") == "#f472b6"

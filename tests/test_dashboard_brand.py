@@ -150,18 +150,22 @@ def assert_brand(app):
     assert len(dark_words) == len(presets), "Preset wordmarks must be different"
     assert len(light_words) == len(presets), "Light variants must be individually designed"
 
-    # 'Distribution' and custom accents must leave the original untouched.
-    from vitalux.brand import _pixmap
-    for selected in ("auto", "#aabbcc"):
-        settings.set("accent", selected)
-        for scheme in ("dark", "light", "glass", "black_glass", "minimal"):
+    # Distribution and custom colors now tint the same original letterforms.
+    custom_icons, custom_words = set(), set()
+    for color in ('#d13d8f', '#14b8a6', '#aabbcc'):
+        settings.set('accent', color)
+        theme.set_accent(color)
+        for scheme in ('dark', 'light', 'glass', 'black_glass', 'minimal'):
             theme.set_mode(scheme)
             icon = themed_icon_pixmap(152)
-            assert fingerprint(icon) == fingerprint(_pixmap("vitalux-pulse.svg", 152, 152))
-            source = "vitalux-wordmark-light.svg" if scheme == "light" else "vitalux-wordmark.svg"
-            assert fingerprint(wordmark_pixmap(205, 44)) == fingerprint(
-                _pixmap(source, 205, 44, ratio=2.0)), (selected, scheme)
-    settings.set("accent", "auto")
+            word = wordmark_pixmap(205, 44)
+            assert not icon.isNull() and not word.isNull()
+            if scheme == 'glass':
+                custom_icons.add(fingerprint(icon))
+                custom_words.add(fingerprint(word))
+    assert len(custom_icons) == len(custom_words) == 3
+    settings.set('accent', 'auto')
+    theme.set_accent('#4f8cff')
     theme.set_mode("glass")
     print("Six newly authored SVG palettes + original fallback for auto/custom: PASS", flush=True)
 

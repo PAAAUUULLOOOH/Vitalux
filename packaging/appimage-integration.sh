@@ -2,12 +2,13 @@
 set -euo pipefail
 MODE="${1:---install}"
 SRC="${APPIMAGE:-}"
-DIR="$HOME/.local/opt/vitalux"
+INTEGRATION_ROOT="${VITALUX_INTEGRATION_ROOT:-$HOME}"
+DIR="$INTEGRATION_ROOT/.local/opt/vitalux"
 TARGET="$DIR/Vitalux.AppImage"
-DATA="${XDG_DATA_HOME:-$HOME/.local/share}"
+DATA="${XDG_DATA_HOME:-$INTEGRATION_ROOT/.local/share}"
 MENU="$DATA/applications/vitalux.desktop"
 ICON="$DATA/icons/hicolor/scalable/apps/vitalux.svg"
-LAUNCH="$HOME/.local/bin/vitalux"
+LAUNCH="$INTEGRATION_ROOT/.local/bin/vitalux"
 if [[ "$MODE" == "--uninstall" ]]; then
   rm -f -- "$MENU" "$ICON" "$LAUNCH" "$TARGET" "$TARGET.previous"
   echo 'Vitalux deinstalliert; Benutzereinstellungen bleiben erhalten.'
@@ -25,10 +26,7 @@ if [[ "$(realpath "$SRC")" != "$(realpath -m "$TARGET")" ]]; then
   trap - EXIT
 fi
 cp -f "$APPDIR/assets/vitalux.svg" "$ICON"
-cat > "$LAUNCH" <<'WRAPPER'
-#!/usr/bin/env bash
-exec "$HOME/.local/opt/vitalux/Vitalux.AppImage" --launch "$@"
-WRAPPER
+printf '#!/usr/bin/env bash\nexec %q --launch "$@"\n' "$TARGET" > "$LAUNCH"
 chmod 755 "$LAUNCH"
 printf '[Desktop Entry]\nType=Application\nName=Vitalux\nExec="%s"\nTryExec=%s\nIcon=vitalux\nTerminal=false\nCategories=System;Monitor;\n' "$LAUNCH" "$LAUNCH" > "$MENU"
 chmod 644 "$MENU"

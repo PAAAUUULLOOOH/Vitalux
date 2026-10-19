@@ -8,13 +8,16 @@ from __future__ import annotations
 
 import math
 import os
+import re
+import time
+import xml.etree.ElementTree as ET
 from tempfile import NamedTemporaryFile
 from functools import lru_cache
 from pathlib import Path
 
 from PySide6.QtCore import QObject, QPointF, QRectF, Qt, QTimer
-from PySide6.QtGui import (QBrush, QColor, QIcon, QPainter, QPen, QPixmap,
-                           QRadialGradient)
+from PySide6.QtGui import (QBrush, QColor, QFont, QIcon, QLinearGradient,
+                           QPainter, QPen, QPixmap, QRadialGradient)
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import QSizePolicy, QWidget
 
@@ -32,7 +35,34 @@ def _renderer(filename):
     return renderer
 
 
-def _pixmap(filename, width, height, ratio=1.0):
+@lru_cache(maxsize=16)
+def _logo_layers(filename):
+    """Split the authored outer bands from the stationary pulse and lens.
+
+    Original SVG colors, gradients and exact band shapes survive the split.
+    Desktop/tray icons continue to use the complete static SVG.
+    """
+    data = filename if isinstance(filename, bytes) else (_ASSETS / filename).read_bytes()
+    layers = []
+    for outer in (False, True):
+        root = ET.fromstring(data)
+        for child in list(root):
+            tag = child.tag.rsplit('}', 1)[-1]
+            if tag == 'defs':
+                continue
+            d = child.get('d', '')
+            band = ('A 107,107' in d or d.startswith('M 100,30')
+                    or (tag == 'circle' and child.get('cx') in ('213', '53')))
+            if band != outer:
+                root.remove(child)
+        svg = QSvgRenderer(ET.tostring(root))
+        if not svg.isValid():
+            raise RuntimeError('Unable to load animated Vitalux logo layer')
+        layers.append(svg)
+    return tuple(layers)
+
+
+def _render_pixmap(renderer, width, height, ratio=1.0):
     width, height = max(1, int(width)), max(1, int(height))
     ratio = max(1.0, float(ratio))
     pixmap = QPixmap(round(width * ratio), round(height * ratio))
@@ -40,17 +70,54 @@ def _pixmap(filename, width, height, ratio=1.0):
     pixmap.fill(Qt.transparent)
     p = QPainter(pixmap)
     p.setRenderHint(QPainter.Antialiasing)
-    _renderer(filename).render(p, QRectF(0, 0, width, height))
+    renderer.render(p, QRectF(0, 0, width, height))
     p.end()
     return pixmap
+
+
+def _pixmap(filename, width, height, ratio=1.0):
+    return _render_pixmap(_renderer(filename), width, height, ratio)
+
+
+@lru_cache(maxsize=48)
+def _svg_renderer(data):
+    return QSvgRenderer(data)
+
+
+@lru_cache(maxsize=48)
+def _tinted_svg(filename, accent):
+    """Preserve every authored contour, cut and highlight for arbitrary hues."""
+    base = QColor(accent)
+    hue, saturation, _value, _alpha = base.getHsv()
+    def tint(match):
+        source = QColor(match.group())
+        _h, s, v, _a = source.getHsv()
+        if s < 22:
+            return source.name()
+        tinted_saturation = 0 if hue < 0 else min(255, round(s*.65+saturation*.35))
+        return QColor.fromHsv(max(0, hue), tinted_saturation, v).name()
+    return re.sub(r'#[0-9a-fA-F]{6}', tint, (_ASSETS/filename).read_text()).encode()
+
+
+@lru_cache(maxsize=48)
+def _asset_bytes(filename):
+    return (_ASSETS/filename).read_bytes()
+
+
+def _themed_svg(icon):
+    from . import theme
+    filename = _brand_asset(icon)
+    if _selected_variant() is None:
+        return _tinted_svg(filename, theme.accent())
+    return _asset_bytes(filename)
 
 
 def icon_pixmap(size=96):
     return _pixmap("vitalux-pulse.svg", size, size)
 
 
-# Only predefined accent choices receive new, *separately authored SVG assets*.
-# 'Distribution' and arbitrary custom colors retain the original artwork.
+# Presets use their authored SVG palettes; arbitrary and distribution colors
+# tint the same original vector contours with the effective theme hue.
 ACCENT_VARIANTS = {
     "#4f8cff": "blue",
     "#52d3ff": "cyan",
@@ -65,9 +132,9 @@ ACCENT_VARIANTS = {
 
 def _selected_variant():
     from . import settings
-    chosen = settings.get("accent", "#4f8cff")
     from . import theme
-    if theme.mode() == "black_glass_gold":
+    chosen = theme.accent()
+    if theme.mode() in theme.FIXED_MODES:
         return "gold"
     if theme.mode() == "holographic" and str(chosen).lower() == "#4f8cff":
         return "cyan"
@@ -86,18 +153,96 @@ def _brand_asset(icon):
 
 
 def themed_icon_pixmap(size=152):
-    return _pixmap(_brand_asset(icon=True), size, size)
+    return _render_pixmap(_svg_renderer(_themed_svg(True)), size, size)
 
 
 def wordmark_pixmap(width=205, height=44):
-    return _pixmap(_brand_asset(icon=False), width, height, ratio=2.0)
+    return _render_pixmap(_svg_renderer(_themed_svg(False)), width, height, ratio=2.0)
+
+
+class Wordmark(QWidget):
+    """Original vector lettering with light clipped precisely to its strokes."""
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedSize(200, 42)
+        self.setAccessibleName('Vitalux')
+        self._base = QPixmap()
+        self._phase = 0.0
+        self._last_tick = time.monotonic()
+        self._signature = None
+        self._enabled = False
+        self._reduced = False
+        self._timer = QTimer(self)
+        self._timer.timeout.connect(self._advance)
+        self.sync_theme()
+
+    def sync_theme(self):
+        from . import motion, theme
+        signature = (theme.mode(), theme.accent(), self.size())
+        if signature != self._signature:
+            self._signature = signature
+            self._base = wordmark_pixmap(self.width(), self.height())
+            self._phase = 0.0
+        self._enabled = motion.enabled()
+        self._reduced = motion.level() == 'reduced'
+        self._timer.stop()
+        self._last_tick = time.monotonic()
+        if self.isVisible() and self._enabled:
+            self._timer.start(80 if self._reduced else 40)
+        self.update()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.sync_theme()
+
+    def hideEvent(self, event):
+        self._timer.stop()
+        super().hideEvent(event)
+
+    def _advance(self):
+        if not self._enabled:
+            self._timer.stop()
+            return
+        now = time.monotonic()
+        self._phase = (self._phase + max(0, now-self._last_tick)/9.0) % 1.0
+        self._last_tick = now
+        # There is no repaint loop in the quiet interval between reflections.
+        interval = (80 if self._reduced else 40) if self._phase < .22 else max(80, round((1-self._phase)*9000))
+        self._timer.setInterval(interval)
+        self.update()
+
+    def paintEvent(self, event):
+        from . import theme
+        p = QPainter(self)
+        p.drawPixmap(0, 0, self._base)
+        if self._enabled and self._phase < .22:
+            sweep = self._phase/.22
+            x = -45+sweep*(self.width()+90)
+            gleam = self._base.copy()
+            light = QPainter(gleam)
+            light.setCompositionMode(QPainter.CompositionMode_SourceIn)
+            band = QLinearGradient(x-25, 0, x+25, self.height())
+            warm = QColor(theme.blend('#ffffff', theme.accent(), .88))
+            for position, alpha in ((0,0),(.19,10),(.38,44),(.49,196),(.55,100),(.74,17),(1,0)):
+                tone = QColor(warm); tone.setAlpha(alpha)
+                band.setColorAt(position, tone)
+            light.fillRect(QRectF(0,0,self.width(),self.height()),QBrush(band))
+            light.end()
+            p.drawPixmap(0,0,gleam)
+        p.end()
+
+
+@lru_cache(maxsize=12)
+def _cached_app_icon(data):
+    icon = QIcon()
+    svg = _svg_renderer(data)
+    for size in (32,48,64,128,256,512):
+        icon.addPixmap(_render_pixmap(svg,size,size))
+    return icon
 
 
 def app_icon():
-    icon = QIcon()
-    for size in (32, 48, 64, 128, 256, 512):
-        icon.addPixmap(themed_icon_pixmap(size))
-    return icon
+    return QIcon(_cached_app_icon(_themed_svg(True)))
 
 
 def sync_installed_icon():
@@ -134,8 +279,9 @@ def sync_installed_icon():
             return False
         # The selected color changes the icon *filename*, not just its bytes:
         # Plasma consequently refreshes pinned launchers more reliably.
-        target = directory / ('vitalux-' + (variant or 'original') + '.svg')
-        new_bytes = source.read_bytes()
+        from . import theme
+        target = directory / ('vitalux-' + (variant or 'accent-'+theme.accent()[1:]) + '.svg')
+        new_bytes = _themed_svg(True)
         if not target.is_file() or target.read_bytes() != new_bytes:
             with NamedTemporaryFile(dir=directory, prefix='.vitalux-color-',
                                     suffix='.svg', delete=False) as fd:
@@ -253,7 +399,7 @@ class TrayPulse(QObject):
 
 
 class PulseCore(QWidget):
-    """Low-power CPU-responsive light orbit around the Vitalux brand symbol.
+    """Slowly revolving outer bands around the stationary Vitalux pulse.
 
     All UI changes run in the main Qt thread; the monitoring worker only sends
     its existing, once-per-second CPU sample through the MainWindow signal.
@@ -265,11 +411,12 @@ class PulseCore(QWidget):
         self._cpu = 0.0
         self._display_cpu = 0.0
         self._phase = 0.0
+        self._last_tick = time.monotonic()
         self._update_available = False
         self._update_clock = 0.0
         self.setToolTip("Vitalux · Live CPU activity")
         self._timer = QTimer(self)
-        self._timer.setInterval(90)  # ~11 fps, negligible UI overhead
+        self._timer.setInterval(40)  # Repaint only this small widget, at 25 fps.
         self._timer.timeout.connect(self._advance)
 
     def set_update_available(self, available):
@@ -289,14 +436,17 @@ class PulseCore(QWidget):
 
     @staticmethod
     def _low_power():
-        from . import theme, eco
-        return eco.enabled() or theme.mode() == "minimal"
+        from . import theme, eco, motion
+        return eco.enabled() or theme.mode() == "minimal" or not motion.enabled()
 
     def sync_theme(self):
         from . import eco
-        if eco.enabled() or (self._low_power() and not self._update_available):
+        if self._low_power():
             self._timer.stop()
         elif self.isVisible():
+            from . import motion
+            self._timer.setInterval(80 if motion.level() == 'reduced' else 40)
+            self._last_tick = time.monotonic()
             self._timer.start()
         self.update()
 
@@ -309,21 +459,24 @@ class PulseCore(QWidget):
         super().hideEvent(event)
 
     def _advance(self):
-        if self._low_power() and not self._update_available:
+        if self._low_power():
             self._timer.stop()
             return
+        now = time.monotonic()
+        elapsed = min(.25, max(0, now-self._last_tick))
+        self._last_tick = now
         # Smooth values so short CPU spikes don't make the animation flicker.
-        self._update_clock = (self._update_clock + .17) % (2 * math.pi)
+        self._update_clock = (self._update_clock + elapsed*1.9) % (2 * math.pi)
         self._display_cpu += (self._cpu - self._display_cpu) * 0.09
-        self._phase = (self._phase + 0.55 + self._display_cpu * 0.009) % 360.0
+        self._phase = (self._phase + elapsed*7.5) % 360.0  # One revolution / 48s.
         self.update()
 
     def paintEvent(self, _event):
         painter = QPainter(self)
-        if self._low_power() and (not self._update_available or eco.enabled()):
+        if self._low_power():
             # Retain the recognizable logo; skip the moving halo and orbit.
             size = min(self.width(), self.height())
-            _renderer(_brand_asset(icon=True)).render(painter, QRectF(self.rect()))
+            _svg_renderer(_themed_svg(True)).render(painter, QRectF(self.rect()))
             painter.end()
             return
         painter.setRenderHint(QPainter.Antialiasing)
@@ -361,7 +514,13 @@ class PulseCore(QWidget):
             ring_glow.setColorAt(1, clear)
             painter.setBrush(QBrush(ring_glow))
             painter.drawEllipse(rect)
-        _renderer(_brand_asset(icon=True)).render(painter, rect)
+        core, bands = _logo_layers(_themed_svg(True))
+        core.render(painter, rect)
+        painter.save()
+        painter.translate(rect.center())
+        painter.rotate(self._phase)
+        bands.render(painter, QRectF(-size/2, -size/2, size, size))
+        painter.restore()
 
         if self._update_available:
             # A restrained heartbeat around the main Vitalux mark.

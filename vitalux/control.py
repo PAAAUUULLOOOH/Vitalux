@@ -4,16 +4,17 @@ from datetime import datetime
 
 from PySide6.QtCore import Qt, Signal, QSize, QTimer
 from PySide6.QtGui import QColor, QIntValidator
-from PySide6.QtWidgets import (QColorDialog, QFrame, QGridLayout, QHBoxLayout, QInputDialog, QLabel, QLineEdit, QListWidget, QScrollArea, QSizePolicy, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QColorDialog, QFrame, QGridLayout, QHBoxLayout, QInputDialog, QLabel, QLineEdit, QListWidget, QScrollArea, QSizePolicy, QSlider, QVBoxLayout, QWidget)
 from .ui_locale import QCheckBox, QComboBox, QDialog, QFileDialog, QListWidgetItem, QMessageBox, QPushButton
 
-from . import __version__, settings, theme, motion, backdrops, user_background, wallpaper_accents, renderer, eco, i18n
+from . import __version__, settings, theme, motion, backdrops, user_background, wallpaper_accents, renderer, eco, i18n, premium
 from .pages import Page
 from .sensors import fmt_bytes, fmt_rate, system_static
 from .widgets import Card, KeyValue, Meter, label
 from .i18n import tr
 from .mini_hud import DEFAULT_KEYS
 from .settings_search import FloatingSettingsSearch, _SearchIcon
+from .choice_combo import ChoiceComboBox
 
 
 class SensorsPage(Page):
@@ -163,7 +164,7 @@ class PreferencesPage(Page):
     PRESET_COLORS = frozenset(value for _, value in PRESET_ACCENTS)
 
     DEFAULTS = {
-        'theme': 'glass', 'accent': '#4f8cff', 'motion': 'smooth',
+        'theme': 'glass', 'accent': '#4f8cff', 'ui_sounds': True, 'ui_sound_volume': 70, 'motion': 'smooth',
         'background_style': 'theme_default', 'custom_background_fit': 'cover',
         'render_backend': renderer.SOFTWARE, 'ultra_eco': False,
         'interval': 1, 'close_to_tray': True, 'alerts_enabled': False,
@@ -173,7 +174,7 @@ class PreferencesPage(Page):
         'mini_hud_metrics': list(DEFAULT_KEYS),
     }
     SECTION_DEFAULTS = {
-        'appearance': ('theme', 'accent', 'motion', 'background_style', 'custom_background_fit'),
+        'appearance': ('theme', 'accent', 'ui_sounds', 'ui_sound_volume', 'motion', 'background_style', 'custom_background_fit'),
         'hud': ('mini_hud_enabled', 'mini_hud_layout', 'mini_hud_opacity',
                 'mini_hud_metrics'),
         'alerts': ('alerts_enabled', 'cpu_temp', 'gpu_temp', 'ram_usage', 'disk_usage'),
@@ -216,16 +217,20 @@ class PreferencesPage(Page):
 
         self._search_targets = []
         look = Card('Erscheinungsbild')
-        self.mode = QComboBox()
-        for title, value in [('Dark', 'dark'), ('Light', 'light'), ('Glass', 'glass'), ('Black Glass', 'black_glass'), ('Black Glass Gold', 'black_glass_gold'), ('Holographic', 'holographic'), ('Minimalistisch', 'minimal')]:
-            self.mode.addItem(title, value)
-        self.mode.setCurrentIndex(max(0, self.mode.findData(settings.get('theme', 'glass'))))
-        self.mode.currentIndexChanged.connect(self.change_mode)
-        r = QHBoxLayout()
-        r.addWidget(label('Farbschema', 'strong'))
-        r.addWidget(self.mode)
-        r.addStretch(1)
-        look.body.addLayout(r)
+        look.body.addWidget(label('Farbschema', 'strong'))
+        self.design_gallery = QWidget()
+        self.design_gallery.setObjectName('designGallery')
+        gallery = QGridLayout(self.design_gallery)
+        gallery.setContentsMargins(0, 0, 0, 0)
+        gallery.setSpacing(10)
+        self.design_tiles = []
+        for index, (key, title) in enumerate(theme.CHOICES):
+            tile = premium.DesignTile(key)
+            tile.setChecked(settings.get('theme', 'glass') == key)
+            tile.clicked.connect(lambda _checked=False, key=key: self.select_design(key))
+            self.design_tiles.append(tile)
+            gallery.addWidget(tile, index // 3, index % 3)
+        look.body.addWidget(self.design_gallery)
         self.theme_note = label('', 'muted', wrap=True)
         self.theme_note.setObjectName('themeDescription')
         look.body.addWidget(self.theme_note)
@@ -234,15 +239,18 @@ class PreferencesPage(Page):
             'light': 'Light · Helle, gut lesbare Karten ohne Glaseffekt.',
             'glass': 'Glass · Halbtransparente Panels mit Lichtreflexen und weichgezeichnetem Hintergrund.',
             'black_glass': 'Black Glass · Tiefschwarze Glasflächen mit dezenten Reflexionen und silbernen Kanten. Eigene Akzentfarben sind hier gesperrt.',
-            'black_glass_gold': 'Black Glass Gold · Tiefschwarze Glasflächen, festes helles Gold für Logo, Diagramme, Anzeigen, Icons und Rahmen. Akzentfarben sind deaktiviert.',
+            'black_glass_gold': 'Black Glass Gold · Tiefschwarze Glasflächen, helles Gold für Logo, Diagramme, Anzeigen, Icons und Rahmen. Akzentfarbe und Hintergrund sind fest aufeinander abgestimmt.',
             'holographic': 'Holographic · Eigenständige, undurchsichtige Sci-Fi-HUD-Oberfläche mit leuchtenden Konturen, technischen Kacheln und Diagrammen – ohne Glas.',
             'minimal': 'Minimalistisch · Einfache Flächen ohne Glas, Schatten und dekorative Animationen. Spart Zeichenaufwand.',
+            'obsidian_gold': 'Obsidian Gold · Rauchglas, gebürstetes Gold und präzise Instrumentringe. Die äußeren Logo-Streifen drehen sich langsam.',
+            'champagne_glass': 'Champagne Glass · Kristallglas, warme Champagnertöne und seidenweiche Reflexionen mit goldenen Instrumenten.',
+            'aurora_gold': 'Aurora Gold · Irisierendes Glas mit Petrol- und Violettlicht, flüssigen Goldkanten und leuchtenden Instrumenten.',
         }
         self.theme_note.setText(tr(self.mode_notes.get(theme.mode(), self.mode_notes['dark'])))
         accent_row = QVBoxLayout()
         accent_selector = QHBoxLayout()
         accent_selector.addWidget(label('Akzentfarbe', 'strong'))
-        accent = QComboBox()
+        accent = ChoiceComboBox()
         self.accent_combo = accent
         for title, value in self.PRESET_ACCENTS:
             accent.addItem(title, value)
@@ -264,9 +272,8 @@ class PreferencesPage(Page):
                 accent.addItem(item['name'], item['color'])
         accent.setCurrentIndex(max(0, accent.findData(stored)))
         accent.currentIndexChanged.connect(lambda _: self.change_accent(accent.currentData()))
-        # Use the same compact width as the Farbschema selector; custom
-        # names can be long, so their complete text stays available as a tooltip.
-        accent.setFixedWidth(self.mode.sizeHint().width())
+        # Keep custom names compact; their complete text remains in the tooltip.
+        accent.setFixedWidth(210)
         accent.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         accent_selector.addWidget(accent)
         accent_selector.addStretch(1)
@@ -303,7 +310,7 @@ class PreferencesPage(Page):
         # Native gradients are independent of the selected visual theme.
         bg_row = QHBoxLayout()
         bg_row.addWidget(label('Hintergrund', 'strong'))
-        self.background_combo = QComboBox()
+        self.background_combo = ChoiceComboBox()
         for key, title in backdrops.PRESETS:
             self.background_combo.addItem(title, key)
         self.background_combo.addItem('Eigenes Bild', 'custom_image')
@@ -381,6 +388,28 @@ class PreferencesPage(Page):
         r_motion.addStretch(1)
         look.body.addLayout(r_motion)
         look.body.addWidget(label('Übergänge anpassen: weich, verkürzt oder ohne Animation.', 'muted', wrap=True))
+        self.sound_toggle = QCheckBox('Glas-Klang bei Klicks')
+        self.sound_toggle.setChecked(settings.get('ui_sounds', True))
+        self.sound_toggle.toggled.connect(lambda enabled: self._set_preference('ui_sounds', enabled))
+        look.body.addWidget(self.sound_toggle)
+        volume_row = QHBoxLayout()
+        volume_row.addWidget(label('Lautstärke', 'strong'))
+        self.sound_volume = QSlider(Qt.Horizontal)
+        self.sound_volume.setRange(0, 100)
+        self.sound_volume.setValue(settings.get('ui_sound_volume', 70))
+        self.sound_volume.setMaximumWidth(210)
+        self.sound_volume.setAccessibleName(tr('Klanglautstärke'))
+        self.sound_volume_value = label(str(self.sound_volume.value())+' %', 'muted')
+        self._volume_save = QTimer(self)
+        self._volume_save.setSingleShot(True)
+        self._volume_save.setInterval(160)
+        self._volume_save.timeout.connect(lambda: self._set_preference('ui_sound_volume', self.sound_volume.value()))
+        self.sound_volume.valueChanged.connect(lambda value: self.sound_volume_value.setText(str(value)+' %'))
+        self.sound_volume.valueChanged.connect(lambda _value: self._volume_save.start())
+        volume_row.addWidget(self.sound_volume)
+        volume_row.addWidget(self.sound_volume_value)
+        volume_row.addStretch(1)
+        look.body.addLayout(volume_row)
         self._add_section_reset(look.body, 'appearance', 'Darstellung zurücksetzen')
         self._settings_cards['appearance'].append(look)
 
@@ -554,14 +583,17 @@ class PreferencesPage(Page):
         # not touched by this button.
         restore_row = QHBoxLayout()
         restore_row.addStretch(1)
-        self.restore_button = QPushButton('Standardwerte wiederherstellen')
+        # Its visibility is synchronized before the final layout is attached.
+        # A parentless button maps as a tiny standalone window on X11/Wayland.
+        self.restore_button = QPushButton('Standardwerte wiederherstellen', self)
         self.restore_button.setObjectName('ghostBtn')
         self.restore_button.clicked.connect(self.restore_defaults)
         restore_row.addWidget(self.restore_button)
         self._restore_row = restore_row
         self._refresh_restore_button()
         self._search_targets = [
-            ('appearance', 'Farbschema Glass Black Glass Gold', self.mode),
+            ('appearance', 'Glas Klang Ton Sound Klicks', self.sound_toggle),
+            ('appearance', 'Farbschema Dark Light Glass Black Glass Gold Holographic Minimalistisch Obsidian Champagne Aurora', self.design_tiles[0]),
             ('appearance', 'Akzentfarbe Eigene Farben Bearbeiten Löschen', self.accent_combo),
             ('appearance', 'Hintergrund Bild Hintergrundfarbe automatisch', self.background_combo),
             ('appearance', 'Animationen Bewegung Übergang', self.motion_combo),
@@ -584,6 +616,7 @@ class PreferencesPage(Page):
         # Global reset and maintenance remain below the final renderer.
         self.content.addWidget(self._maintenance_card)
         self.content.addLayout(self._restore_row)
+        self.refresh_appearance()
 
     SEARCH_CATEGORIES = {
         'appearance': 'Darstellung', 'general': 'Allgemein',
@@ -688,7 +721,6 @@ class PreferencesPage(Page):
         if not settings.set_many(changes):
             return
         if section == 'appearance':
-            self._select_without_signal(self.mode, self.DEFAULTS['theme'])
             self._select_without_signal(self.accent_combo, self.DEFAULTS['accent'])
             self._select_without_signal(self.motion_combo, self.DEFAULTS['motion'])
             self._select_without_signal(self.background_combo, self.DEFAULTS['background_style'])
@@ -886,9 +918,6 @@ class PreferencesPage(Page):
         self.eco_toggle.blockSignals(True)
         self.eco_toggle.setChecked(False)
         self.eco_toggle.blockSignals(False)
-        self.mode.blockSignals(True)
-        self.mode.setCurrentIndex(self.mode.findData('glass'))
-        self.mode.blockSignals(False)
         self.accent_combo.blockSignals(True)
         self.accent_combo.setCurrentIndex(self.accent_combo.findData('#4f8cff'))
         self.accent_combo.blockSignals(False)
@@ -937,6 +966,11 @@ class PreferencesPage(Page):
 
     def refresh_appearance(self):
         ultra = eco.enabled()
+        self._check_without_signal(self.sound_toggle, settings.get('ui_sounds', True))
+        self.sound_volume.blockSignals(True)
+        self.sound_volume.setValue(settings.get('ui_sound_volume', 70))
+        self.sound_volume.blockSignals(False)
+        self.sound_volume_value.setText(str(self.sound_volume.value())+' %')
         self.eco_toggle.blockSignals(True)
         self.eco_toggle.setChecked(ultra)
         self.eco_toggle.blockSignals(False)
@@ -950,11 +984,13 @@ class PreferencesPage(Page):
             status = ('Ultra Eco deaktiviert – bitte Jetzt neu starten klicken.'
                       if pending_switch else '')
         self.eco_status.setText(tr(status))
-        self.mode.setEnabled(not ultra)
         self.background_combo.setEnabled(not ultra)
         self.custom_background_area.setEnabled(not ultra)
         self.motion_combo.setEnabled(not ultra)
-        self.accent_combo.setEnabled(not ultra and theme.mode() != 'black_glass_gold')
+        for tile in self.design_tiles:
+            tile.setEnabled(not ultra)
+            tile.setChecked(theme.mode() == tile.key)
+            tile.update()
         self.interval.setEnabled(not ultra)
         self.render_combo.setEnabled(not ultra)
         # Show the remembered renderer after leaving Ultra Eco.
@@ -977,17 +1013,16 @@ class PreferencesPage(Page):
         self.search_overlay.refresh_theme()
         self._refresh_restore_button()
 
-    def change_mode(self, *_):
-        if eco.enabled():
+    def select_design(self, key):
+        if eco.enabled() or key not in dict(theme.CHOICES):
             return
-        val = self.mode.currentData()
-        settings.set('theme', val)
+        if not settings.set('theme', key):
+            return
         self.window.apply_appearance()
-        self._sync_custom_accent_actions()
-        self._refresh_restore_button()
+        self.refresh_appearance()
 
     def change_accent(self, val):
-        if eco.enabled() or theme.mode() == 'black_glass_gold' or not self.accent_combo.isEnabled():
+        if eco.enabled() or theme.mode() == 'black_glass_gold' or theme.mode() in premium.KEYS or not self.accent_combo.isEnabled():
             return
         if theme.mode() == 'black_glass' and any(
                 item['color'] == val for item in self.custom_accents):
@@ -1035,9 +1070,12 @@ class PreferencesPage(Page):
         return result
 
     def _sync_custom_accent_actions(self):
-        gold = theme.mode() == 'black_glass_gold' or eco.enabled()
-        custom_locked = theme.mode() in ('black_glass', 'black_glass_gold') or eco.enabled()
-        self.accent_combo.setEnabled(not gold)
+        gold = theme.mode() in theme.FIXED_MODES or eco.enabled()
+        custom_locked = theme.mode() in ('black_glass', *theme.FIXED_MODES) or eco.enabled()
+        self.accent_combo.setLocked(
+            ('Ultra Eco verwendet eine feste, einfache Farbpalette.' if eco.enabled() else
+             'Dieses Farbschema verwendet eine feste Farbpalette. Eigene Akzentfarben sind hier nicht verfügbar.') if gold else '',
+            'Feste Designpalette')
         self.custom_accent_button.setEnabled(not custom_locked)
         self.edit_custom_accent_button.setEnabled(not custom_locked)
         self.remove_custom_accent_button.setEnabled(not custom_locked)
@@ -1073,7 +1111,7 @@ class PreferencesPage(Page):
 
     def edit_custom_accent(self):
         """Edit name and/or color of the selected saved accent, keeping its slot."""
-        if theme.mode() in ('black_glass', 'black_glass_gold'):
+        if theme.mode() in ('black_glass', *theme.FIXED_MODES) or eco.enabled():
             return
         combo = self.accent_combo
         index = combo.currentIndex()
@@ -1114,7 +1152,7 @@ class PreferencesPage(Page):
         self.change_accent(new_color)
 
     def remove_custom_accent(self):
-        if theme.mode() in ('black_glass', 'black_glass_gold'):
+        if theme.mode() in ('black_glass', *theme.FIXED_MODES) or eco.enabled():
             return
         value = self.accent_combo.currentData()
         if (value in self.PRESET_COLORS
@@ -1130,7 +1168,7 @@ class PreferencesPage(Page):
         self._sync_custom_accent_actions()
 
     def custom_accent(self, combo):
-        if theme.mode() in ('black_glass', 'black_glass_gold'):
+        if theme.mode() in ('black_glass', *theme.FIXED_MODES) or eco.enabled():
             return
         color = QColorDialog.getColor(QColor(theme.accent()), self, tr('Akzentfarbe wählen'))
         if not color.isValid():
@@ -1185,7 +1223,13 @@ class PreferencesPage(Page):
             self.accent_combo.blockSignals(False)
 
     def sync_background_controls(self):
-        custom = self.background_combo.currentData() == 'custom_image'
+        locked = theme.background_locked()
+        self.background_combo.setLocked(
+            ('Ultra Eco verwendet einen festen, einfachen Hintergrund.' if eco.enabled() else
+             'Dieses Farbschema hat einen festen Hintergrund. Wähle ein anderes Farbschema, um eigene Bilder oder Hintergründe zu verwenden.') if locked else '',
+            'Fester Hintergrund')
+        self.custom_background_area.setEnabled(not locked)
+        custom = not locked and self.background_combo.currentData() == 'custom_image'
         self._sync_wallpaper_accent_option()
         self.custom_background_area.setVisible(custom)
         count = self.background_image_combo.count()
@@ -1273,6 +1317,10 @@ class PreferencesPage(Page):
         self._refresh_restore_button()
 
     def change_background(self, *_):
+        if theme.background_locked():
+            self._select_without_signal(self.background_combo, settings.get('background_style', 'theme_default'))
+            self.sync_background_controls()
+            return
         style = self.background_combo.currentData()
         if style == 'custom_image' and not self.background_image_combo.count():
             self.add_background_image()
