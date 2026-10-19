@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   build-and-release:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'publish Vitalux v0.9.5.2')
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'publish Vitalux v0.9.5.3')
     runs-on: ubuntu-24.04
     timeout-minutes: 50
     steps:
@@ -300,6 +300,7 @@ jobs:
           LD_LIBRARY_PATH="$PWD/lib" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_settings_search_reset.py"
           LD_LIBRARY_PATH="$PWD/lib" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_wallpaper_accent_availability.py"
           LD_LIBRARY_PATH="$PWD/lib" PYTHONPATH="$PWD" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_system_status.py"
+          LD_LIBRARY_PATH="$PWD/lib" PYTHONPATH="$PWD" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_system_score.py"
           LD_LIBRARY_PATH="$PWD/lib" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_gpu_history.py"
           LD_LIBRARY_PATH="$PWD/lib" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_warning_render.py"
           LD_LIBRARY_PATH="$PWD/lib" "$PWD/runtime/bin/python3.12" "$GITHUB_WORKSPACE/tests/test_update_indicators.py"
