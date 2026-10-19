@@ -43,9 +43,12 @@ def check_window():
             app.processEvents()
             data = collect()
             window.on_sample(data)
-            window._switch_page(2)
+            # Analysis lives in Diagnostic Center, not on the GPU page.
+            window._switch_page(7)
+            center = window.pages[7][1]
+            center.select_area('performance')
             app.processEvents()
-            panel = window.pages[2][1].lab_panel
+            panel = center.lab_panel
             assert panel is not None
             assert len(window.lab.history) == 1
             assert panel.last_sample is data
