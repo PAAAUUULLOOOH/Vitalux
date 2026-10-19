@@ -137,6 +137,16 @@ class MainWindow(QMainWindow):
         self.sampler = Sampler(self)
         self.sampler.sample.connect(self.on_sample)
         self.sampler.start()
+        # SMART diagnostics are asynchronous and intentionally delayed so app
+        # startup stays responsive. The overview incorporates results on the
+        # next sensor sample, even if the user never opens the Drives page.
+        QTimer.singleShot(8000, self._start_background_smart)
+
+    def _start_background_smart(self):
+        disk = next((page for title, page in self.pages if title == 'Laufwerke'), None)
+        if disk is not None and not disk._smart_loaded and (
+                disk._smart_worker is None or not disk._smart_worker.isRunning()):
+            disk.request_smart()
 
     def _build(self, index):
         # A disk benchmark must not outlive its QWidget when changing the UI theme/language.
