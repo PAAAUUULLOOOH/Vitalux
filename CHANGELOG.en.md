@@ -1,5 +1,11 @@
 # Vitalux – Changes
 
+## [v0.9.5.2] - 2026-10-19
+- Added a centered floating settings search with smooth theme-aware glass animation, adaptive width, instant suggestions and automatic close after five idle seconds or outside clicks.
+- Added reset buttons for Appearance, MiniHUD and hardware alerts, visible only when the respective group differs from defaults.
+- Kept the global reset at the end; imported wallpaper files and personal dashboard layouts are preserved.
+- Made the DE/EN sidebar switch available even when the sidebar is collapsed.
+
 ## [v0.9.5.1] - 2026-10-19
 - Restored the original compact sidebar with all pages in one uninterrupted list.
 - Returned Settings to one scrollable page, with General directly after Appearance and Graphics rendering last.
