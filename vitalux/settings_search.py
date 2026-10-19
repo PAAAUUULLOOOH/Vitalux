@@ -53,7 +53,9 @@ class FloatingSettingsSearch(QWidget):
         self.field = field
         self.suggestions = suggestions
         self.field.setMinimumWidth(0)
-        self.field.setMaximumWidth(0)
+        # A permanent maximum of zero silently defeats the absolute geometry
+        # animation: QWidget clamps setGeometry() to its maximumWidth.
+        self.field.setMaximumWidth(self.MAX_WIDTH)
         self.field.hide()
         self.suggestions.hide()
 
