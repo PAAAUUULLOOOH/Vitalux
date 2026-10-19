@@ -20,7 +20,6 @@ from .alerts import AlertMonitor, readings_from_sample
 from .tray_preview import TrayPreview, tray_tooltip
 from .wallpaper_accents import resolve_accent
 from .monitor_insights import SessionExtrema
-from .insight_engine import MonitoringLab
 from .diagnostics import log_exception
 from .diagnostic_center import DiagnosticCenter
 from .diagnostic_engine import BlackboxRecorder
@@ -72,7 +71,6 @@ class MainWindow(QMainWindow):
             "cpu", "ram", "gpu", "vram", "net_down", "net_up", "io_read", "io_write",
             "cpu_temp", "gpu_temp", "gpu_clock", "gpu_power")}
         self._extrema = SessionExtrema()
-        self.lab = MonitoringLab(snapshot_path=Path(settings.PATH).with_name("insights-snapshots.json"))
         self._focus_window = None
         self._mini_hud = MiniHUD()
         self._mini_hud.hidden_by_user.connect(self._mini_hud_closed)
@@ -100,14 +98,10 @@ class MainWindow(QMainWindow):
         self._tray_glow = TrayPulse(self._tray, self)
         self._tray_menu = QMenu(self)
         self._tray_open_action = QAction(tr('Vitalux öffnen'), self._tray_menu)
-        self._tray_preview = TrayPreview()
-        self._tray_preview_action = QAction(tr('Live-Vorschau anzeigen'), self._tray_menu)
-        self._tray_preview_action.triggered.connect(self.show_tray_preview)
         self._tray_quit_action = QAction(tr('Beenden'), self._tray_menu)
         self._tray_open_action.triggered.connect(self.show_from_tray)
         self._tray_quit_action.triggered.connect(self.quit_from_tray)
         self._tray_menu.addAction(self._tray_open_action)
-        self._tray_menu.addAction(self._tray_preview_action)
         self._tray_hud_action = QAction(tr('MiniHUD anzeigen'), self._tray_menu)
         self._tray_hud_action.setCheckable(True)
         self._tray_hud_action.setChecked(bool(settings.get('mini_hud_enabled', False)))
@@ -200,7 +194,7 @@ class MainWindow(QMainWindow):
             ("Laufwerke", DiskPage()),
             ("Netzwerk", NetworkPage()),
             ("Sensoren", SensorsPage()),
-            ("Diagnostic Center", DiagnosticCenter(self.lab, self.open_focus_window)),
+            ("Diagnostic Center", DiagnosticCenter()),
             ("System", SystemPage(distro)),
             ("Einstellungen", PreferencesPage(self)),
             ("Updates", UpdatePage(self.manager)),
@@ -327,7 +321,6 @@ class MainWindow(QMainWindow):
         self._tray_preview_action.setText(tr('Live-Vorschau anzeigen'))
         self._tray_hud_action.setText(tr('MiniHUD anzeigen'))
         self.refresh_mini_hud()
-        self._tray_preview.retheme()
         self._tray.setToolTip(tray_tooltip(self.last_sample))
         retranslate_widgets(self.centralWidget())
         if self._focus_window is not None:
@@ -782,9 +775,7 @@ class MainWindow(QMainWindow):
         if enabled:
             self._mini_hud.apply_settings()
             self._mini_hud.show()
-            if settings.get('mini_hud_on_top', True):
-                self._mini_hud.raise_()
-            self._mini_hud.update_sample(self.last_sample)
+                self._mini_hud.update_sample(self.last_sample)
         else:
             self._mini_hud.hide()
         pref = next((p for title, p in self.pages if title == 'Einstellungen'), None)
@@ -798,10 +789,6 @@ class MainWindow(QMainWindow):
             hud.apply_settings()
             if visible:
                 hud.show()
-                if settings.get('mini_hud_on_top', True):
-                    # Reassert the stacking request after Wayland/KWin remaps
-                    # the Tool window when its flags are changed.
-                    hud.raise_()
                 hud.update_sample(self.last_sample)
 
     def open_focus_window(self):
@@ -831,17 +818,12 @@ class MainWindow(QMainWindow):
         self._blackbox.ingest(d)
         if self._mini_hud.isVisible():
             self._mini_hud.update_sample(d)
-        self.lab.ingest(d, settings.get_many({
-            "cpu_temp": 90, "gpu_temp": 90, "ram_usage": 90
-        }))
         if self._focus_window is not None and self._focus_window.isVisible():
             self._focus_window.update_sample(d)
         self.last_sample = d
         self._check_alerts(d)
         if self._tray is not None:
             self._tray.setToolTip(tray_tooltip(d))
-            if self._tray_preview.isVisible():
-                self._tray_preview.update_sample(d)
         # Native, lightweight branding animation driven by the real CPU sample.
         cpu_pct = d.get("cpu", {}).get("usage", 0.0)
         if not eco.enabled():
