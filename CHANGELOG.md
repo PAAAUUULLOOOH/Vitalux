@@ -1,6 +1,7 @@
 # Vitalux – Änderungen
 
-## [v0.9.6.1-unstable.1] - 2026-10-21
+## [v0.9.6.1-unstable.2] - 2026-10-21
+
 - Zwischen Stable und Unstable direkt unter Updates wechseln; getrennte Einstellungsprofile, Sicherungen und die Rückkehr zur stabilen Version erhalten die jeweilige Konfiguration.
 - Apps direkt in der Netzwerkliste sperren und entsperren. Die erforderliche Systemfreigabe wird beim Sperren angefragt, Fehler werden sichtbar erklärt.
 - Einzelne TCP-/UDP-Verbindungen lassen sich in den sanft aufklappbaren erweiterten Verbindungsdetails unabhängig sperren und freigeben.
