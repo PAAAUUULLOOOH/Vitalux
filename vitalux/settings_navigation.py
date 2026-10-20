@@ -1,5 +1,5 @@
 """Smooth, cancellable navigation from setting predictions and search results."""
-from PySide6.QtCore import QEvent, QEasingCurve, QObject, QPoint, QPropertyAnimation, QTimer, Qt
+from PySide6.QtCore import QAbstractAnimation, QEvent, QEasingCurve, QObject, QPoint, QPropertyAnimation, QTimer, Qt
 from PySide6.QtWidgets import QScrollArea
 from shiboken6 import isValid
 from . import motion, theme
@@ -65,6 +65,9 @@ class SettingsNavigator(QObject):
                 return
             self.install_on(parent)
         advanced = self.page.advanced
+        follower = getattr(self.page, 'expansion_follower', None)
+        if follower is not None:
+            follower.cancel()
         if advanced.isAncestorOf(target):
             advanced.setExpanded(True)
             advanced._measure()
@@ -105,6 +108,66 @@ class SettingsNavigator(QObject):
             if style.endswith(self._highlight_rule):
                 target.setStyleSheet(style[:-len(self._highlight_rule)])
         self._highlight = None
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Wheel or (obj is self.page and event.type() == QEvent.Hide):
+            self.cancel()
+        return False
+
+
+class ExpansionFollower(QObject):
+    """Reveal manually opened advanced controls without competing with search."""
+    def __init__(self, page):
+        super().__init__(page)
+        self.page, self.scroll = page, None
+        self.following = False
+        self.origin = 0
+        self.pending = QTimer(self)
+        self.pending.setSingleShot(True)
+        self.pending.timeout.connect(self._follow)
+        page.advanced.header.clicked.connect(self._opened)
+        page.advanced.animation.valueChanged.connect(self._schedule)
+        page.advanced.settled.connect(self._schedule)
+        page.installEventFilter(self)
+
+    def install_on(self, scroll):
+        if self.scroll is scroll:
+            return
+        self.scroll = scroll
+        scroll.verticalScrollBar().sliderPressed.connect(self.cancel)
+        scroll.viewport().installEventFilter(self)
+        scroll.installEventFilter(self)
+
+    def _opened(self, opened):
+        self.cancel()
+        if opened and self.scroll is not None:
+            self.page.search_navigation.cancel()
+            cancel = getattr(self.scroll, '_cancel_scroll', None)
+            if callable(cancel):
+                cancel()
+            self.origin = self.scroll.verticalScrollBar().value()
+            self.following = True
+            self._schedule()
+
+    def _schedule(self, *_):
+        if self.following:
+            self.pending.start(0)
+
+    def _follow(self):
+        if not self.following or not self.page.advanced.expanded:
+            return
+        self.page.layout().activate()
+        card = self.page.advanced
+        top = card.mapTo(self.page, QPoint(0, 0)).y()
+        viewport = self.scroll.viewport().height()
+        destination = max(self.origin, top+min(card.height()+24, viewport-16)-viewport+16)
+        self.scroll.verticalScrollBar().setValue(max(0, destination))
+        if self.page.advanced.animation.state() == QAbstractAnimation.Stopped:
+            self.following = False
+
+    def cancel(self):
+        self.following = False
+        self.pending.stop()
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.Wheel or (obj is self.page and event.type() == QEvent.Hide):

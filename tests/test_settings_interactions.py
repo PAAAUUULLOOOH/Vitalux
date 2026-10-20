@@ -44,7 +44,7 @@ def run():
         scroll.show()
         QTest.qWait(120)
         advanced = page.advanced
-        assert page.content.indexOf(advanced) == page.content.count()-1
+        assert page.content.indexOf(advanced) == page.content.count()-2
         assert not advanced.expanded and advanced.clip.isHidden()
         assert advanced.isAncestorOf(page.render_combo) and advanced.isAncestorOf(page.clear_cache_btn)
         advanced.header.click()

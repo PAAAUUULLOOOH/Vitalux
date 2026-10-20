@@ -96,7 +96,14 @@ def _pulse_worker(pending):
     output, voices, retry_after = None, [], 0.0
     try:
         while True:
-            commands = [] if voices else [pending.get()]
+            try:
+                commands = [] if voices else [pending.get(timeout=2.0 if output is not None else None)]
+            except queue.Empty:
+                # A fresh stream follows the current output device after idle
+                # (including PipeWire/Bluetooth route changes), without polling.
+                output.close()
+                output = None
+                continue
             while len(commands) < 32:
                 try:
                     commands.append(pending.get_nowait())

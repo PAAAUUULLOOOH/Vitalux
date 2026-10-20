@@ -101,6 +101,10 @@ def run():
         finally:
             if window is not None:
                 window.quit_from_tray()
+                for _ in range(400):
+                    if window.isHidden(): break
+                    QTest.qWait(25)
+                assert window.isHidden()
             settings.PATH = previous
     print('Three collections: live switching, distinct backdrops, gallery and preserved preferences PASS')
 

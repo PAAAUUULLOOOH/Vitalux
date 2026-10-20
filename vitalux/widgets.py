@@ -15,6 +15,10 @@ def label(text="", name=None, align=None, wrap=False):
     l = QLabel(tr(text))
     if name:
         l.setObjectName(name)
+    if name in ('chipValue', 'telemetryValue', 'focusReading'):
+        font = l.font()
+        font.setFamilies(['DejaVu Sans Mono', 'Noto Sans Mono', 'monospace'])
+        l.setFont(font)
     if align:
         l.setAlignment(align)
     l.setWordWrap(wrap)
@@ -52,7 +56,7 @@ class StatChip(GlassSurface):
         lay = QVBoxLayout(self)
         lay.setContentsMargins(14, 10, 14, 10)
         lay.setSpacing(2)
-        lay.addWidget(label(title, "chipTitle"))
+        lay.addWidget(label(title, "chipTitle", wrap=True))
         self.value = label(value, "chipValue", wrap=True)
         lay.addWidget(self.value)
 
@@ -161,6 +165,9 @@ class Gauge(QWidget):
         self._target = None
         self.text = None
         self.semantic = 'load'
+        font = self.font()
+        font.setFamilies(['DejaVu Sans Mono', 'Noto Sans Mono', 'monospace'])
+        self.setFont(font)
         self._animate = QTimer(self)
         self._animate.setInterval(25)
         self._animate.timeout.connect(self._tick)
@@ -326,210 +333,181 @@ class GaugeCard(Card):
 
 
 class HistoryGraph(QWidget):
-    """Anti-aliased live graph with adaptive y-axis and hover information."""
     def __init__(self, maxlen=60, mode="percent"):
         super().__init__()
-        self.maxlen = maxlen
-        self.mode = mode
-        self.series = []
-        self.setMouseTracking(True)
-        self._pointer = None
-        self.setMinimumHeight(185)
+        self.maxlen, self.mode = maxlen, mode
+        self.series, self.series_names, self.series_styles = [], [], []
+        self.sample_times = []
         self.horizon_seconds = 60
+        self._pointer = None
+        self.setMouseTracking(True)
+        self.setMinimumHeight(185)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     def set_series(self, series):
         self.series = series
         self.update()
 
-    def mouseMoveEvent(self, e):
-        if theme.mode() != "minimal":
-            self._pointer = e.position().x()
-            self.update()
-        super().mouseMoveEvent(e)
+    def mouseMoveEvent(self, event):
+        self._pointer = event.position().x()
+        self.update()
+        super().mouseMoveEvent(event)
 
-    def leaveEvent(self, e):
+    def leaveEvent(self, event):
         self._pointer = None
-        if theme.mode() != "minimal":
-            self.update()
-        super().leaveEvent(e)
+        self.update()
+        super().leaveEvent(event)
 
-    def _paint_minimal(self):
-        """Flat chart: straight polylines, no gradients, bezier curves or glow."""
-        p = QPainter(self)
-        p.fillRect(self.rect(), QColor(theme.CARD))
-        rect = QRectF(self.rect()).adjusted(9, 12, -68, -30)
-        if rect.width() <= 8 or rect.height() <= 8:
-            p.end()
-            return
-        top = max((max((float(v or 0) for v in values), default=0)
-                   for values, _ in self.series), default=0) if self.mode != 'percent' else 100.0
-        top = max(1.0, top * 1.15)
-        p.setPen(QPen(QColor(theme.GRID), 1))
-        for fraction in (0.0, 0.5, 1.0):
-            y = rect.bottom() - fraction * rect.height()
-            p.drawLine(QPointF(rect.left(), y), QPointF(rect.right(), y))
-            p.setPen(QColor(theme.MUTED))
-            p.drawText(QRectF(rect.right()+5, y-10, 60, 20),
-                       Qt.AlignVCenter | Qt.AlignLeft, f'{top*fraction:.0f}' + ('%' if self.mode == 'percent' else ''))
-            p.setPen(QPen(QColor(theme.GRID), 1))
-        for values, color in self.series:
-            vals = list(values)[-min(self.maxlen, 120):]
-            if len(vals) < 2:
-                continue
-            count = len(vals)
-            pts = QPolygonF([QPointF(rect.left() + i * rect.width() / (count-1),
-                                     rect.bottom() - min(1.0, max(0.0, float(v or 0)/top))*rect.height())
-                              for i, v in enumerate(vals)])
-            p.setPen(QPen(QColor(color), 1.5))
-            p.drawPolyline(pts)
-        p.end()
+    def _format(self, value):
+        if value is None or not math.isfinite(float(value)):
+            return '–'
+        if self.mode == 'percent': return f'{value:.0f}%'
+        if self.mode == 'temperature': return f'{value:.1f} °C'
+        if self.mode == 'clock': return f'{value:.0f} MHz'
+        if self.mode == 'power': return f'{value:.1f} W'
+        from .sensors import fmt_rate
+        return fmt_rate(value)
 
-    def paintEvent(self, _):
-        if theme.mode() == "minimal":
-            self._paint_minimal()
-            return
+    def _x(self, index, count, rect):
+        if self.sample_times and len(self.sample_times) >= count:
+            timestamp = self.sample_times[-count+index]
+            fraction = 1-(self.sample_times[-1]-timestamp)/max(1, self.horizon_seconds)
+        else:
+            fraction = 1-(count-1-index)/max(1, self.maxlen-1)
+        return rect.left()+max(0, min(1, fraction))*rect.width()
+
+    def hover_readout(self, rect):
+        if self._pointer is None or not rect.left() <= self._pointer <= rect.right():
+            return []
+        count = max((len(values) for values, _ in self.series), default=0)
+        if not count:
+            return []
+        index = min(range(count), key=lambda i: abs(self._x(i, count, rect)-self._pointer))
+        if len(self.sample_times) >= count:
+            from datetime import datetime
+            stamp = datetime.fromtimestamp(self.sample_times[-count+index]).strftime('%H:%M:%S')
+        else:
+            stamp = f'−{round((count-1-index)*self.horizon_seconds/max(1, self.maxlen-1))} s'
+        lines = [stamp]
+        for number, (values, _color) in enumerate(self.series):
+            offset = index-(count-len(values))
+            name = self.series_names[number] if number < len(self.series_names) else str(number+1)
+            value = values[offset] if 0 <= offset < len(values) else None
+            lines.append(f'{tr(name)}  {self._format(value)}')
+        return lines
+
+    def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
         outer = QRectF(self.rect()).adjusted(2, 2, -2, -2)
+        minimal = theme.mode() == 'minimal'
         if theme.mode() in premium.KEYS:
             premium.paint_panel(p, self, outer, compact=True)
-        elif theme.mode() == "holographic":
+        elif theme.mode() == 'holographic':
             holographic.paint_chart_frame(p, outer, theme.accent())
-        elif theme.mode() == "black_glass_gold":
-            p.setPen(QPen(QColor("#98743b"), 1.1))
-            p.setBrush(QColor("#14120e"))
-            p.drawRoundedRect(outer, 14, 14)
         else:
-            bg = QLinearGradient(outer.topLeft(), outer.bottomLeft())
-            if theme.mode() == "light":
-                bg.setColorAt(0, QColor(255,255,255,115))
-                bg.setColorAt(1, QColor(255,255,255,45))
-                border = QColor(180,197,220,110)
-            else:
-                bg.setColorAt(0, QColor(255,255,255,18))
-                bg.setColorAt(1, QColor(255,255,255,6))
-                border = QColor(111,148,205,45)
-            p.setPen(QPen(border, 1))
-            p.setBrush(QBrush(bg))
-            p.drawRoundedRect(outer, 14, 14)
-        r = outer.adjusted(9, 12, -66, -33)
-        if r.width() <= 8 or r.height() <= 8:
+            fill = QColor(theme.CARD)
+            fill.setAlpha(255 if minimal else 160)
+            p.setBrush(fill)
+            p.setPen(QPen(QColor(theme.BORDER), .75))
+            p.drawRoundedRect(outer, 0 if minimal else 13, 0 if minimal else 13)
+        rect = outer.adjusted(10, 14, -65, -30)
+        if rect.width() <= 8 or rect.height() <= 8:
+            p.end()
             return
-        if theme.mode() == 'holographic':
-            holographic.paint_chart_grid(p, r, theme.accent())
-        largest = max((max((float(v or 0) for v in values), default=0) for values, _ in self.series), default=0)
-        if self.mode == "rate":
-            # Round up to a human-friendly rate limit; retain some padding.
-            import math as _math
-            if largest <= 1:
-                upper = 1024.0
-            else:
-                raw = largest * 1.15
-                step = 10 ** _math.floor(_math.log10(raw))
-                upper = _math.ceil(raw / step * 2) / 2 * step
-            upper = max(1024.0, upper)
-        elif self.mode in ("temperature", "clock", "power"):
-            upper = max(10.0, largest * 1.18)
-        else:
+        largest = max((float(value) for values, _ in self.series
+                       for value in values if value is not None and math.isfinite(float(value))), default=0)
+        if self.mode == 'percent':
             upper = 100.0
-        def y_of(value):
-            return r.bottom() - max(0.0, min(1.0, float(value or 0) / upper)) * r.height()
-        def format_tick(v):
-            if self.mode == "percent":
-                return f"{v:.0f}%"
-            if self.mode == "temperature":
-                return f"{v:.0f}°C"
-            if self.mode == "clock":
-                return f"{v:.0f} MHz"
-            if self.mode == "power":
-                return f"{v:.0f} W"
-            from .sensors import fmt_rate
-            return fmt_rate(v)
-        p.setFont(QFont(self.font().family(), 9))
-        p.setPen(QPen(QColor(theme.GRID), 1, Qt.DotLine))
-        for column in (0.25, 0.5, 0.75):
-            x = r.left() + column * r.width()
-            p.drawLine(QPointF(x, r.top()), QPointF(x, r.bottom()))
-        for f in (0, 0.25, 0.5, 0.75, 1):
-            y = r.bottom() - f * r.height()
-            p.setPen(QPen(QColor(theme.GRID), 1))
-            p.drawLine(QPointF(r.left(), y), QPointF(r.right(), y))
+        elif self.mode == 'rate':
+            raw = max(1024.0, largest*1.15)
+            step = 10**math.floor(math.log10(raw))
+            upper = max(1024.0, math.ceil(raw/step*2)/2*step)
+        else:
+            upper = max(10.0, largest*1.18)
+        font = self.font()
+        font.setPointSize(8)
+        p.setFont(font)
+        for fraction in (0, .25, .5, .75, 1):
+            y = rect.bottom()-fraction*rect.height()
+            grid = QColor(theme.GRID)
+            grid.setAlpha(150)
+            p.setPen(QPen(grid, .7))
+            p.drawLine(QPointF(rect.left(), y), QPointF(rect.right(), y))
             p.setPen(QColor(theme.MUTED))
-            p.drawText(QRectF(r.right()+6, y-10, 58, 18), Qt.AlignVCenter|Qt.AlignLeft, format_tick(upper*f))
-        # Real time axis in seconds/minutes, matching the selected history horizon.
-        def stamp(seconds):
-            return f"{seconds//60}m {seconds%60}s" if seconds >= 60 and seconds % 60 else (f"{seconds//60}m" if seconds >= 60 else f"{seconds}s")
-        p.setPen(QColor(theme.MUTED))
-        p.setFont(QFont(self.font().family(), 8))
+            p.drawText(QRectF(rect.right()+6, y-10, 58, 20), Qt.AlignLeft | Qt.AlignVCenter,
+                       self._format(upper*fraction))
+        for fraction in (.25, .5, .75):
+            p.setPen(QPen(QColor(theme.GRID), .6, Qt.DotLine))
+            x = rect.left()+rect.width()*fraction
+            p.drawLine(QPointF(x, rect.top()), QPointF(x, rect.bottom()))
         for fraction in (0, .5, 1):
-            secs_ago = round(self.horizon_seconds * (1-fraction))
-            xx = r.left() + r.width()*fraction
+            seconds = round(self.horizon_seconds*(1-fraction))
+            stamp = tr('Jetzt') if not seconds else (f'−{seconds//60}m' if seconds % 60 == 0 else f'−{seconds}s')
+            x = rect.left()+fraction*rect.width()
             align = Qt.AlignLeft if fraction == 0 else Qt.AlignRight if fraction == 1 else Qt.AlignHCenter
-            p.drawText(QRectF(xx - (0 if fraction == 0 else 29), r.bottom()+7, 58, 18), align, tr('Jetzt') if fraction == 1 else f'−{stamp(secs_ago)}')
-        max_display = max(2, self.maxlen)
-        for values, color in self.series:
-            vals = list(values)[-max_display:]
-            if len(vals) < 2:
-                continue
-            # Limit painter work for very long history without affecting history storage.
-            stride = max(1, len(vals)//400)
-            if stride > 1:
-                vals = vals[::stride] + ([vals[-1]] if (len(vals)-1)%stride else [])
-            total = max_display - 1
-            x0 = r.right() - min(1.0, (len(values)-1)/total) * r.width()
-            pts = [QPointF(x0 + i / max(1, len(vals)-1) * (r.right()-x0), y_of(v)) for i,v in enumerate(vals)]
-            # Rounded, interpolation-safe waveforms like a premium live dashboard.
-            # The curve is visual only: measured data points are unchanged.
-            path = QPainterPath(pts[0])
-            for previous, current in zip(pts, pts[1:]):
-                dx = current.x() - previous.x()
-                path.cubicTo(QPointF(previous.x()+dx*.36, previous.y()),
-                             QPointF(current.x()-dx*.36, current.y()), current)
-            area = QPainterPath(path)
-            area.lineTo(pts[-1].x(), r.bottom())
-            area.lineTo(pts[0].x(), r.bottom())
-            area.closeSubpath()
+            p.setPen(QColor(theme.MUTED))
+            p.drawText(QRectF(x-(0 if fraction == 0 else 29), rect.bottom()+6, 58, 20), align, stamp)
+        any_data = False
+        for number, (values, color) in enumerate(self.series):
+            values = list(values)[-self.maxlen:]
+            runs, run = [], []
+            for index, value in enumerate(values):
+                if value is None or not math.isfinite(float(value)):
+                    if run: runs.append(run)
+                    run = []
+                    continue
+                any_data = True
+                y = rect.bottom()-min(1, max(0, float(value)/upper))*rect.height()
+                run.append(QPointF(self._x(index, len(values), rect), y))
+            if run: runs.append(run)
+            style = self.series_styles[number] if number < len(self.series_styles) else Qt.SolidLine
             c = QColor(color)
-            grad = QLinearGradient(0, r.top(), 0, r.bottom())
-            top = QColor(c)
-            top.setAlpha(104)
-            bottom = QColor(c)
-            bottom.setAlpha(0)
-            grad.setColorAt(0, top)
-            grad.setColorAt(1, bottom)
-            p.fillPath(area, QBrush(grad))
-            p.setBrush(Qt.NoBrush)
-            # One muted glow under a crisp 2px signal trace.
-            halo = QColor(c)
-            halo.setAlpha(71)
-            p.setPen(QPen(halo, 6.4, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-            p.drawPath(path)
-            p.setPen(QPen(c, 2.0, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-            p.drawPath(path)
-            # Signal endpoint, a subtle live sensor indicator.
-            p.setPen(Qt.NoPen)
-            dot_glow = QColor(c)
-            dot_glow.setAlpha(82)
-            p.setBrush(QBrush(dot_glow))
-            p.drawEllipse(pts[-1], 7.1, 7.1)
-            p.setBrush(QBrush(c))
-            p.drawEllipse(pts[-1], 2.7, 2.7)
-            p.setBrush(Qt.NoBrush)
-        if self._pointer is not None and r.left() <= self._pointer <= r.right():
-            p.setPen(QPen(QColor(theme.MUTED), 1, Qt.DashLine))
-            p.drawLine(QPointF(self._pointer, r.top()), QPointF(self._pointer, r.bottom()))
-            n = max((len(v) for v,_ in self.series), default=0)
-            if n:
-                cursor_idx = max(0, min(n-1, round((self._pointer-r.left()) / r.width() * (max_display-1) - max_display + n)))
-                tips = []
-                for values, color in self.series:
-                    vals = list(values)
-                    if len(vals) > cursor_idx:
-                        tips.append(format_tick(vals[cursor_idx]))
-                if tips:
-                    p.setPen(QColor(theme.TEXT))
-                    p.drawText(QRectF(r.left()+8, r.top()+6, r.width()-10, 22), Qt.AlignLeft, " | ".join(tips))
+            for points in runs:
+                stride = max(1, len(points)//400)
+                points = points[::stride]+([points[-1]] if (len(points)-1) % stride else [])
+                path = QPainterPath(points[0])
+                for previous, current in zip(points, points[1:]):
+                    if minimal:
+                        path.lineTo(current)
+                    else:
+                        dx = current.x()-previous.x()
+                        path.cubicTo(previous+QPointF(dx*.36, 0), current-QPointF(dx*.36, 0), current)
+                if not minimal:
+                    area = QPainterPath(path)
+                    area.lineTo(points[-1].x(), rect.bottom())
+                    area.lineTo(points[0].x(), rect.bottom())
+                    area.closeSubpath()
+                    gradient = QLinearGradient(rect.topLeft(), rect.bottomLeft())
+                    top, bottom = QColor(c), QColor(c)
+                    top.setAlpha(51 if number else 68); bottom.setAlpha(0)
+                    gradient.setColorAt(0, top); gradient.setColorAt(1, bottom)
+                    p.fillPath(area, gradient)
+                    halo = QColor(c); halo.setAlpha(39)
+                    p.setPen(QPen(halo, 5, style, Qt.RoundCap, Qt.RoundJoin))
+                    p.drawPath(path)
+                p.setBrush(Qt.NoBrush)
+                p.setPen(QPen(c, 1.8, style, Qt.RoundCap, Qt.RoundJoin))
+                p.drawPath(path)
+            if values and values[-1] is not None and runs:
+                p.setBrush(c); p.setPen(Qt.NoPen)
+                p.drawEllipse(runs[-1][-1], 2.5, 2.5)
+        if not any_data:
+            p.setPen(QColor(theme.MUTED))
+            p.drawText(rect, Qt.AlignCenter, tr('Noch keine Messwerte verfügbar'))
+        lines = self.hover_readout(rect)
+        if lines:
+            p.setPen(QPen(QColor(theme.MUTED), .8, Qt.DashLine))
+            p.drawLine(QPointF(self._pointer, rect.top()), QPointF(self._pointer, rect.bottom()))
+            width = min(rect.width()-10, max(p.fontMetrics().horizontalAdvance(line) for line in lines)+24)
+            box = QRectF(min(rect.right()-width-5, max(rect.left()+5, self._pointer+10)),
+                         rect.top()+5, width, 20*len(lines)+12)
+            p.setBrush(QColor(theme.CARD)); p.setPen(QPen(QColor(theme.BORDER), .8))
+            p.drawRoundedRect(box, 8, 8)
+            for index, line in enumerate(lines):
+                p.setPen(QColor(theme.MUTED if index == 0 else theme.TEXT))
+                p.drawText(box.adjusted(10, 6+index*20, -8, 0), Qt.AlignLeft | Qt.AlignTop, line)
+        p.end()
 
 
 class ChartSeriesCheckBox(QCheckBox):
@@ -591,6 +569,7 @@ class ChartPanel(QWidget):
                             for c in colors]
         self._source = []
         self.sample_interval = 1
+        self._timestamps = []
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
         layout.setSpacing(10)
@@ -646,6 +625,9 @@ class ChartPanel(QWidget):
         self._source = series
         self._update()
 
+    def set_timeline(self, timestamps):
+        self._timestamps = list(timestamps)
+
     def set_interval(self, interval):
         new_interval = max(1, int(interval))
         if self.sample_interval == new_interval:
@@ -656,6 +638,12 @@ class ChartPanel(QWidget):
     def _update(self, *_):
         horizon = self.time_range.currentData() or 60
         count = max(2, round(horizon/self.sample_interval))
+        if self._timestamps:
+            cutoff = self._timestamps[-1]-horizon
+            count = max(2, sum(stamp >= cutoff for stamp in self._timestamps))
+        self.graph.sample_times = self._timestamps[-count:]
+        self.graph.series_names = []
+        self.graph.series_styles = []
         self.graph.maxlen = count
         self.graph.horizon_seconds = horizon
         active = []
@@ -681,20 +669,17 @@ class ChartPanel(QWidget):
                     fmt = lambda value: f"{value:.1f} W"
                 else:
                     fmt = fmt_rate
-                self.live_labels[i].setText(f'{tr(self.series_names[i])} {fmt(vals[-1])}  ·  {fmt(min(vals))}–{fmt(max(vals))}')
-                self.live_labels[i].setToolTip(f'{tr(self.series_names[i])}: {tr("Jetzt")} {fmt(vals[-1])} | Min {fmt(min(vals))} | Max {fmt(max(vals))}')
+                current = list(values)[-1] if values else None
+                shown = fmt(current) if current is not None else '–'
+                self.live_labels[i].setText(f'{tr(self.series_names[i])} {shown}  ·  {fmt(min(vals))}–{fmt(max(vals))}')
+                self.live_labels[i].setToolTip(f'{tr(self.series_names[i])}: {tr("Jetzt")} {shown} | Min {fmt(min(vals))} | Max {fmt(max(vals))}')
             else:
                 self.live_labels[i].setText(f'{tr(self.series_names[i])} –')
             self.live_labels[i].show()
-            if vals:
-                # A missing sensor sample is not zero: draw only the most
-                # recent uninterrupted run so the line cannot dive to 0.
-                recent = list(values)[-count:]
-                start = next((i + 1 for i in range(len(recent) - 1, -1, -1)
-                              if recent[i] is None), 0)
-                run = recent[start:]
-                if len(run) >= 2:
-                    active.append((run, color))
+            recent = list(values)[-count:]
+            active.append((recent, color))
+            self.graph.series_names.append(self.series_names[i])
+            self.graph.series_styles.append((Qt.SolidLine, Qt.DashLine, Qt.DotLine)[i % 3])
         self.graph.set_series(active)
 
 

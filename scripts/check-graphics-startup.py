@@ -98,6 +98,11 @@ def child(mode, output):
     def capture():
         try:
             from PySide6.QtTest import QTest
+            def settled(condition):
+                deadline = time.monotonic()+2
+                while not condition() and time.monotonic() < deadline:
+                    QTest.qWait(20)
+                assert condition(), 'Native animation did not settle within two seconds'
             assert win.width() >= 800 and win.height() >= 560
             assert win.last_sample is not None
             scene = win.centralWidget()
@@ -124,23 +129,23 @@ def child(mode, output):
                 if mode in renderer.QUICK_MODES:
                     assert not win.centralWidget()._upload_timer.isActive()
                 QTest.qWait(100)
-            QTest.qWait(400)
+            settled(lambda: win._appearance_overlay is None)
             assert win._appearance_overlay is None
             assert win.sampler is sampler and sampler.isRunning()
             search = preferences.search_overlay
             search.open_search()
-            QTest.qWait(400)
+            settled(lambda: search.expanded and search._opacity.opacity() == 1)
             search.field.setText('render')
             QTest.qWait(300)
             search.close_search()
             search.animation.setCurrentTime(search.animation.duration()//2)
             assert search.isVisible() and 0 < search._opacity.opacity() < 1
             search.open_search()
-            QTest.qWait(400)
+            settled(lambda: search.expanded and search._opacity.opacity() == 1)
             assert search.expanded and search._opacity.opacity() == 1
             assert win.grab().save(str(output/(mode+'-settings.png')))
             search.close_search()
-            QTest.qWait(400)
+            settled(search.isHidden)
             assert search.isHidden()
             renderer.successful_start()
             print(json.dumps({'mode': mode, 'active': win.render_backend_active,

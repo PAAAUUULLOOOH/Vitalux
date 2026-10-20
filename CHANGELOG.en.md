@@ -1,5 +1,16 @@
 # Vitalux – Changes
 
+## [v0.9.5.7] - 2026-10-20
+- Obsidian Gold is the default for new installations and appearance resets, with finer glass edges, softer reflections and clearer measurements; saved theme choices are preserved.
+- The original central logo waveform now carries a soft heartbeat trace while the outer bands continue their slow rotation.
+- A compact glass color swatch beside the accent selector replaces the stretched color bar.
+- Reset buttons reveal and disappear smoothly. The full reset sits at the bottom of Settings and safely restarts Vitalux; section resets do not restart the app.
+- Advanced settings scrolls into view as it expands. Returning to a category starts at the top of its page.
+- Charts distinguish series with line patterns and show measurement names and times on hover. Missing readings and sampling interruptions remain visible as gaps.
+- An optional compact Overview header leaves more room for measurements. Keyboard focus and pressed states are clearer.
+- Closing and restarting remain responsive while background work finishes; full resets preserve settings when an active operation prevents restart.
+- Updates check available disk space and report interrupted downloads. Click sounds reconnect to the current audio output after idle periods.
+
 ## [v0.9.5.6] - 2026-10-19
 - Fixed theme palettes and backgrounds remain grey and disabled; scrolling over closed dropdowns no longer changes their selection.
 - A softer crystal chime accompanies buttons, selections and dropdowns, with reliable repeated playback after idle periods and during rapid clicks.

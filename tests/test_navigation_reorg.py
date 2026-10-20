@@ -69,7 +69,7 @@ def main():
             assert pref.content.indexOf(pref._settings_cards['appearance'][0]) < pref.content.indexOf(pref._settings_cards['hud'][0])
             assert not hasattr(pref, 'language_combo')
             assert not pref._settings_cards['general']
-            assert pref.content.indexOf(pref.advanced) == pref.content.count()-1
+            assert pref.content.indexOf(pref.advanced) == pref.content.count()-2
             assert pref.advanced.isAncestorOf(pref._settings_cards['render'][0])
             assert pref.advanced.isAncestorOf(pref._maintenance_card)
             assert not hasattr(gpu, 'diagnostic_shortcut')

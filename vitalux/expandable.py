@@ -56,6 +56,7 @@ class ExpandableCard(Card):
         self.content.setContentsMargins(0, 0, 0, 0)
         self.content.setSpacing(14)
         self.panel.installEventFilter(self)
+        self.clip.installEventFilter(self)
         self.clip.hide()
         self.animation = QVariantAnimation(self)
         self.animation.setEasingCurve(QEasingCurve.InOutCubic)
@@ -74,7 +75,8 @@ class ExpandableCard(Card):
             return
         self._measuring = True
         try:
-            width = max(1, self.clip.width())
+            margins = self.layout().contentsMargins()
+            width = max(1, self.width()-margins.left()-margins.right())
             self.panel.resize(width, max(1, self._extent))
             self.content.activate()
             height = self.content.totalHeightForWidth(width)
@@ -130,6 +132,9 @@ class ExpandableCard(Card):
             self._measure_timer.start(0)
 
     def eventFilter(self, obj, event):
+        if obj is self.clip and event.type() == QEvent.Resize:
+            if event.size().width() != event.oldSize().width():
+                self._measure_timer.start(0)
         if event.type() == QEvent.LayoutRequest and not self._measuring:
             self._measure_timer.start(0)
         return False

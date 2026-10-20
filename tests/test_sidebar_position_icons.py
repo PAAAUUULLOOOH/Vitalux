@@ -77,7 +77,7 @@ def main():
             assert all(frames[i] != frames[j]
                        for i in range(len(frames))
                        for j in range(i+1, len(frames)))
-            assert PreferencesPage.DEFAULTS['theme'] == 'glass'
+            assert PreferencesPage.DEFAULTS['theme'] == 'obsidian_gold'
             assert PreferencesPage.DEFAULTS['accent'] == '#4f8cff'
 
             # A per-color icon filename works around KDE caching.

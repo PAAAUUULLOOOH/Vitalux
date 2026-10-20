@@ -95,7 +95,7 @@ def normalize_order(saved=None, legacy=None):
     return sorted(ORDER, key=lambda key: (source[key][1],source[key][0],ORDER.index(key)))
 
 
-def grid_pack(order, hidden=(), columns=12):
+def grid_pack(order, hidden=(), columns=12, hero_height=None):
     """Repack visible tiles into gap-free rows, preserving 14px visual gaps."""
     cols = int(columns)
     if cols not in (3, 6, 12):
@@ -106,6 +106,8 @@ def grid_pack(order, hidden=(), columns=12):
         if key not in DEFAULT or key in hidden:
             continue
         native_w, native_h = DEFAULT[key][2:]
+        if key == 'hero' and hero_height is not None:
+            native_h = max(6, int(hero_height))
         width = cols if key == 'hero' else min(
             cols, max(1, round(native_w * cols / 12)))
         if row and used + width > cols:

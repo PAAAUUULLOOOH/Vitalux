@@ -122,6 +122,19 @@ def check():
             "kind": "appimage" if is_appimage else "zip", "newer": _ver(tag) > _ver(__version__)}
 
 
+def _require_space(path, required):
+    if shutil.disk_usage(path).free < required+16*1024*1024:
+        raise RuntimeError(tr('Für das Update ist nicht genügend freier Speicherplatz vorhanden.'))
+
+
+def _directory_bytes(path):
+    if os.path.isfile(path):
+        return os.path.getsize(path)
+    return sum(os.path.getsize(os.path.join(folder, name))
+               for folder, _dirs, files in os.walk(path) for name in files
+               if not os.path.islink(os.path.join(folder, name)))
+
+
 def _download_verified(url, output_path, sha256, progress, download_limit):
     """Stream to disk with size cap and SHA-256 check (digest taken from GitHub Releases API)."""
     if not re.fullmatch('[0-9a-fA-F]{64}', sha256 or ''):
@@ -135,6 +148,7 @@ def _download_verified(url, output_path, sha256, progress, download_limit):
         total = int(response.headers.get('Content-Length') or '0')
         if total > download_limit:
             raise RuntimeError(tr('Updatepaket überschreitet Größenlimit.'))
+        _require_space(os.path.dirname(os.path.abspath(output_path)), total)
         while True:
             chunk = response.read(1024 * 1024)
             if not chunk:
@@ -145,9 +159,11 @@ def _download_verified(url, output_path, sha256, progress, download_limit):
             f.write(chunk)
             digest.update(chunk)
             if total:
-                progress(min(88., 88. * length / total))
+                progress(min(80., 80. * length / total))
         f.flush()
         os.fsync(f.fileno())
+    if total and length != total:
+        raise RuntimeError(tr('Der Update-Download wurde unterbrochen. Bitte erneut versuchen.'))
     if digest.hexdigest() != sha256.lower():
         raise RuntimeError(tr('Sicherheitsprüfung fehlgeschlagen: SHA-256 stimmt nicht überein.'))
 
@@ -308,6 +324,10 @@ def _install_from_directory(src, root, progress):
     root_files = [name for name in os.listdir(src)
                   if name not in SKIP and name != APP_ID and not name.startswith('.')
                   and not os.path.islink(os.path.join(src, name))]
+    backup_bytes = _directory_bytes(pkg)+sum(_directory_bytes(os.path.join(root, name)) for name in root_files)
+    staging_bytes = _directory_bytes(os.path.join(src, APP_ID))+max(
+        (_directory_bytes(os.path.join(src, name)) for name in root_files), default=0)
+    _require_space(root, backup_bytes+staging_bytes)
     staged = tempfile.mkdtemp(prefix='.vitalux-package-', dir=root)
     stage_pkg = os.path.join(staged, APP_ID)
     former = os.path.join(staged, 'former')
@@ -424,6 +444,7 @@ def install(url, root=None, progress=lambda p: None, sha256=None):
             members = z.infolist()
             if len(members) > 12000 or sum(item.file_size for item in members) > 1200 * 1024 * 1024:
                 raise RuntimeError(tr('Updatepaket ist zu groß.'))
+            _require_space(tmp, sum(item.file_size for item in members))
             for item in members:
                 path = PurePosixPath(item.filename)
                 unix_mode = item.external_attr >> 16

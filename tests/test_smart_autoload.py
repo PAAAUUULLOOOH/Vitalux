@@ -4,7 +4,8 @@ import sys
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0, os.getcwd())
 
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QStackedWidget, QWidget, QPushButton
+from vitalux.smooth_scroll import AdaptiveScrollArea
 from vitalux.smart_ui import SmartPane
 from vitalux.window import MainWindow
 
@@ -34,16 +35,19 @@ class Disk:
         self.calls += 1
         self._smart_loaded = True
 
-class Stack:
+class Stack(QStackedWidget):
     def __init__(self):
-        self.index = 0
-    def setCurrentIndex(self, i):
-        self.index = i
+        super().__init__()
+        for _ in range(2):
+            scroll = AdaptiveScrollArea()
+            scroll.setWidget(QWidget())
+            self.addWidget(scroll)
 
 class Window:
     def __init__(self):
         self.pages = [('Übersicht', Overview()), ('Laufwerke', Disk())]
         self.stack = Stack()
+        self.nav_buttons = [QPushButton(), QPushButton()]
         self.refreshes = 0
     def _refresh_visible_page(self):
         self.refreshes += 1

@@ -1,3 +1,4 @@
+from . import DEFAULT_THEME
 import os
 import sys
 
@@ -36,10 +37,10 @@ def main():
     lang = settings.get("lang") or ("de" if os.environ.get("LANG", "").lower().startswith("de") else "en")
     i18n.set_lang(lang)
     info = distro.info()
-    requested_theme = settings.get('theme', 'glass')
+    requested_theme = settings.get('theme', DEFAULT_THEME)
     theme.set_mode('minimal' if eco.enabled() else requested_theme)
     if not eco.enabled() and requested_theme != theme.mode():
-        settings.set('theme', theme.mode())  # Migrate removed/unknown themes to Glass.
+        settings.set('theme', theme.mode())  # Migrate removed/unknown themes to Obsidian Gold.
     user_accent = settings.get('accent', '#4f8cff')
     from . import wallpaper_accents
     effective_accent = wallpaper_accents.effective_selection(user_accent)

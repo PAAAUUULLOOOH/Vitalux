@@ -51,8 +51,8 @@ def run():
             with patch('vitalux.window.sensors.collect', side_effect=slow_read):
                 window.sampler.start()
                 assert entered.wait(2)
-                # Model expiration of the grace period without waiting seven seconds.
-                with patch.object(window.sampler, 'wait', return_value=False):
+                # The GUI must never wait on the slow worker.
+                with patch.object(window.sampler, 'wait', side_effect=AssertionError('GUI blocked on worker')):
                     window.quit_from_tray()
                     assert window._force_quit, 'Pending exit lost its explicit quit intent'
                     assert window.restart_for_renderer()

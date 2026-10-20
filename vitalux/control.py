@@ -1,4 +1,5 @@
 """Hardware-sensor page, appearance settings and customizable dashboard controls."""
+from . import DEFAULT_THEME
 import json
 from functools import lru_cache
 from datetime import datetime
@@ -17,7 +18,8 @@ from .mini_hud import DEFAULT_KEYS
 from .settings_search import FloatingSettingsSearch, _SearchIcon
 from .choice_combo import ChoiceComboBox
 from .expandable import ExpandableCard
-from .settings_navigation import SettingsNavigator
+from .settings_navigation import SettingsNavigator, ExpansionFollower
+from .soft_controls import AccentSwatch, ResponsiveActions, SoftReveal
 
 
 class SensorsPage(Page):
@@ -167,17 +169,17 @@ class PreferencesPage(Page):
     PRESET_COLORS = frozenset(value for _, value in PRESET_ACCENTS)
 
     DEFAULTS = {
-        'theme': 'glass', 'accent': '#4f8cff', 'ui_sounds': True, 'ui_sound_volume': 70, 'motion': 'smooth',
+        'theme': DEFAULT_THEME, 'accent': '#4f8cff', 'ui_sounds': True, 'ui_sound_volume': 70, 'motion': 'smooth',
         'background_style': 'theme_default', 'custom_background_fit': 'cover',
         'render_backend': renderer.SOFTWARE, 'ultra_eco': False,
-        'interval': 1, 'close_to_tray': True, 'alerts_enabled': False,
+        'interval': 1, 'close_to_tray': True, 'alerts_enabled': False, 'compact_overview': False,
         'cpu_temp': 90, 'gpu_temp': 90, 'ram_usage': 90, 'disk_usage': 95,
         'mini_hud_enabled': False, 'mini_hud_layout': 'compact',
         'mini_hud_opacity': 90,
         'mini_hud_metrics': list(DEFAULT_KEYS),
     }
     SECTION_DEFAULTS = {
-        'appearance': ('theme', 'accent', 'ui_sounds', 'ui_sound_volume', 'motion', 'background_style', 'custom_background_fit'),
+        'appearance': ('theme', 'accent', 'ui_sounds', 'ui_sound_volume', 'motion', 'background_style', 'custom_background_fit', 'compact_overview'),
         'hud': ('mini_hud_enabled', 'mini_hud_layout', 'mini_hud_opacity',
                 'mini_hud_metrics'),
         'alerts': ('alerts_enabled', 'cpu_temp', 'gpu_temp', 'ram_usage', 'disk_usage'),
@@ -189,6 +191,7 @@ class PreferencesPage(Page):
         # One continuous settings page; no extra section navigation.
         self._settings_cards = {key: [] for key in ('appearance', 'general', 'hud', 'monitoring', 'energy', 'render')}
         self._reset_buttons = {}
+        self._reset_reveals = {}
         self.search = QLineEdit()
         self.search.setObjectName('settingsSearch')
         self.search.setPlaceholderText(tr('Einstellungen durchsuchen …'))
@@ -231,7 +234,7 @@ class PreferencesPage(Page):
         self.design_tiles = []
         for index, (key, title) in enumerate(theme.CHOICES):
             tile = premium.DesignTile(key)
-            tile.setChecked(settings.get('theme', 'glass') == key)
+            tile.setChecked(settings.get('theme', DEFAULT_THEME) == key)
             tile.clicked.connect(lambda _checked=False, key=key: self.select_design(key))
             self.design_tiles.append(tile)
             gallery.addWidget(tile, index // 3, index % 3)
@@ -281,6 +284,8 @@ class PreferencesPage(Page):
         accent.setFixedWidth(210)
         accent.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         accent_selector.addWidget(accent)
+        self.accent_preview = AccentSwatch(self)
+        accent_selector.addWidget(self.accent_preview)
         accent_selector.addStretch(1)
         accent_row.addLayout(accent_selector)
         accent_actions = QHBoxLayout()
@@ -307,11 +312,6 @@ class PreferencesPage(Page):
         look.body.addLayout(accent_row)
         self._sync_custom_accent_actions()
         look.body.addWidget(label('Akzentfarben gelten für Reiter, Kartenkanten, Kurven und Bedienelemente.', 'muted', wrap=True))
-        self.accent_preview = QWidget()
-        self.accent_preview.setMinimumHeight(14)
-        self.accent_preview.setObjectName('accentPreview')
-        self.accent_preview.setStyleSheet(f'background: {theme.accent()}; border-radius: 7px;')
-        look.body.addWidget(self.accent_preview)
         # Native gradients are independent of the selected visual theme.
         bg_row = QHBoxLayout()
         bg_row.addWidget(label('Hintergrund', 'strong'))
@@ -392,6 +392,10 @@ class PreferencesPage(Page):
         r_motion.addWidget(self.motion_combo)
         r_motion.addStretch(1)
         look.body.addLayout(r_motion)
+        self.compact_overview = QCheckBox('Kompakter Systemkopf auf der Übersicht')
+        self.compact_overview.setChecked(settings.get('compact_overview', False))
+        self.compact_overview.toggled.connect(self.set_compact_overview)
+        look.body.addWidget(self.compact_overview)
         look.body.addWidget(label('Übergänge anpassen: weich, verkürzt oder ohne Animation.', 'muted', wrap=True))
         self.sound_toggle = QCheckBox('Glas-Klang bei Klicks')
         self.sound_toggle.setChecked(settings.get('ui_sounds', True))
@@ -442,6 +446,9 @@ class PreferencesPage(Page):
         render_row = QHBoxLayout()
         render_row.addWidget(label('Render-Methode', 'strong'))
         self.render_combo = QComboBox()
+        self.render_combo.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon)
+        self.render_combo.setMinimumContentsLength(14)
+        self.render_combo.setMaximumWidth(280)
         for backend in renderer.CHOICES:
             self.render_combo.addItem(tr(renderer.DESCRIPTIONS[backend]), backend)
         selected_renderer = settings.get('render_backend', renderer.SOFTWARE)
@@ -473,17 +480,13 @@ class PreferencesPage(Page):
         maintenance.body.addWidget(label(
             'Nur Vitalux-eigene Daten verwalten. Kein Eingriff in Linux-Systemcaches.',
             'muted', wrap=True))
-        maintenance_row = QHBoxLayout()
         self.clear_cache_btn = QPushButton('Vitalux-Cache leeren')
         self.clear_cache_btn.setObjectName('ghostBtn')
         self.clear_cache_btn.clicked.connect(self.clear_app_cache)
-        maintenance_row.addWidget(self.clear_cache_btn)
         self.clear_preferences_btn = QPushButton('Persönliche Einstellungen löschen …')
         self.clear_preferences_btn.setObjectName('ghostBtn')
         self.clear_preferences_btn.clicked.connect(self.delete_personal_preferences)
-        maintenance_row.addWidget(self.clear_preferences_btn)
-        maintenance_row.addStretch(1)
-        maintenance.body.addLayout(maintenance_row)
+        maintenance.body.addWidget(ResponsiveActions([self.clear_cache_btn, self.clear_preferences_btn]))
         self._maintenance_card = maintenance
 
         monitor = Card('Live-Monitoring')
@@ -593,7 +596,8 @@ class PreferencesPage(Page):
         self.restore_button = QPushButton('Standardwerte wiederherstellen', self)
         self.restore_button.setObjectName('ghostBtn')
         self.restore_button.clicked.connect(self.restore_defaults)
-        restore_row.addWidget(self.restore_button)
+        self.restore_reveal = SoftReveal(self.restore_button, self)
+        restore_row.addWidget(self.restore_reveal)
         self._restore_row = restore_row
         self._refresh_restore_button()
         self._search_targets = [
@@ -624,8 +628,9 @@ class PreferencesPage(Page):
                      else self._settings_cards[category])
             for card in cards:
                 self.content.addWidget(card)
-        self.content.addLayout(self._restore_row)
         self.content.addWidget(self.advanced)
+        self.content.addLayout(self._restore_row)
+        self.expansion_follower = ExpansionFollower(self)
         self.refresh_appearance()
 
     SEARCH_CATEGORIES = {
@@ -638,6 +643,7 @@ class PreferencesPage(Page):
     def install_search_overlay(self, scroll):
         self.search_overlay.install_on(scroll)
         self.search_navigation.install_on(scroll)
+        self.expansion_follower.install_on(scroll)
 
     @staticmethod
     @lru_cache(maxsize=256)
@@ -720,9 +726,11 @@ class PreferencesPage(Page):
         button = QPushButton(title)
         button.setObjectName('ghostBtn')
         button.clicked.connect(lambda _=False, key=section: self.reset_category(key))
-        row.addWidget(button)
+        reveal = SoftReveal(button, self)
+        row.addWidget(reveal)
         body.addLayout(row)
         self._reset_buttons[section] = button
+        self._reset_reveals[section] = reveal
 
     @staticmethod
     def _select_without_signal(widget, data):
@@ -747,6 +755,10 @@ class PreferencesPage(Page):
         if not settings.set_many(changes):
             return
         if section == 'appearance':
+            self._check_without_signal(self.compact_overview, False)
+            pages = getattr(self.window, 'pages', ())
+            if pages and hasattr(pages[0][1], 'apply_density'):
+                pages[0][1].apply_density()
             self._select_without_signal(self.accent_combo, self.DEFAULTS['accent'])
             self._select_without_signal(self.motion_combo, self.DEFAULTS['motion'])
             self._select_without_signal(self.background_combo, self.DEFAULTS['background_style'])
@@ -862,16 +874,20 @@ class PreferencesPage(Page):
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if answer != QMessageBox.Yes:
             return
-        # Avoid deleting preferences before a running benchmark refuses the
-        # restart; never recursively delete a user configuration directory.
-        try:
-            Path(settings.PATH).unlink(missing_ok=True)
-        except OSError as exc:
-            QMessageBox.warning(self, 'Vitalux', str(exc))
-            return
-        restart = getattr(self.window, 'restart_for_renderer', None)
-        if callable(restart):
-            restart()
+        def commit():
+            try:
+                Path(settings.PATH).unlink(missing_ok=True)
+                return True
+            except OSError as exc:
+                QMessageBox.warning(self, 'Vitalux', str(exc))
+                return False
+        self._restart_after_reset(commit)
+
+    def _restart_after_reset(self, commit):
+        if self.window.restart_for_renderer(commit=commit):
+            self.restore_reveal.setRevealed(False)
+        else:
+            QMessageBox.warning(self, 'Vitalux', tr('Ein Vorgang läuft noch. Bitte danach erneut zurücksetzen.'))
 
     def change_renderer(self, *_):
         if eco.enabled():
@@ -921,75 +937,30 @@ class PreferencesPage(Page):
         settings.set(key, value)
         self._refresh_restore_button()
 
+    def set_compact_overview(self, enabled):
+        if settings.set('compact_overview', bool(enabled)):
+            pages = getattr(self.window, 'pages', ())
+            if pages and hasattr(pages[0][1], 'apply_density'):
+                pages[0][1].apply_density()
+            self._refresh_restore_button()
+
     def _refresh_restore_button(self):
         values = settings.get_many(self.DEFAULTS)
         for section, keys in self.SECTION_DEFAULTS.items():
             button = self._reset_buttons.get(section)
             if button is not None:
-                button.setVisible(any(values[key] != self.DEFAULTS[key] for key in keys))
-        self.restore_button.setVisible(
+                self._reset_reveals[section].setRevealed(any(values[key] != self.DEFAULTS[key] for key in keys))
+        self.restore_reveal.setRevealed(
             any(values[key] != default for key, default in self.DEFAULTS.items()))
 
     def restore_defaults(self):
         answer = QMessageBox.question(
             self, 'Vitalux',
-            tr('Alle Darstellungs-, MiniHUD-, Überwachungs- und Warnungseinstellungen zurücksetzen? Dashboard-Anordnung, importierte Bilder und Sprache bleiben erhalten.'),
+            tr('Alle Darstellungs-, MiniHUD-, Überwachungs- und Warnungseinstellungen zurücksetzen? Dashboard-Anordnung, importierte Bilder und Sprache bleiben erhalten. Vitalux wird anschließend neu gestartet.'),
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if answer != QMessageBox.Yes:
             return
-        # Update visible widgets without emitting change handlers or tearing
-        # down pages: the user keeps the current scroll position.
-        # Commit the reset atomically rather than rewriting settings.json
-        # once for every option. Custom colors, wallpapers and layouts remain.
-        settings.set_many(self.DEFAULTS)
-        self.eco_toggle.blockSignals(True)
-        self.eco_toggle.setChecked(False)
-        self.eco_toggle.blockSignals(False)
-        self.accent_combo.blockSignals(True)
-        self.accent_combo.setCurrentIndex(self.accent_combo.findData('#4f8cff'))
-        self.accent_combo.blockSignals(False)
-        self.render_combo.blockSignals(True)
-        self.render_combo.setCurrentIndex(self.render_combo.findData(renderer.SOFTWARE))
-        self.render_combo.blockSignals(False)
-        self._refresh_renderer_status()
-        self.motion_combo.blockSignals(True)
-        self.motion_combo.setCurrentIndex(self.motion_combo.findData('smooth'))
-        self.motion_combo.blockSignals(False)
-        self.background_combo.blockSignals(True)
-        self.background_combo.setCurrentIndex(self.background_combo.findData('theme_default'))
-        self.background_combo.blockSignals(False)
-        self.background_fit_combo.blockSignals(True)
-        self.background_fit_combo.setCurrentIndex(self.background_fit_combo.findData('cover'))
-        self.background_fit_combo.blockSignals(False)
-        self.sync_background_controls()
-        self.interval.blockSignals(True)
-        self.interval.setCurrentIndex(self.interval.findData(1))
-        self.interval.blockSignals(False)
-        self.close_to_tray.blockSignals(True)
-        self.close_to_tray.setChecked(True)
-        self.close_to_tray.blockSignals(False)
-        self.alert_toggle.blockSignals(True)
-        self.alert_toggle.setChecked(False)
-        self.alert_toggle.blockSignals(False)
-        for key, box in self.alert_boxes.items():
-            box.blockSignals(True)
-            box.setValue(self.DEFAULTS[key])
-            box.blockSignals(False)
-        self._check_without_signal(self.hud_on, False)
-        self._select_without_signal(self.hud_size, 'compact')
-        self._select_without_signal(self.hud_opacity, 90)
-        for key, box in self.hud_metrics.items():
-            self._check_without_signal(box, key in DEFAULT_KEYS)
-        toggle = getattr(self.window, 'set_mini_hud_enabled', None)
-        if callable(toggle):
-            toggle(False)
-        refresh = getattr(self.window, 'refresh_mini_hud', None)
-        if callable(refresh):
-            refresh()
-        self.window.set_interval(eco.interval())
-        self.window.apply_appearance()
-        self.refresh_appearance()
-        self._refresh_restore_button()
+        self._restart_after_reset(lambda: settings.set_many(self.DEFAULTS))
 
     def refresh_appearance(self):
         ultra = eco.enabled()
@@ -1034,7 +1005,7 @@ class PreferencesPage(Page):
         self.theme_note.setText(
             tr('Ultra Eco verwendet vorübergehend einen einfachen, flachen Skin.')
             if ultra else tr(self.mode_notes.get(theme.mode(), self.mode_notes['dark'])))
-        self.accent_preview.setStyleSheet(f'background: {theme.accent()}; border-radius: 7px;')
+        self.accent_preview.setColor(theme.accent())
         self.sync_background_controls()
         self._refresh_renderer_status()
         self.search_overlay.refresh_theme()

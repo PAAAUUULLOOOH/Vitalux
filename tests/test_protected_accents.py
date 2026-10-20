@@ -30,6 +30,8 @@ def test_color_protection():
         old = settings.PATH
         settings.PATH = str(Path(tmp) / "settings.json")
         try:
+            settings.set("theme", "glass")
+            theme.set_mode("glass")
             settings.set("accent", "#ef4444")
             settings.set("custom_accents", [
                 {"name": "Falsches Rot", "color": "#ef4444"},
@@ -77,7 +79,7 @@ def test_no_first_close_tray_toast():
                if isinstance(method, ast.FunctionDef) and method.name == "closeEvent"]
     assert len(methods) == 1
     code = ast.get_source_segment(path.read_text(encoding="utf-8"), methods[0])
-    assert "showMessage(" not in code
+    assert "self._tray.showMessage(" not in code
     assert "_hide_to_tray()" in code
     assert "_tray_announce" not in path.read_text(encoding="utf-8")
 

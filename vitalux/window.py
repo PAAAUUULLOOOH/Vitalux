@@ -1,6 +1,7 @@
 from collections import deque
 from pathlib import Path
 from threading import Event
+import time
 
 from PySide6.QtCore import Qt, QThread, QTimer, Signal, QVariantAnimation, QEasingCurve, QPoint, QRect, QEventLoop
 from PySide6.QtGui import QRegion, QAction
@@ -25,6 +26,7 @@ from .diagnostics import log_exception
 from .diagnostic_center import DiagnosticCenter
 from .diagnostic_engine import BlackboxRecorder
 from .mini_hud import MiniHUD
+from .sample_clock import sampling_gap
 
 
 class Sampler(QThread):
@@ -35,6 +37,11 @@ class Sampler(QThread):
         self.interval = eco.interval()
         self._last_error = None
         self._stopped = Event()
+        self._sample_clock = None
+
+    def start(self, *args):
+        self._stopped.clear()
+        super().start(*args)
 
     def stop(self):
         self.requestInterruption()
@@ -43,7 +50,13 @@ class Sampler(QThread):
     def run(self):
         while not self.isInterruptionRequested():
             try:
+                gap = sampling_gap(self._sample_clock, (time.time(), time.monotonic()), self.interval)
+                if gap:
+                    sensors.prime()
                 data = sensors.collect()
+                self._sample_clock = (time.time(), time.monotonic())
+                data['timestamp'] = self._sample_clock[0]
+                data['_gap_before'] = gap
                 if not self.isInterruptionRequested():
                     self.sample.emit(data)
                 self._last_error = None
@@ -77,7 +90,7 @@ class MainWindow(QMainWindow):
             self.resize(1380, 900)
         self.hist = {k: deque(maxlen=900) for k in (
             "cpu", "ram", "gpu", "vram", "net_down", "net_up", "io_read", "io_write",
-            "cpu_temp", "gpu_temp", "gpu_clock", "gpu_power")}
+            "cpu_temp", "gpu_temp", "gpu_clock", "gpu_power", "time")}
         self._extrema = SessionExtrema()
         self._mini_hud = MiniHUD()
         self._mini_hud.hidden_by_user.connect(self._mini_hud_closed)
@@ -95,6 +108,9 @@ class MainWindow(QMainWindow):
         self._close_retry.setSingleShot(True)
         self._close_retry.timeout.connect(self.close)
         self.restart_requested = False
+        self._shutdown_pending = False
+        self._reset_commit = None
+        self._shutdown_not_before = 0.0
         self._update_notice_queued = False
         self._notified_update_version = str(settings.get('last_notified_update_version', ''))
         self._tray_was_maximized = False
@@ -133,7 +149,7 @@ class MainWindow(QMainWindow):
         self._tray_click_timer.timeout.connect(self._toggle_tray_window)
         self._tray.show()
         manager.changed.connect(self._sync_glow)
-        manager.restart.connect(self.quit_from_tray)
+        manager.restart.connect(self._restart_after_update)
         self._build(0)
         self._appearance_key = self._appearance_signature()
         self._appearance_overlay = None
@@ -306,7 +322,22 @@ class MainWindow(QMainWindow):
         overview = self.pages[0][1]
         if index != 0 and hasattr(overview, 'board') and overview.board.editing:
             overview.save_editor()
+        changed = index != self.stack.currentIndex()
+        scroll = self.stack.widget(index)
+        if changed:
+            scroll._cancel_scroll()
+            page = self.pages[index][1]
+            if hasattr(page, 'search_navigation'):
+                page.search_navigation.cancel()
+                page.expansion_follower.cancel()
+                page.search_overlay.close_search()
+            self.nav_buttons[index].setFocus(Qt.OtherFocusReason)
+            scroll.verticalScrollBar().setValue(0)
+            scroll.horizontalScrollBar().setValue(0)
         self.stack.setCurrentIndex(index)
+        if changed:
+            QTimer.singleShot(0, lambda: scroll.verticalScrollBar().setValue(0)
+                              if self.stack.currentWidget() is scroll else None)
         # Start the read-only SMART scan on first entry, after the device
         # selectors are visible. Subsequent visits keep the last results;
         # users can still rescan using the button.
@@ -679,6 +710,8 @@ class MainWindow(QMainWindow):
             return
         page = self.pages[self.stack.currentIndex()][1]
         try:
+            for chart in page.findChildren(ChartPanel):
+                chart.set_timeline(self.hist['time'])
             page.refresh(self.last_sample, self.hist)
             self._last_refresh_error = None
         except (AttributeError, KeyError, TypeError, ValueError) as exc:
@@ -689,7 +722,7 @@ class MainWindow(QMainWindow):
 
     @staticmethod
     def _appearance_signature():
-        return tuple(settings.get_many(dict(theme='glass', accent='#4f8cff',
+        return tuple(settings.get_many(dict(theme=theme.DEFAULT_THEME, accent='#4f8cff',
             background_style='theme_default', custom_background_selected='',
             custom_background_fit='cover', ultra_eco=False)).values())
 
@@ -849,7 +882,8 @@ class MainWindow(QMainWindow):
         if self._mini_hud.isVisible():
             self._mini_hud.update_sample(d)
         self.last_sample = d
-        self._check_alerts(d)
+        if not d.get('_gap_before'):
+            self._check_alerts(d)
         if self._tray is not None:
             self._tray.setToolTip(tray_tooltip(d))
         # Native, lightweight branding animation driven by the real CPU sample.
@@ -857,6 +891,12 @@ class MainWindow(QMainWindow):
         if not eco.enabled():
             self.pulse_core.set_cpu_load(cpu_pct)
         h = self.hist
+        stamp = d.get('timestamp', time.time())
+        if d.get('_gap_before') and h['time']:
+            missing = min(stamp-.001, h['time'][-1]+max(1, self.sampler.interval))
+            for key, history in h.items():
+                history.append(missing if key == 'time' else None)
+        h['time'].append(stamp)
         g = d["gpus"][0] if d["gpus"] else None
         h["cpu"].append(d["cpu"]["usage"])
         h["ram"].append(d["ram"]["percent"])
@@ -916,18 +956,34 @@ class MainWindow(QMainWindow):
         self.raise_()
         self.activateWindow()
 
-    def restart_for_renderer(self):
-        """Close gracefully; the portable launcher restarts after exit status 42."""
+    def restart_for_renderer(self, commit=None):
+        """Defer reset commits until workers have stopped and a restart is safe."""
         if self.restart_requested:
             return True
+        if getattr(self.manager, 'status', '') == 'installing':
+            return False
+        for _title, page in self.pages:
+            worker = (page.benchmark.thread if isinstance(page, DiskPage) else
+                      page.worker if isinstance(page, DiagnosticCenter) else None)
+            if worker is not None and worker.isRunning():
+                return False
         self._tray_click_timer.stop()
         self._force_quit = True
+        self.restart_requested = True
+        self._reset_commit = commit
+        self._shutdown_not_before = time.monotonic()+motion.duration(260)/1000 if commit else 0
         if self.close() or self._close_retry.isActive():
-            self.restart_requested = True
             return True
-        # An active benchmark may refuse shutdown.
-        self._force_quit = False
+        self.restart_requested = self._force_quit = False
+        self._reset_commit = None
         return False
+
+    def _restart_after_update(self):
+        # AppImages have an external atomic activation helper. ZIP editions
+        # restart through the launcher only after this process exits cleanly.
+        self.restart_requested = not bool(getattr(self.manager, 'pending_path', None))
+        self._force_quit = True
+        self.close()
 
     def quit_from_tray(self):
         self._tray_click_timer.stop()
@@ -958,30 +1014,47 @@ class MainWindow(QMainWindow):
                 self._tray_missing_notice = True
                 QTimer.singleShot(0, self._inform_missing_tray)
             return
-        # Commit an in-progress dashboard edit before the application closes.
-        if self.pages and hasattr(self.pages[0][1], 'board') and self.pages[0][1].board.editing:
-            self.pages[0][1].save_editor()
-        for _name, page in self.pages:
-            if isinstance(page, DiskPage):
-                page.stop_smart()
-                if not page.benchmark.stop_and_wait():
-                    event.ignore()
-                    return
-        # Do not destroy an active read-only diagnostic worker.
-        for _title, page in self.pages:
-            if isinstance(page, DiagnosticCenter) and page.worker is not None and page.worker.isRunning():
-                event.ignore()
-                self._notify_diagnostic_busy()
-                return
-        self.sampler.stop()
-        if not self.sampler.wait(7000):
-            # A slow sensor read may outlive the grace period. Keep its Qt
-            # owner alive and retry, rather than destroying a running thread.
+        if not self._shutdown_pending:
+            # Save edits before a reset transaction is committed, never after it.
+            if self.pages and hasattr(self.pages[0][1], 'board') and self.pages[0][1].board.editing:
+                self.pages[0][1].save_editor()
+            self._shutdown_pending = True
+            self.sampler.stop()
+            self.manager.shutdown()
+            for _title, page in self.pages:
+                if isinstance(page, DiskPage):
+                    worker = page.benchmark.thread
+                    if worker is not None and worker.isRunning():
+                        worker.stop()
+            self.centralWidget().setEnabled(False)
+            self.statusBar().showMessage(tr('Vitalux wird neu gestartet …' if self.restart_requested else 'Vitalux wird beendet …'))
+        workers_running = any(worker.isRunning() for worker in self.findChildren(QThread))
+        manager_ready = self.manager.shutdown() is not False
+        if workers_running or not manager_ready or time.monotonic() < self._shutdown_not_before:
             event.ignore()
-            self._force_quit = True
-            self._close_retry.start(100)
+            self._close_retry.start(25)
             return
         self._close_retry.stop()
+        if self._reset_commit is not None:
+            commit, self._reset_commit = self._reset_commit, None
+            try:
+                committed = commit() is not False
+            except Exception as exc:
+                log_exception(type(exc), exc, exc.__traceback__)
+                committed = False
+            if not committed:
+                event.ignore()
+                self._shutdown_pending = self.restart_requested = self._force_quit = False
+                self.centralWidget().setEnabled(True)
+                self.sampler.start()
+                resume = getattr(self.manager, 'resume_after_shutdown', None)
+                if callable(resume):
+                    resume()
+                for _title, page in self.pages:
+                    if isinstance(page, PreferencesPage):
+                        page._refresh_restore_button()
+                self.statusBar().showMessage(tr('Einstellungen konnten nicht zurückgesetzt werden.'), 8000)
+                return
         self._tray_click_timer.stop()
         self._tray_glow.stop()
         self._mini_hud.hide()

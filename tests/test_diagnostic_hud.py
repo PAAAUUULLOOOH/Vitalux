@@ -77,5 +77,10 @@ assert any('CPU' in entry[1] for entry in __import__('vitalux.mini_hud',fromlist
 print('QA: native window + 12 pages + Glass + MiniHUD + saved renderer + diagnostics OK')
 w._force_quit=True
 w.close()
+from PySide6.QtTest import QTest
+for _ in range(400):
+ if w.isHidden(): break
+ QTest.qWait(25)
+assert w.isHidden()
 app.quit()
 _tmp.cleanup()

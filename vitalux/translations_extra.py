@@ -1,5 +1,20 @@
 """Extra English translations for dashboard, settings, sensors and disk tests."""
 EN_MORE = {
+    'Obsidian Gold ist das Standarddesign. Die zehn Vorschaukacheln wählen ein Farbschema; neben der Akzentfarbenauswahl zeigt eine kleine Glasfläche die aktuelle Farbe.': 'Obsidian Gold is the default design. Choose a theme through the ten preview tiles; a small glass swatch beside the accent selector shows its current color.',
+    'Die Suche gleitet zu Treffern und schließt fünf Sekunden nach der Auswahl weich. Beim Öffnen der erweiterten Einstellungen scrollt die Seite mit; dort liegen Grafik-Renderer und Wartung.': 'Search glides to matches and closes softly five seconds after selection. The page follows Advanced settings as it opens; graphics renderers and Maintenance are inside.',
+    'Zurücksetzen-Buttons blenden weich ein und aus. Ganz unten setzt du alle Standardwerte wieder her und startest Vitalux neu; einzelne Bereiche benötigen keinen Neustart. Das Logo zeigt einen sanften Herzschlagimpuls.': 'Reset buttons fade in and out. Restore all defaults at the very bottom to restart Vitalux; individual sections do not require a restart. The logo traces a gentle heartbeat impulse.',
+
+    'Kompakter Systemkopf auf der Übersicht': 'Compact system header on Overview',
+    'Ein Vorgang läuft noch. Bitte danach erneut zurücksetzen.': 'An operation is still running. Reset settings after it finishes.',
+    'Für das Update ist nicht genügend freier Speicherplatz vorhanden.': 'There is not enough free disk space for the update.',
+    'Der Update-Download wurde unterbrochen. Bitte erneut versuchen.': 'The update download was interrupted. Please try again.',
+    'Noch keine Messwerte verfügbar': 'No measurements available yet',
+    'Keine Laufwerksdaten verfügbar': 'No drive data available',
+    'Einstellungen konnten nicht zurückgesetzt werden.': 'Settings could not be reset.',
+    'Vitalux wird neu gestartet …': 'Vitalux is restarting…',
+    'Vitalux wird beendet …': 'Vitalux is closing…',
+    'Alle Darstellungs-, MiniHUD-, Überwachungs- und Warnungseinstellungen zurücksetzen? Dashboard-Anordnung, importierte Bilder und Sprache bleiben erhalten. Vitalux wird anschließend neu gestartet.': 'Reset all appearance, MiniHUD, monitoring and alert settings? Dashboard arrangement, imported images and language are preserved. Vitalux will then restart.',
+
     'Die Einstellungssuche gleitet zu eindeutig erkannten Treffern. Nach der Auswahl bleibt die Leiste fünf Sekunden sichtbar und schließt dann weich. Grafik-Renderer und Wartung findest du ganz unten unter Erweiterte Einstellungen; Suchtreffer klappen diesen Bereich automatisch auf.': 'Settings search glides to confidently recognized matches. After selecting a result, the field stays visible for five seconds, then closes smoothly. Graphics renderers and Maintenance are at the bottom under Advanced settings; matching searches expand this section automatically.',
     'Ein kurzer Kristallklang begleitet Vitalux-Buttons, Auswahlen und das Öffnen von Dropdowns, auch per Tastatur. Lautstärke und Stummschaltung findest du in den Einstellungen. Geschlossene Dropdowns ändern ihre Auswahl beim Scrollen nicht.': 'A short crystal chime accompanies Vitalux buttons, selections and opening dropdowns, including keyboard activation. Adjust its volume or mute it in Settings. Scrolling over a closed dropdown never changes its selection.',
     'Die zehn Designvorschauen vergrößern sich beim Darüberfahren sanft. Feste Paletten und Hintergründe stehen grau in deaktivierten Feldern. Der originale Vitalux-Schriftzug trägt einen langsam wandernden Lichtreflex.': 'The ten theme previews gently enlarge on hover. Fixed palettes and backgrounds appear as grey disabled fields. A slow satin reflection travels across the original Vitalux wordmark.',

@@ -34,6 +34,8 @@ class RestartHost:
         self._tray_click_timer = StopTimer()
         self._close_retry = QTimer()
         self.allowed = allowed
+        self.manager = type("Manager", (), {"status": "idle"})()
+        self.pages = []
 
     def close(self):
         return self.allowed

@@ -75,10 +75,10 @@ SLIDES = [
     ),
     (
         "Darstellung und Einstellungen",
-        "Die Einstellungssuche gleitet zu eindeutig erkannten Treffern. Nach der Auswahl bleibt die Leiste fünf Sekunden sichtbar und schließt dann weich. Grafik-Renderer und Wartung findest du ganz unten unter Erweiterte Einstellungen; Suchtreffer klappen diesen Bereich automatisch auf.",
+        "Obsidian Gold ist das Standarddesign. Die zehn Vorschaukacheln wählen ein Farbschema; neben der Akzentfarbenauswahl zeigt eine kleine Glasfläche die aktuelle Farbe.",
         "Bei anpassbaren Farbschemata wählst du integrierte Hintergründe oder eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
-        "Ein kurzer Kristallklang begleitet Vitalux-Buttons, Auswahlen und das Öffnen von Dropdowns, auch per Tastatur. Lautstärke und Stummschaltung findest du in den Einstellungen. Geschlossene Dropdowns ändern ihre Auswahl beim Scrollen nicht.",
-        "Die zehn Designvorschauen vergrößern sich beim Darüberfahren sanft. Feste Paletten und Hintergründe stehen grau in deaktivierten Feldern. Der originale Vitalux-Schriftzug trägt einen langsam wandernden Lichtreflex.",
+        "Die Suche gleitet zu Treffern und schließt fünf Sekunden nach der Auswahl weich. Beim Öffnen der erweiterten Einstellungen scrollt die Seite mit; dort liegen Grafik-Renderer und Wartung.",
+        "Zurücksetzen-Buttons blenden weich ein und aus. Ganz unten setzt du alle Standardwerte wieder her und startest Vitalux neu; einzelne Bereiche benötigen keinen Neustart. Das Logo zeigt einen sanften Herzschlagimpuls.",
         "settings",
     ),
     (

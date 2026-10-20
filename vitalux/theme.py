@@ -1,4 +1,5 @@
 """Vitalux themes with a shared, user-selectable accent palette."""
+from . import DEFAULT_THEME
 from string import Template
 from PySide6.QtGui import QColor
 from .premium import COLLECTIONS, KEYS as PREMIUM_MODES
@@ -29,7 +30,7 @@ def background_locked():
     return eco.enabled() or mode() in (*FIXED_MODES, 'holographic')
 
 
-_mode = "glass"
+_mode = DEFAULT_THEME
 _accent = "#4f8cff"  # Replaced with the detected distro color at app startup.
 BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED = (_THEMES[_mode][key] for key in (
     "bg", "sidebar", "card", "border", "track", "grid", "text", "muted"))
@@ -37,7 +38,7 @@ BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED = (_THEMES[_mode][key] for k
 
 def set_mode(value):
     global _mode, BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED
-    _mode = "dark" if value == "amoled" else value if value in _THEMES else "glass"
+    _mode = "dark" if value == "amoled" else value if value in _THEMES else DEFAULT_THEME
     a = _THEMES[_mode]
     BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED = (a[x] for x in ("bg", "sidebar", "card", "border", "track", "grid", "text", "muted"))
 
@@ -360,6 +361,12 @@ def stylesheet():
     )
     # Settings-local search remains themed to the selected palette.
     qss += f"""
+    QPushButton:focus, QToolButton:focus, QComboBox:focus, QLineEdit:focus {{
+        border: 1px solid {base}; }}
+    QPushButton:pressed, QToolButton:pressed {{
+        background-color: {active_bg}; border-color: {base}; }}
+    QPushButton:disabled, QToolButton:disabled {{
+        color: {MUTED}; border-color: {GRID}; }}
     QLineEdit#settingsSearch {{
         background: {CARD}; color: {TEXT}; border: 1px solid {BORDER};
         padding: 9px 12px; border-radius: 7px;

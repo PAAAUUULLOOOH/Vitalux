@@ -9,7 +9,7 @@
 <p align="center"><strong>Your Linux system, clearly in view.</strong><br>A native desktop monitor with live telemetry, glass interfaces and practical hardware diagnostics.</p>
 <p align="center"><a href="https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest"><strong>Download</strong></a> · <a href="USER-GUIDE.md">User guide</a> · <a href="CHANGELOG.en.md">Changelog</a> · <a href="https://github.com/PAAAUUULLOOOH/Vitalux/issues">Support</a> · <a href="THIRD-PARTY.md">Licenses</a></p>
 
-![Vitalux running in English with Black Glass Gold and real system measurements](assets/vitalux-dashboard-preview.png)
+![Vitalux running in English with Obsidian Gold and real system measurements](assets/vitalux-dashboard-preview.png)
 
 ## What Vitalux offers
 
@@ -32,27 +32,27 @@ CPU rendering is the default. Optional GPU renderers require suitable drivers an
 
 ### AppImage
 
-Download the `.AppImage` from [the latest release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). For v0.9.5.6:
+Download the `.AppImage` from [the latest release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). For v0.9.5.7:
 
 ```bash
-chmod +x Vitalux-v0.9.5.6-x86_64.AppImage
-./Vitalux-v0.9.5.6-x86_64.AppImage
+chmod +x Vitalux-v0.9.5.7-x86_64.AppImage
+./Vitalux-v0.9.5.7-x86_64.AppImage
 ```
 
 The first-run dialog offers installation in your user account, including an application-menu entry. Administrator rights are not required. You can also choose **Run once**, or run explicitly without integration:
 
 ```bash
-./Vitalux-v0.9.5.6-x86_64.AppImage --portable
+./Vitalux-v0.9.5.7-x86_64.AppImage --portable
 ```
 
 To add or remove desktop integration later, use `--install` or `--uninstall`. Uninstalling keeps personal preferences.
 
 ### Portable ZIP or source ZIP
 
-Download **`Vitalux-v0.9.5.6-linux-x86_64.zip`**, extract the entire archive into its own writable folder, and run:
+Download **`Vitalux-v0.9.5.7-linux-x86_64.zip`**, extract the entire archive into its own writable folder, and run:
 
 ```bash
-cd Vitalux-v0.9.5.6
+cd Vitalux-v0.9.5.7
 bash run.sh
 ```
 
@@ -62,11 +62,13 @@ The `Update-von-...zip` download is a manual overlay for the immediately precedi
 
 ## Make it yours
 
-Open **Settings → Appearance** to select a theme. Preview tiles grow gently on hover. **Obsidian Gold, Champagne Glass, Black Glass Gold and Aurora Gold** use coordinated fixed palettes and backgrounds; their grey fields are disabled. Holographic also has a fixed background. Compatible themes retain your personal accent colors and images.
+**Obsidian Gold is the default appearance.** Open **Settings → Appearance** to select a theme. Existing installations retain their saved choice. Preview tiles grow gently on hover. **Obsidian Gold, Champagne Glass, Black Glass Gold and Aurora Gold** use coordinated fixed palettes and backgrounds; their grey fields are disabled. Holographic also has a fixed background. Compatible themes retain your personal accent colors and images.
 
-The settings magnifier predicts matches and glides to their controls. After selecting a result, the search remains visible for five seconds, then closes softly. **Advanced settings** stays at the very bottom and expands for graphics renderers and Maintenance; relevant searches open it automatically.
+A compact glass swatch previews the current accent. **Compact system header on Overview** gives charts more space. The original logo traces a soft heartbeat inside its rotating outer bands.
 
-Crystal sounds accompany Vitalux buttons, selections and dropdowns. Adjust volume or disable them in Settings. Scrolling over a closed dropdown never changes its selection. Animation profiles and Ultra Eco remain available.
+The settings magnifier predicts matches and glides to their controls. After selecting a result, the search remains visible for five seconds, then closes softly. **Advanced settings** expands for graphics renderers and Maintenance, with the page following its reveal; relevant searches open it automatically. The full **Restore defaults** action sits below it, at the very bottom. Reset buttons appear and disappear smoothly. A full reset restarts Vitalux; individual section resets apply in place. Reopening a sidebar category starts at the top.
+
+Crystal sounds accompany Vitalux buttons, selections and dropdowns. Adjust volume or disable them in Settings. Scrolling over a closed dropdown never changes its selection. Animation profiles and Ultra Eco remain available. Charts identify hovered measurements and times; missing readings and sampling interruptions remain gaps.
 
 ## Updates and verification
 
@@ -75,7 +77,7 @@ Vitalux checks official GitHub releases at startup and approximately every six h
 To check a manually downloaded package, download its release's `SHA256SUMS.txt` file into the same directory and run:
 
 ```bash
-sha256sum --ignore-missing -c Vitalux-v0.9.5.6-SHA256SUMS.txt
+sha256sum --ignore-missing -c Vitalux-v0.9.5.7-SHA256SUMS.txt
 ```
 
 A matching checksum confirms consistency with that manifest; it is not an independent digital signature.
@@ -107,11 +109,11 @@ VITALUX_RENDERER=software bash run.sh
 For an AppImage that cannot mount through FUSE, extract its payload instead:
 
 ```bash
-./Vitalux-v0.9.5.6-x86_64.AppImage --appimage-extract
+./Vitalux-v0.9.5.7-x86_64.AppImage --appimage-extract
 VITALUX_RENDERER=software bash squashfs-root/AppRun --portable
 ```
 
-GPU modes are experimental. Select them under **Settings → Advanced settings** and use **Restart now** to apply a change. Closing or restarting waits for active sensor reads to finish safely.
+GPU modes are experimental. Select them under **Settings → Advanced settings** and use **Restart now** to apply a change. Closing or restarting waits asynchronously for active work to finish; the window remains responsive.
 </details>
 
 <details>

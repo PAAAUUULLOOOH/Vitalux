@@ -5,7 +5,7 @@ import PySide6
 from PySide6.QtCore import Qt, QPoint, QTimer, qVersion, QPropertyAnimation, QParallelAnimationGroup, QEasingCurve, QThread, Signal
 from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QVBoxLayout, QWidget, QMenu, QSizePolicy, QToolButton, QGraphicsOpacityEffect
 
-from . import theme, motion
+from . import theme, motion, settings
 from .ui_locale import QPushButton
 from .dashboard import DashboardBoard, ORDER, TITLES
 from .benchmark_ui import BenchmarkPanel
@@ -200,6 +200,7 @@ class OverviewPage(Page):
         pic.setGeometry(0, 0, 96, 96)
         pic.setAlignment(Qt.AlignCenter)
         pic.setPixmap(logo)
+        self._distro_picture, self._distro_pixmap = pic, logo
         self.distro_logo_remove = QToolButton(self.distro_logo_host)
         self.distro_logo_remove.setObjectName('tileRemoveHint')
         self.distro_logo_remove.setProperty('distroLogoRemove', True)
@@ -304,7 +305,20 @@ class OverviewPage(Page):
         self.distro_logo_remove.clicked.connect(self.board.hide_distro_logo)
         self._sync_distro_logo()
         self._position_editor_controls()
+        self.apply_density()
         QTimer.singleShot(0,self.board.refresh_geometry)
+
+    def apply_density(self):
+        compact = settings.get('compact_overview', False)
+        size = 48 if compact else 96
+        self.distro_logo_host.setFixedSize(size, size)
+        self._distro_picture.setGeometry(0, 0, size, size)
+        self._distro_picture.setPixmap(self._distro_pixmap.scaled(
+            size, size, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        self.distro_logo_remove.move(size-26, 1)
+        for chip in self.chips.chips.values():
+            chip.layout().setContentsMargins(10, 6, 10, 6) if compact else chip.layout().setContentsMargins(14, 10, 14, 10)
+        self.board.refresh_geometry()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -484,6 +498,8 @@ class OverviewPage(Page):
         root = next((x for x in disks if x["mount"] == "/"), disks[0] if disks else None)
         if root:
             self.g_disk.set(root["percent"], f"{fmt_bytes(root['used'])} / {fmt_bytes(root['total'])}")
+        else:
+            self.g_disk.set(None, 'Keine Laufwerksdaten verfügbar')
 
         score, state, detail = _system_state(d)
         self.g_health.set(score, f"{state}\n{detail}",

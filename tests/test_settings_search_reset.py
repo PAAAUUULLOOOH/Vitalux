@@ -55,7 +55,7 @@ def check():
         try:
             settings.PATH = str(Path(folder) / 'settings.json')
             i18n.set_lang('de')
-            theme.set_mode('glass')
+            theme.set_mode(PreferencesPage.DEFAULTS['theme'])
             theme.set_accent('#4f8cff')
             host = Host()
             page = PreferencesPage(host)
@@ -167,13 +167,15 @@ def check():
             assert not page._reset_buttons['alerts'].isVisible()
             assert not page._reset_buttons['hud'].isVisible()
             page.reset_category('appearance')
-            assert settings.get('theme') == 'glass'
+            qwait(300)
+            assert settings.get('theme') == PreferencesPage.DEFAULTS['theme']
             assert not page._reset_buttons['appearance'].isVisible()
 
             page.alert_boxes['cpu_temp'].setValue(97)
             app.processEvents()
             assert page._reset_buttons['alerts'].isVisible()
             page.reset_category('alerts')
+            qwait(300)
             assert settings.get('cpu_temp') == 90
             assert not page._reset_buttons['alerts'].isVisible()
 
@@ -181,6 +183,7 @@ def check():
             app.processEvents()
             assert page._reset_buttons['hud'].isVisible()
             page.reset_category('hud')
+            qwait(300)
             assert settings.get('mini_hud_layout') == 'compact'
             assert not page._reset_buttons['hud'].isVisible()
             assert not page.restore_button.isVisible()

@@ -1,5 +1,4 @@
 import os
-import subprocess
 
 from PySide6.QtCore import QObject, QThread, QTimer, Signal
 
@@ -59,6 +58,7 @@ class UpdateManager(QObject):
         self.status = 'preview' if os.environ.get('VITALUX_LOCAL_PREVIEW') == '1' else 'idle'
         self.latest = self.notes = self.url = self.error = self.sha256 = ""
         self.pending_path = None
+        self._shutting_down = False
         self._thread = None
         self._active_threads = []  # Do not destroy Qt threads while queued signals are still finishing.
         self._timer = QTimer(self)
@@ -79,7 +79,7 @@ class UpdateManager(QObject):
         worker.start()
 
     def check(self):
-        if os.environ.get('VITALUX_LOCAL_PREVIEW') == '1':
+        if self._shutting_down or os.environ.get('VITALUX_LOCAL_PREVIEW') == '1':
             return
         if self.status in ("checking", "installing"):
             return
@@ -100,7 +100,7 @@ class UpdateManager(QObject):
         self.changed.emit()
 
     def install(self):
-        if os.environ.get('VITALUX_LOCAL_PREVIEW') == '1':
+        if self._shutting_down or os.environ.get('VITALUX_LOCAL_PREVIEW') == '1':
             return
         if self.status != "available" or not self.url:
             return
@@ -119,7 +119,8 @@ class UpdateManager(QObject):
         self.pending_path = getattr(self._thread, 'pending_path', None)
         self.status = "installed"
         self.changed.emit()
-        QTimer.singleShot(900, self._restart)
+        if not self._shutting_down:
+            QTimer.singleShot(900, self._restart)
 
     def rollback(self):
         if updater.appimage_path() or self.status in ('checking', 'installing') or not updater.backup_available():
@@ -131,6 +132,8 @@ class UpdateManager(QObject):
         self._start_worker(thread)
 
     def _restart(self):
+        if self._shutting_down:
+            return
         if self.pending_path:
             try:
                 updater.activate_appimage_update(self.pending_path)
@@ -138,13 +141,15 @@ class UpdateManager(QObject):
                 self.status, self.error = 'error', str(exc)
                 self.changed.emit()
                 return
-        else:
-            root = updater.app_root()
-            subprocess.Popen(["bash", os.path.join(root, "run.sh")], cwd=root, start_new_session=True,
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         self.restart.emit()
 
     def shutdown(self):
-        for thread in list(self._active_threads):
-            if thread.isRunning():
-                thread.wait(10000)
+        """Stop scheduling work; let the GUI await workers without blocking."""
+        self._shutting_down = True
+        self._timer.stop()
+        return not any(thread.isRunning() for thread in self._active_threads)
+
+    def resume_after_shutdown(self):
+        self._shutting_down = False
+        if self.status != 'preview':
+            self._timer.start()

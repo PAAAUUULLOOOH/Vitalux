@@ -17,7 +17,7 @@ from pathlib import Path
 
 from PySide6.QtCore import QObject, QPointF, QRectF, Qt, QTimer
 from PySide6.QtGui import (QBrush, QColor, QFont, QIcon, QLinearGradient,
-                           QPainter, QPen, QPixmap, QRadialGradient)
+                           QPainter, QPainterPath, QPen, QPixmap, QRadialGradient)
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import QSizePolicy, QWidget
 
@@ -55,6 +55,9 @@ def _logo_layers(filename):
                     or (tag == 'circle' and child.get('cx') in ('213', '53')))
             if band != outer:
                 root.remove(child)
+            elif not outer and (d.startswith('M 65,126') or
+                                (tag == 'circle' and child.get('cx') == '132')):
+                child.set('opacity', str(float(child.get('opacity', '1'))*.48))
         svg = QSvgRenderer(ET.tostring(root))
         if not svg.isValid():
             raise RuntimeError('Unable to load animated Vitalux logo layer')
@@ -405,7 +408,7 @@ class TrayPulse(QObject):
 
 
 class PulseCore(QWidget):
-    """Slowly revolving outer bands around the stationary Vitalux pulse.
+    """Slowly revolving bands around a softly traced heartbeat waveform.
 
     All UI changes run in the main Qt thread; the monitoring worker only sends
     its existing, once-per-second CPU sample through the MainWindow signal.
@@ -417,6 +420,10 @@ class PulseCore(QWidget):
         self._cpu = 0.0
         self._display_cpu = 0.0
         self._phase = 0.0
+        self._heartbeat_phase = 0.0
+        self._waveform = QPainterPath(QPointF(65, 126))
+        for x, y in ((91, 126), (109, 101), (132, 163), (158, 94), (173, 126), (191, 126)):
+            self._waveform.lineTo(x, y)
         self._last_tick = time.monotonic()
         self._update_available = False
         self._update_clock = 0.0
@@ -475,6 +482,7 @@ class PulseCore(QWidget):
         self._update_clock = (self._update_clock + elapsed*1.9) % (2 * math.pi)
         self._display_cpu += (self._cpu - self._display_cpu) * 0.09
         self._phase = (self._phase + elapsed*7.5) % 360.0  # One revolution / 48s.
+        self._heartbeat_phase = (self._heartbeat_phase+elapsed/1.9) % 1.0
         self.update()
 
     def paintEvent(self, _event):
@@ -552,14 +560,29 @@ class PulseCore(QWidget):
         painter.drawArc(orbit, -14 * 16, 23 * 16)
         painter.restore()
 
-        # A tiny heartbeat at the bottom of the central waveform.
-        t = 0.5 + 0.5 * math.sin(math.radians(self._phase * 3.2))
-        highlight = QColor(theme.secondary_accent())
-        highlight.setAlpha(int(15 + (30 + 55 * strength) * t))
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(highlight)
-        radius = size * (0.027 + 0.014 * strength) * (0.9 + 0.1 * t)
-        painter.drawEllipse(QRectF(rect.left() + size * 132 / 256 - radius,
-                                   rect.top() + size * 163 / 256 - radius,
-                                   2 * radius, 2 * radius))
+        # Trace the authored waveform; its shape and the outer rotation stay
+        # independent. The short quiet interval gives each beat room to settle.
+        if self._heartbeat_phase < .78:
+            head = self._heartbeat_phase/.78
+            envelope = min(1.0, head/.06, (1-head)/.10)
+            painter.save()
+            painter.translate(rect.topLeft())
+            painter.scale(size/256, size/256)
+            painter.setBrush(Qt.NoBrush)
+            for trail, width, alpha, tone in ((.23, 18, 40, theme.accent()),
+                                              (.17, 9, 150, theme.accent()),
+                                              (.055, 6, 245, theme.secondary_accent())):
+                start = max(0, head-trail)
+                segment = self._waveform.trimmed(start, head)
+                ink = QColor(tone)
+                ink.setAlpha(round(alpha*max(0, envelope)))
+                painter.setPen(QPen(ink, width, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+                painter.drawPath(segment)
+            tip = self._waveform.pointAtPercent(self._waveform.percentAtLength(self._waveform.length()*head))
+            glow = QColor(theme.TEXT)
+            glow.setAlpha(round(245*max(0, envelope)))
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(glow)
+            painter.drawEllipse(tip, 3.1, 3.1)
+            painter.restore()
         painter.end()

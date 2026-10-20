@@ -1,5 +1,16 @@
 # Vitalux – Änderungen
 
+## [v0.9.5.7] - 2026-10-20
+- Obsidian Gold ist der Standard für neue Installationen und das Zurücksetzen der Darstellung, mit feineren Glaskanten, weicheren Reflexionen und klareren Messwerten; gespeicherte Designauswahlen bleiben erhalten.
+- Die originale Linie in der Logomitte erhält einen sanften Herzschlagimpuls, während sich die äußeren Streifen weiterhin langsam drehen.
+- Eine kompakte Farbprobe mit Glaskante neben der Akzentfarbenauswahl ersetzt den langgezogenen Farbbalken.
+- Zurücksetzen-Buttons erscheinen und verschwinden weich. Die vollständige Rücksetzung steht ganz unten und startet Vitalux sicher neu; einzelne Bereiche lösen keinen Neustart aus.
+- Die Seite folgt beim Aufklappen der erweiterten Einstellungen. Erneut geöffnete Kategorien beginnen am Seitenanfang.
+- Diagramme unterscheiden Reihen durch Linienmuster und zeigen Messnamen und Zeit beim Darüberfahren. Fehlende Werte und Messpausen bleiben als Lücken erkennbar.
+- Ein optional kompakter Systemkopf schafft auf der Übersicht mehr Platz für Messwerte. Tastaturfokus und gedrückte Bedienelemente sind klarer erkennbar.
+- Beenden und Neustarten bleiben während laufender Hintergrundarbeiten bedienbar; vollständige Rücksetzungen lassen Einstellungen unberührt, wenn ein aktiver Vorgang den Neustart verhindert.
+- Updates prüfen freien Speicherplatz und melden unterbrochene Downloads. Klickklänge verbinden sich nach Pausen mit dem aktuellen Audioausgang.
+
 ## [v0.9.5.6] - 2026-10-19
 - Feste Designpaletten und Hintergründe bleiben grau und deaktiviert; geschlossene Dropdowns ändern ihre Auswahl beim Scrollen nicht.
 - Neuer weicher Kristallklang für Buttons, Auswahlen und Dropdowns; zuverlässige Wiederholung nach Pausen und bei schnellen Klicks.

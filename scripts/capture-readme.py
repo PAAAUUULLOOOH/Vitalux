@@ -32,21 +32,21 @@ def main():
     output.parent.mkdir(parents=True, exist_ok=True)
 
     # Config is isolated by the workflow's XDG_CONFIG_HOME, never a real user's.
-    settings.set("theme", "black_glass_gold")
+    settings.set("theme", "obsidian_gold")
     settings.set("sidebar_collapsed", False)
     i18n.set_lang("en")
     application = QApplication([])
     application.setQuitOnLastWindowClosed(False)
     application.setApplicationName("Vitalux")
     info = distro.info()
-    theme.set_mode("black_glass_gold")
+    theme.set_mode("obsidian_gold")
     theme.set_accent(info["color"])
     application.setStyleSheet(theme.stylesheet())
     application.setWindowIcon(app_icon())
     sensors.prime()
     manager = UpdateManager()
     window = MainWindow(info, load_logo(info, 96), manager)
-    window.resize(1380, 900)
+    window.resize(1380, 1000)
     window.show()
 
     def capture():

@@ -42,6 +42,8 @@ def check_preferences(app):
         original_name = QInputDialog.getText
         original_notice = QMessageBox.information
         try:
+            settings.set("theme", "glass")
+            theme.set_mode("glass")
             settings.set("accent", "auto")
             # Older releases could mistakenly persist an immutable preset as
             # a user accent, making Red deletable and removable from the menu.

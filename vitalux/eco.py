@@ -3,6 +3,7 @@
 Saved theme, wallpaper, accent, motion, sampler interval and renderer are
 never overwritten. Disabling the toggle restores every previous preference.
 """
+from . import DEFAULT_THEME
 from . import settings
 
 KEY = 'ultra_eco'
@@ -14,7 +15,7 @@ def enabled():
 
 
 def theme_name():
-    return 'minimal' if enabled() else settings.get('theme', 'glass')
+    return 'minimal' if enabled() else settings.get('theme', DEFAULT_THEME)
 
 
 def interval():

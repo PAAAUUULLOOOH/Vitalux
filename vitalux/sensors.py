@@ -51,6 +51,7 @@ def _run(*cmd, timeout=2):
 
 
 def prime():
+    _last.clear()
     psutil.cpu_percent(interval=None, percpu=True)
     psutil.net_io_counters()
     psutil.disk_io_counters()
