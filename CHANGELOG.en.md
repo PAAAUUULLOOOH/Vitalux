@@ -1,8 +1,5 @@
 # Vitalux – Changes
 
-## [v0.9.5.8] - 2026-10-20
-- Overview always uses the compact system header, with a smaller distribution logo and tighter spacing to leave more room for measurements and charts. The compact-header switch is removed; existing installations also receive the compact view.
-
 ## [v0.9.5.7] - 2026-10-20
 - Obsidian Gold is the default for new installations and appearance resets, with finer glass edges, softer reflections and clearer measurements; saved theme choices are preserved.
 - The original central logo waveform now carries a soft heartbeat trace while the outer bands continue their slow rotation.

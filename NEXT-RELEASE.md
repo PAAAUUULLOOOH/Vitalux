@@ -1,17 +1,4 @@
-# Release plan — v0.9.5.8
-
-## v0.9.5.8 follow-up
-
-Status: implemented for v0.9.5.8.
-
-The owner requested the compact Overview header as the permanent standard on
-2026-10-20. Remove the optional switch and its preference logic. Existing saved
-values must not restore the larger header. Keep the distribution-logo editor,
-all eight system-information chips, telemetry-card sizes and custom tile order.
-Update the English README and guide, native DE/EN tour and user-facing changelog.
-This supersedes the optional-header requirement in the completed plan below.
-
-## Completed v0.9.5.7 plan
+# Release plan — v0.9.5.7
 
 Agreed with the owner on 2026-10-20. Baseline: v0.9.5.6.
 Target: v0.9.5.7. Status: implemented in v0.9.5.7.

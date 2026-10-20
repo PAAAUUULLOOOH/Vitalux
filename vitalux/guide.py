@@ -27,7 +27,7 @@ SLIDES = [
     ),
     (
         "Die Live-Übersicht",
-        "Der kompakte Systemkopf lässt auf der Startseite mehr Platz für Messwerte und Diagramme.",
+        "Auf der Startseite sind die wichtigsten Informationen als Kacheln zusammengefasst.",
         "Du siehst unter anderem Prozessor, Grafik, RAM, Systemlaufwerk und den Systemzustand.",
         "Diagramme zeigen, wie sich die Auslastung im Zeitverlauf verändert.",
         "Unter „Layout bearbeiten“ verschiebst du Kacheln; freie Flächen füllen sich automatisch, der Kachelabstand bleibt gleich.",

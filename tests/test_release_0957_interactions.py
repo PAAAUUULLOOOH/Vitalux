@@ -44,8 +44,6 @@ def run():
             settings.set('theme', 'glass')
             assert eco.theme_name() == 'glass', 'An update replaced a saved theme'
             settings.set('theme', DEFAULT_THEME)
-            # An old disabled preference must not undo the compact standard.
-            settings.set('compact_overview', False)
             theme.set_mode(DEFAULT_THEME)
             app.setStyleSheet(theme.stylesheet())
             with patch.object(Sampler, 'start'):
@@ -97,11 +95,9 @@ def run():
             QTest.qWait(450)
             assert cpu_scroll.verticalScrollBar().value() == 0
             overview = window.pages[0][1]
-            assert overview.distro_logo_host.width() == 48
-            assert overview.board._render_positions()['hero'][3] == 6
-            assert not hasattr(page, 'compact_overview')
-            page.reset_category('appearance')
-            assert overview.board._render_positions()['hero'][3] == 6
+            tall = overview.board._render_positions()['hero'][3]
+            page.compact_overview.click()
+            assert overview.board._render_positions()['hero'][3] < tall
 
             # The heartbeat changes locally while the authored outer angle stays fixed.
             pulse = window.pulse_core

@@ -32,27 +32,27 @@ CPU rendering is the default. Optional GPU renderers require suitable drivers an
 
 ### AppImage
 
-Download the `.AppImage` from [the latest release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). For v0.9.5.8:
+Download the `.AppImage` from [the latest release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). For v0.9.5.7:
 
 ```bash
-chmod +x Vitalux-v0.9.5.8-x86_64.AppImage
-./Vitalux-v0.9.5.8-x86_64.AppImage
+chmod +x Vitalux-v0.9.5.7-x86_64.AppImage
+./Vitalux-v0.9.5.7-x86_64.AppImage
 ```
 
 The first-run dialog offers installation in your user account, including an application-menu entry. Administrator rights are not required. You can also choose **Run once**, or run explicitly without integration:
 
 ```bash
-./Vitalux-v0.9.5.8-x86_64.AppImage --portable
+./Vitalux-v0.9.5.7-x86_64.AppImage --portable
 ```
 
 To add or remove desktop integration later, use `--install` or `--uninstall`. Uninstalling keeps personal preferences.
 
 ### Portable ZIP or source ZIP
 
-Download **`Vitalux-v0.9.5.8-linux-x86_64.zip`**, extract the entire archive into its own writable folder, and run:
+Download **`Vitalux-v0.9.5.7-linux-x86_64.zip`**, extract the entire archive into its own writable folder, and run:
 
 ```bash
-cd Vitalux-v0.9.5.8
+cd Vitalux-v0.9.5.7
 bash run.sh
 ```
 
@@ -64,7 +64,7 @@ The `Update-von-...zip` download is a manual overlay for the immediately precedi
 
 **Obsidian Gold is the default appearance.** Open **Settings → Appearance** to select a theme. Existing installations retain their saved choice. Preview tiles grow gently on hover. **Obsidian Gold, Champagne Glass, Black Glass Gold and Aurora Gold** use coordinated fixed palettes and backgrounds; their grey fields are disabled. Holographic also has a fixed background. Compatible themes retain your personal accent colors and images.
 
-A compact glass swatch previews the current accent. Overview always uses a compact system header, leaving more room for measurements and charts without an extra setting. The original logo traces a soft heartbeat inside its rotating outer bands.
+A compact glass swatch previews the current accent. **Compact system header on Overview** gives charts more space. The original logo traces a soft heartbeat inside its rotating outer bands.
 
 The settings magnifier predicts matches and glides to their controls. After selecting a result, the search remains visible for five seconds, then closes softly. **Advanced settings** expands for graphics renderers and Maintenance, with the page following its reveal; relevant searches open it automatically. The full **Restore defaults** action sits below it, at the very bottom. Reset buttons appear and disappear smoothly. A full reset restarts Vitalux; individual section resets apply in place. Reopening a sidebar category starts at the top.
 
@@ -77,7 +77,7 @@ Vitalux checks official GitHub releases at startup and approximately every six h
 To check a manually downloaded package, download its release's `SHA256SUMS.txt` file into the same directory and run:
 
 ```bash
-sha256sum --ignore-missing -c Vitalux-v0.9.5.8-SHA256SUMS.txt
+sha256sum --ignore-missing -c Vitalux-v0.9.5.7-SHA256SUMS.txt
 ```
 
 A matching checksum confirms consistency with that manifest; it is not an independent digital signature.
@@ -109,7 +109,7 @@ VITALUX_RENDERER=software bash run.sh
 For an AppImage that cannot mount through FUSE, extract its payload instead:
 
 ```bash
-./Vitalux-v0.9.5.8-x86_64.AppImage --appimage-extract
+./Vitalux-v0.9.5.7-x86_64.AppImage --appimage-extract
 VITALUX_RENDERER=software bash squashfs-root/AppRun --portable
 ```
 

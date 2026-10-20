@@ -8,16 +8,18 @@ TITLES = {
     'health':'Systemzustand', 'network':'Netzwerk', 'drives':'Laufwerke',
 }
 ORDER = tuple(TITLES)
-# The compact system header keeps the eight info chips in one parent tile.
-# Native widths, telemetry-card sizes and the 14px visual gaps stay unchanged.
+# 12-column native widths and all non-hero sizes stay unchanged. The
+# hero is one row shorter; its empty padding is compressed instead of its
+# internal logo, typography or information-chip dimensions. The chips are
+# always a single indivisible parent tile.
 DEFAULT = {
-    'hero': (0,0,12,6),
-    'cpu': (0,6,3,8), 'gpu': (3,6,3,8),
-    'ram': (6,6,3,8), 'disk': (9,6,3,8),
-    'graph_load': (0,14,6,11), 'graph_net': (6,14,6,11),
-    'health': (0,25,3,8), 'network': (3,25,4,8), 'drives': (7,25,5,8),
+    'hero': (0,0,12,8),
+    'cpu': (0,8,3,8), 'gpu': (3,8,3,8),
+    'ram': (6,8,3,8), 'disk': (9,8,3,8),
+    'graph_load': (0,16,6,11), 'graph_net': (6,16,6,11),
+    'health': (0,27,3,8), 'network': (3,27,4,8), 'drives': (7,27,5,8),
 }
-MINSPAN = {'hero': (6,6), 'cpu': (3,6), 'gpu': (3,6), 'ram': (3,6),
+MINSPAN = {'hero': (6,8), 'cpu': (3,6), 'gpu': (3,6), 'ram': (3,6),
            'disk': (3,6), 'graph_load': (4,7), 'graph_net': (4,7),
            'health': (3,6), 'network': (4,5), 'drives': (4,5)}
 PITCH = 35
@@ -93,7 +95,7 @@ def normalize_order(saved=None, legacy=None):
     return sorted(ORDER, key=lambda key: (source[key][1],source[key][0],ORDER.index(key)))
 
 
-def grid_pack(order, hidden=(), columns=12):
+def grid_pack(order, hidden=(), columns=12, hero_height=None):
     """Repack visible tiles into gap-free rows, preserving 14px visual gaps."""
     cols = int(columns)
     if cols not in (3, 6, 12):
@@ -104,6 +106,8 @@ def grid_pack(order, hidden=(), columns=12):
         if key not in DEFAULT or key in hidden:
             continue
         native_w, native_h = DEFAULT[key][2:]
+        if key == 'hero' and hero_height is not None:
+            native_h = max(6, int(hero_height))
         width = cols if key == 'hero' else min(
             cols, max(1, round(native_w * cols / 12)))
         if row and used + width > cols:
