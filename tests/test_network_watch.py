@@ -79,6 +79,22 @@ def check_ui():
                 watch.ledger.rules={'/usr/bin/example'}
                 watch._reset()
                 assert '/usr/bin/example' in watch.ledger.rules
+                # An app can request authorization directly instead of staying grey.
+                from unittest.mock import patch
+                sample=row(912,0,0)
+                watch._ingest(dict(monotonic=1000000,backend='tcp',connections=[sample]))
+                for index in range(watch.table.rowCount()):
+                    if watch.table.item(index,0).data(256)==sample['key']:watch.table.selectRow(index);break
+                assert watch.block.isEnabled(),'App block still requires a separate authorization action'
+                with patch.object(watch.client,'start') as start:
+                    watch.block.click();assert start.call_count==1 and watch._pending['key']==sample['key']
+                watch.client.active=True
+                with patch.object(watch.client,'command') as command:
+                    watch._helper_state('ready')
+                    assert command.call_args.kwargs['op']=='block'
+                watch._rules_changed([sample['key']]);assert watch.ledger.apps[sample['key']]['blocked']
+                watch._error('Test authorization failure');assert watch._inflight is None
+                watch.client.active=False
                 watch.shutdown();assert watch.worker.wait(4000)
                 watch.resume_after_shutdown()
                 assert watch.worker.isRunning(),'Failed restart did not resume app monitoring'

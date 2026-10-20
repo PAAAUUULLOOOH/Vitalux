@@ -52,7 +52,7 @@ SLIDES = [
     (
         "Netzwerk und Laufwerke",
         "Behalte Datenverkehr und Speichergeräte im Blick.",
-        "Netzwerk → Programme & Verbindungen zeigt laufende Apps, Verbindungen und erfassten Verbrauch. Mit Systemfreigabe stehen TCP-/UDP-Messung und Sitzungssperren bereit; Verbrauchswarnungen sind pro App einstellbar.",
+        "Netzwerk → Programme & Verbindungen zeigt laufende Apps und Verbrauch. Sperren und Entsperren stehen direkt in der App-Liste; die Systemfreigabe wird bei Bedarf angefragt. Einzelne TCP-/UDP-Sockets findest du unter Erweiterte Verbindungen.",
         "Laufwerke zeigt Datenträger, Partitionen, Belegung und Datenraten.",
         "Die verfügbaren Laufwerke werden direkt angezeigt; beim Öffnen startet die SMART-Prüfung automatisch im Hintergrund. Bei Bedarf kannst du erneut prüfen.",
         "drives",
@@ -75,7 +75,7 @@ SLIDES = [
     ),
     (
         "Darstellung und Einstellungen",
-        "Obsidian Gold bleibt das Standarddesign. Zwölf Vorschaukacheln wählen ein Design; Aether Glass und Eclipse Crystal besitzen eigene Materialien, Instrumente und Navigation sowie feste Paletten und Hintergründe.",
+        "Alle zwölf Designs stehen im gleichen Vorschau-Raster. Beim Darüberfahren zeigen Farbkreis und Bildsymbol die Anpassbarkeit; graue Schlösser kennzeichnen feste Optionen. Ein/Aus-Schalter passen sich jedem Design an.",
         "Bei anpassbaren Designs wählst du integrierte Hintergründe oder eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
         "Die Suche gleitet zu Treffern und schließt fünf Sekunden nach der Auswahl weich. Beim Öffnen der erweiterten Einstellungen scrollt die Seite mit; dort liegen Grafik-Renderer und Wartung.",
         "Zurücksetzen-Buttons blenden weich ein und aus. Ganz unten setzt du alle Standardwerte wieder her und startest Vitalux neu; einzelne Bereiche benötigen keinen Neustart. Das Logo zeigt einen sanften Herzschlagimpuls.",
@@ -91,9 +91,9 @@ SLIDES = [
     ),
     (
         "Updates und Informationen",
-        "Vitalux prüft automatisch beim Start und etwa alle sechs Stunden auf Updates.",
+        "Unter Updates wählst du Stable oder Unstable und installierst den geprüften Zielstand. Beide Kanäle behalten getrennte Einstellungen; die Rückkehr zu einer älteren Stable-Version ist möglich.",
         "Bei einem Update glüht das Vitalux-Logo in der App und im Tray. Der Updates-Reiter pulsiert; eine Tray-Nachricht nennt die Version.",
-        "Vor dem Aktualisieren siehst du die Neuerungen; erst „Jetzt aktualisieren“ startet den Download.",
+        "Vor dem Wechsel werden Neuerungen angezeigt und Profile gesichert. Einstellungen lassen sich aus dem anderen Kanal übernehmen; ein frisches Testprofil betrifft nur Unstable.",
         "Der Changelog und die Update-Hinweise folgen deiner ausgewählten Sprache. Die bisherige Versionshistorie bleibt auch nach dem Update offline verfügbar.",
         "updates",
     ),

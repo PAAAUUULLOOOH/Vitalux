@@ -4,6 +4,7 @@ BASE="${APPDIR:-$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)}"
 INTEGRATOR="$BASE/packaging/appimage-integration.sh"
 STATE="${XDG_STATE_HOME:-$HOME/.local/state}/vitalux"
 VERSION="$(sed -n 's/^__version__ = "\([^"]*\)".*/\1/p' "$BASE/vitalux/__init__.py" 2>/dev/null)"
+case "$VERSION" in *-unstable.*) STATE="$STATE/profiles/unstable" ;; esac
 stamp_install() {
   mkdir -p -- "$STATE"
   while IFS= read -r line || [[ -n "$line" ]]; do

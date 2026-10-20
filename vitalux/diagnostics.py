@@ -11,10 +11,9 @@ import traceback
 from datetime import datetime
 from pathlib import Path
 
-from . import __version__
+from . import __version__, profiles
 
-LOG_PATH = (Path(os.environ.get('XDG_STATE_HOME') or Path.home()/'.local'/'state') /
-            'vitalux' / 'errors.log')
+LOG_PATH = profiles.directory('state')/'errors.log'
 
 
 _fatal_log = None

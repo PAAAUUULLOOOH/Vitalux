@@ -521,6 +521,7 @@ class ChartSeriesCheckBox(QCheckBox):
     """
     def __init__(self, name, color, parent=None):
         super().__init__(name, parent)
+        self.setProperty('selectionControl',True)
         self.series_color = color
         self.setMinimumHeight(24)
         self.setCursor(Qt.PointingHandCursor)

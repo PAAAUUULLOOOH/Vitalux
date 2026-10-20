@@ -7,6 +7,7 @@ are released by the kernel when its descriptors close, including after a crash.
 """
 import ctypes
 import errno
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -28,14 +29,33 @@ def application(pid,uid):
     root=Path('/proc')/str(int(pid))
     try:
         if root.stat().st_uid!=uid:return None
-        first=(root/'stat').read_text().rsplit(')',1)[1].split()[19]
+        fields=(root/'stat').read_text().rsplit(')',1)[1].split()
+        first=fields[19];parent=int(fields[1])
         name=(root/'comm').read_text().strip()[:128]
         try:exe=os.readlink(root/'exe')
         except OSError:exe=''
+        key=exe or f'@{pid}:{first}'
+        worker=Path(exe).name in ('QtWebEngineProcess','chrome_crashpad_handler')
+        # Different Python/Node scripts must not share one executable-wide rule.
+        if Path(exe).name.startswith(('python','node','ruby','perl')):
+            with (root/'cmdline').open('rb') as stream:argv=stream.read(8192).split(b'\0')
+            identity=[];index=1
+            while index<len(argv) and argv[index]:
+                arg=argv[index]
+                if arg in (b'-c',b'-m',b'-e'):
+                    identity=argv[index:index+2]
+                    worker=arg==b'-c' and len(identity)>1 and b'multiprocessing.spawn' in identity[1]
+                    break
+                if arg in (b'-X',b'-W'):index+=2;continue
+                if arg==b'--':index+=1;continue
+                if arg.startswith(b'-'):index+=1;continue
+                script=os.fsdecode(arg)
+                if not os.path.isabs(script):script=os.path.normpath(os.path.join(os.readlink(root/'cwd'),script))
+                identity=[os.fsencode(script)];name=Path(script).stem[:128];break
+            if identity:key+='|'+hashlib.sha256(b'\0'.join(identity)).hexdigest()[:20]
         second=(root/'stat').read_text().rsplit(')',1)[1].split()[19]
         if first!=second or root.stat().st_uid!=uid:return None
-        return dict(pid=int(pid),start=int(first),name=name,exe=exe,
-                    key=exe or f'@{pid}:{first}')
+        return dict(pid=int(pid),start=int(first),name=name,exe=exe,key=key,parent=parent,worker=worker)
     except (OSError,ValueError,IndexError):
         return None
 
@@ -51,6 +71,13 @@ def applications(uid):
             app=application(int(entry.name),uid)
             if app:result[app['pid']]=app
             if len(result)>=16384:break
+    for _ in range(8):
+        changed=False
+        for app in result.values():
+            parent=result.get(app['parent'])
+            if app['worker'] and parent and app['key']!=parent['key']:
+                app.update(key=parent['key'],name=parent['name']);changed=True
+        if not changed:break
     return result
 
 
@@ -247,12 +274,15 @@ def socket_program(uid,owners,blocked):
     return a.finish()
 
 
-def packet_program(uid,owners,blocked,counts,direction):
+def packet_program(uid,owners,blocked,counts,direction,blocked_sockets=None):
     a=Instructions()
     a.emit(0xbf,6,1)
     a.emit(0x85,imm=46)
     a.jump(0x15,0,0,'allow')
     a.emit(0x7b,10,0,-8)
+    if blocked_sockets is not None:
+        a.lookup(blocked_sockets,-8)
+        a.jump(0x55,0,0,'deny')
     a.lookup(owners,-8)
     a.jump(0x15,0,0,'allow')
     a.emit(0x79,8,0)
@@ -369,6 +399,7 @@ class NetworkSession:
         self.uid=uid
         self.bpf=BPF()
         self.rules=set()
+        self.connection_rules={}
         self.blocked_pids=set()
         self.metadata={}
         self.owner_pids={}
@@ -378,12 +409,13 @@ class NetworkSession:
             self.owners=self.bpf.map(8)
             self.blocked=self.bpf.map(8)
             self.counts=self.bpf.map(32)
+            self.blocked_sockets=self.bpf.map(8)
             group=os.open('/sys/fs/cgroup',os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC)
             self.bpf.fds.append(group)
             self.refresh()
             for code,kind,attach in ((socket_program(uid,self.owners,self.blocked),9,2),
-                (packet_program(uid,self.owners,self.blocked,self.counts,'rx'),8,0),
-                (packet_program(uid,self.owners,self.blocked,self.counts,'tx'),8,1)):
+                (packet_program(uid,self.owners,self.blocked,self.counts,'rx',self.blocked_sockets),8,0),
+                (packet_program(uid,self.owners,self.blocked,self.counts,'tx',self.blocked_sockets),8,1)):
                 program=self.bpf.program(code,kind,attach)
                 self.bpf.link(program,group,attach)
         except BaseException:
@@ -410,6 +442,24 @@ class NetworkSession:
         for pid in wanted-self.blocked_pids:self.bpf.update(self.blocked,pid,struct.pack('=Q',1))
         for pid in self.blocked_pids-wanted:self.bpf.delete(self.blocked,pid)
         self.blocked_pids=wanted
+        live={row['cookie']:(row.get('pid'),row.get('start')) for row in self.base['connections']}
+        for cookie,identity in list(self.connection_rules.items()):
+            if live.get(cookie)!=identity:
+                self.bpf.delete(self.blocked_sockets,cookie);self.connection_rules.pop(cookie,None)
+
+    def connection_rule(self,request):
+        cookie=request.get('cookie');pid=request.get('pid');start=request.get('start')
+        if type(cookie) is not int or cookie<=0 or type(pid) is not int or type(start) is not int:
+            raise ValueError('Invalid connection identity')
+        self.refresh()
+        app=application(pid,self.uid)
+        row=next((r for r in self.base['connections'] if r['cookie']==cookie and r.get('pid')==pid and r.get('start')==start),None)
+        if not app or app['start']!=start or row is None:raise ValueError('The selected connection has ended or changed')
+        if request['op']=='block_connection':
+            self.bpf.update(self.blocked_sockets,cookie,struct.pack('=Q',1))
+            self.connection_rules[cookie]=(pid,start)
+        else:
+            self.bpf.delete(self.blocked_sockets,cookie);self.connection_rules.pop(cookie,None)
 
     def rule(self,request):
         if request['op']=='allow' and isinstance(request.get('key'),str) and request['key'] in self.rules:
@@ -422,6 +472,8 @@ class NetworkSession:
         app=application(pid,self.uid)
         if not app or app['start']!=start or not app['exe']:
             raise ValueError('The selected process has ended or changed')
+        self.refresh()
+        app=self.apps.get(pid,app)
         if request['op']=='block':self.rules.add(app['key'])
         else:self.rules.discard(app['key'])
         self.refresh()
@@ -439,8 +491,8 @@ class NetworkSession:
             counters.append(dict(cookie=cookie,rx=rx,tx=tx,**(app or dict(
                 pid=None,start=None,name='',exe='',key='@unassigned'))))
         base=dict(self.base)
-        base.pop('applications',None)
-        base.update(backend='bpf',counters=counters,monotonic=time.monotonic(),rules=sorted(self.rules))
+        base.update(backend='bpf',counters=counters,monotonic=time.monotonic(),rules=sorted(self.rules),
+                    connection_rules=sorted(self.connection_rules))
         return base
 
     def close(self):self.bpf.close()
@@ -481,11 +533,16 @@ def helper_main():
                         if op=='quit':return
                         if op=='clear':
                             session.rules.clear()
+                            for cookie in list(session.connection_rules):session.bpf.delete(session.blocked_sockets,cookie)
+                            session.connection_rules.clear()
                             session.refresh()
-                            send(dict(type='rules',rules=[]))
+                            send(dict(type='rules',rules=[],connection_rules=[]))
                         elif op in ('block','allow'):
                             session.rule(command)
-                            send(dict(type='rules',rules=sorted(session.rules)))
+                            send(dict(type='rules',rules=sorted(session.rules),connection_rules=sorted(session.connection_rules)))
+                        elif op in ('block_connection','allow_connection'):
+                            session.connection_rule(command)
+                            send(dict(type='rules',rules=sorted(session.rules),connection_rules=sorted(session.connection_rules)))
                         else:raise ValueError('Unknown command')
                     except (OSError,ValueError,TypeError) as exc:
                         send(dict(type='command_error',error=str(exc)[:500]))

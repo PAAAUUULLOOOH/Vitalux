@@ -9,7 +9,7 @@ from PySide6.QtGui import QColor, QIntValidator
 from PySide6.QtWidgets import (QColorDialog, QFrame, QGridLayout, QHBoxLayout, QInputDialog, QLabel, QLineEdit, QListWidget, QSizePolicy, QSlider, QVBoxLayout, QWidget)
 from .ui_locale import QCheckBox, QComboBox, QDialog, QFileDialog, QListWidgetItem, QMessageBox, QPushButton
 
-from . import __version__, settings, theme, motion, backdrops, user_background, wallpaper_accents, renderer, eco, i18n, premium
+from . import __version__, settings, theme, motion, backdrops, user_background, wallpaper_accents, renderer, eco, i18n, premium, design_capabilities
 from .pages import Page
 from .sensors import fmt_bytes, fmt_rate, system_static
 from .widgets import Card, KeyValue, Meter, label
@@ -169,7 +169,7 @@ class PreferencesPage(Page):
     PRESET_COLORS = frozenset(value for _, value in PRESET_ACCENTS)
 
     DEFAULTS = {
-        'theme': DEFAULT_THEME, 'accent': '#4f8cff', 'ui_sounds': True, 'ui_sound_volume': 70, 'motion': 'smooth',
+        'theme': DEFAULT_THEME, 'accent': '#4f8cff', 'ui_sounds': True, 'ui_sound_volume': 50, 'motion': 'smooth',
         'background_style': 'theme_default', 'custom_background_fit': 'cover',
         'render_backend': renderer.SOFTWARE, 'ultra_eco': False,
         'interval': 1, 'close_to_tray': True, 'alerts_enabled': False,
@@ -406,7 +406,7 @@ class PreferencesPage(Page):
         volume_row.addWidget(label('Lautstärke', 'strong'))
         self.sound_volume = QSlider(Qt.Horizontal)
         self.sound_volume.setRange(0, 100)
-        self.sound_volume.setValue(settings.get('ui_sound_volume', 70))
+        self.sound_volume.setValue(settings.get('ui_sound_volume', 50))
         self.sound_volume.setMaximumWidth(210)
         self.sound_volume.setAccessibleName(tr('Klanglautstärke'))
         self.sound_volume_value = label(str(self.sound_volume.value())+' %', 'muted')
@@ -545,6 +545,7 @@ class PreferencesPage(Page):
         selections = settings.get('mini_hud_metrics', DEFAULT_KEYS)
         for idx, (key, title, _unit) in enumerate(METRIC_OPTIONS):
             box = QCheckBox(title)
+            box.setProperty('selectionControl',True)
             box.setChecked(key in selections)
             box.toggled.connect(self.change_hud_metrics)
             metric_grid.addWidget(box, idx // 2, idx % 2)
@@ -963,7 +964,7 @@ class PreferencesPage(Page):
         self.settings_deck.sync()
         self._check_without_signal(self.sound_toggle, settings.get('ui_sounds', True))
         self.sound_volume.blockSignals(True)
-        self.sound_volume.setValue(settings.get('ui_sound_volume', 70))
+        self.sound_volume.setValue(settings.get('ui_sound_volume', 50))
         self.sound_volume.blockSignals(False)
         self.sound_volume_value.setText(str(self.sound_volume.value())+' %')
         self.eco_toggle.blockSignals(True)
@@ -1065,8 +1066,10 @@ class PreferencesPage(Page):
         return result
 
     def _sync_custom_accent_actions(self):
-        gold = theme.mode() in theme.FIXED_MODES or eco.enabled()
-        custom_locked = theme.mode() in ('black_glass', *theme.FIXED_MODES) or eco.enabled()
+        from .design_capabilities import capabilities
+        cap=capabilities(theme.mode())
+        gold = not cap['accent'] or eco.enabled()
+        custom_locked = not cap['custom_accent'] or eco.enabled()
         self.accent_combo.setLocked(
             ('Ultra Eco verwendet eine feste, einfache Farbpalette.' if eco.enabled() else
              'Dieses Design verwendet eine feste Farbpalette. Eigene Akzentfarben sind hier nicht verfügbar.') if gold else '',
@@ -1106,7 +1109,7 @@ class PreferencesPage(Page):
 
     def edit_custom_accent(self):
         """Edit name and/or color of the selected saved accent, keeping its slot."""
-        if theme.mode() in ('black_glass', *theme.FIXED_MODES) or eco.enabled():
+        if not design_capabilities.capabilities(theme.mode())['custom_accent'] or eco.enabled():
             return
         combo = self.accent_combo
         index = combo.currentIndex()
@@ -1147,7 +1150,7 @@ class PreferencesPage(Page):
         self.change_accent(new_color)
 
     def remove_custom_accent(self):
-        if theme.mode() in ('black_glass', *theme.FIXED_MODES) or eco.enabled():
+        if not design_capabilities.capabilities(theme.mode())['custom_accent'] or eco.enabled():
             return
         value = self.accent_combo.currentData()
         if (value in self.PRESET_COLORS
@@ -1163,7 +1166,7 @@ class PreferencesPage(Page):
         self._sync_custom_accent_actions()
 
     def custom_accent(self, combo):
-        if theme.mode() in ('black_glass', *theme.FIXED_MODES) or eco.enabled():
+        if not design_capabilities.capabilities(theme.mode())['custom_accent'] or eco.enabled():
             return
         color = QColorDialog.getColor(QColor(theme.accent()), self, tr('Akzentfarbe wählen'))
         if not color.isValid():

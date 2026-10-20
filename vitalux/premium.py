@@ -306,6 +306,8 @@ class DesignTile(QAbstractButton):
     def __init__(self, key, parent=None):
         super().__init__(parent)
         self.key = key
+        self._keyboard_focus=False
+        self.setProperty('vitaluxCapabilityHints',True)
         from . import theme
         self.retranslate()
         self.setAccessibleName(self.text())
@@ -328,7 +330,7 @@ class DesignTile(QAbstractButton):
     def _hover_to(self, value):
         from . import motion
         self._hover_animation.stop()
-        duration = motion.duration(170)
+        duration = motion.duration(220)
         if not duration:
             self._hover_frame(value)
             return
@@ -342,14 +344,31 @@ class DesignTile(QAbstractButton):
         super().enterEvent(event)
 
     def leaveEvent(self, event):
-        self._hover_to(0.0)
+        self._hover_to(1.0 if self._keyboard_focus else 0.0)
         super().leaveEvent(event)
+
+    def focusInEvent(self,event):
+        self._keyboard_focus=event.reason() in (Qt.TabFocusReason,Qt.BacktabFocusReason,Qt.ShortcutFocusReason)
+        if self._keyboard_focus:self._hover_to(1.)
+        super().focusInEvent(event)
+
+    def focusOutEvent(self,event):
+        self._keyboard_focus=False
+        if not self.underMouse():self._hover_to(0.)
+        super().focusOutEvent(event)
+
+    def mousePressEvent(self,event):
+        self._hover_to(1.)
+        super().mousePressEvent(event)
 
     def retranslate(self):
         from . import theme
         from .i18n import tr
         self.setText(tr(dict(theme.CHOICES)[self.key]))
         self.setAccessibleName(self.text())
+        from .design_capabilities import description
+        self.setToolTip(description(self.key))
+        self.setAccessibleDescription(description(self.key))
 
     def paintEvent(self, event):
         p = QPainter(self)
@@ -387,6 +406,8 @@ class DesignTile(QAbstractButton):
         p.drawPixmap(0, 0, self._background)
         if self.key in signature_designs.KEYS:
             signature_designs.paint_preview(p,self,pal)
+            from .design_capabilities import paint
+            paint(p,self,pal,self._hover)
             p.end()
             return
         if self._hover > .01:
@@ -417,6 +438,8 @@ class DesignTile(QAbstractButton):
         p.setPen(color(pal['text']))
         p.drawText(QRectF(10, 78, self.width()-20, 27), Qt.AlignCenter, self.text())
         p.setClipping(False)
+        from .design_capabilities import paint
+        paint(p,self,pal,self._hover)
         p.setBrush(Qt.NoBrush)
         if self.isChecked():
             p.setPen(Qt.NoPen)

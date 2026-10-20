@@ -36,27 +36,27 @@ CPU rendering is the default. Optional GPU renderers require suitable drivers an
 
 ### AppImage
 
-Download the `.AppImage` from [the latest release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). For v0.9.5.9:
+Download the `.AppImage` from [the latest release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). For v0.9.6.0:
 
 ```bash
-chmod +x Vitalux-v0.9.5.9-x86_64.AppImage
-./Vitalux-v0.9.5.9-x86_64.AppImage
+chmod +x Vitalux-v0.9.6.0-x86_64.AppImage
+./Vitalux-v0.9.6.0-x86_64.AppImage
 ```
 
 The first-run dialog offers installation in your user account, including an application-menu entry. Administrator rights are not required. You can also choose **Run once**, or run explicitly without integration:
 
 ```bash
-./Vitalux-v0.9.5.9-x86_64.AppImage --portable
+./Vitalux-v0.9.6.0-x86_64.AppImage --portable
 ```
 
 To add or remove desktop integration later, use `--install` or `--uninstall`. Uninstalling keeps personal preferences.
 
 ### Portable ZIP or source ZIP
 
-Download **`Vitalux-v0.9.5.9-linux-x86_64.zip`**, extract the entire archive into its own writable folder, and run:
+Download **`Vitalux-v0.9.6.0-linux-x86_64.zip`**, extract the entire archive into its own writable folder, and run:
 
 ```bash
-cd Vitalux-v0.9.5.9
+cd Vitalux-v0.9.6.0
 bash run.sh
 ```
 
@@ -66,7 +66,7 @@ The `Update-von-...zip` download is a manual overlay for the immediately precedi
 
 ## Make it yours
 
-**Obsidian Gold is the default appearance.** Open **Settings → Appearance** to select a design. Existing installations retain their saved choice. Preview tiles grow gently on hover. **Obsidian Gold, Champagne Glass, Black Glass Gold, Aurora Gold, Aether Glass and Eclipse Crystal** use coordinated fixed palettes and backgrounds; their grey fields are disabled. Holographic also has a fixed background. Compatible designs retain your personal accent colors and images.
+**Obsidian Gold is the default appearance.** Open **Settings → Appearance** to select a design. Existing installations retain their saved choice. Preview tiles grow gently on hover. Their color-wheel and image indicators fade in to show accent/background customization; a grey lock marks fixed options. All designs use the same complete preview grid. **Obsidian Gold, Champagne Glass, Black Glass Gold, Aurora Gold, Aether Glass and Eclipse Crystal** use coordinated fixed palettes and backgrounds; their grey fields are disabled. Holographic also has a fixed background. Compatible designs retain your personal accent colors and images.
 
 A compact glass swatch previews the current accent. Overview uses a **compact system header by default**, leaving more space for measurements and charts. The slimmer circular logo rotates around a clearly traced heartbeat, while a soft metallic reflection travels across the new **VITALUX** wordmark. Both follow the selected palette; each collection has its own coordinated identity. Custom accents give the circle a slightly richer finish. The animated SVG header above uses the same vector geometry, materials and seamless motion periods as the app, and stays sharp at every size.
 
@@ -85,7 +85,15 @@ A compact glass swatch previews the current accent. Overview uses a **compact sy
 
 The settings magnifier predicts matches and glides to their controls. After selecting a result, the search remains visible for five seconds, then closes softly. **Advanced settings** expands for graphics renderers and Maintenance, with the page following its reveal; relevant searches open it automatically. The full **Restore defaults** action sits below it, at the very bottom. Reset buttons appear and disappear smoothly. A full reset restarts Vitalux; individual section resets apply in place. Reopening a sidebar category starts at the top.
 
-Crystal sounds accompany Vitalux buttons, selections and dropdowns. Adjust volume or disable them in Settings. Scrolling over a closed dropdown never changes its selection. Animation profiles and Ultra Eco remain available. Charts identify hovered measurements and times; missing readings and sampling interruptions remain gaps.
+A soft, damped tone accompanies Vitalux buttons, selections and dropdowns at 50% default volume. On/off settings use coordinated switches; chart and other multiple selections retain checkmarks. Adjust volume or disable them in Settings. Scrolling over a closed dropdown never changes its selection. Animation profiles and Ultra Eco remain available. Charts identify hovered measurements and times; missing readings and sampling interruptions remain gaps.
+
+## Stable and Unstable channels
+
+Open **Updates → Update channel** and select **Stable** or **Unstable**. The installed version and active channel remain visible. Review the destination version and its changes, then use **Switch to Unstable** or **Return to Stable**. Switching verifies the package, backs up profiles and restarts Vitalux; returning to an older stable package is supported.
+
+Stable retains your existing preferences. Unstable creates its own settings profile on first launch by copying Stable's preferences and imported backgrounds. Later switches retain each channel's configuration, caches and diagnostic data. **Import settings** transfers compatible preferences with a backup and CPU-rendered restart. **Fresh test profile** resets only the test profile. Backups precede format migrations and are kept locally (the latest five per channel).
+
+Test versions use names such as `v0.9.6.1-unstable.1`. A single rolling **Unstable — current test build** prerelease supplies the latest test package across development cycles. GitHub's **Latest** download remains Stable. Test packages can change frequently; the previous test package in the rolling entry is replaced. Download the full ZIP or AppImage from that entry when installing manually.
 
 ## Updates and verification
 
@@ -94,7 +102,7 @@ Vitalux checks official GitHub releases at startup and approximately every six h
 To check a manually downloaded package, download its release's `SHA256SUMS.txt` file into the same directory and run:
 
 ```bash
-sha256sum --ignore-missing -c Vitalux-v0.9.5.9-SHA256SUMS.txt
+sha256sum --ignore-missing -c Vitalux-v0.9.6.0-SHA256SUMS.txt
 ```
 
 A matching checksum confirms consistency with that manifest; it is not an independent digital signature.
@@ -126,7 +134,7 @@ VITALUX_RENDERER=software bash run.sh
 For an AppImage that cannot mount through FUSE, extract its payload instead:
 
 ```bash
-./Vitalux-v0.9.5.9-x86_64.AppImage --appimage-extract
+./Vitalux-v0.9.6.0-x86_64.AppImage --appimage-extract
 VITALUX_RENDERER=software bash squashfs-root/AppRun --portable
 ```
 

@@ -18,9 +18,9 @@ from pathlib import Path
 import psutil
 
 from . import __version__
-from . import settings
+from . import settings, profiles
 
-STATE_DIR = Path(os.environ.get('XDG_STATE_HOME') or (Path.home() / '.local/state')) / 'vitalux'
+STATE_DIR = profiles.directory('state')
 BASELINE = STATE_DIR / 'change-radar.json'
 BLACKBOX = STATE_DIR / 'diagnostic-blackbox.jsonl'
 

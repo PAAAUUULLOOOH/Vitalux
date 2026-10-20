@@ -137,7 +137,7 @@ def run():
         assert tile.geometry() == geometry and tile._background is backdrop
         assert tile.grab().toImage() != resting
         QApplication.sendEvent(tile, QEvent(QEvent.Leave))
-        QTest.qWait(220)
+        QTest.qWait(300)
         assert tile._hover == 0 and tile.geometry() == geometry
         scroll.close()
         host.close()

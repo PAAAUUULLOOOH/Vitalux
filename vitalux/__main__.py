@@ -2,6 +2,9 @@ from . import DEFAULT_THEME
 import os
 import sys
 
+from . import profiles
+profiles.initialize()
+
 from PySide6.QtCore import QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
@@ -28,7 +31,8 @@ def main():
     # Hiding the final window must not kill the tray icon and sampler.
     # MainWindow.closeEvent explicitly quits on a genuine Exit command.
     app.setQuitOnLastWindowClosed(False)
-    app.setApplicationName(APP_NAME)
+    app.setApplicationName(APP_NAME+'-Unstable' if profiles.installed()=='unstable' else APP_NAME)
+    app.setApplicationDisplayName(APP_NAME)
     # Desktop-portal app IDs require an installed .desktop entry; avoid asking
     # the portal to register an unknown ID when using Vitalux portably.
     xdg_data = os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share")
