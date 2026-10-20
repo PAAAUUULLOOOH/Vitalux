@@ -10,7 +10,9 @@ def git(*args,check=True):
 
 
 def sync():
-    git('fetch','origin','main','unstable')
+    # The rolling tag and development branch share a name. Always fetch heads.
+    git('fetch','origin','refs/heads/main:refs/remotes/origin/main',
+        'refs/heads/unstable:refs/remotes/origin/unstable')
     git('checkout','-B','unstable','origin/unstable')
     current=(ROOT/'vitalux/__init__.py').read_text()
     result=git('merge','--no-ff','--no-commit','origin/main',check=False)
@@ -23,7 +25,7 @@ def sync():
             git('merge','--abort',check=False)
             raise RuntimeError('Unstable/main need a reviewed merge: '+', '.join(conflicts))
     if (ROOT/'.git/MERGE_HEAD').exists():git('commit','-m','Merge published Stable baseline into unstable')
-    git('push','origin','HEAD:unstable')
+    git('push','origin','HEAD:refs/heads/unstable')
 
 
 if __name__=='__main__':sync()
