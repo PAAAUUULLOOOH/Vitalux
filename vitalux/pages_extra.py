@@ -63,7 +63,7 @@ class UpdatePage(Page):
         self.import_profile=QPushButton('Einstellungen übernehmen …')
         self.import_profile.setObjectName('ghostBtn')
         self.import_profile.clicked.connect(lambda:self._profile(False))
-        self.fresh_profile=QPushButton('Frisches Testprofil …')
+        self.fresh_profile=QPushButton('Frisches Testprofil …',self)
         self.fresh_profile.setObjectName('ghostBtn')
         self.fresh_profile.setVisible(profiles.installed()=='unstable')
         self.fresh_profile.clicked.connect(lambda:self._profile(True))

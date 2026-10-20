@@ -56,6 +56,7 @@ jobs:
           cd "$STAGED"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-regressions.py --output "$GITHUB_WORKSPACE/build/regressions"
       - name: Exercise real kernel and desktop paths
+        id: native
         run: |
           set -euo pipefail
           sudo env VITALUX_NETWORK_TEST_VM=1 /usr/bin/python3 scripts/check-network-kernel.py | tee build/network-kernel.log
@@ -66,6 +67,17 @@ jobs:
           for DESIGN in obsidian_gold aether_glass eclipse_crystal; do
             LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/capture-release-ui.py --output "$GITHUB_WORKSPACE/build/ui-scale-checks/$DESIGN" --design "$DESIGN" --scales 1,1.25,1.5,2
           done
+      - name: Expose native validation failures
+        if: failure() && steps.native.outcome == 'failure'
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for folder in ('build/audio-checks', 'build/graphics-checks', 'build/ui-scale-checks'):
+              for log in sorted(Path(folder).rglob('*.log')):
+                  tail = '\n'.join(log.read_text(errors='replace').splitlines()[-24:])
+                  escaped = tail.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+                  print(f'::error title={log.name}::{escaped}', flush=True)
+          PY
       - name: Verify offline source ZIP startup
         run: python scripts/check-source-preview.py
       - name: Build the full ZIP and AppImage
