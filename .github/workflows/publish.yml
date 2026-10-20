@@ -205,4 +205,4 @@ jobs:
           git config user.email PAAAUUULLOOOH@users.noreply.github.com
           git fetch --unshallow || true
           python scripts/sync-unstable.py
-          gh workflow run unstable.yml --ref unstable
+          gh workflow run unstable.yml --ref refs/heads/unstable

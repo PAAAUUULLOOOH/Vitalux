@@ -32,11 +32,11 @@ jobs:
           git config user.name PAAAUUULLOOOH
           git config user.email PAAAUUULLOOOH@users.noreply.github.com
           # Checkout the current branch tip after any earlier queued build.
-          git pull --ff-only origin unstable
+          git pull --ff-only origin refs/heads/unstable
           VERSION="$(python scripts/prepare-unstable-build.py)"
           git add vitalux/__init__.py CHANGELOG.md CHANGELOG.en.md
           git commit -m "Prepare Unstable test build v$VERSION"
-          git push origin HEAD:unstable
+          git push origin HEAD:refs/heads/unstable
           echo "TAG=v$VERSION" >> "$GITHUB_ENV"
           python scripts/release_notes.py "$VERSION" "$RUNNER_TEMP/unstable-notes.md"
       - name: Install pinned build and virtual desktop dependencies
