@@ -5,10 +5,9 @@ import os
 import tempfile
 import warnings
 
-from . import APP_ID
+from . import profiles
 
-PATH = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config"),
-                    APP_ID, "settings.json")
+PATH = str(profiles.directory('config')/'settings.json')
 _cache_identity = None
 _cache_value = None
 

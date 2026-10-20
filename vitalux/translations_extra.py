@@ -1061,3 +1061,5 @@ EN_MORE.update({
 from .translations_network import EN_NETWORK
 EN_MORE.update(EN_NETWORK)
 EN_MORE.update({"Design": "Design"})
+from .translations_channels import EN as EN_CHANNELS
+EN_MORE.update(EN_CHANNELS)

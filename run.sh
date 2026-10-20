@@ -15,7 +15,9 @@ fi
 if [ ! -f "$HERE/runtime/bin/python3.12" ] && [ -f "$HERE/portable-runtime/vitalux-linux-x86_64.tar.xz" ]; then
   bash "$HERE/scripts/prepare-preview-runtime.sh" || exit $?
 fi
+VERSION="$(sed -n 's/^__version__ = "\([^"]*\)".*/\1/p' "$HERE/vitalux/__init__.py" 2>/dev/null)"
 STATE_DIR="${XDG_STATE_HOME:-${HOME}/.local/state}/vitalux"
+case "$VERSION" in *-unstable.*) STATE_DIR="$STATE_DIR/profiles/unstable" ;; esac
 mkdir -p -- "$STATE_DIR"
 LOG="$STATE_DIR/vitalux.log"
 # Every launcher, Python and Qt diagnostic line carries a local ISO-8601 time
@@ -23,7 +25,6 @@ LOG="$STATE_DIR/vitalux.log"
 log_line() {
   printf '[%s] [Vitalux v%s] %s\n' "$(date -Is)" "${VERSION:-unknown}" "$*" >>"$LOG"
 }
-VERSION="$(sed -n 's/^__version__ = "\([^"]*\)".*/\1/p' "$HERE/vitalux/__init__.py" 2>/dev/null)"
 log_line "=== Vitalux ${VERSION:-unknown} start (launcher PID $BASHPID) ==="
 QT_CHECK="$(mktemp "$STATE_DIR/.qtcheck.XXXXXX")"
 trap 'rm -f -- "$QT_CHECK"' EXIT

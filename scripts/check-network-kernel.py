@@ -19,7 +19,9 @@ assert not applications(TEST_UID),'Disposable test UID is already in use'
 tcp=socket.socket();tcp.bind(('127.0.0.1',0));tcp.listen()
 udp=socket.socket(socket.AF_INET,socket.SOCK_DGRAM);udp.bind(('127.0.0.1',0))
 received={'tcp':0,'udp':0}
+server_connections=[]
 def tcp_connection(connection):
+    server_connections.append(connection)
     try:
         while True:
             data=connection.recv(65536)
@@ -48,6 +50,7 @@ for line in sys.stdin:
  try:
   op=req['op']
   if op=='connect':
+   if tcp is not None:tcp.close()
    tcp=socket.socket();tcp.settimeout(.7);tcp.connect(('127.0.0.1',req['port']));result='connected'
   elif op=='tcp':
    size=req.get('bytes',65536);tcp.sendall(b'x'*size);n=0
@@ -57,6 +60,7 @@ for line in sys.stdin:
    if udp is None:
     udp=socket.socket(socket.AF_INET,socket.SOCK_DGRAM);udp.settimeout(.5)
    udp.sendto(b'u'*4096,('127.0.0.1',req['port']));result=len(udp.recv(65536))
+  elif op=='receive':result=len(tcp.recv(65536))
   elif op=='probe':
    s=socket.socket();s.settimeout(.5);s.connect(('127.0.0.1',req['port']));s.close();result='allowed'
   elif op=='quit':break
@@ -88,6 +92,24 @@ try:
     counters=[row for row in snapshot['counters'] if row['pid']==pid]
     assert sum(row['tx'] for row in counters)>=131072+4096,counters
     assert sum(row['rx'] for row in counters)>=131072+4096,counters
+    tcp_row=next(row for row in session.base['connections'] if row.get('pid')==pid and row['protocol']=='TCP' and row['state']=='ESTABLISHED')
+    session.connection_rule(dict(op='block_connection',cookie=tcp_row['cookie'],pid=pid,start=tcp_row['start']))
+    assert command('probe',port=tcp.getsockname()[1])['ok'],'Connection rule blocked another socket'
+    assert command('udp',port=udp.getsockname()[1])['ok'],'TCP connection rule blocked UDP'
+    server_connections[0].sendall(b'inbound-probe')
+    assert not command('receive')['ok'],'Inbound traffic escaped socket block'
+    previous_tcp=received['tcp']
+    assert not command('tcp',bytes=4096)['ok'],'Outbound traffic escaped socket block'
+    assert received['tcp']==previous_tcp
+    session.connection_rule(dict(op='allow_connection',cookie=tcp_row['cookie'],pid=pid,start=tcp_row['start']))
+    assert command('connect',port=tcp.getsockname()[1])['ok']
+    assert command('tcp',bytes=8192)['result']==8192
+    session.refresh()
+    udp_row=next(row for row in session.base['connections'] if row.get('pid')==pid and row['protocol']=='UDP')
+    session.connection_rule(dict(op='block_connection',cookie=udp_row['cookie'],pid=pid,start=udp_row['start']))
+    assert not command('udp',port=udp.getsockname()[1])['ok'],'UDP connection block failed'
+    session.connection_rule(dict(op='allow_connection',cookie=udp_row['cookie'],pid=pid,start=udp_row['start']))
+    assert command('udp',port=udp.getsockname()[1])['ok']
     identity=application(pid,TEST_UID)
     try:session.rule(dict(op='block',pid=pid,start=identity['start']+1))
     except ValueError:pass
@@ -120,7 +142,7 @@ try:
     assert command('probe',port=tcp.getsockname()[1])['ok'],'Helper EOF retained a session block'
     print('VITALUX_NETWORK_KERNEL_OK '+json.dumps(dict(tcp_diag=True,bpf_tcp=True,bpf_udp=True,
         existing_tcp_block=True,existing_udp_block=True,new_socket_block=True,allow=True,
-        automatic_cleanup=True,pid_reuse_guard=True,helper_protocol=True,helper_eof_cleanup=True)),flush=True)
+        automatic_cleanup=True,pid_reuse_guard=True,helper_protocol=True,helper_eof_cleanup=True,connection_tcp=True,connection_udp=True,bidirectional_socket_block=True)),flush=True)
 finally:
     if session is not None:session.close()
     client.stdin.write('{"op":"quit"}\n');client.stdin.flush()

@@ -11,6 +11,7 @@ from PySide6.QtWidgets import QToolTip
 class NoHoverHints(QObject):
     def eventFilter(self, watched, event):
         if event.type() in (QEvent.Type.ToolTip, QEvent.Type.WhatsThis):
+            if watched.property('vitaluxCapabilityHints'):return False
             QToolTip.hideText()
             return True
         return False

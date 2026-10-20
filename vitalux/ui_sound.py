@@ -112,7 +112,7 @@ def _pulse_worker(pending):
             if any(command is None for command in commands):
                 return
             for command in commands:
-                preferences = settings.get_many({'ui_sounds': True, 'ui_sound_volume': 70})
+                preferences = settings.get_many({'ui_sounds': True, 'ui_sound_volume': 50})
                 if not preferences['ui_sounds']:
                     continue
                 # Boolean commands are retained for the independent transport check.
@@ -167,7 +167,7 @@ class GlassClickSound(QObject):
 
     def play(self):
         now = time.monotonic()
-        preferences = settings.get_many({'ui_sounds': True, 'ui_sound_volume': 70})
+        preferences = settings.get_many({'ui_sounds': True, 'ui_sound_volume': 50})
         volume = min(100, max(0, int(preferences['ui_sound_volume'])))
         if self._stopped or not preferences['ui_sounds'] or not volume or now-self._last_click < .012:
             return

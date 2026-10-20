@@ -93,7 +93,9 @@ def test_native_trace_start():
         env['XDG_STATE_HOME'] = temporary
         subprocess.run([sys.executable, '-c', code], cwd=ROOT,
                        env=env, check=True, timeout=10)
-        data = (Path(temporary)/'vitalux'/'errors.log').read_text()
+        unstable='-unstable.' in (ROOT/'vitalux/__init__.py').read_text()
+        relative=Path('vitalux/profiles/unstable/errors.log') if unstable else Path('vitalux/errors.log')
+        data = (Path(temporary)/relative).read_text()
         assert re.search(
             r'=== Vitalux .* started '
             r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+[+-]\d{2}:\d{2}',

@@ -23,6 +23,13 @@ def put(z, p, root):
     z.write(p, arcname=(root.name + "/" + p.relative_to(root).as_posix()))
 
 def main():
+    if len(sys.argv)==4 and sys.argv[3]=='--full-only':
+        current,out=map(lambda value:Path(value).resolve(),sys.argv[1:3]);out.mkdir(parents=True,exist_ok=True)
+        full=out/f'{current.name}-linux-x86_64.zip'
+        with ZipFile(full,'w',ZIP_DEFLATED,compresslevel=6,allowZip64=True,strict_timestamps=False) as archive:
+            for item in files(current):put(archive,item,current)
+        print(f'Created {full.name} ({full.stat().st_size:,} bytes)')
+        return
     if len(sys.argv) != 5:
         raise SystemExit("Usage: create-release-archives.py NEW_DIR BASELINE_DIR OUT_DIR PREVIOUS_VERSION")
     current, previous, out = map(lambda s: Path(s).resolve(), sys.argv[1:4])

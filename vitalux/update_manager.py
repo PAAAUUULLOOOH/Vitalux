@@ -2,19 +2,20 @@ import os
 
 from PySide6.QtCore import QObject, QThread, QTimer, Signal
 
-from . import updater
+from . import updater, profiles
 from .i18n import tr
 
 
 class _CheckThread(QThread):
     done = Signal(object)
 
-    def __init__(self, parent):
+    def __init__(self, parent, channel):
         super().__init__(parent)
+        self.channel=channel
 
     def run(self):
         try:
-            self.done.emit(updater.check())
+            self.done.emit(updater.check(self.channel))
         except Exception as exc:
             self.done.emit({"ok": False, "error": str(exc)})
 
@@ -27,10 +28,14 @@ class _InstallThread(QThread):
         super().__init__(parent)
         self.url, self.sha256 = url, sha256
         self.pending_path = None
+        self.channel=parent.channel
 
     def run(self):
         try:
+            if self.channel!=profiles.installed():
+                profiles.backup('stable');profiles.backup('unstable')
             self.pending_path = updater.install(self.url, sha256=self.sha256, progress=self.progress.emit)
+            profiles.select(self.channel)
             self.done.emit("")
         except Exception as exc:
             self.done.emit(f"{tr('Installation fehlgeschlagen:')} {exc}")
@@ -58,6 +63,7 @@ class UpdateManager(QObject):
         self.status = 'preview' if os.environ.get('VITALUX_LOCAL_PREVIEW') == '1' else 'idle'
         self.latest = self.notes = self.url = self.error = self.sha256 = ""
         self.pending_path = None
+        self.channel=profiles.selected()
         self._shutting_down = False
         self._thread = None
         self._active_threads = []  # Do not destroy Qt threads while queued signals are still finishing.
@@ -70,6 +76,18 @@ class UpdateManager(QObject):
     @property
     def available(self):
         return self.status == "available"
+
+    def set_channel(self,channel):
+        if channel not in ('stable','unstable') or channel==self.channel:return
+        if self.status in ('checking','installing','installed'):return
+        try:profiles.select(channel)
+        except OSError as exc:
+            self.status='error';self.error=str(exc);self.changed.emit();return
+        self.channel=channel
+        self.latest=self.notes=self.url=self.error=self.sha256=''
+        self.status='preview' if os.environ.get('VITALUX_LOCAL_PREVIEW')=='1' else 'idle'
+        self.changed.emit()
+        self.check()
 
     def _start_worker(self, worker):
         self._thread = worker
@@ -86,7 +104,7 @@ class UpdateManager(QObject):
         self.status = "checking"
         self.error = ""
         self.changed.emit()
-        thread = _CheckThread(self)
+        thread = _CheckThread(self,self.channel)
         thread.done.connect(self._on_checked)
         self._start_worker(thread)
 

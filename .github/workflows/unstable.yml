@@ -1,0 +1,106 @@
+name: Vitalux – Rolling Unstable
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [unstable]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: vitalux-rolling-unstable
+  cancel-in-progress: false
+
+jobs:
+  test-and-publish:
+    if: github.ref == 'refs/heads/unstable'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Number the test build on the permanent branch
+        run: |
+          set -euo pipefail
+          git config user.name PAAAUUULLOOOH
+          git config user.email PAAAUUULLOOOH@users.noreply.github.com
+          # Checkout the current branch tip after any earlier queued build.
+          git pull --ff-only origin unstable
+          VERSION="$(python scripts/prepare-unstable-build.py)"
+          git add vitalux/__init__.py CHANGELOG.md CHANGELOG.en.md
+          git commit -m "Prepare Unstable test build v$VERSION"
+          git push origin HEAD:unstable
+          echo "TAG=v$VERSION" >> "$GITHUB_ENV"
+          python scripts/release_notes.py "$VERSION" "$RUNNER_TEMP/unstable-notes.md"
+      - name: Install pinned build and virtual desktop dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install -r requirements-dev.txt
+          sudo apt-get update
+          sudo apt-get install -y xvfb weston pulseaudio pulseaudio-utils libegl1 libgl1 libopengl0 libgl1-mesa-dri libglx-mesa0 mesa-vulkan-drivers libvulkan1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-util1 libxcb-shape0 curl squashfs-tools unzip file
+          python -m compileall -q vitalux tests scripts packaging
+          bash -n run.sh packaging/AppRun
+      - name: Assemble and validate the portable runtime
+        run: |
+          set -euo pipefail
+          python scripts/prepare-release.py "build/staged/Vitalux-${TAG}"
+          python scripts/check-distribution.py "build/staged/Vitalux-${TAG}"
+          STAGED="$PWD/build/staged/Vitalux-${TAG}"
+          cd "$STAGED"
+          LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-regressions.py --output "$GITHUB_WORKSPACE/build/regressions"
+      - name: Exercise real kernel and desktop paths
+        run: |
+          set -euo pipefail
+          sudo env VITALUX_NETWORK_TEST_VM=1 /usr/bin/python3 scripts/check-network-kernel.py | tee build/network-kernel.log
+          STAGED="$PWD/build/staged/Vitalux-${TAG}"
+          cd "$STAGED"
+          LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/check-ui-audio.py --output "$GITHUB_WORKSPACE/build/audio-checks"
+          LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-graphics-checks.py --output "$GITHUB_WORKSPACE/build/graphics-checks"
+          for DESIGN in obsidian_gold aether_glass eclipse_crystal; do
+            LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/capture-release-ui.py --output "$GITHUB_WORKSPACE/build/ui-scale-checks/$DESIGN" --design "$DESIGN" --scales 1,1.25,1.5,2
+          done
+      - name: Verify offline source ZIP startup
+        run: python scripts/check-source-preview.py
+      - name: Build the full ZIP and AppImage
+        run: |
+          set -euo pipefail
+          mkdir -p tooling dist
+          curl -fL --retry 3 --silent --show-error https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -o tooling/appimagetool.AppImage
+          chmod 755 tooling/appimagetool.AppImage
+          (cd tooling && ./appimagetool.AppImage --appimage-extract >/dev/null)
+          python scripts/create-release-archives.py "build/staged/Vitalux-${TAG}" dist --full-only
+          bash packaging/build-appimage.sh "build/staged/Vitalux-${TAG}" "$PWD/dist/Vitalux-${TAG}-x86_64.AppImage" "$PWD/tooling/squashfs-root/AppRun"
+      - uses: actions/cache@v4
+        with:
+          path: build/third-party-sources
+          key: vitalux-third-party-sources-v1-${{ hashFiles('third_party/sources.lock.json') }}
+      - name: Bundle licenses, source offers and checksums
+        run: |
+          set -euo pipefail
+          python scripts/bundle-third-party.py --runtime-root "build/staged/Vitalux-${TAG}" --output dist
+          (cd dist && sha256sum *.AppImage *.zip > "Vitalux-${TAG}-SHA256SUMS.txt")
+          unzip -tq "dist/Vitalux-${TAG}-linux-x86_64.zip"
+      - name: Preserve validation and build outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Vitalux-Unstable-${{ env.TAG }}
+          path: |
+            build/regressions/
+            build/audio-checks/
+            build/graphics-checks/
+            build/ui-scale-checks/
+            build/network-kernel.log
+            dist/
+          retention-days: 14
+      - name: Update the single rolling prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/publish-unstable.py dist

@@ -27,7 +27,8 @@ FIXED_MODES = (*PREMIUM_MODES, 'black_glass_gold')
 
 def background_locked():
     from . import eco
-    return eco.enabled() or mode() in (*FIXED_MODES, 'holographic')
+    from .design_capabilities import capabilities
+    return eco.enabled() or not capabilities(mode())['background']
 
 
 _mode = DEFAULT_THEME

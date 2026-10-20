@@ -118,7 +118,7 @@ def paint_check_indicator(painter, bounds, checked, hovered=False, focused=False
 
 
 class QCheckBox(_QCheckBox):
-    """Shared checkbox appearance in charts, networking, settings and benchmarks."""
+    """Themed on/off switches; selectionControl retains multiple-choice checks."""
     def __init__(self, text='', *args, **kwargs):
         self._original = original_text(text)
         super().__init__(localized(text), *args, **kwargs)
@@ -143,10 +143,10 @@ class QCheckBox(_QCheckBox):
         return result
 
     def _animate_toggle(self,checked):
-        from . import motion,signature_designs
+        from . import motion
         self._toggle_animation.stop()
         duration=motion.duration(160)
-        if not signature_designs.active() or not self.isVisible() or not duration:
+        if not self.isVisible() or not duration:
             return self._toggle_frame(float(checked))
         self._toggle_animation.setDuration(duration)
         self._toggle_animation.setStartValue(self._toggle_progress)
@@ -159,9 +159,13 @@ class QCheckBox(_QCheckBox):
         super().hideEvent(event)
 
     def sizeHint(self):
-        from . import signature_designs
         hint=super().sizeHint()
-        return QSize(hint.width()+24,max(25,hint.height())) if signature_designs.active() else hint
+        if self.property('selectionControl'):
+            return QSize(self.fontMetrics().horizontalAdvance(self.text())+28,max(25,hint.height()))
+        return QSize(max(48,self.fontMetrics().horizontalAdvance(self.text())+56),max(27,hint.height()))
+
+    def hitButton(self,position):
+        return self.rect().contains(position)
 
     def setText(self, text):
         self._original = original_text(text)
@@ -177,18 +181,18 @@ class QCheckBox(_QCheckBox):
         painter.setRenderHint(QPainter.Antialiasing)
         if not self.isEnabled():
             painter.setOpacity(.45)
-        if signature_designs.active():
-            signature_designs.paint_toggle(painter,QRectF(2,(self.height()-22)/2,40,22),self.isChecked(),self._toggle_progress)
+        if self.property('selectionControl'):
+            paint_check_indicator(painter,QRectF(2,(self.height()-15)/2,15,15),self.isChecked(),self.underMouse(),self.hasFocus())
             painter.setPen(QColor(theme.TEXT))
-            painter.drawText(QRectF(52,0,max(0,self.width()-54),self.height()),Qt.AlignLeft|Qt.AlignVCenter,self.text())
-            painter.end()
-            return
-        size = 15.
-        y = (self.height() - size) / 2
-        paint_check_indicator(painter, QRectF(2, y, size, size),
-                              self.isChecked(), self.underMouse(), self.hasFocus())
+            painter.drawText(QRectF(25,0,max(0,self.width()-27),self.height()),Qt.AlignLeft|Qt.AlignVCenter,self.text())
+            painter.end();return
+        rect=QRectF(2,(self.height()-22)/2,40,22)
+        if signature_designs.active():signature_designs.paint_toggle(painter,rect,self.isChecked(),self._toggle_progress)
+        else:
+            from .switch_material import paint_switch
+            paint_switch(painter,rect,self._toggle_progress,self.hasFocus())
         painter.setPen(QColor(theme.TEXT))
-        painter.drawText(QRectF(25, 0, max(0, self.width()-27), self.height()),
+        painter.drawText(QRectF(52, 0, max(0, self.width()-54), self.height()),
                          Qt.AlignLeft | Qt.AlignVCenter, self.text())
         painter.end()
 

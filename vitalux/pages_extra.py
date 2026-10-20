@@ -1,12 +1,12 @@
 from html import escape
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QHBoxLayout
+from PySide6.QtWidgets import QHBoxLayout,QButtonGroup
 
-from . import APP_NAME, __version__, changelog, settings, theme
+from . import APP_NAME, __version__, changelog, settings, theme, profiles
 from .i18n import tr
 from .pages import Page
-from .ui_locale import QLabel, QPushButton, QComboBox
+from .ui_locale import QLabel, QPushButton, QComboBox,QMessageBox
 from .widgets import Bar, Card, KeyValue, label
 
 AUTHOR_URL = "https://github.com/PAAAUUULLOOOH"
@@ -24,7 +24,7 @@ STATUS_TEXT = {
 }
 
 class UpdatePage(Page):
-    """Only the official Vitalux GitHub release channel; no user-supplied links."""
+    """Verified official Stable and rolling Unstable packages."""
 
     def __init__(self, manager):
         super().__init__("Updates", "Vitalux automatisch über GitHub aktualisieren")
@@ -34,6 +34,20 @@ class UpdatePage(Page):
         self.current = KeyValue("Installierte Version")
         self.current.set(__version__)
         overview.body.addWidget(self.current)
+        self.installed_channel=KeyValue('Aktiver Kanal')
+        self.installed_channel.set('Unstable' if profiles.installed()=='unstable' else 'Stable')
+        overview.body.addWidget(self.installed_channel)
+        overview.body.addWidget(label('Update-Kanal','strong'))
+        self.channel_group=QButtonGroup(self)
+        self.channel_buttons={}
+        channel_row=QHBoxLayout()
+        for key,title in (('stable','Stable'),('unstable','Unstable')):
+            button=QPushButton(title);button.setCheckable(True);button.setObjectName('langBtn')
+            self.channel_group.addButton(button)
+            button.clicked.connect(lambda checked=False,key=key:self._channel(key))
+            self.channel_buttons[key]=button;channel_row.addWidget(button)
+        channel_row.addStretch(1);overview.body.addLayout(channel_row)
+        overview.body.addWidget(label('Stable und Unstable verwenden getrennte Einstellungen. Ein Kanalwechsel wird erst mit der Installation ausgeführt.','muted',wrap=True))
         self.status = label("", "strong", wrap=True)
         self.status.setTextFormat(Qt.PlainText)
         overview.body.addWidget(self.status)
@@ -45,6 +59,16 @@ class UpdatePage(Page):
         row.addWidget(self.check_button)
         row.addStretch(1)
         overview.body.addLayout(row)
+        profile_row=QHBoxLayout()
+        self.import_profile=QPushButton('Einstellungen übernehmen …')
+        self.import_profile.setObjectName('ghostBtn')
+        self.import_profile.clicked.connect(lambda:self._profile(False))
+        self.fresh_profile=QPushButton('Frisches Testprofil …')
+        self.fresh_profile.setObjectName('ghostBtn')
+        self.fresh_profile.setVisible(profiles.installed()=='unstable')
+        self.fresh_profile.clicked.connect(lambda:self._profile(True))
+        profile_row.addWidget(self.import_profile);profile_row.addWidget(self.fresh_profile);profile_row.addStretch(1)
+        overview.body.addLayout(profile_row)
         self.content.addWidget(overview)
 
         # Entire update area is hidden when there is no new release.
@@ -90,6 +114,19 @@ class UpdatePage(Page):
         self.m.progress.connect(self.progress_bar.set_value)
         self.sync()
 
+    def _channel(self,channel):
+        setter=getattr(self.m,'set_channel',None)
+        if setter:setter(channel)
+
+    def _profile(self,fresh):
+        text=('Testprofil sichern und zurücksetzen? Vitalux startet mit Standardwerten neu.' if fresh else
+              'Kompatible Einstellungen und Hintergrundbilder aus dem anderen Kanal übernehmen? Das aktuelle Profil wird gesichert. Vitalux startet mit CPU-Rendering neu.')
+        if QMessageBox.question(self,tr('Einstellungsprofile'),tr(text),QMessageBox.Yes|QMessageBox.No,QMessageBox.No)!=QMessageBox.Yes:return
+        action=profiles.fresh_test if fresh else profiles.import_other
+        restart=getattr(self.window(),'restart_for_renderer',None)
+        if not restart or not restart(commit=action):
+            QMessageBox.information(self,tr('Einstellungsprofile'),tr('Ein aktiver Vorgang verhindert den Neustart. Bitte später erneut versuchen.'))
+
     def _show_changelog_version(self, *_):
         index = self.changelog_select.currentIndex()
         if 0 <= index < len(self.changelog_list):
@@ -116,6 +153,14 @@ class UpdatePage(Page):
 
     def sync(self):
         m = self.m
+        channel=getattr(m,'channel',profiles.selected())
+        busy=m.status in ('checking','installing','installed')
+        for key,button in self.channel_buttons.items():
+            button.setChecked(key==channel);button.setEnabled(not busy)
+        self.import_profile.setEnabled(not busy)
+        self.fresh_profile.setEnabled(not busy)
+        switching=channel!=profiles.installed()
+        self.install_button.setText(tr(('Zu Unstable wechseln' if channel=='unstable' else 'Zu Stable zurückkehren') if switching else 'Jetzt aktualisieren'))
         self.status.setText(tr(m.error if m.status == "error" else STATUS_TEXT.get(m.status, "")))
         self.check_button.setEnabled(m.status not in ("checking", "installing", "installed", "preview"))
         visible = m.status in ("available", "installing", "installed")

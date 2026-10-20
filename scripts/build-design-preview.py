@@ -132,6 +132,8 @@ def check_launchers(stage, env, logs):
                     text = log.read_text()
                     if launcher == 'run.sh' and not (stage/'DESIGN-BUILD.json').exists():
                         normal_log = Path(env['XDG_STATE_HOME'])/'vitalux/vitalux.log'
+                        if '-unstable.' in (stage/'vitalux/__init__.py').read_text():
+                            normal_log=Path(env['XDG_STATE_HOME'])/'vitalux/profiles/unstable/vitalux.log'
                         if normal_log.exists():
                             text += normal_log.read_text()
                     if 'Vitalux: Fensterplattform=offscreen, Grafik-Backend=software' in text:

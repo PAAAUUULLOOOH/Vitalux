@@ -13,10 +13,10 @@ import urllib.request
 import zipfile
 import ssl
 import socket
-from pathlib import PurePosixPath
+from pathlib import PurePosixPath,Path
 import stat
 
-from . import APP_NAME, APP_ID, __version__, settings
+from . import APP_NAME, APP_ID, __version__, settings, profiles, versions
 from .i18n import tr
 
 DEFAULT_REPO = "PAAAUUULLOOOH/Vitalux"  # Feste, offizielle Updatequelle; keine frei eingebbaren URLs.
@@ -29,7 +29,7 @@ def app_root():
 
 
 def _ver(v):
-    return tuple(int(x) for x in re.findall(r"\d+", v or ""))
+    return versions.key(v)
 
 
 # The bundled Python/OpenSSL runtime may use Debian's CA path on non-Debian
@@ -70,14 +70,39 @@ def _get_release():
         return json.load(response)
 
 
-def check():
+def _get_unstable_release():
+    request=urllib.request.Request(f'https://api.github.com/repos/{DEFAULT_REPO}/releases/tags/unstable',headers=HEADERS)
+    with _github_request(request,timeout=12) as response:return json.load(response)
+
+
+def _unstable_manifest(data):
+    item=next((a for a in data.get('assets',[]) if a.get('name')=='Vitalux-unstable-channel.json'),None)
+    if not item:raise ValueError('Testpaket wird noch vorbereitet.')
+    url=f'https://github.com/{DEFAULT_REPO}/releases/download/unstable/Vitalux-unstable-channel.json'
+    digest=str(item.get('digest',''))
+    if item.get('browser_download_url')!=url or not re.fullmatch(r'sha256:[0-9a-fA-F]{64}',digest):raise ValueError('Ungültiges Testkanal-Manifest.')
+    with _github_request(urllib.request.Request(url,headers=HEADERS),timeout=12) as response:raw=response.read(65537)
+    if len(raw)>65536 or hashlib.sha256(raw).hexdigest()!=digest.split(':')[1].lower():raise ValueError('Testkanal-Manifest konnte nicht geprüft werden.')
+    manifest=json.loads(raw)
+    if not isinstance(manifest,dict) or manifest.get('schema')!=1 or versions.channel(manifest.get('version'))!='unstable':raise ValueError('Ungültige Testversionsnummer.')
+    return manifest
+
+
+def check(channel=None):
     """Only releases from the official GitHub repo with the exact app binary."""
     repo = DEFAULT_REPO
+    channel=channel or profiles.selected()
+    if channel not in ('stable','unstable'):return {'ok':False,'error':tr('Unbekannter Update-Kanal.')}
+    manifest=None
     try:
-        data = _get_release()
+        data = _get_release() if channel=='stable' else _get_unstable_release()
+        if not isinstance(data,dict):raise ValueError('Invalid release response')
+        if channel=='unstable':
+            if data.get('tag_name')!='unstable' or data.get('prerelease') is not True:raise ValueError('Invalid test release')
+            manifest=_unstable_manifest(data)
     except urllib.error.HTTPError as e:
         if e.code == 404:
-            return {"ok": False, "error": tr("Noch keine Vitalux-Version über GitHub Releases veröffentlicht.")}
+            return {"ok": False, "error": tr('Noch kein Unstable-Testpaket veröffentlicht.' if channel=='unstable' else "Noch keine Vitalux-Version über GitHub Releases veröffentlicht.")}
         return {"ok": False, "error": f"GitHub: HTTP {e.code}"}
     except (urllib.error.URLError, OSError, TimeoutError) as exc:
         reason = getattr(exc, "reason", exc)
@@ -92,17 +117,21 @@ def check():
         return {"ok": False, "error": tr("Unerwartete Antwort von GitHub.")}
 
     tag = str(data.get("tag_name", ""))
-    if not re.fullmatch(r"v\d+\.\d+\.\d+(?:\.\d+)?", tag):
+    version=str(manifest['version']) if manifest else tag.lstrip('v')
+    try:valid=versions.channel(version)==channel and (tag=='unstable' if manifest else not data.get('prerelease',False))
+    except ValueError:valid=False
+    if not valid:
         return {"ok": False, "error": tr("Ungültige Versionsangabe bei GitHub.")}
     is_appimage = bool(os.environ.get("APPIMAGE"))
     # A current/older release is not an update even while its artifacts build.
-    if _ver(tag) <= _ver(__version__):
-        return {"ok": True, "latest": tag.lstrip("v"), "notes": "", "url": "",
+    switching=versions.channel(__version__)!=channel
+    if not switching and _ver(version) <= _ver(__version__):
+        return {"ok": True, "latest": version, "notes": "", "url": "",
                 "sha256": "", "kind": "appimage" if is_appimage else "zip", "newer": False}
     # Neuer Standardname ohne „Portabel“; ältere Releases bleiben kompatibel.
     suffixes = ("-x86_64.AppImage",) if is_appimage else (
         "-linux-x86_64.zip", "-linux-x86_64-Portabel.zip")
-    expected_names = [f"Vitalux-{tag}{suffix}" for suffix in suffixes]
+    expected_names = [f"Vitalux-v{version}{suffix}" for suffix in suffixes]
     item = next((a for name in expected_names for a in data.get("assets", [])
                  if a.get("name") == name), None)
     expected_name = str(item.get("name", "")) if item else expected_names[0]
@@ -117,9 +146,13 @@ def check():
     checksum = str(item.get('digest') or '')
     if not re.fullmatch(r'sha256:[0-9a-fA-F]{64}', checksum):
         return {"ok": False, "error": tr('GitHub Release liefert keine SHA-256-Prüfsumme für die Programmdatei.')}
-    return {"ok": True, "latest": tag.lstrip('vV'), "notes": (data.get('body') or '').strip(),
+    if manifest:
+        record=manifest.get('assets',{}).get(expected_name,{})
+        if record.get('sha256')!=checksum.split(':',1)[1].lower():
+            return {'ok':False,'error':tr('Testpaket und Manifest stimmen nicht überein. Bitte erneut prüfen.')}
+    return {"ok": True, "latest": version, "notes": (data.get('body') or '').strip(),
             "url": download_url, "sha256": checksum.split(':', 1)[1].lower(),
-            "kind": "appimage" if is_appimage else "zip", "newer": _ver(tag) > _ver(__version__)}
+            "kind": "appimage" if is_appimage else "zip", "newer": switching or _ver(version) > _ver(__version__), 'channel':channel}
 
 
 def _require_space(path, required):
@@ -200,7 +233,7 @@ def activate_appimage_update(staged):
     target = os.path.realpath(appimage_path())
     if not os.path.isfile(target) or os.path.dirname(staged) != os.path.dirname(target):
         raise RuntimeError(tr('AppImage-Update konnte nicht sicher vorbereitet werden.'))
-    cache = os.path.join(os.environ.get('XDG_CACHE_HOME') or os.path.expanduser('~/.cache'), 'vitalux')
+    cache = str(profiles.directory('cache'))
     os.makedirs(cache, mode=0o700, exist_ok=True)
     fd, script = tempfile.mkstemp(prefix='apply-update-', suffix='.sh', dir=cache)
     q = shlex.quote
@@ -211,7 +244,7 @@ oldpid={os.getpid()}
 target={q(target)}
 staged={q(staged)}
 backup={q(target + '.previous')}
-state_dir={q(os.path.join(os.environ.get('XDG_STATE_HOME') or os.path.expanduser('~/.local/state'), 'vitalux'))}
+state_dir={q(str(profiles.directory('state')))}
 version={q(__version__)}
 mkdir -p "$state_dir"
 stamp() {{
@@ -302,6 +335,7 @@ def _stage_backup(root, root_files):
             shutil.copy2(settings.PATH, os.path.join(stage, 'settings.json'))
         with open(os.path.join(stage, 'metadata.json'), 'w', encoding='utf-8') as f:
             json.dump({'version': __version__, 'root_files': list(root_files),
+                       'profile_channel':profiles.installed() if os.path.abspath(settings.PATH)==str(profiles.directory('config')/'settings.json') else None,
                        'settings_saved': os.path.isfile(os.path.join(stage, 'settings.json'))}, f)
         old = backup + '.old'
         shutil.rmtree(old, ignore_errors=True)
@@ -419,8 +453,11 @@ def restore_previous(root=None, restore_settings=True):
             os.replace(restored, target)
             _restore_root_files(root, backup)
             if restore_settings and os.path.isfile(os.path.join(backup, 'settings.json')):
-                os.makedirs(os.path.dirname(settings.PATH), exist_ok=True)
-                shutil.copy2(os.path.join(backup, 'settings.json'), settings.PATH)
+                metadata=json.loads(Path(backup,'metadata.json').read_text())
+                saved_channel=metadata.get('profile_channel')
+                destination=str(profiles.directory('config',saved_channel)/'settings.json') if saved_channel in ('stable','unstable') else settings.PATH
+                os.makedirs(os.path.dirname(destination), exist_ok=True)
+                shutil.copy2(os.path.join(backup, 'settings.json'), destination)
         except Exception:
             if os.path.isdir(target):
                 shutil.rmtree(target)

@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 concurrency:
   group: vitalux-publication-stable
   cancel-in-progress: true
@@ -168,6 +169,7 @@ jobs:
           (cd dist && sha256sum *.AppImage *.zip > "Vitalux-${TAG}-SHA256SUMS.txt")
           unzip -tq "dist/Vitalux-${TAG}-linux-x86_64.zip"
           python scripts/check-release-update.py "build/baseline/Vitalux-${PREVIOUS_TAG}" "dist/Vitalux-${TAG}-linux-x86_64.zip"
+          python scripts/check-channel-switch.py "dist/Vitalux-${TAG}-linux-x86_64.zip"
       - name: Preserve validation reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -194,3 +196,13 @@ jobs:
           set -euo pipefail
           gh release create "$TAG" dist/* --target "$GITHUB_SHA" --title "Vitalux $TAG" --notes-file "$RUNNER_TEMP/vitalux-release-notes.md" --latest
           gh release view "$TAG" --json assets --jq '.assets[] | {name, size, digest}'
+      - name: Refresh the permanent Unstable branch and build its current test package
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name PAAAUUULLOOOH
+          git config user.email PAAAUUULLOOOH@users.noreply.github.com
+          git fetch --unshallow || true
+          python scripts/sync-unstable.py
+          gh workflow run unstable.yml --ref unstable

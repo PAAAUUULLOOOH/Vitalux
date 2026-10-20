@@ -27,6 +27,7 @@ class TrafficLedger:
         self.errors=[]
         self.connections=[]
         self.rules=set()
+        self.connection_rules=set()
         self.limits={}
 
     def ingest(self,sample,limits=None):
@@ -40,6 +41,7 @@ class TrafficLedger:
         rows=sample.get('connections',[])
         self.connections=rows
         self.rules=set(sample.get('rules',[]))
+        self.connection_rules=set(sample.get('connection_rules',[]))
         self.errors=sample.get('errors',[])
         for app in self.apps.values():
             app.update(down_delta=0,up_delta=0,pids={},connections=0,measured=False,partial=False)
@@ -50,6 +52,8 @@ class TrafficLedger:
                 measured=False,partial=False))
             if row.get('pid') is not None:app['pids'][row['pid']]=row.get('start')
             return app
+        for row in sample.get('applications',{}).values():
+            if row.get('exe'):get(row)
         for row in rows:
             app=get(row)
             app['connections']+=1
@@ -138,6 +142,7 @@ class HelperClient(QObject):
     state=Signal(str)
     error=Signal(str)
     rules=Signal(object)
+    connection_rules=Signal(object)
 
     def __init__(self,parent=None):
         super().__init__(parent)
@@ -207,7 +212,9 @@ class HelperClient(QObject):
                     self.active=True
                     self.state.emit('ready')
                 elif kind=='sample' and self.active:self.sample.emit(message['data'])
-                elif kind=='rules' and self.active:self.rules.emit(message['rules'])
+                elif kind=='rules' and self.active:
+                    self.rules.emit(message['rules'])
+                    self.connection_rules.emit(message.get('connection_rules',[]))
                 elif kind in ('error','command_error'):
                     self.last_error=message.get('error','')
                     self.error.emit(self.last_error)
