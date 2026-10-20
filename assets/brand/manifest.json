@@ -2,371 +2,411 @@
   {
     "file": "assets/brand/vitalux-pulse-blue.svg",
     "bytes": 65862,
-    "sha256": "405b5cf73c237996efc0ff72f44973f643205ac2c3244255302c51af95831b54"
+    "sha256": "054433c8e9edd1cfd5f250d3e4d2cbddd76dac69e8cdb69f1dbeeebaa589f1d8"
   },
   {
     "file": "assets/brand/vitalux-wordmark-blue.svg",
-    "bytes": 136088,
-    "sha256": "51df96ad23d55a80d39844caafe224789b1ef1bbe5c151e7ea89866e75d03b50"
+    "bytes": 6398,
+    "sha256": "51e7876960602bf24763b2eff827c038e43752f9826f74f4859bdfece7726a4f"
   },
   {
     "file": "assets/brand/vitalux-wordmark-blue-light.svg",
-    "bytes": 136088,
-    "sha256": "ca69b73f64fcc4905dacf8da24c33e9a42708ccbea9c8060a65c105433b511a8"
+    "bytes": 6398,
+    "sha256": "485764b7b41ede6742c292ded81adce01dbce7bee141fb67cd6e15b7cdcb28cd"
   },
   {
     "file": "assets/brand/vitalux-pulse-cyan.svg",
     "bytes": 65862,
-    "sha256": "a6b8ce7966b06c3c50e0a92f8b2c85fbf1dc3c746f2303232113c10b2a385f10"
+    "sha256": "495064e018a663ff0472c3621f8d7ac495811ac10bf390070878227065d3b18c"
   },
   {
     "file": "assets/brand/vitalux-wordmark-cyan.svg",
-    "bytes": 136088,
-    "sha256": "8f361d199cbaf8dc2dcc7b05f356c406dfb97e4f3732fdc3712af77249fb166f"
+    "bytes": 6398,
+    "sha256": "b1647bf96cc4bb39d2c0d26d2decea9ca53e2b2f18a13a54c9d232f82a32b1fe"
   },
   {
     "file": "assets/brand/vitalux-wordmark-cyan-light.svg",
-    "bytes": 136088,
-    "sha256": "67ef6666d23c3ad07f8ef3ec00505ac1df624f791b69814ff44b043cdb94c547"
+    "bytes": 6398,
+    "sha256": "fceaf7325822a3f201adae294643489cec217907eda7b1e44bffb148a87dde44"
   },
   {
     "file": "assets/brand/vitalux-pulse-violet.svg",
     "bytes": 65864,
-    "sha256": "9c33fb683e3bd49f54d39870b11691431fd640cd7395b9b6d68ab404333386bc"
+    "sha256": "16a132b2d735c075c370e7a07acd1364e1393a0854a2cb54b323211f9fefd039"
   },
   {
     "file": "assets/brand/vitalux-wordmark-violet.svg",
-    "bytes": 136090,
-    "sha256": "2360f18f3da663c39c4542284922f44fae845e40875ce5aa5cfcc6514ba38dd1"
+    "bytes": 6400,
+    "sha256": "58a85f04d51163d9c1c7fd86701b551ecb34e9fa599098179a37120452100ed3"
   },
   {
     "file": "assets/brand/vitalux-wordmark-violet-light.svg",
-    "bytes": 136090,
-    "sha256": "c5cd2784528aba8a8d277b53c4901cdfc6d4a997fead7d9809eb0d475082a2a0"
+    "bytes": 6400,
+    "sha256": "2d435cc5c1eec240528afe0884461cf00bcdd201b8084bc3cb7c7f6db4daee81"
   },
   {
     "file": "assets/brand/vitalux-pulse-green.svg",
     "bytes": 65863,
-    "sha256": "33c5a57c299fcbdff68097569f9ed16d6a7375e964851b61024a2a5d3a3231ae"
+    "sha256": "b2ed9625c298b52ebeba8885fcd861cec79851bd0a767869f27afc3403462d1a"
   },
   {
     "file": "assets/brand/vitalux-wordmark-green.svg",
-    "bytes": 136089,
-    "sha256": "eb59189553fbf380f45d1d55feca2d6ca08e7ee766658c2ed17a20c0f97a47ce"
+    "bytes": 6399,
+    "sha256": "05f9a79a6d9dbbe06d59ea68083ac42f9be181bc004b87b907733cedf99b6f95"
   },
   {
     "file": "assets/brand/vitalux-wordmark-green-light.svg",
-    "bytes": 136089,
-    "sha256": "9eafdf344a38af2319b30bf419d9558ebc1b0bf1db104b6516093f89a10bf04a"
+    "bytes": 6399,
+    "sha256": "5ef6e1092f9b12f46164d79b57619ea77da13b81af547969a6ce7c30d1a10848"
   },
   {
     "file": "assets/brand/vitalux-pulse-orange.svg",
     "bytes": 65864,
-    "sha256": "3d32a5e7c04a04f7afcf81ee1febbee4d6a6dfa5acc9df726ecccf73d55b95f7"
+    "sha256": "30bae4ee56251274f4873d1b63b7c877252ac4bc4ff0a57d67a5566f67f78db4"
   },
   {
     "file": "assets/brand/vitalux-wordmark-orange.svg",
-    "bytes": 136090,
-    "sha256": "63ef9b93d693c7a4e3e5bb8b43ea2d64bdaeda6871497ab42b5d6cfe376f1e5f"
+    "bytes": 6400,
+    "sha256": "87975c5c080d52637909a6641941746d9607f209f12b2b5ba627765fe3151834"
   },
   {
     "file": "assets/brand/vitalux-wordmark-orange-light.svg",
-    "bytes": 136090,
-    "sha256": "a39f5385c4c88a433c8df8d358a6cf927a5e87679a27b84c8c8fec46a22fce80"
+    "bytes": 6400,
+    "sha256": "5dc481eb69cc050771664a317167a36e08033310c8826560f1e44e31b14a85ef"
   },
   {
     "file": "assets/brand/vitalux-pulse-yellow.svg",
     "bytes": 65864,
-    "sha256": "bb7f414dd188107a866761a557e62f8f1f83f32b66ad2973b786e7aa91b3ef64"
+    "sha256": "b9706d556efac2061fa78cf73830001392ce65162f2523d9ff9cb89147952419"
   },
   {
     "file": "assets/brand/vitalux-wordmark-yellow.svg",
-    "bytes": 136090,
-    "sha256": "2398ee767f13874549229f6ec46ba6100e9c1148dca21f358596139c11a4f99e"
+    "bytes": 6400,
+    "sha256": "e4686612f6db3f297cf991c2d5485c53e4ce9e1c061bd414fd7c72be0e3d7f05"
   },
   {
     "file": "assets/brand/vitalux-wordmark-yellow-light.svg",
-    "bytes": 136090,
-    "sha256": "a60f1362a2e736427ab2455822f2b2f6157868b24154c66477d6f0447c08a6b8"
+    "bytes": 6400,
+    "sha256": "b671d314c04fbe0258fe73b3770aabdd2f1d1167f32729c1106fa8885ad6d4d0"
   },
   {
     "file": "assets/brand/vitalux-pulse-red.svg",
     "bytes": 65861,
-    "sha256": "419be4a8702647b4e5f05e76d2b62d689300960f172dc9fbae9a4f1a7aa44750"
+    "sha256": "94e8c700127c952a88539245042cfde3a02c3d7b8abacecb692d0ca44a555cc8"
   },
   {
     "file": "assets/brand/vitalux-wordmark-red.svg",
-    "bytes": 136087,
-    "sha256": "feaab39f2947b784cf732d60e4207bdd4d248b9507ecd695e55400007e90ff4c"
+    "bytes": 6397,
+    "sha256": "220228743e6daeefe2b08f2da92c7817cc682119ecd3a1be7e416c72185ae21c"
   },
   {
     "file": "assets/brand/vitalux-wordmark-red-light.svg",
-    "bytes": 136087,
-    "sha256": "e29216bc6fc201a45f685852f7ae3e1460beb2fa9be62a6dcb867be4a166ddd1"
+    "bytes": 6397,
+    "sha256": "75c157cce70628c16b2efaab2f9c8ba5ee8b8a89a3cddd5e4f001f7dfe073a28"
   },
   {
     "file": "assets/brand/vitalux-pulse-pink.svg",
     "bytes": 65862,
-    "sha256": "f76c9b1ad10250d61d6e5189d22d541fb58ff7fd5f3bb0bf22b23e590239543b"
+    "sha256": "d26d41c1b7b9ec37f33158d4dc34a494e24b2abfc395aa704c3609a3949c31cf"
   },
   {
     "file": "assets/brand/vitalux-wordmark-pink.svg",
-    "bytes": 136088,
-    "sha256": "502b5730b06972f05d5c30ca4f6bf2a574a9cc98ad2d4f380bf9c297e684eab2"
+    "bytes": 6398,
+    "sha256": "6bd7abfd610c57c8a9fc443866febe6155c81146a63adc24ef8f9f3d49e0b02e"
   },
   {
     "file": "assets/brand/vitalux-wordmark-pink-light.svg",
-    "bytes": 136088,
-    "sha256": "50be63795ef20a189bb006412915652bab08ff9b58389dfbd40f3bc8c2d53adb"
+    "bytes": 6398,
+    "sha256": "46e2efd0b266cca650facd21d052a8bc697f9a5b1f2b66520f0dabc23bd8406e"
   },
   {
     "file": "assets/brand/vitalux-pulse-gold.svg",
     "bytes": 65862,
-    "sha256": "48ac3be387ddad7c22857751f002b9c14a6b6797e58c6e852c42c0df7d26611d"
+    "sha256": "4d0484fa9d4b9bf53d8db7058743bc84be346f0e2b92993ce3d8dc814c35b630"
   },
   {
     "file": "assets/brand/vitalux-wordmark-gold.svg",
-    "bytes": 136088,
-    "sha256": "8bc49798fde8a36abb9e045426b56246085671c80ab07b04485242977ae4ce06"
+    "bytes": 6398,
+    "sha256": "ad024bba36046b13685acb7eeae525cce6445b0e24ff1a1e48bd57510d9d67a1"
   },
   {
     "file": "assets/brand/vitalux-pulse-obsidian-gold.svg",
     "bytes": 65871,
-    "sha256": "aca648a1236baea2ba1ea20f65f0c8e07e62fec439609fcb411dd3ed418c3433"
+    "sha256": "5a46a36a2e417d02d92141168d5ba54ae8679bdc88c7da5798afce88f7304d50"
   },
   {
     "file": "assets/brand/vitalux-wordmark-obsidian-gold.svg",
-    "bytes": 136097,
-    "sha256": "4c1b5584059d3588ca82bad9aa6724ca0c0d56643b357e68b16d0fa49d2f0d39"
+    "bytes": 6407,
+    "sha256": "06c22d2a62956d77b86d14f3fec4f5a3b7053bd5febd6d9b5b31c90f602d3a2e"
   },
   {
     "file": "assets/brand/vitalux-pulse-black-glass-gold.svg",
     "bytes": 65874,
-    "sha256": "65fcc9d60f39cbf939c5afdf6d6099b707ca01c77943dbe1145a0ffb4280eb87"
+    "sha256": "597de990dd85469d75ed4c95167d6127516852a785b0597594be53effe1e45b1"
   },
   {
     "file": "assets/brand/vitalux-wordmark-black-glass-gold.svg",
-    "bytes": 136100,
-    "sha256": "f2847d21ba8302ba3a237a26a7b21dff970663e9d5ae6bd60f6816d96fdb6547"
+    "bytes": 6410,
+    "sha256": "95c507bb5f82f4dd41711f5464886ed867527b16da33d22ae3911b686f31180a"
   },
   {
     "file": "assets/brand/vitalux-pulse-champagne-glass.svg",
     "bytes": 65873,
-    "sha256": "bce68bf9effe35557c1e0b16e4e048c6b6329450e86c12c8f211b8d5be4b0ce1"
+    "sha256": "e970e9231c6e519af07a76ffb6e597560aec6ad548038dcc680c9bf5713a6b15"
   },
   {
     "file": "assets/brand/vitalux-wordmark-champagne-glass.svg",
-    "bytes": 136099,
-    "sha256": "8794a0d59da719f5c3988dea172e25bd06ada863fea9d9fb7b75228b8297fb43"
+    "bytes": 6409,
+    "sha256": "066878fd5e3b43a7c69b237e60f8da5223a0c30669e41606f54555e273442eac"
   },
   {
     "file": "assets/brand/vitalux-pulse-aurora-gold.svg",
     "bytes": 65869,
-    "sha256": "9b032c48ad3eadf2f95850e27edefc63b337a44221f32cd9b0c2dbdd133127cb"
+    "sha256": "46e5d03d3b6a8f6e42feb0c2862ce0eaeda7eb958de093a090d4f700630650cb"
   },
   {
     "file": "assets/brand/vitalux-wordmark-aurora-gold.svg",
-    "bytes": 136095,
-    "sha256": "71872434723b931cafc75634708bed712cc98052592f1cef44aa41e602bdcc9f"
+    "bytes": 6405,
+    "sha256": "ea89aab35c8c51e46b964efb1ac932def04251e06fd8eb9f2762f3152477cd0a"
+  },
+  {
+    "file": "assets/brand/vitalux-pulse-aether-glass.svg",
+    "bytes": 65870,
+    "sha256": "5f5effea879476d70e404a36b9abdedbda99f1105a2bc09ab20c0d6e8461e2fb"
+  },
+  {
+    "file": "assets/brand/vitalux-wordmark-aether-glass.svg",
+    "bytes": 6406,
+    "sha256": "30c33bcae297fc374c42fcf44a95a8cbfa60934335dc5b34e1c3f098c6db910c"
+  },
+  {
+    "file": "assets/brand/vitalux-pulse-eclipse-crystal.svg",
+    "bytes": 65873,
+    "sha256": "a55f7592a3aee37d6686adb9ec808686599840ed1948452c57a328826f5fa3b9"
+  },
+  {
+    "file": "assets/brand/vitalux-wordmark-eclipse-crystal.svg",
+    "bytes": 6409,
+    "sha256": "16231dd766e192155be9666eb403961e2c85c7ffbcf245bd30031dc8e87b437c"
   },
   {
     "file": "assets/vitalux-pulse.svg",
     "bytes": 65862,
-    "sha256": "48ac3be387ddad7c22857751f002b9c14a6b6797e58c6e852c42c0df7d26611d"
+    "sha256": "4d0484fa9d4b9bf53d8db7058743bc84be346f0e2b92993ce3d8dc814c35b630"
   },
   {
     "file": "assets/vitalux-wordmark.svg",
-    "bytes": 136088,
-    "sha256": "8bc49798fde8a36abb9e045426b56246085671c80ab07b04485242977ae4ce06"
+    "bytes": 6398,
+    "sha256": "ad024bba36046b13685acb7eeae525cce6445b0e24ff1a1e48bd57510d9d67a1"
   },
   {
     "file": "assets/vitalux-wordmark-light.svg",
-    "bytes": 136088,
-    "sha256": "2b8397cf0b9d49a70281d2ec5f7ef77272a497a992102fe69072dd78a62a4e02"
+    "bytes": 6398,
+    "sha256": "5b9ca5a9f86cde3ba159b6f147feed6ca3add7c29c9294668db0dc7f9983fea9"
   },
   {
     "file": "assets/brand/animated/vitalux-pulse-blue.svg",
     "bytes": 66680,
-    "sha256": "dc484e5794bb8702fc7dae6878d410096c7581882a23e3175204ffb68917fe67"
+    "sha256": "a6b401f92f48723429a8f5bbffd55e418aa1e389dfbc5fcffdb31a2ac85bc1e7"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-blue.svg",
-    "bytes": 136434,
-    "sha256": "da8a42a8cd2c98fbb5691d7cd2b77eec332f44611d5d275ee016de6348434bed"
+    "bytes": 6744,
+    "sha256": "0d6a17dd6be41fb20b1f95ef1172eaf760b3fcc6481f1dd97b0f3ca8faa3de5b"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-blue-light.svg",
-    "bytes": 136434,
-    "sha256": "ca20a83cafc1131bd722f98610a5cdab91bf08a0b2edf04be06160d578499df2"
+    "bytes": 6744,
+    "sha256": "ac6d5a561a5524f5895d66db51580a6e57bca9ac99afc2294f20cac71ea7bd69"
   },
   {
     "file": "assets/brand/animated/vitalux-pulse-cyan.svg",
     "bytes": 66680,
-    "sha256": "08253e5e8bfa47fd465a2c6fa138e2f58eca7caa8ac8ab4eb6dbe2f918cfc502"
+    "sha256": "3e25549fd83b519360905195f19a0532385b9c3d6012861fac8dc388b5f05b8f"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-cyan.svg",
-    "bytes": 136434,
-    "sha256": "c12e4992709634fdaf71c6dcb0a50a88b629dfd077b243bf67b42fd3810d22b1"
+    "bytes": 6744,
+    "sha256": "009461126e76304854cc5baa4a34be68fdaf7483e378fb43db9e9369912edb02"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-cyan-light.svg",
-    "bytes": 136434,
-    "sha256": "0dd634ff8eb726cb0ed0f5cb51cb64df36b541675da18048bd37882f1a726e21"
+    "bytes": 6744,
+    "sha256": "643729dacda31468e2571fa3f5cee6ea12baccffab19be6d47e79d0576f62e1f"
   },
   {
     "file": "assets/brand/animated/vitalux-pulse-violet.svg",
     "bytes": 66682,
-    "sha256": "8ce9a9a607a32d11aed143b214235a28f1eeb8fc64a78566ffac852c96e996e5"
+    "sha256": "5f67c3fa7a743972284d56c43c6fd23ec493c6170c299a8ed70804c4a8ed37f7"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-violet.svg",
-    "bytes": 136436,
-    "sha256": "0baf90b3b984ab85a93d7525d0c9634e796102f25d9cd9c01e95b401761758fc"
+    "bytes": 6746,
+    "sha256": "9d0eedd8a8cf237a0d8e2c66d1e80142a61befeb0c8810bd671feafb84cbb3fb"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-violet-light.svg",
-    "bytes": 136436,
-    "sha256": "95653623212b3971b97ee1dd0b9fc9b1bd2e714d46a7acb7ca03bb8ea02ba1a4"
+    "bytes": 6746,
+    "sha256": "948a72f62a1c85234401238fd2e5948ee72e1b6f33f74adb909cce90d59362e9"
   },
   {
     "file": "assets/brand/animated/vitalux-pulse-green.svg",
     "bytes": 66681,
-    "sha256": "03c966b4ef5f1d3b09a86d7fe0844cc5e7c7aa9502899f290a52b9d644eb8a41"
+    "sha256": "feff415ea1a90cb55686d501cd2a7ea31de1541fabd2e933f1c7305d15647be7"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-green.svg",
-    "bytes": 136435,
-    "sha256": "401295535336a01e5490b92fc67dc8a27f543f039d0409722f1ccf75a5964abe"
+    "bytes": 6745,
+    "sha256": "c7d38d1205c91e1d93b860444fee483e1d6a36db95c0c574e42d1036f0dda72c"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-green-light.svg",
-    "bytes": 136435,
-    "sha256": "1f01b057f59897757c5bfedd7087a391c330417b6eaa712f23d8296adf1ba2bb"
+    "bytes": 6745,
+    "sha256": "451b3aedefd0ade7fff34c8418e472842b6a3fe90537abed24bb3add09b46545"
   },
   {
     "file": "assets/brand/animated/vitalux-pulse-orange.svg",
     "bytes": 66682,
-    "sha256": "be7ace28e3de705dfe376df6d6a2c9750d31534d428da61d364b30bb3496a020"
+    "sha256": "64cd156debc93432a4228ee48687fcdcbaf68309b21804facac07c14e8ae1ce0"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-orange.svg",
-    "bytes": 136436,
-    "sha256": "1b4ae8af2236df3a3f4542988fa0c011c5d244d21e82b4b68729765858306c94"
+    "bytes": 6746,
+    "sha256": "f37f99e41f22e13081aba555e6f4210104ac22a5418259ab5fea9fef59e6dcd1"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-orange-light.svg",
-    "bytes": 136436,
-    "sha256": "e028edb15e15608f0fa028d9778339f352c901ddc073307ecc9d1b23eb2e8ce4"
+    "bytes": 6746,
+    "sha256": "fc4b8257b75ef568f2df2b4bc027b8fc4a13d087007f7a016d91675df2470cee"
   },
   {
     "file": "assets/brand/animated/vitalux-pulse-yellow.svg",
     "bytes": 66682,
-    "sha256": "f0a9228b1791b80f2ccc06e637862b28e459da38833883755128e08cc284e4b5"
+    "sha256": "5e2541cd2c5f5504232bb0d1c00bd980f3c02322676f1a0aa2220682d7ecaf3e"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-yellow.svg",
-    "bytes": 136436,
-    "sha256": "284d3f09310543aba50f10c878577479ae5faed3abc4453c3159f835e1726e27"
+    "bytes": 6746,
+    "sha256": "58523fd158b6eaefdccb5f0d839e73a38837fc22247c4db3376bdf9e64959fc8"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-yellow-light.svg",
-    "bytes": 136436,
-    "sha256": "e1a8d78c7f53a5a90d2cc51f98b7771794b1d9d897f0c0b8cd86b00616095040"
+    "bytes": 6746,
+    "sha256": "95e370ce5482d33fe9dc5fd08595d66bdefdc0eb1626d66469c47c28ab5ec12d"
   },
   {
     "file": "assets/brand/animated/vitalux-pulse-red.svg",
     "bytes": 66679,
-    "sha256": "bca2f6a4d87075f0b2b81cd39b2f6ddd82061a65e69816c69725d891da58cde2"
+    "sha256": "99320f4770ef598c1a6c1946150e21d6dfb31e9758a0f9824ad83ffa52ede14c"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-red.svg",
-    "bytes": 136433,
-    "sha256": "a5679cec50d67191a1561781f650597751e067f4a26f757a14d4392964c9ab70"
+    "bytes": 6743,
+    "sha256": "3d1dd225659ca58088c459135ca4605fe9b098422402d96512f4e9b8979fcc72"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-red-light.svg",
-    "bytes": 136433,
-    "sha256": "5840b476a49af2575e3c6a05051590ab1491a3836d7b008527416c53eac01b67"
+    "bytes": 6743,
+    "sha256": "996d8eed43618c29ccd8026ac38e7c239985eef21b24c90cb56d62fe092c4233"
   },
   {
     "file": "assets/brand/animated/vitalux-pulse-pink.svg",
     "bytes": 66680,
-    "sha256": "bf8bad415232324c513a81cba02779cf3e4e22973981c19f8d0dc12f289b0ea8"
+    "sha256": "883cd55678bfb5e32396ca59a92fe805da2c5eca59afc1470c6bbc7ab8e1ce46"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-pink.svg",
-    "bytes": 136434,
-    "sha256": "5c53cced50d54c5de757fa584b3e4837d428e5eb27022e5d5e627d21654f149a"
+    "bytes": 6744,
+    "sha256": "71fcebe66dd7ab4497c4a0ff1ceee70849a0a614638988fc023bf237f03693b1"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-pink-light.svg",
-    "bytes": 136434,
-    "sha256": "3c8b11dc6dbd63e6f2a5b1ccf83ae77606aaaeea09bcc17cb100f52c83765ba2"
+    "bytes": 6744,
+    "sha256": "ded41f552b234caec9c10baf0788ba7889ff286531f8878bd187fbbc0f0d6637"
   },
   {
     "file": "assets/brand/animated/vitalux-pulse-gold.svg",
     "bytes": 66680,
-    "sha256": "c800033961067423b2ce9df1d7436b3ed5e61ab141e940e8d5f8daa4f6f871bc"
+    "sha256": "64eaa8eebcaaf430c0a1878b86a69cc0cdf171d2d8c480d189278830f3240ac7"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-gold.svg",
-    "bytes": 136434,
-    "sha256": "a6cc3d37337d6d0f6f5fe931fd12000df21633a4e2dc439d3808286c46ffbc91"
+    "bytes": 6744,
+    "sha256": "5f9f3663b1df2e4efd76c4838b1d3cd255351f8ee3625f04fa9348fe5a36817d"
   },
   {
     "file": "assets/brand/animated/vitalux-pulse-obsidian-gold.svg",
     "bytes": 66689,
-    "sha256": "aead63b8eab796bff2fb2416d01d6e4bcfd73b33a835da398810b96f17b28782"
+    "sha256": "1ac1c94814c2a1b5af294b2360870a59f24f4e948e562c5eb8e06c47c36bf390"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-obsidian-gold.svg",
-    "bytes": 136443,
-    "sha256": "1f1060386fddd7cd184f35f1769578fd0e67d117ff46353ff132c8b6a7254f1b"
+    "bytes": 6753,
+    "sha256": "a482e706c9b9e140b3a08e3de6630d4085e7e52d75eda2ef4a414f818ad013fb"
   },
   {
     "file": "assets/brand/animated/vitalux-pulse-black-glass-gold.svg",
     "bytes": 66692,
-    "sha256": "a0045a4d7b56e102a91db5d2f9e7bf78cace76e73b900bf2cc6de7a373004661"
+    "sha256": "f119056e7408aa0dddeff1f4e4b8400ff53f2c5455141cbd60854fcbc759ed27"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-black-glass-gold.svg",
-    "bytes": 136446,
-    "sha256": "6e2fbe40cccbe09df66161c39bf430da35d7b20229a2dabc57ad5dacb83f7dfa"
+    "bytes": 6756,
+    "sha256": "0057979f07c30a1bc0f03740d3095875b04d74cdfd4e8c61edcf89fe482fa872"
   },
   {
     "file": "assets/brand/animated/vitalux-pulse-champagne-glass.svg",
     "bytes": 66691,
-    "sha256": "f3f293edc2c5962221016759fe0a1031fb59b08081f2b169612a277bac1ba87a"
+    "sha256": "f7be7074375dfeefba6f0f2c5ae06e0754192c13974470ffa717a7a06d83c854"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-champagne-glass.svg",
-    "bytes": 136445,
-    "sha256": "ba7e50bd150678de2bb2f8e1a498d949748b7f565af26a07138b9a124b13fe0a"
+    "bytes": 6755,
+    "sha256": "208ca7b23802136993c9c1fdb5dcd1dec6b13348a1f7df26c5b5e219f27ce6ef"
   },
   {
     "file": "assets/brand/animated/vitalux-pulse-aurora-gold.svg",
     "bytes": 66687,
-    "sha256": "fb45d99d3d5f60016a70339a863d7a580b53c35e3d6f7fce1002cc9b693dd8ec"
+    "sha256": "5b71ae1530c124240fa641b692036408782913dcd483d0b18adbe08c45b98cc0"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-aurora-gold.svg",
-    "bytes": 136441,
-    "sha256": "4fb0ab2cedf76b088f2d0bcab5f9d6e43bfb7bbdb93bd8c3cf25187f605c592c"
+    "bytes": 6751,
+    "sha256": "ece51a1e9d5160b193e8b30d636c3a26f57fa94ecc97fb902d8759c4d1a0e756"
+  },
+  {
+    "file": "assets/brand/animated/vitalux-pulse-aether-glass.svg",
+    "bytes": 66688,
+    "sha256": "5c7303befc293ce0c4e82013debe5ad93c43d7abef39ce0f8fd3a079b922e9f3"
+  },
+  {
+    "file": "assets/brand/animated/vitalux-wordmark-aether-glass.svg",
+    "bytes": 6752,
+    "sha256": "9541e07a800f2b25f5d05d4157360ad355ea17d27154a99ef681d0233399a172"
+  },
+  {
+    "file": "assets/brand/animated/vitalux-pulse-eclipse-crystal.svg",
+    "bytes": 66691,
+    "sha256": "a9284e663a05f86106479dcc632e2f920cca3864070982ba950cc700460fd781"
+  },
+  {
+    "file": "assets/brand/animated/vitalux-wordmark-eclipse-crystal.svg",
+    "bytes": 6755,
+    "sha256": "476d0fa6e541b162673873083e881d5173ea7497bc2a2a8263e6961de4f7363e"
   },
   {
     "file": "assets/brand/animated/vitalux-pulse.svg",
     "bytes": 66680,
-    "sha256": "c800033961067423b2ce9df1d7436b3ed5e61ab141e940e8d5f8daa4f6f871bc"
+    "sha256": "64eaa8eebcaaf430c0a1878b86a69cc0cdf171d2d8c480d189278830f3240ac7"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark.svg",
-    "bytes": 136434,
-    "sha256": "a6cc3d37337d6d0f6f5fe931fd12000df21633a4e2dc439d3808286c46ffbc91"
+    "bytes": 6744,
+    "sha256": "5f9f3663b1df2e4efd76c4838b1d3cd255351f8ee3625f04fa9348fe5a36817d"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-light.svg",
-    "bytes": 136434,
-    "sha256": "55141ddeac43242d2983e46af92d4af2cd214e1f502130f97921390756d8d076"
+    "bytes": 6744,
+    "sha256": "7567e11491aedde966d4110d37639bc5d3884f3d7096f1212f3f5cd054b517b0"
   }
 ]

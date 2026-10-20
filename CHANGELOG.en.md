@@ -1,5 +1,13 @@
 # Vitalux – Changes
 
+## [v0.9.5.9] - 2026-10-20
+- Aether Glass and Eclipse Crystal add distinct glass/crystal materials, instruments and navigation layouts, with coordinated fixed palettes and backgrounds.
+- The selected architectural VITALUX wordmark combines metal and smoked-glass facets, coordinated color variants and the existing moving reflection.
+- Network → Apps & connections shows applications, connection destinations and recorded traffic, with configurable per-app usage warnings.
+- Optional system authorization enables TCP/UDP accounting and network blocks for running applications. Session blocks are released automatically when authorization ends or Vitalux closes.
+- The appearance selector is now named “Design”. Missing process or traffic data is explicitly shown as unavailable.
+- Overlapping chart series retain their correct translucent fills without stray colored areas between the lines.
+
 ## [v0.9.5.8] - 2026-10-20
 - Overview now always uses the compact system header; the previous toggle is removed while all system information remains available.
 - A new circular logo with slimmer outer bands and a glass center is paired with a new Vitalux wordmark and coordinated metallic finish.

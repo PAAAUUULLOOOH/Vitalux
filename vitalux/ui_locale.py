@@ -124,6 +124,44 @@ class QCheckBox(_QCheckBox):
         super().__init__(localized(text), *args, **kwargs)
         self.setAttribute(Qt.WA_Hover, True)
         self.setCursor(Qt.PointingHandCursor)
+        self._toggle_progress=float(self.isChecked())
+        self._toggle_animation=QVariantAnimation(self)
+        self._toggle_animation.setEasingCurve(QEasingCurve.InOutCubic)
+        self._toggle_animation.valueChanged.connect(self._toggle_frame)
+        self.toggled.connect(self._animate_toggle)
+
+    def _toggle_frame(self,value):
+        self._toggle_progress=float(value)
+        self.update()
+
+    def setChecked(self,value):
+        result=super().setChecked(value)
+        if self.signalsBlocked() and hasattr(self,'_toggle_animation'):
+            self._toggle_animation.stop()
+            self._toggle_progress=float(bool(value))
+            self.update()
+        return result
+
+    def _animate_toggle(self,checked):
+        from . import motion,signature_designs
+        self._toggle_animation.stop()
+        duration=motion.duration(160)
+        if not signature_designs.active() or not self.isVisible() or not duration:
+            return self._toggle_frame(float(checked))
+        self._toggle_animation.setDuration(duration)
+        self._toggle_animation.setStartValue(self._toggle_progress)
+        self._toggle_animation.setEndValue(float(checked))
+        self._toggle_animation.start()
+
+    def hideEvent(self,event):
+        self._toggle_animation.stop()
+        self._toggle_progress=float(self.isChecked())
+        super().hideEvent(event)
+
+    def sizeHint(self):
+        from . import signature_designs
+        hint=super().sizeHint()
+        return QSize(hint.width()+24,max(25,hint.height())) if signature_designs.active() else hint
 
     def setText(self, text):
         self._original = original_text(text)
@@ -134,10 +172,17 @@ class QCheckBox(_QCheckBox):
 
     def paintEvent(self, event):
         from . import theme
+        from . import signature_designs
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         if not self.isEnabled():
             painter.setOpacity(.45)
+        if signature_designs.active():
+            signature_designs.paint_toggle(painter,QRectF(2,(self.height()-22)/2,40,22),self.isChecked(),self._toggle_progress)
+            painter.setPen(QColor(theme.TEXT))
+            painter.drawText(QRectF(52,0,max(0,self.width()-54),self.height()),Qt.AlignLeft|Qt.AlignVCenter,self.text())
+            painter.end()
+            return
         size = 15.
         y = (self.height() - size) / 2
         paint_check_indicator(painter, QRectF(2, y, size, size),
@@ -148,6 +193,21 @@ class QCheckBox(_QCheckBox):
         painter.end()
 
 class QComboBox(_QComboBox):
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        from . import theme
+        painter=QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setPen(QPen(QColor(theme.TEXT if self.isEnabled() else theme.MUTED),1.5,
+                            Qt.SolidLine,Qt.RoundCap,Qt.RoundJoin))
+        painter.setBrush(Qt.NoBrush)
+        x=14 if self.layoutDirection()==Qt.RightToLeft else self.width()-14
+        y=self.height()/2
+        path=QPainterPath()
+        path.moveTo(x-4,y-2);path.lineTo(x,y+2);path.lineTo(x+4,y-2)
+        painter.drawPath(path)
+        painter.end()
+
     def __init__(self,*args,**kwargs):
         self._source_items = []
         super().__init__(*args,**kwargs)

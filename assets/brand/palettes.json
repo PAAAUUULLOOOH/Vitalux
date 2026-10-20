@@ -130,13 +130,35 @@
       "spec": "#fff0d6",
       "secondary": "#a4e4e1",
       "fixed": true
+    },
+    "aether-glass": {
+      "name": "Aether Glass",
+      "accent": "#b7a6ff",
+      "top": "#f0edff",
+      "mid": "#b8b3e6",
+      "low": "#59608f",
+      "spec": "#ffffff",
+      "secondary": "#6cddf7",
+      "fixed": true
+    },
+    "eclipse-crystal": {
+      "name": "Eclipse Crystal",
+      "accent": "#efc68d",
+      "top": "#fff1d9",
+      "mid": "#d9b37f",
+      "low": "#80603d",
+      "spec": "#fff8e9",
+      "secondary": "#f4a86e",
+      "fixed": true
     }
   },
   "theme_assets": {
     "obsidian_gold": "obsidian-gold",
     "black_glass_gold": "black-glass-gold",
     "champagne_glass": "champagne-glass",
-    "aurora_gold": "aurora-gold"
+    "aurora_gold": "aurora-gold",
+    "aether_glass": "aether-glass",
+    "eclipse_crystal": "eclipse-crystal"
   },
   "custom_accent_policy": "Preserve the outlined geometry; moderately richer tint for the circle logo only.",
   "motion_seconds": {
@@ -194,8 +216,8 @@
     "wordmark_viewbox": [
       0,
       0,
-      2070,
-      510
+      1286,
+      214
     ]
   },
   "custom_tint": {

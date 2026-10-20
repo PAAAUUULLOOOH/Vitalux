@@ -37,6 +37,8 @@ COLLECTIONS = {
         'shadow': '#153e4b', 'series': ('#ecc784', '#9cddd8', '#bba5e5', '#f5e9cf'),
     },
 }
+from . import signature_designs
+COLLECTIONS.update(signature_designs.COLLECTIONS)
 KEYS = tuple(COLLECTIONS)
 
 
@@ -61,6 +63,8 @@ def rounded(rect, radius):
 
 def scene_pixmap(size, mode):
     """Fixed geometry and soft light; independent of frame rate or sensors."""
+    if mode in signature_designs.KEYS:
+        return signature_designs.scene_pixmap(size,mode)
     pal = palette(mode)
     w, h = max(1, size.width()), max(1, size.height())
     pixmap = QPixmap(w, h)
@@ -115,6 +119,9 @@ def scene_pixmap(size, mode):
 
 def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
     """Position-correct frost, smoked depth, inner bevel and metallic edge."""
+    from . import theme
+    if theme.mode() in signature_designs.KEYS:
+        return signature_designs.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
     from .glass import draw_frosted_backdrop
     pal = palette()
     radius = 12 if compact else 25 if strong else 21
@@ -183,6 +190,9 @@ def paint_edge(p, rect, radius, *, active=False, compact=False):
 
 
 def paint_sidebar(p, widget, rect):
+    from . import theme
+    if theme.mode() in signature_designs.KEYS:
+        return signature_designs.paint_panel(p,widget,rect.adjusted(1,1,-1,-1),strong=True)
     from .glass import draw_frosted_backdrop
     pal = palette()
     p.fillRect(rect, color(pal['sidebar']))
@@ -267,6 +277,8 @@ def paint_gauge(p, widget, value, text, ring_color):
 
 
 def stylesheet(mode):
+    if mode in signature_designs.KEYS:
+        return signature_designs.stylesheet(mode)
     pal = palette(mode)
     return f'''
     #pageTitle {{ font-size: 30px; font-weight: 500; }}
@@ -373,6 +385,10 @@ class DesignTile(QAbstractButton):
                     pal['accent'], self.key == 'light')[0]
             self._background_key = background_key
         p.drawPixmap(0, 0, self._background)
+        if self.key in signature_designs.KEYS:
+            signature_designs.paint_preview(p,self,pal)
+            p.end()
+            return
         if self._hover > .01:
             p.fillPath(path, QBrush(color(pal['accent'], round(13*self._hover))))
         p.fillRect(QRectF(0, 0, 24, 75), color(pal['bg'], 220))

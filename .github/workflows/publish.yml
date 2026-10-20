@@ -91,6 +91,10 @@ jobs:
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-regressions.py --output "$GITHUB_WORKSPACE/build/regressions"
+      - name: Check kernel traffic accounting and session blocks in the disposable runner VM
+        run: |
+          set -euo pipefail
+          sudo env VITALUX_NETWORK_TEST_VM=1 /usr/bin/python3 scripts/check-network-kernel.py | tee build/network-kernel.log
       - name: Check repeated audio playback and idle recovery
         id: audio
         run: |
@@ -125,7 +129,9 @@ jobs:
           set -euo pipefail
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
-          LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/capture-release-ui.py --output "$GITHUB_WORKSPACE/build/ui-scale-checks" --scales 1,1.25,1.5,2
+          for DESIGN in obsidian_gold aether_glass eclipse_crystal; do
+            LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/capture-release-ui.py --output "$GITHUB_WORKSPACE/build/ui-scale-checks/$DESIGN" --design "$DESIGN" --scales 1,1.25,1.5,2
+          done
       - name: Prepare AppImage tooling
         run: |
           set -euo pipefail
@@ -173,6 +179,7 @@ jobs:
             build/audio-checks/
             build/source-preview-checks/
             build/ui-scale-checks/
+            build/network-kernel.log
           retention-days: 30
       - name: Preserve release packages
         uses: actions/upload-artifact@v4

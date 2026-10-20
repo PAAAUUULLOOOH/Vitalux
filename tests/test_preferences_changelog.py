@@ -59,7 +59,7 @@ def check_preferences(app):
 
             # Themes are selected solely through ten preview buttons.
             assert not hasattr(page, 'mode')
-            assert len(page.design_tiles) == 10
+            assert len(page.design_tiles) == 12
             assert 150 <= page.accent_combo.width() <= 240
             assert page.accent_combo.toolTip() == page.accent_combo.currentText()
             width_before = page.accent_combo.width()

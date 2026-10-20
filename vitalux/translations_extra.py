@@ -1,8 +1,8 @@
 """Extra English translations for dashboard, settings, sensors and disk tests."""
 EN_MORE = {
     'CPU {value}% · Live-Telemetrie': 'CPU {value}% · Live telemetry',
-    'Kreislogo und Vitalux-Schriftzug passen sich dem Farbschema an; Außenbögen, Herzschlag und Lichtreflex laufen unabhängig.': 'The circle logo and Vitalux wordmark follow the theme; outer bands, heartbeat and reflection animate independently.',
-    'Obsidian Gold ist das Standarddesign. Die zehn Vorschaukacheln wählen ein Farbschema; neben der Akzentfarbenauswahl zeigt eine kleine Glasfläche die aktuelle Farbe.': 'Obsidian Gold is the default design. Choose a theme through the ten preview tiles; a small glass swatch beside the accent selector shows its current color.',
+    'Kreislogo und Vitalux-Schriftzug passen sich dem Design an; Außenbögen, Herzschlag und Lichtreflex laufen unabhängig.': 'The circle logo and Vitalux wordmark follow the theme; outer bands, heartbeat and reflection animate independently.',
+    'Obsidian Gold ist das Standarddesign. Die zehn Vorschaukacheln wählen ein Design; neben der Akzentfarbenauswahl zeigt eine kleine Glasfläche die aktuelle Farbe.': 'Obsidian Gold is the default design. Choose a theme through the ten preview tiles; a small glass swatch beside the accent selector shows its current color.',
     'Die Suche gleitet zu Treffern und schließt fünf Sekunden nach der Auswahl weich. Beim Öffnen der erweiterten Einstellungen scrollt die Seite mit; dort liegen Grafik-Renderer und Wartung.': 'Search glides to matches and closes softly five seconds after selection. The page follows Advanced settings as it opens; graphics renderers and Maintenance are inside.',
     'Zurücksetzen-Buttons blenden weich ein und aus. Ganz unten setzt du alle Standardwerte wieder her und startest Vitalux neu; einzelne Bereiche benötigen keinen Neustart. Das Logo zeigt einen sanften Herzschlagimpuls.': 'Reset buttons fade in and out. Restore all defaults at the very bottom to restart Vitalux; individual sections do not require a restart. The logo traces a gentle heartbeat impulse.',
 
@@ -56,28 +56,28 @@ EN_MORE = {
     'Fester Hintergrund': 'Fixed background',
     'Minimalistisch': 'Minimalist',
     'Standardmäßig startet Vitalux mit Glass und Vitalux Blau. Die Lupe bleibt geschlossen am Seitenanfang und folgt geöffnet beim Scrollen. Die Suche wächst mit der Eingabe, schließt nach fünf Sekunden oder Klick außerhalb sanft. Geänderte Einstellungen lassen sich gezielt zurücksetzen.': 'Vitalux starts with Glass and Vitalux Blue. Search opens and closes smoothly, grows with your text and stays above scrolling content. Escape, an outside click or five idle seconds closes it. Changed settings can be reset by category.',
-    'Bei anpassbaren Farbschemata wählst du integrierte Hintergründe oder eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.': 'In customizable themes, choose a built-in background or your own image with fill, fit, stretch, center or tile placement. Sparkle is the only animated background.',
+    'Bei anpassbaren Designs wählst du integrierte Hintergründe oder eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.': 'In customizable themes, choose a built-in background or your own image with fill, fit, stretch, center or tile placement. Sparkle is the only animated background.',
     'Der Glasklang reagiert nur auf Vitalux-Buttons, auch per Tastatur. In den Einstellungen kannst du die Lautstärke ändern oder den Klang abschalten.': 'The glass chime responds only to Vitalux buttons, including keyboard activation. Change its volume or switch it off in Settings.',
-    'Zehn Vorschaukacheln wählen das Farbschema mit einer sanften Überblendung. Die vier Gold-/Glas-Designs haben feste Paletten und Hintergründe. Öffne ihre grauen Dropdowns, um die Erklärung direkt über den nicht verfügbaren Optionen zu lesen.': 'Ten preview tiles select the theme with a smooth transition. The four gold/glass designs use fixed palettes and backgrounds. Open their grey dropdowns to read the explanation above unavailable options.',
+    'Zehn Vorschaukacheln wählen das Design mit einer sanften Überblendung. Die vier Gold-/Glas-Designs haben feste Paletten und Hintergründe. Öffne ihre grauen Dropdowns, um die Erklärung direkt über den nicht verfügbaren Optionen zu lesen.': 'Ten preview tiles select the theme with a smooth transition. The four gold/glass designs use fixed palettes and backgrounds. Open their grey dropdowns to read the explanation above unavailable options.',
     'Der Changelog und die Update-Hinweise folgen deiner ausgewählten Sprache. Die bisherige Versionshistorie bleibt auch nach dem Update offline verfügbar.': 'The changelog and update notes follow your selected language. Previous release history remains available offline after updating.',
     'Für diese Version sind keine Änderungen hinterlegt.': 'No changes are recorded for this version.',
 
-    'Zehn Farbschemata wählst du direkt über Vorschaukacheln. Die vier Gold-/Glas-Designs haben feste Farbpaletten und Hintergründe; gesperrte Optionen sind grau und erklärt. Die äußeren Logo-Streifen drehen sich langsam. Deine persönlichen Akzente bleiben für die anderen Designs gespeichert.': 'Select ten themes directly through preview tiles. The four gold/glass designs have fixed palettes and backgrounds; locked options are grey and explained. The outer logo bands revolve slowly. Your personal accents remain saved for other themes.',
+    'Zehn Designs wählst du direkt über Vorschaukacheln. Die vier Gold-/Glas-Designs haben feste Farbpaletten und Hintergründe; gesperrte Optionen sind grau und erklärt. Die äußeren Logo-Streifen drehen sich langsam. Deine persönlichen Akzente bleiben für die anderen Designs gespeichert.': 'Select ten themes directly through preview tiles. The four gold/glass designs have fixed palettes and backgrounds; locked options are grey and explained. The outer logo bands revolve slowly. Your personal accents remain saved for other themes.',
 
     'Glas-Klang bei Klicks': 'Glass sound on clicks',
     'Ultra Eco verwendet einen festen, einfachen Hintergrund.': 'Ultra Eco uses a fixed, simple background.',
-    'Dieses Farbschema hat einen festen Hintergrund. Wähle ein anderes Farbschema, um eigene Bilder oder Hintergründe zu verwenden.': 'This theme has a fixed background. Choose another theme to use custom images or backgrounds.',
+    'Dieses Design hat einen festen Hintergrund. Wähle ein anderes Design, um eigene Bilder oder Hintergründe zu verwenden.': 'This theme has a fixed background. Choose another theme to use custom images or backgrounds.',
     'Ultra Eco verwendet eine feste, einfache Farbpalette.': 'Ultra Eco uses a fixed, simple palette.',
-    'Dieses Farbschema verwendet eine feste Farbpalette. Eigene Akzentfarben sind hier nicht verfügbar.': 'This theme uses a fixed palette. Custom accent colors are unavailable here.',
+    'Dieses Design verwendet eine feste Farbpalette. Eigene Akzentfarben sind hier nicht verfügbar.': 'This theme uses a fixed palette. Custom accent colors are unavailable here.',
     'Black Glass Gold · Tiefschwarze Glasflächen, helles Gold für Logo, Diagramme, Anzeigen, Icons und Rahmen. Akzentfarbe und Hintergrund sind fest aufeinander abgestimmt.': 'Black Glass Gold · Deep black glass, pale gold for the logo, charts, gauges, icons and borders. The accent and background are fixed and coordinated.',
     'Lokale Designvorschau · Updates sind deaktiviert.': 'Local design preview · Updates are disabled.',
-    'Zehn Farbschemata stehen bereit: Obsidian Gold, Champagne Glass und Aurora Gold ergänzen die bisherigen Designs. Ihre Goldpaletten sind fest abgestimmt. Die äußeren Logo-Streifen drehen sich langsam; Animationen und Ultra Eco können die Bewegung abschalten. Deine persönlichen Akzente bleiben gespeichert.': 'Ten themes are available: Obsidian Gold, Champagne Glass and Aurora Gold join the existing designs. Their gold palettes are carefully matched. The outer logo bands revolve slowly; motion settings and Ultra Eco can stop the animation. Your personal accents remain saved.',
+    'Zehn Designs stehen bereit: Obsidian Gold, Champagne Glass und Aurora Gold ergänzen die bisherigen Designs. Ihre Goldpaletten sind fest abgestimmt. Die äußeren Logo-Streifen drehen sich langsam; Animationen und Ultra Eco können die Bewegung abschalten. Deine persönlichen Akzente bleiben gespeichert.': 'Ten themes are available: Obsidian Gold, Champagne Glass and Aurora Gold join the existing designs. Their gold palettes are carefully matched. The outer logo bands revolve slowly; motion settings and Ultra Eco can stop the animation. Your personal accents remain saved.',
     'Obsidian Gold · Rauchglas, gebürstetes Gold und präzise Instrumentringe. Die äußeren Logo-Streifen drehen sich langsam.': 'Obsidian Gold · Smoked glass, brushed gold and precision instrument rings. The outer logo bands revolve slowly.',
     'Champagne Glass · Kristallglas, warme Champagnertöne und seidenweiche Reflexionen mit goldenen Instrumenten.': 'Champagne Glass · Crystal glass, warm champagne tones and silky reflections with gold instruments.',
     'Aurora Gold · Irisierendes Glas mit Petrol- und Violettlicht, flüssigen Goldkanten und leuchtenden Instrumenten.': 'Aurora Gold · Iridescent glass with teal and violet light, liquid gold edges and luminous instruments.',
     'Nur mit eigenem Hintergrundbild verfügbar': 'Available only when a custom background image is selected',
     'Akzentfarbe aus dem eigenen Hintergrundbild': 'Accent color taken from the selected background image',
-    'Sieben Farbschemata stehen zur Wahl. Black Glass Gold hat einen festen Goldakzent; Holographic ist ein eigenes HUD ohne Glas. Hintergrundfarbe automatisch ist nur mit ausgewähltem eigenem Hintergrundbild verfügbar.': 'Choose from seven themes. Black Glass Gold has a fixed gold accent, while Holographic is a separate non-glass HUD. Automatic wallpaper accent is available only for selected custom background images.',
+    'Sieben Designs stehen zur Wahl. Black Glass Gold hat einen festen Goldakzent; Holographic ist ein eigenes HUD ohne Glas. Hintergrundfarbe automatisch ist nur mit ausgewähltem eigenem Hintergrundbild verfügbar.': 'Choose from seven themes. Black Glass Gold has a fixed gold accent, while Holographic is a separate non-glass HUD. Automatic wallpaper accent is available only for selected custom background images.',
     'Du siehst unter anderem Prozessor, Grafik, RAM, Systemlaufwerk und den Systemzustand.': 'The overview includes CPU, graphics, RAM, system drive and system status.',
     'Systemzustand': 'System status',
     'Sehr gut': 'Very good',
@@ -287,7 +287,7 @@ EN_MORE = {
     'Anwenden': 'Apply',
     'Design, Messintervall, Dashboard und Datenexport': 'Appearance, refresh interval, dashboard and data export',
     'Erscheinungsbild': 'Appearance',
-    'Farbschema': 'Theme',
+    'Design': 'Theme',
     'Akzentfarbe': 'Accent color',
     'Akzentfarbe wählen': 'Select accent color',
     'AMOLED Schwarz': 'AMOLED black',
@@ -626,14 +626,14 @@ EN_MORE.update({
 })
 
 EN_MORE.update({
-    "Passe Vitalux mit Farbschemas, Hintergründen, Farbstärke und optionalen Animationen an.": "Customize Vitalux with color schemes, backgrounds, color intensity, and optional animations.",
+    "Passe Vitalux mit Designs, Hintergründen, Farbstärke und optionalen Animationen an.": "Customize Vitalux with designs, backgrounds, color intensity, and optional animations.",
     "Die Seitenleiste lässt sich ein- und ausklappen; störende Tooltip-Fenster beim Überfahren erscheinen nicht.": "You can collapse and expand the sidebar without distracting mouse-hover tooltips.",
 })
 
 # Harmonized original wallpapers, elegant controls and unobtrusive update alerts.
 EN_MORE.update({
-    "Automatisch (Farbschema)": "Automatic (color scheme)",
-    "Originalhintergründe heißen wie ihre Farbschemas. Zusätzliche Designs sind unabhängig auswählbar; Minimalistisch bleibt einfarbig.": "Original backgrounds share their color scheme names. Additional designs are selectable independently; Minimal remains solid-colored.",
+    "Automatisch (Design)": "Automatic (design)",
+    "Originalhintergründe heißen wie ihre Designs. Zusätzliche Designs sind unabhängig auswählbar; Minimalistisch bleibt einfarbig.": "Original backgrounds share their design names. Additional designs are selectable independently; Minimal remains solid-colored.",
     "Update verfügbar": "Update available",
     "Update verfügbar:": "Update available:",
     "Version {} ist verfügbar. Im Reiter Updates ansehen.": "Version {} is available. View it in Updates.",
@@ -660,7 +660,7 @@ EN_MORE.update({
     "Dunkel · Mitternacht": "Dark · Midnight",
     "Dunkel · Samt": "Dark · Velvet",
     "Dunkel · Graphit": "Dark · Graphite",
-    "Die Original-Farbschemas bleiben erhalten. Neue Hintergründe sind nach Hell, Regenbogen und Dunkel gruppiert; Minimalistisch bleibt einfarbig.": "The original color schemes remain. New wallpapers are grouped into Light, Rainbow and Dark; Minimal remains monochrome.",
+    "Die Original-Designs bleiben erhalten. Neue Hintergründe sind nach Hell, Regenbogen und Dunkel gruppiert; Minimalistisch bleibt einfarbig.": "The original designs remain. New wallpapers are grouped into Light, Rainbow and Dark; Minimal remains monochrome.",
     "Die fünf Originalhintergründe bleiben erhalten. Neue Designs sind als Hell, Regenbogen und Dunkel gruppiert.": "The five original wallpapers remain available. New designs are grouped into Light, Rainbow and Dark.",
     "Die ursprüngliche Glas-Seitenleiste ist wieder da; Farben, Kacheln und neue Hintergründe sind aufeinander abgestimmt. Mit den Reglern änderst du Intensität und Weichheit.": "The original frosted sidebar has returned. Colors, cards and new backgrounds are coordinated. Adjust intensity and softness using the sliders.",
     "Bei einem Update glüht das Vitalux-Logo in der App und im Tray. Der Updates-Reiter pulsiert; eine Tray-Nachricht nennt die Version.": "When an update is available, the Vitalux logo glows in the app and system tray. The Updates tab pulses and a tray notification names the version.",
@@ -695,7 +695,7 @@ EN_MORE.update({
 EN_MORE.update({
     "Nur Funkeln ist animiert. Die anderen Hintergründe sind statisch; Adaptiv folgt der ausgewählten Akzentfarbe.": "Only Sparkle is animated. Other wallpapers are static; Adaptive follows your selected accent color.",
     "Du kannst 14 Hintergrundeinstellungen wählen. Funkeln ist der einzige animierte Hintergrund; Perlmutt, Eisblau und die übrigen animierten Designs wurden entfernt.": "There are 14 background selections. Sparkle is the only animated wallpaper; Pearl, Ice Blue and the other animated styles were removed.",
-    "Du kannst 5 Farbschemas, 14 Hintergrundeinstellungen und 9 Akzentoptionen kombinieren: 5 × 14 × 9 = 630 Auswahlkombinationen, davon 560 mit festen Akzentfarben. Nur selbst erstellte Akzentfarben sind bearbeitbar und löschbar.": "Combine 5 themes, 14 wallpaper selections and 9 accent options: 5 × 14 × 9 = 630 selection combinations, including 560 using preset accent colors. Only user-created accent colors can be edited and deleted.",
+    "Du kannst 5 Designs, 14 Hintergrundeinstellungen und 9 Akzentoptionen kombinieren: 5 × 14 × 9 = 630 Auswahlkombinationen, davon 560 mit festen Akzentfarben. Nur selbst erstellte Akzentfarben sind bearbeitbar und löschbar.": "Combine 5 themes, 14 wallpaper selections and 9 accent options: 5 × 14 × 9 = 630 selection combinations, including 560 using preset accent colors. Only user-created accent colors can be edited and deleted.",
 })
 
 # Read-only hardware monitoring and system reports.
@@ -836,7 +836,7 @@ EN_MORE.update({
         "Qt Raster uses CPU painting and cached backgrounds, reducing only the Sparkle animation. Wayland and X11 remain experimental GPU modes; charts and Qt widgets still use the CPU.",
     "Unter Grafik-Rendering wählst du CPU, das sparsame Qt Raster oder experimentelle OpenGL-, Wayland- und X11-Modi mit OpenGL/Vulkan. Qt Quick ist kein eigener Modus mehr. Jetzt neu starten übernimmt die Auswahl; bei GPU-Problemen wird CPU aktiviert.":
         "Under Graphics rendering choose CPU, power-saving Qt Raster, or experimental OpenGL, Wayland and X11 modes using OpenGL/Vulkan. Qt Quick is no longer a separate mode. Restart now applies the choice and falls back to CPU for GPU problems.",
-    "Sieben Farbschemata sind verfügbar. Black Glass sperrt eigene Akzentfarben, Black Glass Gold alle Akzentfarben; Holographic bleibt ein HUD ohne Glas. Hintergrundfarbe automatisch braucht ein eigenes Bild.":
+    "Sieben Designs sind verfügbar. Black Glass sperrt eigene Akzentfarben, Black Glass Gold alle Akzentfarben; Holographic bleibt ein HUD ohne Glas. Hintergrundfarbe automatisch braucht ein eigenes Bild.":
         "Seven themes are available. Black Glass disables custom accent colors, Black Glass Gold locks all accent colors; Holographic is a separate non-glass HUD. Automatic wallpaper accent requires a custom image."
 })
 
@@ -856,7 +856,7 @@ EN_MORE.update({
         "Ultra Eco cannot switch while an operation is running.",
     "Unter Leistung & Energie schaltest du Ultra Eco ein oder aus: ein primitiver, flacher Skin ohne Effekte, CPU-Rendering und 5 Sekunden Messintervall. Deine vorherigen Einstellungen bleiben erhalten. Grafik-Rendering bietet weiterhin CPU, Qt Raster und experimentelle GPU-Modi.":
         "Toggle Ultra Eco in Performance & energy: a very plain flat skin without effects, CPU rendering and five-second monitoring. Your original settings are saved. Graphics rendering still offers CPU, Qt Raster and experimental GPU modes.",
-    "Sieben Farbschemata bleiben verfügbar und werden nach dem Abschalten von Ultra Eco wiederhergestellt. Black Glass sperrt eigene Akzente, Black Glass Gold alle Akzente; Holographic bleibt ein HUD ohne Glas. Automatische Hintergrundfarbe benötigt ein eigenes Bild.":
+    "Sieben Designs bleiben verfügbar und werden nach dem Abschalten von Ultra Eco wiederhergestellt. Black Glass sperrt eigene Akzente, Black Glass Gold alle Akzente; Holographic bleibt ein HUD ohne Glas. Automatische Hintergrundfarbe benötigt ein eigenes Bild.":
         "Seven themes remain available and are restored after disabling Ultra Eco. Black Glass locks custom accents, Black Glass Gold all accents, while Holographic remains a non-glass HUD. Automatic background accent requires a custom image."
 })
 
@@ -876,7 +876,7 @@ EN_MORE.update({
         "Plain flat interface without glass, shadows, wallpapers, sparkles or transitions. CPU rendering and a 10-second polling interval save CPU/GPU work. Turning this off restores your previous settings.",
     "Unter Leistung & Energie schaltest du Ultra Eco ein oder aus: ein primitiver, flacher Skin ohne Effekte, CPU-Rendering und 10 Sekunden Messintervall. Die Anwendung zeichnet verborgen keine Diagramme neu. Mit Jetzt neu starten übernimmst du GPU-/CPU-Wechsel; vorherige Einstellungen bleiben erhalten. Grafik-Rendering bietet weiterhin CPU, Qt Raster und experimentelle GPU-Modi.":
         "Use the Ultra Eco switch in Performance & energy: plain flat skin without effects, CPU rendering and 10-second monitoring. Hidden windows do not redraw charts. Use Restart now to apply CPU/GPU switches; your previous settings stay intact. Standard rendering choices remain available.",
-    "Sieben Farbschemata bleiben verfügbar und werden nach dem Abschalten von Ultra Eco wiederhergestellt. Black Glass sperrt eigene Akzente, Black Glass Gold alle Akzente und zeigt Diagramme samt RAM-Beschriftungen in Goldtönen; Holographic bleibt ein HUD ohne Glas. Automatische Hintergrundfarbe benötigt ein eigenes Bild.":
+    "Sieben Designs bleiben verfügbar und werden nach dem Abschalten von Ultra Eco wiederhergestellt. Black Glass sperrt eigene Akzente, Black Glass Gold alle Akzente und zeigt Diagramme samt RAM-Beschriftungen in Goldtönen; Holographic bleibt ein HUD ohne Glas. Automatische Hintergrundfarbe benötigt ein eigenes Bild.":
         "Seven themes remain available and are restored when Ultra Eco is disabled. Black Glass disables custom accents, Black Glass Gold locks all accents and uses gold for charts including RAM labels; Holographic is a separate HUD. Automatic wallpaper accent requires a custom image."
 })
 
@@ -1057,3 +1057,7 @@ EN_MORE.update({
         'Choose a diagnostic test; results appear below.',
 
 })
+
+from .translations_network import EN_NETWORK
+EN_MORE.update(EN_NETWORK)
+EN_MORE.update({"Design": "Design"})

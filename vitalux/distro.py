@@ -3,7 +3,7 @@ import re
 
 DEFAULT = "#4f8cff"
 
-# Akzentfarben (ungefähre Markenfarben), nur für das Farbschema der App.
+# Akzentfarben (ungefähre Markenfarben), nur für das Design der App.
 BRAND = {
     "ubuntu": "#e95420", "debian": "#d70a53", "fedora": "#3c6eb4", "nobara": "#7a9ee0",
     "arch": "#1793d1", "cachyos": "#16b8a0", "endeavouros": "#8a7cf0", "manjaro": "#35bf5c",

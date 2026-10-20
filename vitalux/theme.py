@@ -240,6 +240,9 @@ QFrame#glassNavRail { background: transparent; border: none; }
 QScrollBar:vertical { background: transparent; width: 10px; margin: 2px; }
 QScrollBar::handle:vertical { background: $BORDER; border-radius: 4px; min-height: 28px; }
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
+QScrollBar:horizontal { background: transparent; height: 9px; margin: 2px; }
+QScrollBar::handle:horizontal { background: $BORDER; border-radius: 3px; min-width: 32px; }
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0; }
 #madeBy { font-size: 32px; font-weight: 800; color: $ACCENT; }
 #supportCredit { font-size: 14px; font-weight: 600; color: $ACCENT; }
 #langBtn, #ghostBtn { background: $BUTTON_BG; border: 1px solid $BORDER; border-radius: 10px; color: $TEXT; padding: 9px 14px; font-weight: 700; }
@@ -277,12 +280,23 @@ QLineEdit#alertThresholdNumber, QLineEdit#alertThresholdNumber:focus {
 }
 QLabel#alertThresholdUnit { background: transparent; border: none;
     padding: 0px; color: $TEXT; font-size: 12px; font-weight: 650; }
+QTableWidget { background: $INPUT_BG; alternate-background-color: $CARD; color: $TEXT;
+    border: 1px solid $BORDER; border-radius: 8px; gridline-color: $GRID; }
+QHeaderView::section { background: $CARD; color: $MUTED; border: none;
+    border-bottom: 1px solid $BORDER; padding: 8px; font-weight: 700; }
+QTableWidget::item { padding: 6px; border-bottom: 1px solid $GRID; }
+QTableWidget::item:selected { background: $ACTIVE_BG; color: $TEXT; }
+QTableWidget QTableCornerButton::section { background: $CARD; border: none; }
+QTabWidget::pane { border: none; background: transparent; }
+QTabBar::tab { background: $INPUT_BG; color: $MUTED; border: 1px solid $BORDER;
+    border-radius: 8px; margin: 0px 6px 10px 0px; padding: 10px 16px; }
+QTabBar::tab:selected { background: $ACTIVE_BG; color: $ACCENT; border-color: $ACCENT; }
 QListWidget::item { background: $INPUT_BG; color: $TEXT; }
 QListWidget::item:selected { background: $ACTIVE_BG; color: $TEXT; }
 QToolButton#customAccentRemove { background: $BUTTON_BG; border: 1px solid $BORDER;
     border-radius: 8px; color: $MUTED; font-size: 19px; padding: 0px; }
 QToolButton#customAccentRemove:hover { color: $ACCENT; border-color: $ACCENT; background: $ACTIVE_BG; }
-/* Vitalux Insights: nested cards follow the active native color scheme. */
+/* Vitalux Insights: nested cards follow the active native design. */
 QGroupBox#insightGroup {
     background: $INPUT_BG;
     border: 1px solid $BORDER;
@@ -354,7 +368,7 @@ def stylesheet():
     result_bg = blend(base, pal['card'], .055 if light else .10)
     active_bg = blend(base, pal['sidebar'], .18 if light else .22)
     qss = _QSS.substitute(
-        BG=BG, TEXT=TEXT, MUTED=MUTED, CARD=CARD, BORDER=BORDER, TRACK=TRACK,
+        BG=BG, TEXT=TEXT, MUTED=MUTED, CARD=CARD, BORDER=BORDER, TRACK=TRACK, GRID=GRID,
         ACCENT=base, ACCENT_HOVER=QColor(base).lighter(115).name() if light else QColor(base).lighter(128).name(),
         SECONDARY=secondary_accent(), BUTTON_TEXT="#07111b" if not light else "#ffffff",
         INPUT_BG=blend(base, pal['card'], .035 if light else .045),

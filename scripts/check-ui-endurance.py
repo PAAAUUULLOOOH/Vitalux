@@ -27,7 +27,6 @@ def main():
             os.environ[name] = str(Path(folder)/part)
         import psutil
         from PySide6.QtCore import QObject
-        from PySide6.QtTest import QTest
         from PySide6.QtWidgets import QApplication
         from vitalux import distro, settings, theme
         from vitalux.logo import load_logo
@@ -35,6 +34,11 @@ def main():
         from vitalux.window import MainWindow
         app = QApplication([])
         app.setQuitOnLastWindowClosed(False)
+        def wait(milliseconds):
+            deadline=time.monotonic()+milliseconds/1000
+            while time.monotonic()<deadline:
+                app.processEvents()
+                time.sleep(min(.012,max(0,deadline-time.monotonic())))
         settings.set_many({'theme': 'obsidian_gold', 'close_to_tray': False})
         theme.set_mode('obsidian_gold')
         app.setStyleSheet(theme.stylesheet())
@@ -47,12 +51,12 @@ def main():
         page = window.pages[page_index][1]
         keys = [key for key, _ in theme.CHOICES]
         try:
-            QTest.qWait(2500)
+            wait(2500)
             window.nav_buttons[page_index].click()
             for key in keys:
                 page.select_design(key)
-                QTest.qWait(550)
-            QTest.qWait(500)
+                wait(550)
+            wait(500)
             before = process.memory_info().rss
             objects = len(window.findChildren(QObject))
             sampler = window.sampler
@@ -66,21 +70,21 @@ def main():
                     page.search_overlay.close_search()
                 if cycle % 17 == 0:
                     window.nav_buttons[0].click()
-                    QTest.qWait(30)
+                    wait(30)
                     window.nav_buttons[page_index].click()
-                QTest.qWait(70 if cycle % 11 == 0 else 550)
+                wait(70 if cycle % 11 == 0 else 550)
                 if cycle % 30 == 29:
                     print(f'Completed {cycle+1} theme/search/navigation cycles', flush=True)
             page.select_design('obsidian_gold')
-            QTest.qWait(800)
+            wait(800)
             window.hide()
-            QTest.qWait(400)
+            wait(400)
             assert not window.pulse_core._timer.isActive()
             assert not window.brand_mark._timer.isActive()
             assert sampler.isRunning()
             window.show()
             window.nav_buttons[0].click()
-            QTest.qWait(30000)
+            wait(30000)
             assert window.pulse_core._timer.isActive()
             assert window.sampler is sampler and sampler.isRunning()
             assert window.last_sample is not None and len(window.hist['cpu']) > 20
@@ -100,7 +104,7 @@ def main():
             for _ in range(600):
                 if window.isHidden():
                     break
-                QTest.qWait(25)
+                wait(25)
             assert window.isHidden()
 
 

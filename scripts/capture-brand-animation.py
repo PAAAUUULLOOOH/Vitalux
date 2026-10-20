@@ -61,7 +61,10 @@ def capture(output, theme_name):
                    '-f', 'rawvideo', '-pix_fmt', 'rgba', '-video_size', '800x960',
                    '-framerate', str(fps), '-i', 'pipe:0', '-an', '-c:v', 'libx264',
                    '-preset', 'fast', '-crf', '18', '-threads', '2', '-pix_fmt', 'yuv420p',
-                   '-movflags', '+faststart', str(output/'branding.mp4')]
+                   '-movflags', '+faststart', str(output/'branding.mp4'),
+                   '-an', '-vf', 'scale=400:480:flags=lanczos',
+                   '-c:v', 'libwebp_anim', '-lossless', '1', '-compression_level', '6',
+                   '-loop', '0', str(output/'branding.webp')]
         started = time.monotonic()
         with (output/'encode.log').open('wb') as log:
             process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=log, stderr=log)

@@ -10,13 +10,25 @@ Reopening a sidebar category returns to its page start. The sidebar opens Overvi
 
 Use **Edit layout** on Overview to arrange cards. Drives loads SMART data asynchronously. Start disk benchmarks or external diagnostics only when needed; writing tests temporarily create files on the selected drive.
 
-## Themes and backgrounds
+## Designs and backgrounds
 
-**Obsidian Gold is the default** for new profiles and restored appearance defaults; saved themes are retained. Choose one of ten preview tiles in **Settings → Appearance**. The transition preserves your page, scroll position and running measurements. Logos, sidebar text and symbols share the effective palette.
+**Obsidian Gold is the default** for new profiles and restored appearance defaults; saved designs are retained. Choose one of twelve preview tiles under **Settings → Appearance → Design**. The transition preserves your page, scroll position and running measurements. Logos, sidebar text and symbols share the effective palette.
 
-Obsidian Gold, Champagne Glass, Black Glass Gold and Aurora Gold use fixed palettes and backgrounds. Their grey fields are disabled and cannot be opened. Holographic also has a fixed HUD background. Personal accent and background selections remain saved for compatible themes.
+Obsidian Gold, Champagne Glass, Black Glass Gold, Aurora Gold, **Aether Glass** and **Eclipse Crystal** use fixed palettes and backgrounds. Their grey **Fixed design palette** and **Fixed background** fields cannot be opened. Aether Glass combines platinum and violet/cyan optical glass with floating navigation. Eclipse Crystal uses faceted black crystal, champagne edges, top category navigation and a bottom bar for System, Settings, Updates, About and language. Its top navigation scrolls on narrow windows. Holographic also has a fixed HUD background. Personal accent and background selections remain saved for compatible themes.
 
-The accent selector has a compact glass color swatch. Overview uses a compact system header by default, keeping system details visible while leaving more room for charts. Theme previews gently enlarge on hover without moving surrounding tiles. The new title-case **Vitalux** wordmark carries a restrained satin reflection. Slimmer outer logo bands rotate slowly around a clear heartbeat impulse on a darker base line. Rotation, heartbeat and lettering reflections repeat continuously and keep their phase when the theme changes. Each gold collection has its own coordinated logo and wordmark; preset and custom accent colors remain supported, with a modestly richer finish on the circle for custom colors. **Animations** provides smooth, reduced and off profiles. **Ultra Eco** uses a simple skin, CPU rendering and a ten-second sampling interval, preserving the previous appearance settings for later.
+The accent selector has a compact glass color swatch. Overview uses a compact system header by default, keeping system details visible while leaving more room for charts. Theme previews gently enlarge on hover without moving surrounding tiles. The sculpted uppercase **VITALUX** wordmark has coordinated metal and smoked-glass facets with a moving reflection. Slimmer outer logo bands rotate slowly around a clear heartbeat impulse on a darker base line. Rotation, heartbeat and lettering reflections repeat continuously and keep their phase when the theme changes. Each gold collection has its own coordinated logo and wordmark; preset and custom accent colors remain supported, with a modestly richer finish on the circle for custom colors. **Animations** provides smooth, reduced and off profiles. **Ultra Eco** uses a simple skin, CPU rendering and a ten-second sampling interval, preserving the previous appearance settings for later.
+
+## Apps and network connections
+
+Open **Network → Apps & connections** to start the session monitor. Select an application to inspect its process IDs, executable path and TCP/UDP destinations. Filter by name or path and sort by transfer rate or recorded usage. Totals cover the observed measurement session, not historical usage before Vitalux started. **Reset measurement** resets totals and warnings without changing active blocks.
+
+The normal view uses Linux TCP diagnostics. UDP counters, inaccessible processes and unavailable kernel data remain unknown rather than being inferred from interface totals. Some containers expose connections but no per-socket byte counters. **Partial** means not all of an application's traffic could be measured.
+
+**Authorize full measurement** sets up an isolated root-owned helper through Polkit, then requests authorization to use it. This optional feature needs cgroup v2, Linux cgroup BPF support, Polkit (`pkexec`) and `/usr/bin/python3` on the host. The portable app itself still includes Python and runs without a system Python installation. Full mode measures TCP/UDP IP bytes, including protocol headers; changing measurement modes starts new totals because TCP payload and IP-byte counters are different measurements. No packet payload is captured.
+
+Select an application and use **Block network access** or **Allow network access**. Blocks cover its running processes, grouped by executable; programs using the same interpreter can share an executable. They last for the authorized session. **Release all blocks**, **End authorization**, closing Vitalux, or helper termination releases them. This is session traffic control, not a persistent firewall policy across reboots. Newly launched instances are discovered as the helper refreshes; treat blocks as controls for the running processes, not as a security boundary against hostile software.
+
+**Usage warning** sets an observed-traffic threshold in MiB for each application (0 disables it). Vitalux shows the warning once per measurement session; reset measurement to start again. **Look up hostnames** explicitly asks the system resolver for PTR records. A PTR hostname does not verify who operates a destination.
 
 ## Search and sound
 
@@ -38,7 +50,7 @@ Section reset buttons softly appear when values differ from defaults and softly 
 
 ## Language and updates
 
-Use **DE / EN** at the bottom of the sidebar. Labels, the native guide, update notes and offline changelog follow the selected language without interrupting monitoring.
+Use **DE / EN** in the navigation area (bottom bar in Eclipse Crystal). Labels, the native guide, update notes and offline changelog follow the selected language without interrupting monitoring.
 
 Vitalux checks the official release at startup and about every six hours. Read the current-language notes in **Updates**, then choose **Install update**. The full archive/AppImage and checksum must be available. AppImage replacement is atomic; a ZIP installation keeps its previous version for rollback. Personal data and settings are retained. Updates check free space before staging files and report interrupted downloads; a failed download does not replace the installed application.
 

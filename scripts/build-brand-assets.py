@@ -59,14 +59,14 @@ def document(kind, pal, viewbox, animated):
         'height': '256' if kind == 'pulse' else str(round(560*viewbox[3]/viewbox[2], 2)),
         'viewBox': ' '.join(map(str, viewbox)), 'role': 'img',
         'aria-labelledby': 'brand-title brand-description',
-        'data-vitalux-brand-version': 'v0.9.5.8',
+        'data-vitalux-brand-version': 'v0.9.5.9',
         'data-motion': 'animated' if animated else 'static',
     })
     node(root, 'title', id='brand-title').text = f"Vitalux {kind} — {pal['name']}"
     node(root, 'desc', id='brand-description').text = (
         'Approved slim outer arcs, smoked-glass lens and independent heartbeat.'
         if kind == 'pulse' else
-        'Approved title-case Vitalux lettering, converted to vector outlines; no font dependency.'
+        'Approved architectural uppercase VITALUX lettering, sculpted gold and smoked-glass facets; no font dependency.'
     )
     return root, node(root, 'defs')
 
@@ -170,10 +170,27 @@ def wordmark(pal, animated=False, light=False):
                                    (.4, mid), (1, low)],
              gradientUnits='userSpaceOnUse', x1=0, y1=0, x2=0, y2=height)
     shape = GEOMETRY['wordmark']['path']
+    glass_shape = GEOMETRY['wordmark'].get('glass_path', '')
+    gradient(defs, 'letter-glass', [(0, '#080b10'), (.23, '#3c4149'),
+                                   (.49, '#101216'), (.76, '#24262b'), (1, '#08090c')],
+             gradientUnits='userSpaceOnUse', x1=0, y1=0, x2=width*.6, y2=height)
+    if glass_shape:
+        node(root, 'path', id='wordmark-glass', d=glass_shape, fill='url(#letter-glass)',
+             fill_rule='evenodd', stroke='url(#letter-edge)', stroke_width=.65)
     node(root, 'path', d=shape, fill=low, fill_rule='evenodd', transform='translate(0 3)')
     node(root, 'path', id='wordmark-outline', d=shape, fill='url(#letter-metal)',
-         stroke='url(#letter-edge)', stroke_width=5.4, stroke_linejoin='round',
+         stroke='url(#letter-edge)', stroke_width=.65, stroke_linejoin='round',
          fill_rule='evenodd')
+    if GEOMETRY['wordmark'].get('material_layers'):
+        material = node(root, 'g', id='wordmark-material')
+        for layer in GEOMETRY['wordmark']['material_layers']:
+            fill = ('url(#letter-glass)' if layer.get('material') == 'glass' else
+                    'url(#letter-edge)' if layer.get('material') == 'edge' else
+                    'url(#letter-metal)')
+            node(material, 'path', d=layer['path'], fill=fill,
+                 stroke='url(#letter-edge)', stroke_width=.5, fill_rule='evenodd')
+        node(root, 'path', d=shape, fill='none', stroke='url(#letter-edge)',
+             stroke_width=.85, stroke_linejoin='bevel', fill_rule='evenodd')
     sweep = gradient(defs, 'wordmark-sweep', [
         (0, pal['spec'], 0), (.20, pal['spec'], .025),
         (.42, pal['spec'], .16), (.51, pal['spec'], .40),
@@ -209,7 +226,7 @@ def main():
                 path = directory / f'vitalux-{kind}-{key}.svg'
                 write(path, builder(pal, animated))
                 files.append(path)
-            if key not in ('gold', 'obsidian-gold', 'black-glass-gold', 'champagne-glass', 'aurora-gold'):
+            if key != 'gold' and not pal.get('fixed'):
                 path = directory / f'vitalux-wordmark-{key}-light.svg'
                 write(path, wordmark(pal, animated, light=True))
                 files.append(path)

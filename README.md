@@ -1,8 +1,8 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/vitalux-readme-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="assets/vitalux-readme-light.svg">
-    <img src="assets/vitalux-readme-light.svg" alt="Vitalux" width="285">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/vitalux-readme-dark-animated.svg">
+    <source media="(prefers-color-scheme: light)" srcset="assets/vitalux-readme-light-animated.svg">
+    <img src="assets/vitalux-readme-light-animated.svg" alt="Vitalux — rotating gold circle, traced heartbeat and shimmering VITALUX lettering" width="285">
   </picture>
 </p>
 
@@ -14,13 +14,15 @@
 ## What Vitalux offers
 
 - **Live system monitoring:** CPU, GPU, memory, storage, networking and Linux hardware sensors, with charts and local history.
-- **A configurable workspace:** rearrange dashboard cards, choose ten visual themes, or keep essential measurements visible in MiniHUD.
+- **A configurable workspace:** rearrange dashboard cards, choose twelve visual designs, or keep essential measurements visible in MiniHUD.
+- **Application networking:** inspect per-app connections and observed traffic, set usage warnings, and authorize TCP/UDP accounting and reversible session blocks.
+- **Two signature designs:** Aether Glass uses platinum and violet/cyan optical glass; Eclipse Crystal combines faceted black crystal with horizontal navigation. Both have coordinated fixed palettes and backgrounds.
 - **Thoughtful interactions:** animated theme previews, a coordinated animated logo and wordmark, predictive settings search and optional crystal feedback sounds.
 - **Useful diagnostics:** SMART information, configurable alerts, disk benchmarks and local diagnostic reports.
 - **German and English:** switch the interface, guide and release history without interrupting monitoring.
-- **Local operation:** monitoring works offline. Update checks contact the official GitHub release service; installation requires your action.
+- **Local operation:** monitoring works offline. Hostname resolution runs only on request. Update checks contact the official GitHub release service; installation requires your action.
 
-Vitalux is a monitor, not a GPU overclocking or fan-control utility. Missing sensor readings remain unavailable rather than being estimated.
+Vitalux focuses on monitoring and diagnostics, with optional session network controls. It does not provide GPU overclocking or fan control. Missing sensor readings remain unavailable rather than being estimated.
 
 ## Requirements
 
@@ -28,31 +30,33 @@ Use **Linux x86-64** with an X11 or Wayland desktop. The portable packages targe
 
 CPU rendering is the default. Optional GPU renderers require suitable drivers and session support. Sensor and SMART availability depends on your hardware, kernel, drivers and permissions; some diagnostic tools are supplied by your distribution.
 
+**Optional full app networking:** requires cgroup v2 with cgroup BPF support, Polkit (`pkexec`) and `/usr/bin/python3` on the host. The normal portable app still needs no system Python. Authorization is requested from **Network → Apps & connections**. Basic TCP counters and connection inspection remain available where the kernel exposes them. See the [network guide](USER-GUIDE.md#apps-and-network-connections) for measurement scope and session-block behavior.
+
 ## Get started
 
 ### AppImage
 
-Download the `.AppImage` from [the latest release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). For v0.9.5.8:
+Download the `.AppImage` from [the latest release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). For v0.9.5.9:
 
 ```bash
-chmod +x Vitalux-v0.9.5.8-x86_64.AppImage
-./Vitalux-v0.9.5.8-x86_64.AppImage
+chmod +x Vitalux-v0.9.5.9-x86_64.AppImage
+./Vitalux-v0.9.5.9-x86_64.AppImage
 ```
 
 The first-run dialog offers installation in your user account, including an application-menu entry. Administrator rights are not required. You can also choose **Run once**, or run explicitly without integration:
 
 ```bash
-./Vitalux-v0.9.5.8-x86_64.AppImage --portable
+./Vitalux-v0.9.5.9-x86_64.AppImage --portable
 ```
 
 To add or remove desktop integration later, use `--install` or `--uninstall`. Uninstalling keeps personal preferences.
 
 ### Portable ZIP or source ZIP
 
-Download **`Vitalux-v0.9.5.8-linux-x86_64.zip`**, extract the entire archive into its own writable folder, and run:
+Download **`Vitalux-v0.9.5.9-linux-x86_64.zip`**, extract the entire archive into its own writable folder, and run:
 
 ```bash
-cd Vitalux-v0.9.5.8
+cd Vitalux-v0.9.5.9
 bash run.sh
 ```
 
@@ -62,9 +66,22 @@ The `Update-von-...zip` download is a manual overlay for the immediately precedi
 
 ## Make it yours
 
-**Obsidian Gold is the default appearance.** Open **Settings → Appearance** to select a theme. Existing installations retain their saved choice. Preview tiles grow gently on hover. **Obsidian Gold, Champagne Glass, Black Glass Gold and Aurora Gold** use coordinated fixed palettes and backgrounds; their grey fields are disabled. Holographic also has a fixed background. Compatible themes retain your personal accent colors and images.
+**Obsidian Gold is the default appearance.** Open **Settings → Appearance** to select a design. Existing installations retain their saved choice. Preview tiles grow gently on hover. **Obsidian Gold, Champagne Glass, Black Glass Gold, Aurora Gold, Aether Glass and Eclipse Crystal** use coordinated fixed palettes and backgrounds; their grey fields are disabled. Holographic also has a fixed background. Compatible designs retain your personal accent colors and images.
 
-A compact glass swatch previews the current accent. Overview now uses a **compact system header by default**, leaving more space for measurements and charts. The slimmer circular logo rotates around a clearly traced heartbeat, while a soft metallic reflection travels across the new **Vitalux** wordmark. Both follow the selected palette; each gold collection has its own coordinated identity. Custom accents give the circle a slightly richer finish.
+A compact glass swatch previews the current accent. Overview uses a **compact system header by default**, leaving more space for measurements and charts. The slimmer circular logo rotates around a clearly traced heartbeat, while a soft metallic reflection travels across the new **VITALUX** wordmark. Both follow the selected palette; each collection has its own coordinated identity. Custom accents give the circle a slightly richer finish. The animated SVG header above uses the same vector geometry, materials and seamless motion periods as the app, and stays sharp at every size.
+
+<details>
+<summary><strong>Explore the two signature designs</strong></summary>
+
+**Aether Glass** — floating navigation, platinum glass and violet/cyan optical surfaces.
+
+![Aether Glass with floating navigation and native system instruments](assets/vitalux-aether-glass-preview.png)
+
+**Eclipse Crystal** — horizontal navigation, champagne highlights and faceted black crystal.
+
+![Eclipse Crystal with horizontal navigation and faceted instruments](assets/vitalux-eclipse-crystal-preview.png)
+
+</details>
 
 The settings magnifier predicts matches and glides to their controls. After selecting a result, the search remains visible for five seconds, then closes softly. **Advanced settings** expands for graphics renderers and Maintenance, with the page following its reveal; relevant searches open it automatically. The full **Restore defaults** action sits below it, at the very bottom. Reset buttons appear and disappear smoothly. A full reset restarts Vitalux; individual section resets apply in place. Reopening a sidebar category starts at the top.
 
@@ -77,7 +94,7 @@ Vitalux checks official GitHub releases at startup and approximately every six h
 To check a manually downloaded package, download its release's `SHA256SUMS.txt` file into the same directory and run:
 
 ```bash
-sha256sum --ignore-missing -c Vitalux-v0.9.5.8-SHA256SUMS.txt
+sha256sum --ignore-missing -c Vitalux-v0.9.5.9-SHA256SUMS.txt
 ```
 
 A matching checksum confirms consistency with that manifest; it is not an independent digital signature.
@@ -109,7 +126,7 @@ VITALUX_RENDERER=software bash run.sh
 For an AppImage that cannot mount through FUSE, extract its payload instead:
 
 ```bash
-./Vitalux-v0.9.5.8-x86_64.AppImage --appimage-extract
+./Vitalux-v0.9.5.9-x86_64.AppImage --appimage-extract
 VITALUX_RENDERER=software bash squashfs-root/AppRun --portable
 ```
 

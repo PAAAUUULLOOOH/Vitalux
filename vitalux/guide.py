@@ -37,7 +37,7 @@ SLIDES = [
         "Die Navigation links",
         "Die Seitenleiste ist wieder fest links angeordnet und lässt sich für mehr Platz ein- und ausklappen.",
         "Jeder Reiter öffnet einen anderen Teil der Systemüberwachung.",
-        "Kreislogo und Vitalux-Schriftzug passen sich dem Farbschema an; Außenbögen, Herzschlag und Lichtreflex laufen unabhängig.",
+        "Kreislogo und Vitalux-Schriftzug passen sich dem Design an; Außenbögen, Herzschlag und Lichtreflex laufen unabhängig.",
         "Unten wechselst du jederzeit zwischen Deutsch und Englisch.",
         "navigation",
     ),
@@ -52,7 +52,7 @@ SLIDES = [
     (
         "Netzwerk und Laufwerke",
         "Behalte Datenverkehr und Speichergeräte im Blick.",
-        "Netzwerk zeigt Schnittstellen, IP-Adressen und aktuelle Übertragungsraten.",
+        "Netzwerk → Programme & Verbindungen zeigt laufende Apps, Verbindungen und erfassten Verbrauch. Mit Systemfreigabe stehen TCP-/UDP-Messung und Sitzungssperren bereit; Verbrauchswarnungen sind pro App einstellbar.",
         "Laufwerke zeigt Datenträger, Partitionen, Belegung und Datenraten.",
         "Die verfügbaren Laufwerke werden direkt angezeigt; beim Öffnen startet die SMART-Prüfung automatisch im Hintergrund. Bei Bedarf kannst du erneut prüfen.",
         "drives",
@@ -75,8 +75,8 @@ SLIDES = [
     ),
     (
         "Darstellung und Einstellungen",
-        "Obsidian Gold ist das Standarddesign. Die zehn Vorschaukacheln wählen ein Farbschema; neben der Akzentfarbenauswahl zeigt eine kleine Glasfläche die aktuelle Farbe.",
-        "Bei anpassbaren Farbschemata wählst du integrierte Hintergründe oder eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
+        "Obsidian Gold bleibt das Standarddesign. Zwölf Vorschaukacheln wählen ein Design; Aether Glass und Eclipse Crystal besitzen eigene Materialien, Instrumente und Navigation sowie feste Paletten und Hintergründe.",
+        "Bei anpassbaren Designs wählst du integrierte Hintergründe oder eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
         "Die Suche gleitet zu Treffern und schließt fünf Sekunden nach der Auswahl weich. Beim Öffnen der erweiterten Einstellungen scrollt die Seite mit; dort liegen Grafik-Renderer und Wartung.",
         "Zurücksetzen-Buttons blenden weich ein und aus. Ganz unten setzt du alle Standardwerte wieder her und startest Vitalux neu; einzelne Bereiche benötigen keinen Neustart. Das Logo zeigt einen sanften Herzschlagimpuls.",
         "settings",

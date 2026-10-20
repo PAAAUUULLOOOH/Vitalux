@@ -1,0 +1,173 @@
+"""Rearrange existing accessible navigation without rebuilding running pages."""
+from PySide6.QtCore import QObject, Qt, QEvent, QTimer
+from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget, QScrollArea, QFrame
+from . import theme, i18n, __version__
+from .i18n import tr
+from .widgets import label
+from .signature_designs import KEYS, COLLECTIONS, Surface
+
+
+class DesignShell(QObject):
+    def __init__(self, window, canvas):
+        super().__init__(window)
+        self.window=window
+        self.mode=None
+        self._language_index=window.sidebar_layout.indexOf(window.lang_host)
+        self.header=QWidget()
+        vertical=QVBoxLayout(self.header)
+        vertical.setContentsMargins(0,0,0,0)
+        vertical.setSpacing(7)
+        bar=Surface()
+        self.bar=bar
+        top=QHBoxLayout(bar)
+        top.setContentsMargins(16,7,16,7)
+        top.setSpacing(16)
+        self.brand=QWidget()
+        self.brand_layout=QHBoxLayout(self.brand)
+        self.brand_layout.setContentsMargins(0,0,0,0)
+        self.brand_layout.setSpacing(10)
+        top.addWidget(self.brand)
+        self.design_name=label('','metricCaption')
+        top.addWidget(self.design_name)
+        top.addStretch(1)
+        self.current_page=label('','strong')
+        top.addWidget(self.current_page)
+        top.addSpacing(10)
+        self.system=label(window.distro['short'],'muted')
+        top.addWidget(self.system)
+        vertical.addWidget(bar)
+        self.primary_host=Surface()
+        self.primary=QHBoxLayout(self.primary_host)
+        self.primary.setContentsMargins(6,3,6,3)
+        self.primary.setSpacing(3)
+        self.primary_scroll=QScrollArea()
+        self.primary_scroll.setFrameShape(QFrame.NoFrame)
+        self.primary_scroll.setWidget(self.primary_host)
+        self.primary_scroll.setWidgetResizable(True)
+        self.primary_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.primary_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.primary_scroll.setFixedHeight(60)
+        self.primary_scroll.setObjectName('glassScroll')
+        vertical.addWidget(self.primary_scroll)
+        self.footer=Surface()
+        self.bottom=QHBoxLayout(self.footer)
+        self.bottom.setContentsMargins(12,4,12,4)
+        self.bottom.setSpacing(4)
+        self.version=label(f'Vitalux · {__version__}','muted')
+        self.bottom.addWidget(self.version)
+        self.bottom.addStretch(1)
+        canvas.insertWidget(0,self.header)
+        canvas.addWidget(self.footer)
+        self.header.hide()
+        self.footer.hide()
+        self._footer_compact=None
+        window.installEventFilter(self)
+        for button in window.nav_buttons:button.installEventFilter(self)
+
+    def eventFilter(self,obj,event):
+        if event.type()==QEvent.Resize and self.mode=='eclipse_crystal':
+            QTimer.singleShot(0,self._responsive)
+        if event.type()==QEvent.FocusIn and self.mode=='eclipse_crystal' and obj in self.window.nav_buttons[:8]:
+            self.primary_scroll.ensureWidgetVisible(obj,12,0)
+        return False
+
+    def _responsive(self):
+        if self.mode!='eclipse_crystal':return
+        compact=self.window.width()<1120
+        if compact==self._footer_compact:return
+        self._footer_compact=compact
+        for button in self.window.nav_buttons[8:]:
+            button.set_compact(compact)
+            if not compact:
+                button.setFixedWidth(max(108,button.fontMetrics().horizontalAdvance(button.text().split('    ',1)[-1])+57))
+        self.version.setVisible(not compact)
+
+    def _remove_navigation(self):
+        w=self.window
+        for button in w.nav_buttons:
+            w.nav_host.layout().removeWidget(button)
+            self.primary.removeWidget(button)
+            self.bottom.removeWidget(button)
+            button.setMinimumWidth(0)
+            button.setMaximumWidth(16777215)
+            button.set_compact(False)
+
+    def sync(self):
+        w=self.window
+        mode=theme.mode()
+        signature=mode in KEYS
+        previous=self.mode
+        self.mode=mode
+        if previous!=mode:
+            self._remove_navigation()
+            if signature:
+                self.brand_layout.addWidget(w.pulse_core)
+                self.brand_layout.addWidget(w.brand_mark)
+                w.pulse_core.setFixedSize(44,44)
+                w.brand_mark.setFixedSize(180,32)
+                w.pulse_core.show()
+                w.brand_mark.show()
+            else:
+                w.sidebar_brand.layout().insertWidget(0,w.pulse_core,0,Qt.AlignHCenter)
+                w.sidebar_brand.layout().insertWidget(2,w.brand_mark,0,Qt.AlignHCenter)
+                w.pulse_core.setFixedSize(132,132)
+                w.brand_mark.setFixedSize(200,36)
+                w.pulse_core.show()
+                w.brand_mark.show()
+            eclipse=mode=='eclipse_crystal'
+            for index,button in enumerate(w.nav_buttons):
+                if eclipse:
+                    button.setFixedWidth(max(108,button.fontMetrics().horizontalAdvance(tr(w.pages[index][0]))+57))
+                    (self.primary if index<8 else self.bottom).addWidget(button)
+                else:
+                    w.nav_host.layout().insertWidget(index,button)
+                button.show()
+            self.bottom.removeWidget(w.lang_host)
+            w.sidebar_layout.removeWidget(w.lang_host)
+            if eclipse:
+                self.bottom.addWidget(w.lang_host)
+            else:
+                w.sidebar_layout.insertWidget(self._language_index,w.lang_host)
+        self.header.setVisible(signature)
+        self.footer.setVisible(mode=='eclipse_crystal')
+        self.primary_scroll.setVisible(mode=='eclipse_crystal')
+        w.sidebar.setVisible(mode!='eclipse_crystal')
+        w.collapse_button.setVisible(not signature)
+        if signature:
+            w.sidebar_brand.hide()
+            w.sidebar_version.hide()
+            w.lang_host.show()
+            w.sidebar.setFixedWidth(210)
+            w.sidebar_layout.setContentsMargins(12,16,12,12)
+            w.nav_host.layout().setContentsMargins(0,0,0,0)
+            w._outer_layout.setContentsMargins(*( (10,0,10,10) if mode=='eclipse_crystal' else (12,0,12,12) ))
+            w._outer_layout.setSpacing(8)
+            self.design_name.setText(COLLECTIONS[mode]['title'].upper())
+        else:
+            w._outer_layout.setContentsMargins(0,0,0,0)
+            w._outer_layout.setSpacing(0)
+            w._apply_sidebar_state()
+        self.retranslate()
+        self._footer_compact=None
+        self._responsive()
+        overview=w.pages[0][1]
+        overview.refresh_design()
+        for _,page in w.pages[1:]:
+            page.root.setContentsMargins(*( (18,20,18,26) if signature else (30,24,30,30) ))
+        if signature:
+            self.header.updateGeometry()
+        w.pulse_core.sync_theme()
+        w.brand_mark.sync_theme()
+
+    def retranslate(self):
+        w=self.window
+        if w.pages:
+            self.current_page.setText(tr(w.pages[w.stack.currentIndex()][0]))
+        if self.mode=='eclipse_crystal':
+            for index,button in enumerate(w.nav_buttons):
+                button.setFixedWidth(max(108,button.fontMetrics().horizontalAdvance(tr(w.pages[index][0]))+57))
+
+    def select(self,index):
+        self.current_page.setText(tr(self.window.pages[index][0]))
+        if self.mode=='eclipse_crystal' and index<8:
+            self.primary_scroll.ensureWidgetVisible(self.window.nav_buttons[index],12,0)

@@ -7,14 +7,14 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 
-def capture(output, language, checks, warmup):
+def capture(output, language, checks, warmup, design='obsidian_gold'):
     from PySide6.QtCore import QPoint, Qt
-    from PySide6.QtTest import QTest
     from PySide6.QtWidgets import QApplication
     from vitalux import distro, i18n, settings, theme
     from vitalux.logo import load_logo
@@ -22,10 +22,16 @@ def capture(output, language, checks, warmup):
     from vitalux.window import MainWindow
     app = QApplication([])
     app.setQuitOnLastWindowClosed(False)
+    def wait(milliseconds):
+        # QTest.qWait alone can starve Python sampling threads in PySide.
+        deadline=time.monotonic()+milliseconds/1000
+        while time.monotonic()<deadline:
+            app.processEvents()
+            time.sleep(min(.012,max(0,deadline-time.monotonic())))
     i18n.set_lang(language)
-    settings.set_many({'theme': 'obsidian_gold', 'close_to_tray': False,
+    settings.set_many({'theme': design, 'close_to_tray': False,
                        'first_start_guide_seen': True, 'ui_sounds': False})
-    theme.set_mode('obsidian_gold')
+    theme.set_mode(design)
     app.setStyleSheet(theme.stylesheet())
     info = distro.info()
     window = MainWindow(info, load_logo(info, 96), UpdateManager())
@@ -35,37 +41,44 @@ def capture(output, language, checks, warmup):
         remaining = max(2600, round(warmup*1000))
         while remaining:
             step = min(5000, remaining)
-            QTest.qWait(step)
+            wait(step)
             remaining -= step
         assert window.last_sample is not None
         assert window.grab().save(str(output/'overview.png'))
         index = next(i for i, (name, _) in enumerate(window.pages) if name == 'Einstellungen')
         page = window.pages[index][1]
         window.nav_buttons[index].click()
-        QTest.qWait(180)
+        wait(180)
         assert window.grab().save(str(output/'appearance.png'))
         scroll = window.stack.currentWidget()
         page.interval.setCurrentIndex(page.interval.findData(2))
-        QTest.qWait(280)
+        wait(280)
         scroll.verticalScrollBar().setValue(scroll.verticalScrollBar().maximum())
         page.advanced.header.click()
-        QTest.qWait(500)
+        wait(500)
         assert window.grab().save(str(output/'advanced-settings.png'))
         assert page.advanced.header.mapTo(scroll.viewport(), QPoint()).y() >= 0
         scroll.verticalScrollBar().setValue(scroll.verticalScrollBar().maximum())
-        QTest.qWait(30)
+        wait(30)
         assert window.grab().save(str(output/'advanced-settings.png'))
+        if checks:
+            window.resize(800,560)
+            wait(500)
+            assert page.width() <= scroll.viewport().width()+2,(design,page.width(),scroll.viewport().width())
+            assert window.grab().save(str(output/'compact-design.png'))
+            window.resize(1380,1000)
+            wait(300)
         page.select_design('glass')
-        QTest.qWait(500)
+        wait(500)
         page.accent_combo.setCurrentIndex(page.accent_combo.findData('#52d3ff'))
-        QTest.qWait(500)
+        wait(500)
         destination = page.accent_combo.mapTo(page, QPoint()).y()-100
         scroll.verticalScrollBar().setValue(destination)
         assert window.grab().save(str(output/'accent-color.png'))
         results = {'scale': window.devicePixelRatioF(), 'native_capture': True, 'language': language}
         if checks:
             window.resize(800, 560)
-            QTest.qWait(500)
+            wait(500)
             assert page.width() <= scroll.viewport().width()+2, (page.width(), scroll.viewport().width())
             for control in (page.accent_combo, page.accent_preview, page.render_combo,
                             page.clear_cache_btn, page.clear_preferences_btn):
@@ -85,7 +98,7 @@ def capture(output, language, checks, warmup):
         for _ in range(600):
             if window.isHidden():
                 break
-            QTest.qWait(25)
+            wait(25)
         assert window.isHidden(), 'Capture did not shut down cleanly'
 
 
@@ -93,6 +106,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--language', choices=('de', 'en'), default='en')
+    parser.add_argument('--design',default='obsidian_gold')
     parser.add_argument('--scales', help='Comma-separated Qt scale factors')
     parser.add_argument('--child', action='store_true')
     parser.add_argument('--checks', action='store_true')
@@ -101,7 +115,7 @@ def main():
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     if args.child:
-        capture(output, args.language, args.checks, args.warmup_seconds)
+        capture(output, args.language, args.checks, args.warmup_seconds,args.design)
         return
     scales = args.scales.split(',') if args.scales else ['1']
     for scale in scales:
@@ -120,6 +134,7 @@ def main():
                 env[name] = str(target)
             command = [sys.executable, __file__, '--child', '--output', str(destination),
                        '--language', args.language, '--warmup-seconds', str(args.warmup_seconds)]
+            command.extend(['--design',args.design])
             if args.scales or args.checks:
                 command.append('--checks')
             result = subprocess.run(command, cwd=ROOT, env=env, text=True,

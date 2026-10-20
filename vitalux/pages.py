@@ -3,7 +3,7 @@ import platform
 
 import PySide6
 from PySide6.QtCore import Qt, QPoint, QTimer, qVersion, QPropertyAnimation, QParallelAnimationGroup, QEasingCurve, QThread, Signal
-from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QVBoxLayout, QWidget, QMenu, QSizePolicy, QToolButton, QGraphicsOpacityEffect
+from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QVBoxLayout, QWidget, QMenu, QSizePolicy, QToolButton, QGraphicsOpacityEffect, QStackedWidget, QTabWidget
 
 from . import theme, motion, settings
 from .ui_locale import QPushButton
@@ -289,11 +289,25 @@ class OverviewPage(Page):
         self.layout_actions.setGraphicsEffect(self._strip_effect)
         self.layout_actions.hide()
         self.board = DashboardBoard(self)
+        from .signature_designs import Metric
+        self.design_metrics={}
+        self.design_metric_hosts={}
+        def metric_host(key,classic):
+            host=QStackedWidget()
+            host.addWidget(classic)
+            face=Card()
+            face.layout().setContentsMargins(24,14,24,14)
+            instrument=Metric(TITLES[key],key)
+            face.body.addWidget(instrument)
+            host.addWidget(face)
+            self.design_metrics[key]=instrument
+            self.design_metric_hosts[key]=host
+            return host
         for key, widget in (
-            ('hero',head), ('cpu',self.g_cpu), ('gpu',self.g_gpu),
-            ('ram',self.g_ram), ('disk',self.g_disk),
+            ('hero',head), ('cpu',metric_host('cpu',self.g_cpu)), ('gpu',metric_host('gpu',self.g_gpu)),
+            ('ram',metric_host('ram',self.g_ram)), ('disk',metric_host('disk',self.g_disk)),
             ('graph_load',c1), ('graph_net',c2),
-            ('health',self.g_health), ('network',net), ('drives',self.disks_card),
+            ('health',metric_host('health',self.g_health)), ('network',net), ('drives',self.disks_card),
         ):
             self.board.register(key,widget)
         self.content.addWidget(self.board)
@@ -303,7 +317,23 @@ class OverviewPage(Page):
         self.distro_logo_remove.clicked.connect(self.board.hide_distro_logo)
         self._sync_distro_logo()
         self._position_editor_controls()
+        self.refresh_design()
         QTimer.singleShot(0,self.board.refresh_geometry)
+
+    def refresh_design(self):
+        from .signature_designs import active
+        selected=active()
+        for host in self.design_metric_hosts.values():
+            host.setCurrentIndex(1 if selected else 0)
+        self.root.setContentsMargins(16 if selected else 30,45,16 if selected else 30,24 if selected else 30)
+        self.distro_logo_host.setFixedSize(38 if selected else 48,38 if selected else 48)
+        for chip in self.chips.chips.values():
+            chip.layout().setContentsMargins(*( (7,2,7,2) if selected else (10,6,10,6) ))
+        self.chips.grid.setVerticalSpacing(3 if selected else 6)
+        self.board.refresh_geometry(animate=False)
+        for panel in (self.graph_load,self.graph_net):
+            panel.graph.setMinimumHeight(110 if selected else 185)
+            panel.graph.updateGeometry()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -489,6 +519,15 @@ class OverviewPage(Page):
         score, state, detail = _system_state(d)
         self.g_health.set(score, f"{state}\n{detail}",
                           text=f"{score:.0f}" if score is not None else "–")
+        self.design_metrics['cpu'].set(c['usage'],_temp_freq(c),extra=c.get('model',''),history=h['cpu'])
+        gpu=gpus[0] if gpus else {}
+        self.design_metrics['gpu'].set(gpu.get('usage'),
+            f"{gpu['temp']:.0f} °C" if gpu.get('temp') is not None else tr('Keine GPU-Daten verfügbar'),
+            extra=gpu.get('name',tr('Keine GPU-Daten verfügbar')),history=h['gpu'])
+        self.design_metrics['ram'].set(r['percent'],f"{fmt_bytes(r['used'])} / {fmt_bytes(r['total'])}")
+        self.design_metrics['disk'].set(root['percent'] if root else None,
+            f"{fmt_bytes(root['used'])} / {fmt_bytes(root['total'])}" if root else tr('Keine Laufwerksdaten verfügbar'))
+        self.design_metrics['health'].set(score,f'{state} · {detail}')
 
         self.graph_load.set_series([(h["cpu"], theme.accent()), (h["gpu"], theme.secondary_accent()), (h["ram"], theme.TEAL)])
         self.graph_net.set_series([(h["net_down"], theme.accent()), (h["net_up"], theme.secondary_accent())])
@@ -859,6 +898,12 @@ class DiskPage(Page):
 class NetworkPage(Page):
     def __init__(self):
         super().__init__("Netzwerk", "Live-Datenverkehr, Schnittstellen und Verbindungsdetails")
+        page_content=self.content
+        self.tabs=QTabWidget()
+        overview=QWidget()
+        self.content=QVBoxLayout(overview)
+        self.content.setContentsMargins(0,12,0,0)
+        self.content.setSpacing(14)
         top = Card(hero=True)
         self.primary = KeyValue("Aktive Schnittstelle")
         self.addr = KeyValue("IPv4")
@@ -890,6 +935,20 @@ class NetworkPage(Page):
         self.content.addWidget(rates)
         self.content.addWidget(graph)
         self.content.addWidget(self.ifaces_card)
+        from .network_ui import NetworkWatch
+        self.watcher=NetworkWatch()
+        self.tabs.addTab(overview,tr('Übersicht'))
+        self.tabs.addTab(self.watcher,tr('Programme & Verbindungen').replace('&','&&'))
+        self.content=page_content
+        self.content.addWidget(self.tabs)
+
+    def retranslate(self):
+        self.tabs.setTabText(0,tr('Übersicht'))
+        self.tabs.setTabText(1,tr('Programme & Verbindungen').replace('&','&&'))
+        self.watcher.retranslate()
+
+    def shutdown(self):
+        return self.watcher.shutdown()
 
     def refresh(self, d, h):
         net = d["net"]

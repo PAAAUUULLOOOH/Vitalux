@@ -66,7 +66,9 @@ def main():
             assert not hasattr(pref, 'section_nav')
             assert not hasattr(diag, 'nav')
             assert pref.SEARCH_CATEGORIES['general'] == 'Allgemein'
-            assert pref.content.indexOf(pref._settings_cards['appearance'][0]) < pref.content.indexOf(pref._settings_cards['hud'][0])
+            appearance = pref._settings_cards['appearance'][0]
+            hud = pref._settings_cards['hud'][0]
+            assert appearance.mapTo(pref, appearance.rect().topLeft()).y() < hud.mapTo(pref, hud.rect().topLeft()).y()
             assert not hasattr(pref, 'language_combo')
             assert not pref._settings_cards['general']
             assert pref.content.indexOf(pref.advanced) == pref.content.count()-2

@@ -179,7 +179,11 @@ class MainWindow(QMainWindow):
         distro, logo = self.distro, self.logo
         root = create_ambient_scene()
         self.render_backend_active = root.render_backend
-        outer = QHBoxLayout(root)
+        canvas = QVBoxLayout(root)
+        canvas.setContentsMargins(0,0,0,0)
+        canvas.setSpacing(0)
+        outer = QHBoxLayout()
+        canvas.addLayout(outer,1)
         self._outer_layout = outer
         outer.setContentsMargins(0, 0, 0, 0)
         outer.setSpacing(0)
@@ -306,12 +310,17 @@ class MainWindow(QMainWindow):
 
         outer.addWidget(side)
         outer.addWidget(self.stack, 1)
+        from .design_shell import DesignShell
+        self.design_shell=DesignShell(self,canvas)
         self.setCentralWidget(root)
         self._optimize_scroll_surfaces()
         self._apply_sidebar_state()
+        self.design_shell.sync()
         self._setup_sidebar_motion()
         self._sync_glow()
         # Apply the lightweight renderer even when Minimalistisch is saved
+        network=next(page for title,page in self.pages if title=='Netzwerk')
+        network.watcher.alert.connect(self._network_alert)
         # before the application launches, rather than only on theme switches.
         if theme.mode() == "minimal":
             self.apply_appearance()
@@ -335,6 +344,8 @@ class MainWindow(QMainWindow):
             scroll.verticalScrollBar().setValue(0)
             scroll.horizontalScrollBar().setValue(0)
         self.stack.setCurrentIndex(index)
+        if hasattr(self,'design_shell'):
+            self.design_shell.select(index)
         if changed:
             QTimer.singleShot(0, lambda: scroll.verticalScrollBar().setValue(0)
                               if self.stack.currentWidget() is scroll else None)
@@ -387,6 +398,10 @@ class MainWindow(QMainWindow):
             pref.retranslate()
         self._sync_glow()
         # Layout reflow may happen when labels grow in English.
+        self.design_shell.retranslate()
+        network=next((page for title,page in self.pages if title=='Netzwerk'),None)
+        if network is not None and hasattr(network,'retranslate'):
+            network.retranslate()
         QTimer.singleShot(0,lambda: [scroll.verticalScrollBar().setValue(value)
                                     for scroll,value in scrolls])
 
@@ -671,6 +686,9 @@ class MainWindow(QMainWindow):
 
     def _apply_sidebar_state(self):
         """Only for initial construction: no animation before the window shows."""
+        from .signature_designs import active
+        if active() and hasattr(self,'design_shell'):
+            return
         compact = self._sidebar_collapsed
         self.sidebar_layout.setContentsMargins(*( (8,55,8,12) if compact else (16,21,16,16) ))
         self.sidebar_brand.setVisible(not compact)
@@ -743,6 +761,7 @@ class MainWindow(QMainWindow):
         stylesheet = theme.stylesheet()
         if QApplication.instance().styleSheet() != stylesheet:
             QApplication.instance().setStyleSheet(stylesheet)
+        self.design_shell.sync()
         self.brand_mark.sync_theme()
         self.pulse_core.sync_theme()
         current_icon = app_icon()
@@ -806,6 +825,11 @@ class MainWindow(QMainWindow):
                     self._appearance_overlay = None
             overlay.finished.connect(clear_overlay)
             overlay.start()
+
+    def _network_alert(self,title,message):
+        self.statusBar().showMessage(title+' · '+message,16000)
+        if self._tray is not None:
+            self._tray.showMessage(title,message,QSystemTrayIcon.Warning,8000)
 
     def _check_alerts(self, sample):
         preferences = settings.get_many(dict(
@@ -1022,6 +1046,8 @@ class MainWindow(QMainWindow):
             self.sampler.stop()
             self.manager.shutdown()
             for _title, page in self.pages:
+                if isinstance(page,NetworkPage):
+                    page.shutdown()
                 if isinstance(page, DiskPage):
                     worker = page.benchmark.thread
                     if worker is not None and worker.isRunning():
@@ -1029,8 +1055,9 @@ class MainWindow(QMainWindow):
             self.centralWidget().setEnabled(False)
             self.statusBar().showMessage(tr('Vitalux wird neu gestartet …' if self.restart_requested else 'Vitalux wird beendet …'))
         workers_running = any(worker.isRunning() for worker in self.findChildren(QThread))
+        network_ready=all(page.shutdown() for _title,page in self.pages if isinstance(page,NetworkPage))
         manager_ready = self.manager.shutdown() is not False
-        if workers_running or not manager_ready or time.monotonic() < self._shutdown_not_before:
+        if workers_running or not network_ready or not manager_ready or time.monotonic() < self._shutdown_not_before:
             event.ignore()
             self._close_retry.start(25)
             return
@@ -1047,6 +1074,8 @@ class MainWindow(QMainWindow):
                 self._shutdown_pending = self.restart_requested = self._force_quit = False
                 self.centralWidget().setEnabled(True)
                 self.sampler.start()
+                for _title,page in self.pages:
+                    if isinstance(page,NetworkPage):page.watcher.resume_after_shutdown()
                 resume = getattr(self.manager, 'resume_after_shutdown', None)
                 if callable(resume):
                     resume()

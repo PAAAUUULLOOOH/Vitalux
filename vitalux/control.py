@@ -177,6 +177,7 @@ class PreferencesPage(Page):
         'mini_hud_enabled': False, 'mini_hud_layout': 'compact',
         'mini_hud_opacity': 90,
         'mini_hud_metrics': list(DEFAULT_KEYS),
+        'network_app_limits': {},
     }
     SECTION_DEFAULTS = {
         'appearance': ('theme', 'accent', 'ui_sounds', 'ui_sound_volume', 'motion', 'background_style', 'custom_background_fit'),
@@ -225,7 +226,7 @@ class PreferencesPage(Page):
 
         self._search_targets = []
         look = Card('Erscheinungsbild')
-        look.body.addWidget(label('Farbschema', 'strong'))
+        look.body.addWidget(label('Design', 'strong'))
         self.design_gallery = QWidget()
         self.design_gallery.setObjectName('designGallery')
         gallery = QGridLayout(self.design_gallery)
@@ -238,7 +239,9 @@ class PreferencesPage(Page):
             tile.clicked.connect(lambda _checked=False, key=key: self.select_design(key))
             self.design_tiles.append(tile)
             gallery.addWidget(tile, index // 3, index % 3)
-        look.body.addWidget(self.design_gallery)
+        from .design_settings import Gallery
+        self.design_gallery_scroll=Gallery(self.design_gallery,self.design_tiles)
+        look.body.addWidget(self.design_gallery_scroll)
         self.theme_note = label('', 'muted', wrap=True)
         self.theme_note.setObjectName('themeDescription')
         look.body.addWidget(self.theme_note)
@@ -253,6 +256,8 @@ class PreferencesPage(Page):
             'obsidian_gold': 'Obsidian Gold · Rauchglas, gebürstetes Gold und präzise Instrumentringe. Die äußeren Logo-Streifen drehen sich langsam.',
             'champagne_glass': 'Champagne Glass · Kristallglas, warme Champagnertöne und seidenweiche Reflexionen mit goldenen Instrumenten.',
             'aurora_gold': 'Aurora Gold · Irisierendes Glas mit Petrol- und Violettlicht, flüssigen Goldkanten und leuchtenden Instrumenten.',
+            'aether_glass': 'Aether Glass · Optisches Rauchglas, Platinkanten und Violett-/Cyanlicht mit schwebender Navigation und eigenen Instrumenten. Palette und Hintergrund sind fest.',
+            'eclipse_crystal': 'Eclipse Crystal · Facettierter schwarzer Kristall, Champagnerkanten und horizontale Navigation. Palette und Hintergrund sind fest.',
         }
         self.theme_note.setText(tr(self.mode_notes.get(theme.mode(), self.mode_notes['dark'])))
         accent_row = QVBoxLayout()
@@ -598,7 +603,7 @@ class PreferencesPage(Page):
         self._refresh_restore_button()
         self._search_targets = [
             ('appearance', 'Glas Klang Ton Sound Klicks', self.sound_toggle),
-            ('appearance', 'Farbschema Dark Light Glass Black Glass Gold Holographic Minimalistisch Obsidian Champagne Aurora', self.design_tiles[0]),
+            ('appearance', 'Design Dark Light Glass Black Glass Gold Holographic Minimalistisch Obsidian Champagne Aurora Aether Eclipse Crystal', self.design_tiles[0]),
             ('appearance', 'Akzentfarbe Eigene Farben Bearbeiten Löschen', self.accent_combo),
             ('appearance', 'Hintergrund Bild Hintergrundfarbe automatisch', self.background_combo),
             ('appearance', 'Animationen Bewegung Übergang', self.motion_combo),
@@ -619,11 +624,16 @@ class PreferencesPage(Page):
             self.advanced.addWidget(card)
         self.advanced.addWidget(self._maintenance_card)
         self._search_targets.append(('advanced', 'Erweiterte Einstellungen Advanced Settings', self.advanced.header))
-        for category in ('appearance', 'general', 'hud', 'monitoring', 'energy'):
+        from .design_settings import CardDeck
+        for card in self._settings_cards['appearance']:self.content.addWidget(card)
+        deck=[]
+        for category in ('general', 'hud', 'monitoring', 'energy'):
             cards = (list(reversed(self._settings_cards[category])) if category == 'hud'
                      else self._settings_cards[category])
             for card in cards:
-                self.content.addWidget(card)
+                deck.append(card)
+        self.settings_deck=CardDeck(deck)
+        self.content.addWidget(self.settings_deck)
         self.content.addWidget(self.advanced)
         self.content.addLayout(self._restore_row)
         self.expansion_follower = ExpansionFollower(self)
@@ -662,7 +672,7 @@ class PreferencesPage(Page):
         ranked = []
         if self._search_words is None:
             aliases = {self.sound_toggle: 'Glass Sound Click Tone Volume',
-                self.design_tiles[0]: 'Theme Color Scheme Preview', self.accent_combo: 'Accent Color Colour Custom',
+                self.design_tiles[0]: 'Theme Design Preview', self.accent_combo: 'Accent Color Colour Custom',
                 self.background_combo: 'Background Image Wallpaper', self.motion_combo: 'Animation Motion Transition',
                 self.hud_on: 'MiniHUD Show Enable', self.hud_size: 'MiniHUD Size Layout',
                 self.hud_opacity: 'MiniHUD Opacity Transparency', self.close_to_tray: 'Tray Close Window',
@@ -949,6 +959,8 @@ class PreferencesPage(Page):
 
     def refresh_appearance(self):
         ultra = eco.enabled()
+        self.design_gallery_scroll.sync()
+        self.settings_deck.sync()
         self._check_without_signal(self.sound_toggle, settings.get('ui_sounds', True))
         self.sound_volume.blockSignals(True)
         self.sound_volume.setValue(settings.get('ui_sound_volume', 70))
@@ -1057,7 +1069,7 @@ class PreferencesPage(Page):
         custom_locked = theme.mode() in ('black_glass', *theme.FIXED_MODES) or eco.enabled()
         self.accent_combo.setLocked(
             ('Ultra Eco verwendet eine feste, einfache Farbpalette.' if eco.enabled() else
-             'Dieses Farbschema verwendet eine feste Farbpalette. Eigene Akzentfarben sind hier nicht verfügbar.') if gold else '',
+             'Dieses Design verwendet eine feste Farbpalette. Eigene Akzentfarben sind hier nicht verfügbar.') if gold else '',
             'Feste Designpalette')
         self.custom_accent_button.setEnabled(not custom_locked)
         self.edit_custom_accent_button.setEnabled(not custom_locked)
@@ -1209,7 +1221,7 @@ class PreferencesPage(Page):
         locked = theme.background_locked()
         self.background_combo.setLocked(
             ('Ultra Eco verwendet einen festen, einfachen Hintergrund.' if eco.enabled() else
-             'Dieses Farbschema hat einen festen Hintergrund. Wähle ein anderes Farbschema, um eigene Bilder oder Hintergründe zu verwenden.') if locked else '',
+             'Dieses Design hat einen festen Hintergrund. Wähle ein anderes Design, um eigene Bilder oder Hintergründe zu verwenden.') if locked else '',
             'Fester Hintergrund')
         self.custom_background_area.setEnabled(not locked)
         custom = not locked and self.background_combo.currentData() == 'custom_image'

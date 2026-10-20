@@ -11,7 +11,7 @@ DEFAULT_THEMES = ('dark', 'light', 'glass', 'black_glass', 'minimal')
 # The five original wallpaper/theme pairs are preserved unchanged.
 # The original themes and supported static designs remain available.
 PRESETS = (
-    ('theme_default', 'Automatisch (Farbschema)'),
+    ('theme_default', 'Automatisch (Design)'),
     ('dark', 'Dark'),
     ('light', 'Light'),
     ('glass', 'Glass'),

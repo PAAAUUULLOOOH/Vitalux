@@ -1,5 +1,13 @@
 # Vitalux – Änderungen
 
+## [v0.9.5.9] - 2026-10-20
+- Aether Glass und Eclipse Crystal ergänzen die Designauswahl mit eigenen Glas-/Kristallmaterialien, Instrumenten und Navigationslayouts. Ihre Paletten und Hintergründe sind fest abgestimmt.
+- Der ausgewählte kantige VITALUX-Schriftzug erhält Metall- und Rauchglasfacetten, passende Farbvarianten und den bestehenden Lichtreflex.
+- Unter Netzwerk → Programme & Verbindungen lassen sich Programme, Verbindungsziele und erfasster Datenverbrauch untersuchen; Verbrauchswarnungen sind pro App einstellbar.
+- Eine optionale Systemfreigabe ermöglicht TCP-/UDP-Messung und Netzwerksperren für laufende Programme. Sitzungssperren werden beim Beenden der Freigabe oder der App automatisch aufgehoben.
+- „Farbschema“ heißt jetzt „Design“. Fehlende Prozess- oder Verkehrsdaten werden ausdrücklich als nicht verfügbar angezeigt.
+- Überlagerte Diagrammreihen behalten ihre korrekten transparenten Flächen ohne zusätzliche Farbflächen zwischen den Linien.
+
 ## [v0.9.5.8] - 2026-10-20
 - Die Übersicht verwendet den kompakten Systemkopf dauerhaft; der bisherige Umschalter entfällt und alle Systeminformationen bleiben erhalten.
 - Neues Kreislogo mit feineren Außenbögen und Glasmitte sowie neuer Vitalux-Schriftzug mit abgestimmtem Metallfinish.

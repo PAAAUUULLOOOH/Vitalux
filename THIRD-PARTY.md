@@ -40,3 +40,7 @@ This inventory records identified components and retained notices. It is not a l
 ## Branding build tools
 
 The approved concept silhouettes were converted to vector paths locally using vtracer 0.6.15 (MIT), NumPy 2.5.4 (BSD and included notices) and fontTools 4.67.0 (MIT and included notices). Their verbatim license collections are retained in [licenses/branding-build-tools/](licenses/branding-build-tools/). These tools are not bundled as executable code or added as Vitalux runtime dependencies. Rebuilding the supplied vector geometry does not require them. Qt/PySide6 and the system FFmpeg were used to validate and record previews; no FFmpeg executable is shipped with Vitalux.
+
+## Optional network helper
+
+The Vitalux network helper and its eBPF instruction generator are original project code, using Python’s standard library and Linux kernel APIs. No BCC, LLVM, OpenSnitch or external firewall daemon is bundled. Polkit and the optional host Python interpreter are supplied by the operating system. The `Proprietary` BPF program license string declares compatibility to the kernel; it does not grant additional rights in the Vitalux source. The Linux kernel, QEMU and a disposable test root filesystem used for integration validation are test infrastructure and are not included in the application packages.

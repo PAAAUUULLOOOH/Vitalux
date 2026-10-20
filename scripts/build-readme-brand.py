@@ -30,15 +30,21 @@ def layer(filename, light, prefix):
     return [deepcopy(node) for node in root]
 
 
-for variant in ('dark', 'light'):
+def compose(variant, animated=False):
     root = ET.Element('{'+NS+'}svg', width='600', height='400', viewBox='0 0 600 400',
                       role='img', attrib={'aria-labelledby': 'title desc'})
     ET.SubElement(root, '{'+NS+'}title', id='title').text = 'Vitalux'
-    ET.SubElement(root, '{'+NS+'}desc', id='desc').text = 'Slim circular logo and title-case Vitalux wordmark in Obsidian Gold.'
+    ET.SubElement(root, '{'+NS+'}desc', id='desc').text = 'Slim circular logo and sculpted uppercase VITALUX wordmark in Obsidian Gold.'
     for filename, transform, prefix in (('vitalux-pulse-obsidian-gold.svg', 'translate(175 8) scale(0.1993620415)', 'icon-'),
-                                        ('vitalux-wordmark-obsidian-gold.svg', 'translate(50 265) scale(0.2415458937)', 'mark-')):
+                                        ('vitalux-wordmark-obsidian-gold.svg', 'translate(50 282) scale(0.3888024883)', 'mark-')):
         group = ET.SubElement(root, '{'+NS+'}g', transform=transform)
-        group.extend(layer(filename, variant == 'light', prefix))
+        group.extend(layer(('animated/' if animated else '')+filename, variant == 'light', prefix))
     ET.indent(root)
-    (ROOT/'assets'/f'vitalux-readme-{variant}.svg').write_text(ET.tostring(root, encoding='unicode')+'\n')
-    print('README identity:', variant)
+    suffix='-animated' if animated else ''
+    (ROOT/'assets'/f'vitalux-readme-{variant}{suffix}.svg').write_text(ET.tostring(root, encoding='unicode')+'\n')
+    print('README identity:', variant, 'animated' if animated else 'static fallback')
+
+
+for variant in ('dark','light'):
+    compose(variant)
+    compose(variant,animated=True)

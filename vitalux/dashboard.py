@@ -163,6 +163,16 @@ class DashboardBoard(QWidget):
         return 12 if self.width()>=740 else 6 if self.width()>=475 else 3
 
     def _render_positions(self,order=None):
+        from .signature_designs import active
+        if active():
+            sizes=dict(DEFAULT)
+            sizes.update(hero=(0,0,12,4),cpu=(0,0,6,8),gpu=(0,0,3,8),
+                         ram=(0,0,3,8),disk=(0,0,3,6),health=(0,0,3,6),
+                         graph_load=(0,0,7,8),graph_net=(0,0,5,8),network=(0,0,6,6),drives=(0,0,12,5))
+            selected=list(self.order if order is None else order)
+            if selected==list(ORDER):
+                selected=['hero','cpu','gpu','ram','graph_load','graph_net','disk','health','network','drives']
+            return grid_pack(selected,self.hidden,self._cols(),sizes)
         return grid_pack(self.order if order is None else order,self.hidden,self._cols())
 
     def _frame(self,rect):

@@ -196,7 +196,7 @@ class Gauge(QWidget):
         self.text = text
         self.value = value
         self._target = value
-        if theme.mode() == "minimal":
+        if theme.mode() == "minimal" or not self.isVisible():
             self._animate.stop()
             self._render_value = value
             self.update()
@@ -484,6 +484,7 @@ class HistoryGraph(QWidget):
                     gradient.setColorAt(0, top); gradient.setColorAt(1, bottom)
                     p.fillPath(area, gradient)
                     halo = QColor(c); halo.setAlpha(39)
+                    p.setBrush(Qt.NoBrush)
                     p.setPen(QPen(halo, 5, style, Qt.RoundCap, Qt.RoundJoin))
                     p.drawPath(path)
                 p.setBrush(Qt.NoBrush)
@@ -831,6 +832,9 @@ class NavButton(_SoftHover, QPushButton):
         if theme.mode() == "minimal":
             self._paint_minimal_nav()
             return
+        from . import signature_designs
+        if signature_designs.active():
+            return signature_designs.paint_navigation(self)
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
         if self.isDown(): p.translate(0, .8)
