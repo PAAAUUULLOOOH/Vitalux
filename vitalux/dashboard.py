@@ -163,8 +163,7 @@ class DashboardBoard(QWidget):
         return 12 if self.width()>=740 else 6 if self.width()>=475 else 3
 
     def _render_positions(self,order=None):
-        return grid_pack(self.order if order is None else order,self.hidden,self._cols(),
-                         hero_height=6 if settings.get('compact_overview', False) else None)
+        return grid_pack(self.order if order is None else order,self.hidden,self._cols())
 
     def _frame(self,rect):
         x,y,w,h=rect

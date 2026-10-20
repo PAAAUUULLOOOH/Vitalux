@@ -1,5 +1,8 @@
 # Vitalux – Änderungen
 
+## [v0.9.5.8] - 2026-10-20
+- Die Übersicht verwendet immer den kompakten Systemkopf mit kleinerem Distributionslogo und engeren Abständen. Dadurch bleibt mehr Platz für Messwerte und Diagramme; der bisherige Kompakt-Schalter entfällt, auch bestehende Installationen erhalten die kompakte Ansicht.
+
 ## [v0.9.5.7] - 2026-10-20
 - Obsidian Gold ist der Standard für neue Installationen und das Zurücksetzen der Darstellung, mit feineren Glaskanten, weicheren Reflexionen und klareren Messwerten; gespeicherte Designauswahlen bleiben erhalten.
 - Die originale Linie in der Logomitte erhält einen sanften Herzschlagimpuls, während sich die äußeren Streifen weiterhin langsam drehen.

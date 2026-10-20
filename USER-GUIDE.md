@@ -16,7 +16,7 @@ Use **Edit layout** on Overview to arrange cards. Drives loads SMART data asynch
 
 Obsidian Gold, Champagne Glass, Black Glass Gold and Aurora Gold use fixed palettes and backgrounds. Their grey fields are disabled and cannot be opened. Holographic also has a fixed HUD background. Personal accent and background selections remain saved for compatible themes.
 
-The accent selector has a compact glass color swatch. Enable **Compact system header on Overview** to leave more room for charts. Theme previews gently enlarge on hover without moving surrounding tiles. The original wordmark has a slow, clearly visible satin reflection; outer logo bands rotate slowly around a softly traced heartbeat waveform. **Animations** provides smooth, reduced and off profiles. **Ultra Eco** uses a simple skin, CPU rendering and a ten-second sampling interval, preserving the previous appearance settings for later.
+The accent selector has a compact glass color swatch. Overview always uses a compact system header, with a smaller distribution logo and tighter spacing to leave more room for measurements and charts. No separate switch is needed. Theme previews gently enlarge on hover without moving surrounding tiles. The original wordmark has a slow, clearly visible satin reflection; outer logo bands rotate slowly around a softly traced heartbeat waveform. **Animations** provides smooth, reduced and off profiles. **Ultra Eco** uses a simple skin, CPU rendering and a ten-second sampling interval, preserving the previous appearance settings for later.
 
 ## Search and sound
 

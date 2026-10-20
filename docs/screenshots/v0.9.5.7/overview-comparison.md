@@ -1,5 +1,7 @@
 # Übersicht im Vergleich
 
+Dieser Vergleich zeigt v0.9.5.7. Ab v0.9.5.8 ist die kompakte Ansicht der feste Standard; der Schalter entfällt.
+
 Oben siehst du den normalen Systemkopf, darunter die kompakte Ansicht. Beide Aufnahmen zeigen Vitalux v0.9.5.7 in Obsidian Gold bei gleicher Fenstergröße.
 
 ## Normale Ansicht
