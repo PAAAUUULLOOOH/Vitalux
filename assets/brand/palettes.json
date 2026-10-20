@@ -1,0 +1,207 @@
+{
+  "default_theme": "obsidian_gold",
+  "variants": {
+    "blue": {
+      "name": "Blue",
+      "accent": "#4f8cff",
+      "top": "#a0c1ff",
+      "mid": "#4f8cff",
+      "low": "#365da6",
+      "spec": "#e1ebff",
+      "secondary": "#4f8cff",
+      "fixed": false
+    },
+    "cyan": {
+      "name": "Cyan",
+      "accent": "#52d3ff",
+      "top": "#a2e7ff",
+      "mid": "#52d3ff",
+      "low": "#3888a6",
+      "spec": "#e2f8ff",
+      "secondary": "#52d3ff",
+      "fixed": false
+    },
+    "violet": {
+      "name": "Violet",
+      "accent": "#a78bfa",
+      "top": "#cfc0fc",
+      "mid": "#a78bfa",
+      "low": "#6c5ca3",
+      "spec": "#f0ebfe",
+      "secondary": "#a78bfa",
+      "fixed": false
+    },
+    "green": {
+      "name": "Green",
+      "accent": "#73ba25",
+      "top": "#b3da89",
+      "mid": "#73ba25",
+      "low": "#4c7921",
+      "spec": "#e7f3da",
+      "secondary": "#73ba25",
+      "fixed": false
+    },
+    "orange": {
+      "name": "Orange",
+      "accent": "#f59e0b",
+      "top": "#facb7b",
+      "mid": "#f59e0b",
+      "low": "#9c6811",
+      "spec": "#fdefd6",
+      "secondary": "#f59e0b",
+      "fixed": false
+    },
+    "yellow": {
+      "name": "Yellow",
+      "accent": "#facc15",
+      "top": "#fce381",
+      "mid": "#facc15",
+      "low": "#9f8417",
+      "spec": "#fef6d7",
+      "secondary": "#facc15",
+      "fixed": false
+    },
+    "red": {
+      "name": "Red",
+      "accent": "#ef4444",
+      "top": "#f69a9a",
+      "mid": "#ef4444",
+      "low": "#983134",
+      "spec": "#fcdfdf",
+      "secondary": "#ef4444",
+      "fixed": false
+    },
+    "pink": {
+      "name": "Pink",
+      "accent": "#f472b6",
+      "top": "#f9b3d8",
+      "mid": "#f472b6",
+      "low": "#9b4d7a",
+      "spec": "#fde7f3",
+      "secondary": "#f472b6",
+      "fixed": false
+    },
+    "gold": {
+      "name": "Gold",
+      "accent": "#e5bf73",
+      "top": "#ffe5a5",
+      "mid": "#dcb365",
+      "low": "#a3722d",
+      "spec": "#fff3ce",
+      "secondary": "#e5bf73",
+      "fixed": false
+    },
+    "obsidian-gold": {
+      "name": "Obsidian Gold",
+      "accent": "#e5c17b",
+      "top": "#ffe4aa",
+      "mid": "#d7ad61",
+      "low": "#936c32",
+      "spec": "#fff0c8",
+      "secondary": "#e5c17b",
+      "fixed": true
+    },
+    "black-glass-gold": {
+      "name": "Black Glass Gold",
+      "accent": "#f3cd79",
+      "top": "#ffe7ac",
+      "mid": "#e4b959",
+      "low": "#a87a31",
+      "spec": "#ffedc1",
+      "secondary": "#f3cd79",
+      "fixed": true
+    },
+    "champagne-glass": {
+      "name": "Champagne Glass",
+      "accent": "#f0d5ad",
+      "top": "#fff0d1",
+      "mid": "#ddbc8d",
+      "low": "#a88457",
+      "spec": "#fff6df",
+      "secondary": "#f0d5ad",
+      "fixed": true
+    },
+    "aurora-gold": {
+      "name": "Aurora Gold",
+      "accent": "#ecc784",
+      "top": "#ffe6b6",
+      "mid": "#d7ad66",
+      "low": "#a67a39",
+      "spec": "#fff0d6",
+      "secondary": "#a4e4e1",
+      "fixed": true
+    }
+  },
+  "theme_assets": {
+    "obsidian_gold": "obsidian-gold",
+    "black_glass_gold": "black-glass-gold",
+    "champagne_glass": "champagne-glass",
+    "aurora_gold": "aurora-gold"
+  },
+  "custom_accent_policy": "Preserve the outlined geometry; moderately richer tint for the circle logo only.",
+  "motion_seconds": {
+    "outer_rotation": 48,
+    "heartbeat": 2.4,
+    "wordmark_glint": 8,
+    "complete_cycle": 48
+  },
+  "geometry": {
+    "viewbox": [
+      0,
+      0,
+      1254,
+      1254
+    ],
+    "center": [
+      634,
+      608
+    ],
+    "waveform": [
+      [
+        318,
+        616
+      ],
+      [
+        439,
+        616
+      ],
+      [
+        532,
+        501
+      ],
+      [
+        642,
+        783
+      ],
+      [
+        777,
+        458
+      ],
+      [
+        849,
+        616
+      ],
+      [
+        939,
+        616
+      ]
+    ],
+    "wave_widths": {
+      "halo": 65,
+      "signal": 41,
+      "leading": 13
+    },
+    "wordmark_viewbox": [
+      0,
+      0,
+      2070,
+      510
+    ]
+  },
+  "custom_tint": {
+    "source_mix": 0.65,
+    "accent_mix": 0.35,
+    "circle_saturation_boost": 0.08,
+    "circle_saturation_cap": 238
+  }
+}

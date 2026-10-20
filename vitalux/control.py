@@ -172,14 +172,14 @@ class PreferencesPage(Page):
         'theme': DEFAULT_THEME, 'accent': '#4f8cff', 'ui_sounds': True, 'ui_sound_volume': 70, 'motion': 'smooth',
         'background_style': 'theme_default', 'custom_background_fit': 'cover',
         'render_backend': renderer.SOFTWARE, 'ultra_eco': False,
-        'interval': 1, 'close_to_tray': True, 'alerts_enabled': False, 'compact_overview': False,
+        'interval': 1, 'close_to_tray': True, 'alerts_enabled': False,
         'cpu_temp': 90, 'gpu_temp': 90, 'ram_usage': 90, 'disk_usage': 95,
         'mini_hud_enabled': False, 'mini_hud_layout': 'compact',
         'mini_hud_opacity': 90,
         'mini_hud_metrics': list(DEFAULT_KEYS),
     }
     SECTION_DEFAULTS = {
-        'appearance': ('theme', 'accent', 'ui_sounds', 'ui_sound_volume', 'motion', 'background_style', 'custom_background_fit', 'compact_overview'),
+        'appearance': ('theme', 'accent', 'ui_sounds', 'ui_sound_volume', 'motion', 'background_style', 'custom_background_fit'),
         'hud': ('mini_hud_enabled', 'mini_hud_layout', 'mini_hud_opacity',
                 'mini_hud_metrics'),
         'alerts': ('alerts_enabled', 'cpu_temp', 'gpu_temp', 'ram_usage', 'disk_usage'),
@@ -392,10 +392,6 @@ class PreferencesPage(Page):
         r_motion.addWidget(self.motion_combo)
         r_motion.addStretch(1)
         look.body.addLayout(r_motion)
-        self.compact_overview = QCheckBox('Kompakter Systemkopf auf der Übersicht')
-        self.compact_overview.setChecked(settings.get('compact_overview', False))
-        self.compact_overview.toggled.connect(self.set_compact_overview)
-        look.body.addWidget(self.compact_overview)
         look.body.addWidget(label('Übergänge anpassen: weich, verkürzt oder ohne Animation.', 'muted', wrap=True))
         self.sound_toggle = QCheckBox('Glas-Klang bei Klicks')
         self.sound_toggle.setChecked(settings.get('ui_sounds', True))
@@ -755,10 +751,6 @@ class PreferencesPage(Page):
         if not settings.set_many(changes):
             return
         if section == 'appearance':
-            self._check_without_signal(self.compact_overview, False)
-            pages = getattr(self.window, 'pages', ())
-            if pages and hasattr(pages[0][1], 'apply_density'):
-                pages[0][1].apply_density()
             self._select_without_signal(self.accent_combo, self.DEFAULTS['accent'])
             self._select_without_signal(self.motion_combo, self.DEFAULTS['motion'])
             self._select_without_signal(self.background_combo, self.DEFAULTS['background_style'])
@@ -936,13 +928,6 @@ class PreferencesPage(Page):
     def _set_preference(self, key, value):
         settings.set(key, value)
         self._refresh_restore_button()
-
-    def set_compact_overview(self, enabled):
-        if settings.set('compact_overview', bool(enabled)):
-            pages = getattr(self.window, 'pages', ())
-            if pages and hasattr(pages[0][1], 'apply_density'):
-                pages[0][1].apply_density()
-            self._refresh_restore_button()
 
     def _refresh_restore_button(self):
         values = settings.get_many(self.DEFAULTS)

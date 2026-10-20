@@ -182,10 +182,8 @@ class OverviewPage(Page):
         # bleibt in der Seitenleiste; Systemversionen stehen ausschließlich in
         # den Kacheln direkt unter dem Distro-Kopf.
         head = Card(hero=True)
-        # Compact only the *outer whitespace*: the distro icon (96×96),
-        # name typography and the eight system-info chips retain their
-        # original dimensions. The saved 35px exactly match the reduced
-        # single grid row; no child tile needs to be scaled to fit.
+        # A compact system header leaves more room for the telemetry below.
+        # Keep all eight system-info chips and the original title typography.
         head.layout().setContentsMargins(20, 7, 20, 7)
         head.body.setSpacing(5)
         row = QHBoxLayout()
@@ -194,13 +192,12 @@ class OverviewPage(Page):
         # The distribution logo is an independent visibility option *inside*
         # the hero tile: its name and system-information chips stay intact.
         self.distro_logo_host = QWidget(head)
-        self.distro_logo_host.setFixedSize(96, 96)
+        self.distro_logo_host.setFixedSize(48, 48)
         pic = label()
         pic.setParent(self.distro_logo_host)
-        pic.setGeometry(0, 0, 96, 96)
+        pic.setGeometry(0, 0, 48, 48)
         pic.setAlignment(Qt.AlignCenter)
-        pic.setPixmap(logo)
-        self._distro_picture, self._distro_pixmap = pic, logo
+        pic.setPixmap(logo.scaled(48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         self.distro_logo_remove = QToolButton(self.distro_logo_host)
         self.distro_logo_remove.setObjectName('tileRemoveHint')
         self.distro_logo_remove.setProperty('distroLogoRemove', True)
@@ -208,20 +205,21 @@ class OverviewPage(Page):
         self.distro_logo_remove.setToolTip(tr('Distributionslogo ausblenden'))
         self.distro_logo_remove.setCursor(Qt.PointingHandCursor)
         self.distro_logo_remove.setFixedSize(25, 25)
-        self.distro_logo_remove.move(70, 1)
+        self.distro_logo_remove.move(22, 1)
         self.distro_logo_remove.raise_()
         row.addWidget(self.distro_logo_host, 0, Qt.AlignVCenter)
         distro_name = label(distro["name"], "heroTitle", wrap=True)
         distro_name.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         row.addWidget(distro_name, 1, Qt.AlignVCenter)
-        # Keep the original 96px distro icon and title. The space on the
-        # right remains empty instead of duplicating the chip content.
+        # The space on the right stays clear of duplicated system details.
         head.body.addLayout(row)
 
         # Restored 0.9.3.30 chip sizing: natural text/layout height and
         # standard Qt grid column sizing, without any fixed 80px tiles.
         # Uptime stays in the last small tile; the OS updater is gone.
         self.chips = ChipsGrid(["Kernel", "KDE", "Mesa", "Distributionsversion", "Sitzung", "Architektur", "Treiber", "Laufzeit"], columns=4)
+        for chip in self.chips.chips.values():
+            chip.layout().setContentsMargins(10, 6, 10, 6)
         self.chips.grid.setVerticalSpacing(6)
         head.body.addWidget(self.chips)
         self.hero_card = head
@@ -305,20 +303,7 @@ class OverviewPage(Page):
         self.distro_logo_remove.clicked.connect(self.board.hide_distro_logo)
         self._sync_distro_logo()
         self._position_editor_controls()
-        self.apply_density()
         QTimer.singleShot(0,self.board.refresh_geometry)
-
-    def apply_density(self):
-        compact = settings.get('compact_overview', False)
-        size = 48 if compact else 96
-        self.distro_logo_host.setFixedSize(size, size)
-        self._distro_picture.setGeometry(0, 0, size, size)
-        self._distro_picture.setPixmap(self._distro_pixmap.scaled(
-            size, size, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        self.distro_logo_remove.move(size-26, 1)
-        for chip in self.chips.chips.values():
-            chip.layout().setContentsMargins(10, 6, 10, 6) if compact else chip.layout().setContentsMargins(14, 10, 14, 10)
-        self.board.refresh_geometry()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)

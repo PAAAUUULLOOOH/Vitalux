@@ -30,8 +30,8 @@ def run():
         assert theme.accent() == "#f3cd79"
         assert theme.secondary_accent() == "#ffe4a2"
         assert resolve("theme_default","black_glass_gold") == "black_glass"
-        assert _brand_asset(True).endswith("pulse-gold.svg")
-        assert _brand_asset(False).endswith("wordmark-gold.svg")
+        assert _brand_asset(True).endswith("pulse-black-glass-gold.svg")
+        assert _brand_asset(False).endswith("wordmark-black-glass-gold.svg")
         host = Host()
         page = PreferencesPage(host)
         page.show()

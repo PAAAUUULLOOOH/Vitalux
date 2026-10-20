@@ -1,5 +1,12 @@
 # Vitalux – Änderungen
 
+## [v0.9.5.8] - 2026-10-20
+- Die Übersicht verwendet den kompakten Systemkopf dauerhaft; der bisherige Umschalter entfällt und alle Systeminformationen bleiben erhalten.
+- Neues Kreislogo mit feineren Außenbögen und Glasmitte sowie neuer Vitalux-Schriftzug mit abgestimmtem Metallfinish.
+- Deutlicher Herzschlagimpuls, langsame Außendrehung und weicher Schriftreflex laufen ohne sichtbaren Schnitt; beim Farbschemawechsel bleibt die Animationsphase erhalten.
+- Obsidian Gold, Black Glass Gold, Champagne Glass und Aurora Gold besitzen jeweils eigene Logo- und Schriftfarben. Eigene Akzentfarben wirken am Kreislogo etwas satter, ohne die übrige Oberfläche stärker einzufärben.
+- Flüssigere Logoanimation mit scharfer Darstellung bei vergrößerter Desktop-Skalierung; reduzierte Bewegung, ausgeschaltete Animationen und Ultra Eco bleiben berücksichtigt.
+
 ## [v0.9.5.7] - 2026-10-20
 - Obsidian Gold ist der Standard für neue Installationen und das Zurücksetzen der Darstellung, mit feineren Glaskanten, weicheren Reflexionen und klareren Messwerten; gespeicherte Designauswahlen bleiben erhalten.
 - Die originale Linie in der Logomitte erhält einen sanften Herzschlagimpuls, während sich die äußeren Streifen weiterhin langsam drehen.

@@ -27,7 +27,7 @@ Qt/PySide6 libraries are dynamically loaded from `runtime/lib/python3.12/site-pa
 
 ## Assets, fonts and trademarks
 
-The Vitalux SVG logo, custom wordmark, palette variants, procedural interface drawings and existing background images are carried as project assets. Sidebar category symbols are drawn by Vitalux rather than an external icon package. The crystal tap is synthesized locally; no external audio sample or sound library is bundled. No separate font files are distributed; normal text uses the desktop's available fonts. Original project assets retain the same licensing position as the project code.
+The Vitalux SVG logo, custom outlined wordmark, separate theme/accent palettes, procedural interface drawings and existing background images are carried as project assets. The new wordmark is stored as vector contours and has no external font dependency. `assets/brand/palettes.json` and `assets/brand/geometry.json` are the editable branding sources; `scripts/build-brand-assets.py` rebuilds the SVGs using the Python standard library. Sidebar category symbols are drawn by Vitalux rather than an external icon package. The crystal tap is synthesized locally; no external audio sample or sound library is bundled. No separate font files are distributed; normal text uses the desktop's available fonts. Original project assets retain the same licensing position as the project code.
 
 Distribution logos are loaded from the host's icon theme; Vitalux does not include a distribution icon pack. The README screenshot displays a Debian host. Debian and other distribution names/logos belong to their respective holders; their appearance does not imply endorsement. The host Debian package copyright notice is retained in `licenses/system-libraries/debconf.copyright.txt`.
 
@@ -36,3 +36,7 @@ Distribution logos are loaded from the host's icon theme; Vitalux does not inclu
 Desktop OpenGL/Vulkan drivers, the compositor, PulseAudio or PipeWire's PulseAudio service, Linux sensors, SMART utilities and other external diagnostics are supplied by the operating system, not bundled into Vitalux. Their availability and licenses are governed by their distributions. CI's Xvfb, Weston and audio test server are test infrastructure. Appimagetool is a build tool, not an additional executable shipped inside Vitalux.
 
 This inventory records identified components and retained notices. It is not a legal opinion or a warranty of copyright/trademark clearance for original project material.
+
+## Branding build tools
+
+The approved concept silhouettes were converted to vector paths locally using vtracer 0.6.15 (MIT), NumPy 2.5.4 (BSD and included notices) and fontTools 4.67.0 (MIT and included notices). Their verbatim license collections are retained in [licenses/branding-build-tools/](licenses/branding-build-tools/). These tools are not bundled as executable code or added as Vitalux runtime dependencies. Rebuilding the supplied vector geometry does not require them. Qt/PySide6 and the system FFmpeg were used to validate and record previews; no FFmpeg executable is shipped with Vitalux.

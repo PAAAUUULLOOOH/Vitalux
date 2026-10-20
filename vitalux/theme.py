@@ -47,6 +47,11 @@ def mode():
     return _mode
 
 
+def source_accent():
+    """Selected/detected hue before contrast adjustment, for authored assets."""
+    return _accent
+
+
 def set_accent(color):
     global _accent
     candidate = QColor(color)

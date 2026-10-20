@@ -7,6 +7,8 @@ No external font or image download is required.
 from __future__ import annotations
 
 import math
+import json
+import hashlib
 import os
 import re
 import time
@@ -15,7 +17,7 @@ from tempfile import NamedTemporaryFile
 from functools import lru_cache
 from pathlib import Path
 
-from PySide6.QtCore import QObject, QPointF, QRectF, Qt, QTimer
+from PySide6.QtCore import QEvent, QObject, QPointF, QRectF, Qt, QTimer
 from PySide6.QtGui import (QBrush, QColor, QFont, QIcon, QLinearGradient,
                            QPainter, QPainterPath, QPen, QPixmap, QRadialGradient)
 from PySide6.QtSvg import QSvgRenderer
@@ -25,6 +27,19 @@ from . import eco
 
 
 _ASSETS = Path(__file__).resolve().parent.parent / "assets"
+_PALETTES = json.loads((_ASSETS / 'brand/palettes.json').read_text())
+_GEOMETRY = _PALETTES['geometry']
+_VIEWBOX = _GEOMETRY['viewbox']
+_CENTER = _GEOMETRY['center']
+_MOTION = _PALETTES['motion_seconds']
+
+
+def _frame_interval(widget, reduced=False):
+    if reduced:
+        return 80
+    from .smooth_scroll import frame_interval_ms
+    screen = widget.screen()
+    return frame_interval_ms(screen.refreshRate() if screen else 60)
 
 
 @lru_cache(maxsize=48)
@@ -39,7 +54,7 @@ def _renderer(filename):
 def _logo_layers(filename):
     """Split the authored outer bands from the stationary pulse and lens.
 
-    Original SVG colors, gradients and exact band shapes survive the split.
+    Explicit group IDs preserve the authored geometry and material gradients.
     Desktop/tray icons continue to use the complete static SVG.
     """
     data = filename if isinstance(filename, bytes) else (_ASSETS / filename).read_bytes()
@@ -48,16 +63,11 @@ def _logo_layers(filename):
         root = ET.fromstring(data)
         for child in list(root):
             tag = child.tag.rsplit('}', 1)[-1]
-            if tag == 'defs':
+            if tag in ('defs', 'title', 'desc'):
                 continue
-            d = child.get('d', '')
-            band = ('A 107,107' in d or d.startswith('M 100,30')
-                    or (tag == 'circle' and child.get('cx') in ('213', '53')))
-            if band != outer:
+            keep = {'outer-bands'} if outer else {'stationary-lens', 'pulse-core'}
+            if child.get('id') not in keep:
                 root.remove(child)
-            elif not outer and (d.startswith('M 65,126') or
-                                (tag == 'circle' and child.get('cx') == '132')):
-                child.set('opacity', str(float(child.get('opacity', '1'))*.48))
         svg = QSvgRenderer(ET.tostring(root))
         if not svg.isValid():
             raise RuntimeError('Unable to load animated Vitalux logo layer')
@@ -92,12 +102,18 @@ def _tinted_svg(filename, accent):
     """Preserve every authored contour, cut and highlight for arbitrary hues."""
     base = QColor(accent)
     hue, saturation, _value, _alpha = base.getHsv()
+    policy = _PALETTES['custom_tint']
+    circle = Path(filename).name.startswith('vitalux-pulse')
     def tint(match):
         source = QColor(match.group())
         _h, s, v, _a = source.getHsv()
         if s < 22:
             return source.name()
-        tinted_saturation = 0 if hue < 0 else min(255, round(s*.65+saturation*.35))
+        mixed = s*policy['source_mix']+saturation*policy['accent_mix']
+        if circle and hue >= 0:
+            mixed *= 1+policy['circle_saturation_boost']*saturation/255
+            mixed = min(policy['circle_saturation_cap'], mixed)
+        tinted_saturation = 0 if hue < 0 else min(255, round(mixed))
         return QColor.fromHsv(max(0, hue), tinted_saturation, v).name()
     return re.sub(r'#[0-9a-fA-F]{6}', tint, (_ASSETS/filename).read_text()).encode()
 
@@ -121,24 +137,15 @@ def icon_pixmap(size=96):
 
 # Presets use their authored SVG palettes; arbitrary and distribution colors
 # tint the same original vector contours with the effective theme hue.
-ACCENT_VARIANTS = {
-    "#4f8cff": "blue",
-    "#52d3ff": "cyan",
-    "#a78bfa": "violet",
-    "#73ba25": "green",
-    "#f59e0b": "orange",
-    "#facc15": "yellow",
-    "#ef4444": "red",
-    "#f472b6": "pink",
-}
+ACCENT_VARIANTS = {pal['accent']: key for key, pal in _PALETTES['variants'].items()
+                   if key not in ('gold', *_PALETTES['theme_assets'].values())}
 
 
 def _selected_variant():
-    from . import settings
     from . import theme
-    chosen = theme.accent()
     if theme.mode() in theme.FIXED_MODES:
-        return "gold"
+        return _PALETTES['theme_assets'][theme.mode()]
+    chosen = theme.source_accent()
     if theme.mode() == "holographic" and str(chosen).lower() == "#4f8cff":
         return "cyan"
     return ACCENT_VARIANTS.get(str(chosen).lower())
@@ -159,15 +166,18 @@ def themed_icon_pixmap(size=152):
     return _render_pixmap(_svg_renderer(_themed_svg(True)), size, size)
 
 
-def wordmark_pixmap(width=205, height=44):
-    return _render_pixmap(_svg_renderer(_themed_svg(False)), width, height, ratio=2.0)
+def wordmark_pixmap(width=205, height=None, ratio=2.0):
+    if height is None:
+        viewbox = _GEOMETRY['wordmark_viewbox']
+        height = round(width*viewbox[3]/viewbox[2])
+    return _render_pixmap(_svg_renderer(_themed_svg(False)), width, height, ratio=ratio)
 
 
 class Wordmark(QWidget):
     """Original vector lettering with light clipped precisely to its strokes."""
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedSize(200, 42)
+        self.setFixedSize(200, 50)
         self.setAccessibleName('Vitalux')
         self._base = QPixmap()
         self._phase = 0.0
@@ -181,18 +191,24 @@ class Wordmark(QWidget):
 
     def sync_theme(self):
         from . import motion, theme
-        signature = (theme.mode(), theme.accent(), self.size())
+        signature = (theme.mode(), theme.accent(), self.size(), self.devicePixelRatioF())
         if signature != self._signature:
             self._signature = signature
-            self._base = wordmark_pixmap(self.width(), self.height())
-            self._phase = 0.0
+            self._base = wordmark_pixmap(self.width(), self.height(),
+                                        ratio=max(2.0, self.devicePixelRatioF()))
         self._enabled = motion.enabled()
         self._reduced = motion.level() == 'reduced'
         self._timer.stop()
         self._last_tick = time.monotonic()
         if self.isVisible() and self._enabled:
-            self._timer.start(80 if self._reduced else 40)
+            self._timer.start(_frame_interval(self, self._reduced))
         self.update()
+
+    def event(self, event):
+        result = super().event(event)
+        if event.type() == QEvent.DevicePixelRatioChange and hasattr(self, '_timer'):
+            self.sync_theme()
+        return result
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -207,12 +223,12 @@ class Wordmark(QWidget):
             self._timer.stop()
             return
         now = time.monotonic()
-        self._phase = (self._phase + max(0, now-self._last_tick)/6.8) % 1.0
+        period = _MOTION['wordmark_glint']
+        self._phase = (self._phase + max(0, now-self._last_tick)/period) % 1.0
         self._last_tick = now
         # There is no repaint loop in the quiet interval between reflections.
-        from .smooth_scroll import frame_interval_ms
-        active_interval = 80 if self._reduced else frame_interval_ms(self.screen().refreshRate())
-        interval = active_interval if self._phase < .46 else max(80, round((1-self._phase)*6800))
+        active_interval = _frame_interval(self, self._reduced)
+        interval = active_interval if self._phase < .46 else max(80, round((1-self._phase)*period*1000))
         self._timer.setInterval(interval)
         self.update()
 
@@ -225,15 +241,17 @@ class Wordmark(QWidget):
             # A broad satin reflection carries a narrower white glint across
             # the original strokes. Ease at both edges instead of flashing.
             sweep = .5-.5*math.cos(math.pi*sweep)
-            x = -65+sweep*(self.width()+130)
+            x = -.25*self.width()+sweep*self.width()*1.5
             gleam = self._base.copy()
             light = QPainter(gleam)
             light.setCompositionMode(QPainter.CompositionMode_SourceIn)
-            band = QLinearGradient(x-55, 0, x+55, self.height())
+            band = QLinearGradient(x-self.width()*.135, 0,
+                                   x+self.width()*.135, self.height()*.6)
             warm = QColor(theme.blend('#ffffff', theme.accent(), .88))
-            for position, alpha in ((0,0),(.13,16),(.29,72),(.42,175),(.49,255),
-                                    (.54,235),(.64,112),(.82,35),(1,0)):
-                tone = QColor(warm); tone.setAlpha(alpha)
+            envelope = max(0, min(1, self._phase/.02, (.46-self._phase)/.03))
+            for position, alpha in ((0,0),(.20,6),(.42,41),(.51,102),
+                                    (.62,46),(.85,6),(1,0)):
+                tone = QColor(warm); tone.setAlpha(round(alpha*envelope))
                 band.setColorAt(position, tone)
             light.fillRect(QRectF(0,0,self.width(),self.height()),QBrush(band))
             light.end()
@@ -289,8 +307,10 @@ def sync_installed_icon():
         # The selected color changes the icon *filename*, not just its bytes:
         # Plasma consequently refreshes pinned launchers more reliably.
         from . import theme
-        target = directory / ('vitalux-' + (variant or 'accent-'+theme.accent()[1:]) + '.svg')
         new_bytes = _themed_svg(True)
+        identity = hashlib.sha256(new_bytes).hexdigest()[:12]
+        target = directory / ('vitalux-' + (variant or 'accent-'+theme.accent()[1:])
+                              + '-' + identity + '.svg')
         if not target.is_file() or target.read_bytes() != new_bytes:
             with NamedTemporaryFile(dir=directory, prefix='.vitalux-color-',
                                     suffix='.svg', delete=False) as fd:
@@ -408,10 +428,10 @@ class TrayPulse(QObject):
 
 
 class PulseCore(QWidget):
-    """Slowly revolving bands around a softly traced heartbeat waveform.
+    """Authored vector layers with independent rotation and a clear pulse.
 
-    All UI changes run in the main Qt thread; the monitoring worker only sends
-    its existing, once-per-second CPU sample through the MainWindow signal.
+    Only the stationary glass/core is cached, at native or higher pixel density.
+    The moving bands remain vectors, including during rotation.
     """
     def __init__(self, size=152, parent=None):
         super().__init__(parent)
@@ -421,16 +441,25 @@ class PulseCore(QWidget):
         self._display_cpu = 0.0
         self._phase = 0.0
         self._heartbeat_phase = 0.0
-        self._waveform = QPainterPath(QPointF(65, 126))
-        for x, y in ((91, 126), (109, 101), (132, 163), (158, 94), (173, 126), (191, 126)):
-            self._waveform.lineTo(x, y)
+        points = _GEOMETRY['waveform']
+        self._waveform = QPainterPath(QPointF(*points[0]))
+        for point in points[1:]:
+            self._waveform.lineTo(*point)
         self._last_tick = time.monotonic()
         self._update_available = False
         self._update_clock = 0.0
-        self.setToolTip("Vitalux · Live CPU activity")
+        self._core_signature = None
+        self._core_pixmap = QPixmap()
+        self._bands = None
+        self._enabled = not self._low_power()
+        self._reduced = False
         self._timer = QTimer(self)
-        self._timer.setInterval(40)  # Repaint only this small widget, at 25 fps.
         self._timer.timeout.connect(self._advance)
+        self._sync_tooltip()
+
+    def _sync_tooltip(self):
+        from .i18n import tr
+        self.setToolTip(tr('CPU {value}% · Live-Telemetrie').format(value=f'{self._cpu:.0f}'))
 
     def set_update_available(self, available):
         status = bool(available)
@@ -443,25 +472,32 @@ class PulseCore(QWidget):
             self._cpu = max(0.0, min(100.0, float(value)))
         except (TypeError, ValueError):
             self._cpu = 0.0
-        self.setToolTip(f"CPU {self._cpu:.0f}% · Live telemetry")
-        if not self._low_power():
-            self.update()
+        self._sync_tooltip()
+        # The visible animation already has a display-paced update timer.
 
     @staticmethod
     def _low_power():
-        from . import theme, eco, motion
-        return eco.enabled() or theme.mode() == "minimal" or not motion.enabled()
+        from . import theme, motion
+        return eco.enabled() or theme.mode() == 'minimal' or not motion.enabled()
 
     def sync_theme(self):
-        from . import eco
-        if self._low_power():
+        from . import motion
+        self._enabled = not self._low_power()
+        self._reduced = motion.level() == 'reduced'
+        self._sync_tooltip()
+        if not self._enabled:
             self._timer.stop()
         elif self.isVisible():
-            from . import motion
-            self._timer.setInterval(80 if motion.level() == 'reduced' else 40)
             self._last_tick = time.monotonic()
-            self._timer.start()
+            self._timer.start(_frame_interval(self, self._reduced))
         self.update()
+
+    def event(self, event):
+        result = super().event(event)
+        if event.type() == QEvent.DevicePixelRatioChange and hasattr(self, '_timer'):
+            self._core_signature = None
+            self.update()
+        return result
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -472,117 +508,120 @@ class PulseCore(QWidget):
         super().hideEvent(event)
 
     def _advance(self):
-        if self._low_power():
+        if not self._enabled:
             self._timer.stop()
             return
         now = time.monotonic()
         elapsed = min(.25, max(0, now-self._last_tick))
         self._last_tick = now
-        # Smooth values so short CPU spikes don't make the animation flicker.
-        self._update_clock = (self._update_clock + elapsed*1.9) % (2 * math.pi)
-        self._display_cpu += (self._cpu - self._display_cpu) * 0.09
-        self._phase = (self._phase + elapsed*7.5) % 360.0  # One revolution / 48s.
-        self._heartbeat_phase = (self._heartbeat_phase+elapsed/1.9) % 1.0
+        self._update_clock = (self._update_clock+elapsed*2*math.pi/3.2) % (2*math.pi)
+        self._display_cpu += (self._cpu-self._display_cpu)*(1-math.exp(-elapsed/.42))
+        self._phase = (self._phase+elapsed*360/_MOTION['outer_rotation']) % 360
+        self._heartbeat_phase = (self._heartbeat_phase+elapsed/_MOTION['heartbeat']) % 1
+        interval = _frame_interval(self, self._reduced)
+        if self._timer.interval() != interval:
+            self._timer.setInterval(interval)
         self.update()
+
+    def _paint_layers(self, painter, rect):
+        data = _themed_svg(True)
+        ratio = max(2.0, self.devicePixelRatioF())
+        signature = (data, self.size(), ratio)
+        if signature != self._core_signature:
+            core, self._bands = _logo_layers(data)
+            self._core_pixmap = _render_pixmap(core, rect.width(), rect.height(), ratio)
+            self._core_signature = signature
+        painter.drawPixmap(rect.topLeft(), self._core_pixmap)
+        origin = QPointF(rect.left()+rect.width()*_CENTER[0]/_VIEWBOX[2],
+                         rect.top()+rect.height()*_CENTER[1]/_VIEWBOX[3])
+        painter.save()
+        painter.translate(origin)
+        painter.rotate(self._phase)
+        self._bands.render(painter, QRectF(rect.left()-origin.x(), rect.top()-origin.y(),
+                                           rect.width(), rect.height()))
+        painter.restore()
+
+    def _paint_pulse(self, painter, rect):
+        phase = self._heartbeat_phase
+        if phase >= .78:
+            return
+        head = phase/.78*1.24
+        tail, finish = max(0, head-.24), min(1, head)
+        if tail >= finish:
+            return
+        envelope = max(0, min(1, phase/.035, (.78-phase)/.08))
+        from . import theme
+        palette = _PALETTES['variants'].get(_selected_variant())
+        mid = palette['mid'] if palette else theme.accent()
+        top = palette['top'] if palette else theme.blend('#ffffff', mid, .46)
+        spec = palette['spec'] if palette else theme.blend('#ffffff', mid, .83)
+        path = self._waveform
+        segment = path.trimmed(tail, finish)
+        start = path.pointAtPercent(path.percentAtLength(path.length()*tail))
+        end = path.pointAtPercent(path.percentAtLength(path.length()*finish))
+        gradient = QLinearGradient(start, end)
+        for stop, tone, alpha in ((0, mid, 0), (.20, mid, 70),
+                                  (.58, top, 195), (.86, spec, 235), (1, spec, 245)):
+            color = QColor(tone)
+            color.setAlpha(round(alpha*envelope))
+            gradient.setColorAt(stop, color)
+        painter.save()
+        painter.translate(rect.topLeft())
+        painter.scale(rect.width()/_VIEWBOX[2], rect.height()/_VIEWBOX[3])
+        painter.setBrush(Qt.NoBrush)
+        widths = _GEOMETRY['wave_widths']
+        halo = QColor(top)
+        halo.setAlpha(round(28*envelope))
+        painter.setPen(QPen(halo, widths['halo'], Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+        painter.drawPath(segment)
+        painter.setPen(QPen(QBrush(gradient), widths['signal'], Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+        painter.drawPath(segment)
+        leading = max(0, head-.055)
+        if leading < finish:
+            color = QColor(spec)
+            color.setAlpha(round(235*envelope))
+            painter.setPen(QPen(color, widths['leading'], Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+            painter.drawPath(path.trimmed(leading, finish))
+        painter.restore()
 
     def paintEvent(self, _event):
         painter = QPainter(self)
-        if self._low_power():
-            # Retain the recognizable logo; skip the moving halo and orbit.
-            size = min(self.width(), self.height())
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform)
+        if not self._enabled:
             _svg_renderer(_themed_svg(True)).render(painter, QRectF(self.rect()))
             painter.end()
             return
-        painter.setRenderHint(QPainter.Antialiasing)
         size = min(self.width(), self.height())
-        left = (self.width() - size) / 2
-        top = (self.height() - size) / 2
-        rect = QRectF(left, top, size, size)
-
-        # Light reacts to actual load; static artwork stays recognizable.
-        strength = min(1.0, self._display_cpu / 100.0)
-        aura = QRadialGradient(rect.center(), size * 0.51)
+        rect = QRectF((self.width()-size)/2, (self.height()-size)/2, size, size)
         from . import theme
+        strength = min(1.0, self._display_cpu/100)
         tint = QColor(theme.accent())
-        inner = QColor(tint)
-        inner.setAlpha(int(12 + 40 * strength))
-        edge = QColor(theme.secondary_accent())
-        edge.setAlpha(0)
-        aura.setColorAt(0.0, inner)
-        middle = QColor(tint)
-        middle.setAlpha(int(4 + 18 * strength))
-        aura.setColorAt(0.65, middle)
-        aura.setColorAt(1.0, edge)
+        aura = QRadialGradient(rect.center(), size*.51)
+        for stop, alpha in ((0, 12+40*strength), (.65, 4+18*strength), (1, 0)):
+            color = QColor(tint)
+            color.setAlpha(round(alpha))
+            aura.setColorAt(stop, color)
         painter.setPen(Qt.NoPen)
-        painter.setBrush(QBrush(aura))
+        painter.setBrush(aura)
         painter.drawEllipse(rect)
         if self._update_available:
-            # The same bright breathing glow used by the system tray.
-            beat = .5 + .5 * math.sin(self._update_clock)
-            ring_glow = QRadialGradient(rect.center(), size * .55)
-            bloom = QColor(tint); bloom.setAlpha(int(70 + 95 * beat))
-            middle = QColor(tint); middle.setAlpha(int(27 + 63 * beat))
-            clear = QColor(tint); clear.setAlpha(0)
-            ring_glow.setColorAt(0, bloom)
-            ring_glow.setColorAt(.53, middle)
-            ring_glow.setColorAt(1, clear)
-            painter.setBrush(QBrush(ring_glow))
-            painter.drawEllipse(rect)
-        core, bands = _logo_layers(_themed_svg(True))
-        core.render(painter, rect)
-        painter.save()
-        painter.translate(rect.center())
-        painter.rotate(self._phase)
-        bands.render(painter, QRectF(-size/2, -size/2, size, size))
-        painter.restore()
-
-        if self._update_available:
-            # A restrained heartbeat around the main Vitalux mark.
-            beat = .5 + .5 * math.sin(self._update_clock)
-            halo = QColor(theme.accent())
-            halo.setAlpha(int(65 + 105 * beat))
-            painter.setPen(QPen(halo, 1.3 + beat * 1.2))
-            painter.setBrush(Qt.NoBrush)
-            span = size * (.887 + beat * .019)
-            painter.drawEllipse(QRectF(rect.center().x()-span/2,
-                                       rect.center().y()-span/2, span, span))
-
-        # A single slowly travelling highlight on the outer broken circuit.
-        painter.save()
-        painter.translate(rect.center())
-        painter.rotate(self._phase)
-        diameter = size * 0.836
-        orbit = QRectF(-diameter / 2, -diameter / 2, diameter, diameter)
-        highlight = QColor(theme.accent())
-        highlight.setAlpha(int(45 + 90 * strength))
-        painter.setPen(QPen(highlight, max(1.5, size * 0.016), Qt.SolidLine, Qt.RoundCap))
-        painter.setBrush(Qt.NoBrush)
-        painter.drawArc(orbit, -14 * 16, 23 * 16)
-        painter.restore()
-
-        # Trace the authored waveform; its shape and the outer rotation stay
-        # independent. The short quiet interval gives each beat room to settle.
-        if self._heartbeat_phase < .78:
-            head = self._heartbeat_phase/.78
-            envelope = min(1.0, head/.06, (1-head)/.10)
-            painter.save()
-            painter.translate(rect.topLeft())
-            painter.scale(size/256, size/256)
-            painter.setBrush(Qt.NoBrush)
-            for trail, width, alpha, tone in ((.23, 18, 40, theme.accent()),
-                                              (.17, 9, 150, theme.accent()),
-                                              (.055, 6, 245, theme.secondary_accent())):
-                start = max(0, head-trail)
-                segment = self._waveform.trimmed(start, head)
-                ink = QColor(tone)
-                ink.setAlpha(round(alpha*max(0, envelope)))
-                painter.setPen(QPen(ink, width, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-                painter.drawPath(segment)
-            tip = self._waveform.pointAtPercent(self._waveform.percentAtLength(self._waveform.length()*head))
-            glow = QColor(theme.TEXT)
-            glow.setAlpha(round(245*max(0, envelope)))
-            painter.setPen(Qt.NoPen)
+            beat = .5+.5*math.sin(self._update_clock)
+            glow = QRadialGradient(rect.center(), size*.55)
+            for stop, alpha in ((0, 70+95*beat), (.53, 27+63*beat), (1, 0)):
+                color = QColor(tint)
+                color.setAlpha(round(alpha))
+                glow.setColorAt(stop, color)
             painter.setBrush(glow)
-            painter.drawEllipse(tip, 3.1, 3.1)
-            painter.restore()
+            painter.drawEllipse(rect)
+        self._paint_layers(painter, rect)
+        if self._update_available:
+            beat = .5+.5*math.sin(self._update_clock)
+            color = QColor(tint)
+            color.setAlpha(round(65+105*beat))
+            painter.setPen(QPen(color, 1.3+beat*1.2))
+            painter.setBrush(Qt.NoBrush)
+            span = size*(.887+beat*.019)
+            painter.drawEllipse(QRectF(rect.center().x()-span/2, rect.center().y()-span/2, span, span))
+        self._paint_pulse(painter, rect)
         painter.end()

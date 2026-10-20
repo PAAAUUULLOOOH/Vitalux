@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compose the original vector identity in the Obsidian Gold README palette."""
+"""Compose the approved slim identity from its Obsidian Gold vector files."""
 from copy import deepcopy
 from pathlib import Path
 import re
@@ -12,14 +12,10 @@ from PySide6.QtGui import QColor
 
 NS = 'http://www.w3.org/2000/svg'
 ET.register_namespace('', NS)
-PALETTE = {'#272013': '#242329', '#15120d': '#141419', '#080705': '#08090c',
-           '#a67c36': '#706044', '#e7bf65': '#e5c17b', '#f0cb7d': '#d8b774',
-           '#fff1c9': '#fff0c8', '#ffe8ae': '#f7eed8'}
 
 
 def layer(filename, light, prefix):
     source = (ROOT/'assets/brand'/filename).read_text()
-    source = re.sub(r'#[0-9a-fA-F]{6}', lambda match: PALETTE.get(match.group().lower(), match.group()), source)
     if light:
         def readable(match):
             ink = QColor(match.group())
@@ -35,12 +31,12 @@ def layer(filename, light, prefix):
 
 
 for variant in ('dark', 'light'):
-    root = ET.Element('{'+NS+'}svg', width='600', height='375', viewBox='0 0 600 375',
+    root = ET.Element('{'+NS+'}svg', width='600', height='400', viewBox='0 0 600 400',
                       role='img', attrib={'aria-labelledby': 'title desc'})
     ET.SubElement(root, '{'+NS+'}title', id='title').text = 'Vitalux'
-    ET.SubElement(root, '{'+NS+'}desc', id='desc').text = 'Original Vitalux logo and wordmark in Obsidian Gold.'
-    for filename, transform, prefix in (('vitalux-pulse-gold.svg', 'translate(185 9) scale(0.9)', 'icon-'),
-                                        ('vitalux-wordmark-gold.svg', 'translate(54 261) scale(0.88)', 'mark-')):
+    ET.SubElement(root, '{'+NS+'}desc', id='desc').text = 'Slim circular logo and title-case Vitalux wordmark in Obsidian Gold.'
+    for filename, transform, prefix in (('vitalux-pulse-obsidian-gold.svg', 'translate(175 8) scale(0.1993620415)', 'icon-'),
+                                        ('vitalux-wordmark-obsidian-gold.svg', 'translate(50 265) scale(0.2415458937)', 'mark-')):
         group = ET.SubElement(root, '{'+NS+'}g', transform=transform)
         group.extend(layer(filename, variant == 'light', prefix))
     ET.indent(root)

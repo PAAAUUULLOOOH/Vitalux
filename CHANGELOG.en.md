@@ -1,5 +1,12 @@
 # Vitalux – Changes
 
+## [v0.9.5.8] - 2026-10-20
+- Overview now always uses the compact system header; the previous toggle is removed while all system information remains available.
+- A new circular logo with slimmer outer bands and a glass center is paired with a new Vitalux wordmark and coordinated metallic finish.
+- A clearer heartbeat impulse, slow outer rotation and soft lettering reflection repeat without a visible cut; changing themes preserves their animation phase.
+- Obsidian Gold, Black Glass Gold, Champagne Glass and Aurora Gold each have their own logo and wordmark colors. Custom accents look slightly richer on the circle without increasing saturation elsewhere in the interface.
+- Smoother logo animation stays sharp at increased desktop scaling; reduced motion, disabled animation and Ultra Eco remain supported.
+
 ## [v0.9.5.7] - 2026-10-20
 - Obsidian Gold is the default for new installations and appearance resets, with finer glass edges, softer reflections and clearer measurements; saved theme choices are preserved.
 - The original central logo waveform now carries a soft heartbeat trace while the outer bands continue their slow rotation.

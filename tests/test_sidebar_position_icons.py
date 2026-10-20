@@ -95,9 +95,22 @@ def main():
                 settings.set('accent', color)
                 theme.set_accent(color)
                 assert sync_installed_icon()
-                expected = icons / ('vitalux-' + suffix + '.svg')
+                expected = Path(next(line.split('=', 1)[1] for line in desktop.read_text().splitlines()
+                                     if line.startswith('Icon=')))
+                assert expected.parent == icons
+                assert expected.name.startswith('vitalux-' + suffix + '-')
                 assert expected.is_file()
                 assert 'Icon=' + str(expected) in desktop.read_text()
+            # Updated artwork in the same selected color must also bypass
+            # Plasma's old filename cache after a Vitalux update.
+            from unittest.mock import patch
+            from vitalux.brand import _themed_svg
+            changed = _themed_svg(True) + b'\n<!-- new artwork revision -->\n'
+            with patch('vitalux.brand._themed_svg', return_value=changed):
+                assert sync_installed_icon()
+            updated = Path(next(line.split('=', 1)[1] for line in desktop.read_text().splitlines()
+                                if line.startswith('Icon=')))
+            assert updated != expected and updated.read_bytes() == changed
             root.close()
     finally:
         settings.PATH = prior

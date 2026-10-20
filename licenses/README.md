@@ -3,6 +3,7 @@
 The files in this directory reproduce upstream notices without rewriting their license terms. [THIRD-PARTY.md](../THIRD-PARTY.md) maps them to shipped components. [LICENSE-NOTICE.md](../LICENSE-NOTICE.md) describes the separate status of Vitalux's original code and branding.
 
 - `runtime/`: CPython and psutil notices.
+- `branding-build-tools/`: verbatim vtracer, NumPy and fontTools notices for local conversion of the approved branding concepts. Their code is not shipped or required at runtime.
 - `upstream/`: verbatim licenses, copyright files and Qt attribution records from the exact source archives in `third_party/sources.lock.json`. This conservative collection can include notices for upstream optional or test components that are not distributed as binaries.
 - `system-libraries/`: copyright/license notices for bundled X11/XCB/xkbcommon and zlib helpers, plus retained package notices from the original runtime.
 - `appimage-dependencies/`: musl, zstd, zlib and mimalloc notices for the upstream AppImage runtime build.

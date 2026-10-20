@@ -15,7 +15,7 @@
 
 - **Live system monitoring:** CPU, GPU, memory, storage, networking and Linux hardware sensors, with charts and local history.
 - **A configurable workspace:** rearrange dashboard cards, choose ten visual themes, or keep essential measurements visible in MiniHUD.
-- **Thoughtful interactions:** animated theme previews, a reflective original wordmark, predictive settings search and optional crystal feedback sounds.
+- **Thoughtful interactions:** animated theme previews, a coordinated animated logo and wordmark, predictive settings search and optional crystal feedback sounds.
 - **Useful diagnostics:** SMART information, configurable alerts, disk benchmarks and local diagnostic reports.
 - **German and English:** switch the interface, guide and release history without interrupting monitoring.
 - **Local operation:** monitoring works offline. Update checks contact the official GitHub release service; installation requires your action.
@@ -32,27 +32,27 @@ CPU rendering is the default. Optional GPU renderers require suitable drivers an
 
 ### AppImage
 
-Download the `.AppImage` from [the latest release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). For v0.9.5.7:
+Download the `.AppImage` from [the latest release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). For v0.9.5.8:
 
 ```bash
-chmod +x Vitalux-v0.9.5.7-x86_64.AppImage
-./Vitalux-v0.9.5.7-x86_64.AppImage
+chmod +x Vitalux-v0.9.5.8-x86_64.AppImage
+./Vitalux-v0.9.5.8-x86_64.AppImage
 ```
 
 The first-run dialog offers installation in your user account, including an application-menu entry. Administrator rights are not required. You can also choose **Run once**, or run explicitly without integration:
 
 ```bash
-./Vitalux-v0.9.5.7-x86_64.AppImage --portable
+./Vitalux-v0.9.5.8-x86_64.AppImage --portable
 ```
 
 To add or remove desktop integration later, use `--install` or `--uninstall`. Uninstalling keeps personal preferences.
 
 ### Portable ZIP or source ZIP
 
-Download **`Vitalux-v0.9.5.7-linux-x86_64.zip`**, extract the entire archive into its own writable folder, and run:
+Download **`Vitalux-v0.9.5.8-linux-x86_64.zip`**, extract the entire archive into its own writable folder, and run:
 
 ```bash
-cd Vitalux-v0.9.5.7
+cd Vitalux-v0.9.5.8
 bash run.sh
 ```
 
@@ -64,7 +64,7 @@ The `Update-von-...zip` download is a manual overlay for the immediately precedi
 
 **Obsidian Gold is the default appearance.** Open **Settings → Appearance** to select a theme. Existing installations retain their saved choice. Preview tiles grow gently on hover. **Obsidian Gold, Champagne Glass, Black Glass Gold and Aurora Gold** use coordinated fixed palettes and backgrounds; their grey fields are disabled. Holographic also has a fixed background. Compatible themes retain your personal accent colors and images.
 
-A compact glass swatch previews the current accent. **Compact system header on Overview** gives charts more space. The original logo traces a soft heartbeat inside its rotating outer bands.
+A compact glass swatch previews the current accent. Overview now uses a **compact system header by default**, leaving more space for measurements and charts. The slimmer circular logo rotates around a clearly traced heartbeat, while a soft metallic reflection travels across the new **Vitalux** wordmark. Both follow the selected palette; each gold collection has its own coordinated identity. Custom accents give the circle a slightly richer finish.
 
 The settings magnifier predicts matches and glides to their controls. After selecting a result, the search remains visible for five seconds, then closes softly. **Advanced settings** expands for graphics renderers and Maintenance, with the page following its reveal; relevant searches open it automatically. The full **Restore defaults** action sits below it, at the very bottom. Reset buttons appear and disappear smoothly. A full reset restarts Vitalux; individual section resets apply in place. Reopening a sidebar category starts at the top.
 
@@ -77,7 +77,7 @@ Vitalux checks official GitHub releases at startup and approximately every six h
 To check a manually downloaded package, download its release's `SHA256SUMS.txt` file into the same directory and run:
 
 ```bash
-sha256sum --ignore-missing -c Vitalux-v0.9.5.7-SHA256SUMS.txt
+sha256sum --ignore-missing -c Vitalux-v0.9.5.8-SHA256SUMS.txt
 ```
 
 A matching checksum confirms consistency with that manifest; it is not an independent digital signature.
@@ -109,7 +109,7 @@ VITALUX_RENDERER=software bash run.sh
 For an AppImage that cannot mount through FUSE, extract its payload instead:
 
 ```bash
-./Vitalux-v0.9.5.7-x86_64.AppImage --appimage-extract
+./Vitalux-v0.9.5.8-x86_64.AppImage --appimage-extract
 VITALUX_RENDERER=software bash squashfs-root/AppRun --portable
 ```
 
@@ -150,6 +150,8 @@ python3.12 -m venv .venv
 .venv/bin/python -m vitalux
 .venv/bin/python scripts/run-regressions.py
 ```
+
+Branding uses outlined SVG geometry and the separate `assets/brand/palettes.json` configuration. After editing a palette, regenerate assets with `.venv/bin/python scripts/build-brand-assets.py` and README artwork with `.venv/bin/python scripts/build-readme-brand.py`; no external fonts or tracing tools are needed.
 
 Native renderer checks use `scripts/run-graphics-checks.py` with Xvfb, Weston and Mesa. `scripts/check-ui-audio.py` tests repeated sound playback through a private PulseAudio sink. CI also validates offline startup, AppImage integration, update/rollback and release checksums. Releases advance from `.0` through `.9`, then increment the preceding component: `0.9.5.9 → 0.9.6.0`.
 

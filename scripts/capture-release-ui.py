@@ -5,50 +5,11 @@ import json
 import os
 from pathlib import Path
 import subprocess
-import struct
 import sys
 import tempfile
-import zlib
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-
-
-def export_heartbeat(widget, output):
-    """Store untouched native Qt frames in an animated PNG container."""
-    from PySide6.QtCore import QByteArray, QBuffer, QIODevice
-    from PySide6.QtTest import QTest
-    frames = []
-    for _ in range(36):
-        data = QByteArray()
-        buffer = QBuffer(data)
-        buffer.open(QIODevice.WriteOnly)
-        assert widget.grab().save(buffer, 'PNG')
-        raw, chunks, offset = bytes(data), [], 8
-        while offset < len(raw):
-            length = struct.unpack('>I', raw[offset:offset+4])[0]
-            chunks.append((raw[offset+4:offset+8], raw[offset+8:offset+8+length]))
-            offset += length+12
-        frames.append(chunks)
-        QTest.qWait(65)
-    def chunk(kind, payload):
-        return struct.pack('>I', len(payload))+kind+payload+struct.pack('>I', zlib.crc32(kind+payload))
-    header = next(data for kind, data in frames[0] if kind == b'IHDR')
-    width, height = struct.unpack('>II', header[:8])
-    result = b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR', header)+chunk(b'acTL', struct.pack('>II', len(frames), 0))
-    sequence = 0
-    for index, frame in enumerate(frames):
-        result += chunk(b'fcTL', struct.pack('>IIIIIHHBB', sequence, width, height, 0, 0, 65, 1000, 0, 0))
-        sequence += 1
-        for kind, data in frame:
-            if kind != b'IDAT':
-                continue
-            if index == 0:
-                result += chunk(b'IDAT', data)
-            else:
-                result += chunk(b'fdAT', struct.pack('>I', sequence)+data)
-                sequence += 1
-    output.write_bytes(result+chunk(b'IEND', b''))
 
 
 def capture(output, language, checks, warmup):
@@ -78,8 +39,6 @@ def capture(output, language, checks, warmup):
             remaining -= step
         assert window.last_sample is not None
         assert window.grab().save(str(output/'overview.png'))
-        if not checks:
-            export_heartbeat(window.pulse_core, output/'logo-heartbeat.png')
         index = next(i for i, (name, _) in enumerate(window.pages) if name == 'Einstellungen')
         page = window.pages[index][1]
         window.nav_buttons[index].click()

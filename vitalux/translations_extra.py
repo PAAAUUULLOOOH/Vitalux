@@ -1,10 +1,11 @@
 """Extra English translations for dashboard, settings, sensors and disk tests."""
 EN_MORE = {
+    'CPU {value}% · Live-Telemetrie': 'CPU {value}% · Live telemetry',
+    'Kreislogo und Vitalux-Schriftzug passen sich dem Farbschema an; Außenbögen, Herzschlag und Lichtreflex laufen unabhängig.': 'The circle logo and Vitalux wordmark follow the theme; outer bands, heartbeat and reflection animate independently.',
     'Obsidian Gold ist das Standarddesign. Die zehn Vorschaukacheln wählen ein Farbschema; neben der Akzentfarbenauswahl zeigt eine kleine Glasfläche die aktuelle Farbe.': 'Obsidian Gold is the default design. Choose a theme through the ten preview tiles; a small glass swatch beside the accent selector shows its current color.',
     'Die Suche gleitet zu Treffern und schließt fünf Sekunden nach der Auswahl weich. Beim Öffnen der erweiterten Einstellungen scrollt die Seite mit; dort liegen Grafik-Renderer und Wartung.': 'Search glides to matches and closes softly five seconds after selection. The page follows Advanced settings as it opens; graphics renderers and Maintenance are inside.',
     'Zurücksetzen-Buttons blenden weich ein und aus. Ganz unten setzt du alle Standardwerte wieder her und startest Vitalux neu; einzelne Bereiche benötigen keinen Neustart. Das Logo zeigt einen sanften Herzschlagimpuls.': 'Reset buttons fade in and out. Restore all defaults at the very bottom to restart Vitalux; individual sections do not require a restart. The logo traces a gentle heartbeat impulse.',
 
-    'Kompakter Systemkopf auf der Übersicht': 'Compact system header on Overview',
     'Ein Vorgang läuft noch. Bitte danach erneut zurücksetzen.': 'An operation is still running. Reset settings after it finishes.',
     'Für das Update ist nicht genügend freier Speicherplatz vorhanden.': 'There is not enough free disk space for the update.',
     'Der Update-Download wurde unterbrochen. Bitte erneut versuchen.': 'The update download was interrupted. Please try again.',
@@ -524,7 +525,7 @@ EN_MORE.update({
     "Die Werte werden regelmäßig aktualisiert; nicht unterstützte Sensoren bleiben leer.": "Values update regularly; unsupported sensors remain empty.",
     "Mit den Schaltflächen unten gehst du Schritt für Schritt durch die Anleitung.": "Use the buttons below to go through the guide step by step.",
     "Die Live-Übersicht": "The live overview",
-    "Auf der Startseite sind die wichtigsten Informationen als Kacheln zusammengefasst.": "The home screen shows the most important information in tiles.",
+    "Der kompakte Systemkopf lässt auf der Startseite mehr Platz für Messwerte und Diagramme.": "The compact system header leaves more room for measurements and charts on the home screen.",
     "Du siehst unter anderem Prozessor, Grafik, RAM und Systemlaufwerk.": "You can see the CPU, GPU, RAM and system drive, among other things.",
     "Diagramme zeigen, wie sich die Auslastung im Zeitverlauf verändert.": "Charts show how resource usage changes over time.",
     "Unter „Layout bearbeiten“ verschiebst du Kacheln; freie Flächen füllen sich automatisch, der Kachelabstand bleibt gleich.": "Use Edit layout to move tiles; free space is filled automatically while tile spacing stays unchanged.",
