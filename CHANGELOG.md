@@ -1,5 +1,13 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.1-unstable.1] - 2026-10-21
+- Zwischen Stable und Unstable direkt unter Updates wechseln; getrennte Einstellungsprofile, Sicherungen und die Rückkehr zur stabilen Version erhalten die jeweilige Konfiguration.
+- Apps direkt in der Netzwerkliste sperren und entsperren. Die erforderliche Systemfreigabe wird beim Sperren angefragt, Fehler werden sichtbar erklärt.
+- Einzelne TCP-/UDP-Verbindungen lassen sich in den sanft aufklappbaren erweiterten Verbindungsdetails unabhängig sperren und freigeben.
+- Alle Designs erscheinen auch in Aether Glass und Eclipse Crystal als vollständiges Vorschau-Raster. Beim Darüberfahren zeigen Farbkreis- und Bildsymbole die Anpassbarkeit; feste Optionen tragen ein Schloss.
+- Einheitliche, zum Design passende Ein/Aus-Schalter; Mehrfachauswahlen behalten ihre Häkchen.
+- Weicher, gedämpfter Klickton mit 50 % Standardlautstärke und zuverlässiger Wiedergabe bei wiederholten Klicks.
+
 ## [v0.9.6.0] - 2026-10-21
 - Zwischen Stable und Unstable direkt unter Updates wechseln; getrennte Einstellungsprofile, Sicherungen und die Rückkehr zur stabilen Version erhalten die jeweilige Konfiguration.
 - Apps direkt in der Netzwerkliste sperren und entsperren. Die erforderliche Systemfreigabe wird beim Sperren angefragt, Fehler werden sichtbar erklärt.

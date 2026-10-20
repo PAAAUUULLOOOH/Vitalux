@@ -1,5 +1,13 @@
 # Vitalux – Changes
 
+## [v0.9.6.1-unstable.1] - 2026-10-21
+- Switch between Stable and Unstable from Updates, with separate settings profiles, backups and a return to the stable version that preserves each configuration.
+- Block and unblock applications directly in the network list. Blocking requests necessary system authorization and explains failures visibly.
+- Individually block or allow TCP/UDP sockets in smoothly expanding advanced connection details.
+- Aether Glass and Eclipse Crystal now show the complete design-preview grid. Hovering reveals color-wheel and image indicators; fixed options carry a lock.
+- Consistent on/off switches follow every design, while multiple selections retain checkmarks.
+- A softer, damped click tone defaults to 50% volume and remains reliable for repeated clicks.
+
 ## [v0.9.6.0] - 2026-10-21
 - Switch between Stable and Unstable from Updates, with separate settings profiles, backups and a return to the stable version that preserves each configuration.
 - Block and unblock applications directly in the network list. Blocking requests necessary system authorization and explains failures visibly.
