@@ -2,11 +2,13 @@
 import os
 import sys
 from types import SimpleNamespace
+from unittest.mock import patch
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0, os.getcwd())
 
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QObject,QEvent
+from PySide6.QtWidgets import QApplication,QWidget
 from vitalux import theme
 from vitalux.brand import PulseCore, TrayPulse
 from vitalux.widgets import NavButton
@@ -21,6 +23,24 @@ assert manager._timer.isActive(), 'Background update checks are not running'
 assert manager._timer.interval() == 6 * 3600 * 1000
 manager._timer.stop()
 manager.shutdown()
+
+# Conditional Unstable controls must remain children while the page is built;
+# showing an unparented button briefly maps a second native startup window.
+from vitalux.pages_extra import UpdatePage
+class StartupShows(QObject):
+    def __init__(self):super().__init__();self.windows=[]
+    def eventFilter(self,watched,event):
+        if event.type()==QEvent.Show and isinstance(watched,QWidget) and watched.isWindow():
+            self.windows.append(watched)
+        return False
+watcher=StartupShows();app.installEventFilter(watcher)
+with patch('vitalux.profiles.installed',return_value='unstable'):
+    update_page=UpdatePage(manager)
+app.removeEventFilter(watcher)
+assert not watcher.windows,'Update page mapped an unparented startup control'
+assert not update_page.fresh_profile.isWindow()
+assert not update_page.fresh_profile.isHidden()
+update_page.close()
 
 class FakeTray:
     def __init__(self):
