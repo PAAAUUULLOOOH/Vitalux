@@ -22,7 +22,8 @@ def run():
             assert (target/'backgrounds/a.png').read_bytes()==(stable/'backgrounds/a.png').read_bytes()
             profiles.atomic_json(target/'settings.json',dict(profiles.read(target/'settings.json'),theme='light',ui_sound_volume=35))
             profiles.initialize();assert profiles.read(target/'settings.json')['ui_sound_volume']==35
-            profiles.fresh_test();assert (stable/'settings.json').read_bytes()==saved
+            profiles.initialize();assert profiles.read(target/'settings.json')['ui_sound_volume']==35
+            assert (stable/'settings.json').read_bytes()==saved
             profiles.import_other();assert profiles.read(target/'settings.json')['theme']=='glass'
             assert all(profiles.directory(kind)!=profiles.directory(kind,'stable') for kind in profiles.KINDS)
             profiles.select('stable');assert profiles.selected()=='stable' and profiles.installed()=='unstable'
@@ -32,12 +33,12 @@ def run():
         with patch.object(updater,'__version__','0.9.6.1-unstable.1'),patch.object(updater,'_get_release',return_value=release):
             result=updater.check('stable');assert result['ok'] and result['newer'] and result['latest']=='0.9.5.9',result
         version='0.9.6.1-unstable.1';name=f'Vitalux-v{version}-linux-x86_64.zip'
-        manifest=json.dumps(dict(schema=1,version=version,assets={name:{'sha256':'b'*64}})).encode()
+        manifest=json.dumps(dict(schema=1,version=version,stable_version='0.9.6.0',has_test_changes=True,assets={name:{'sha256':'b'*64}})).encode()
         base=f'https://github.com/{updater.DEFAULT_REPO}/releases/download/unstable/'
         test_release={'tag_name':'unstable','prerelease':True,'assets':[
             dict(name='Vitalux-unstable-channel.json',browser_download_url=base+'Vitalux-unstable-channel.json',digest='sha256:'+hashlib.sha256(manifest).hexdigest()),
             dict(name=name,browser_download_url=base+name,digest='sha256:'+'b'*64)]}
-        with patch.object(updater,'__version__','0.9.6.0'),patch.object(updater,'_get_unstable_release',return_value=test_release),patch.object(updater,'_github_request',side_effect=lambda *a,**k:io.BytesIO(manifest)):
+        with patch.object(updater,'__version__','0.9.6.0'),patch.object(updater,'_get_release',return_value={'tag_name':'v0.9.6.0','body':'## Deutsch\nStable-Änderungen\n## English\nStable changes','assets':[]}),patch.object(updater,'_get_unstable_release',return_value=test_release),patch.object(updater,'_github_request',side_effect=lambda *a,**k:io.BytesIO(manifest)):
             result=updater.check('unstable');assert result['ok'] and result['newer'] and result['url']==base+name,result
             test_release['assets'][1]['digest']='sha256:'+'c'*64
             assert not updater.check('unstable')['ok'],'Accepted mismatched rolling test assets'

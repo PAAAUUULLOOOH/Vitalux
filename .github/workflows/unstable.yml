@@ -27,12 +27,19 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-dev.txt
       - name: Number the test build on the permanent branch
+        id: prepare
         run: |
           set -euo pipefail
           git config user.name PAAAUUULLOOOH
           git config user.email PAAAUUULLOOOH@users.noreply.github.com
           # Checkout the current branch tip after any earlier queued build.
           git pull --ff-only origin refs/heads/unstable
+          git fetch origin refs/heads/main:refs/remotes/origin/main
+          CHANGED="$(python -c 'import sys; sys.path.insert(0,"scripts"); from channel_metadata import describe; print(str(describe()["has_test_changes"]).lower())')"
+          echo "changed=$CHANGED" >> "$GITHUB_OUTPUT"
+          if [[ "$CHANGED" != true ]]; then
+            exit 0
+          fi
           VERSION="$(python scripts/prepare-unstable-build.py)"
           git add vitalux/__init__.py CHANGELOG.md CHANGELOG.en.md
           git commit -m "Prepare Unstable test build v$VERSION"
@@ -40,6 +47,7 @@ jobs:
           echo "TAG=v$VERSION" >> "$GITHUB_ENV"
           python scripts/release_notes.py "$VERSION" "$RUNNER_TEMP/unstable-notes.md"
       - name: Install pinned build and virtual desktop dependencies
+        if: steps.prepare.outputs.changed == 'true'
         run: |
           set -euo pipefail
           python -m pip install -r requirements-dev.txt
@@ -48,6 +56,7 @@ jobs:
           python -m compileall -q vitalux tests scripts packaging
           bash -n run.sh packaging/AppRun
       - name: Assemble and validate the portable runtime
+        if: steps.prepare.outputs.changed == 'true'
         run: |
           set -euo pipefail
           python scripts/prepare-release.py "build/staged/Vitalux-${TAG}"
@@ -56,6 +65,7 @@ jobs:
           cd "$STAGED"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-regressions.py --output "$GITHUB_WORKSPACE/build/regressions"
       - name: Exercise real kernel and desktop paths
+        if: steps.prepare.outputs.changed == 'true'
         id: native
         run: |
           set -euo pipefail
@@ -79,8 +89,10 @@ jobs:
                   print(f'::error title={log.name}::{escaped}', flush=True)
           PY
       - name: Verify offline source ZIP startup
+        if: steps.prepare.outputs.changed == 'true'
         run: python scripts/check-source-preview.py
       - name: Build the full ZIP and AppImage
+        if: steps.prepare.outputs.changed == 'true'
         run: |
           set -euo pipefail
           mkdir -p tooling dist
@@ -90,17 +102,19 @@ jobs:
           python scripts/create-release-archives.py "build/staged/Vitalux-${TAG}" dist --full-only
           bash packaging/build-appimage.sh "build/staged/Vitalux-${TAG}" "$PWD/dist/Vitalux-${TAG}-x86_64.AppImage" "$PWD/tooling/squashfs-root/AppRun"
       - uses: actions/cache@v4
+        if: steps.prepare.outputs.changed == 'true'
         with:
           path: build/third-party-sources
           key: vitalux-third-party-sources-v1-${{ hashFiles('third_party/sources.lock.json') }}
       - name: Bundle licenses, source offers and checksums
+        if: steps.prepare.outputs.changed == 'true'
         run: |
           set -euo pipefail
           python scripts/bundle-third-party.py --runtime-root "build/staged/Vitalux-${TAG}" --output dist
           (cd dist && sha256sum *.AppImage *.zip > "Vitalux-${TAG}-SHA256SUMS.txt")
           unzip -tq "dist/Vitalux-${TAG}-linux-x86_64.zip"
       - name: Preserve validation and build outputs
-        if: always()
+        if: always() && steps.prepare.outputs.changed == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: Vitalux-Unstable-${{ env.TAG }}
@@ -113,6 +127,12 @@ jobs:
             dist/
           retention-days: 14
       - name: Update the single rolling prerelease
+        if: steps.prepare.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: python scripts/publish-unstable.py dist
+      - name: Mark a caught-up test channel without building a Stable mirror
+        if: steps.prepare.outputs.changed == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/refresh-unstable-channel.py

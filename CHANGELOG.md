@@ -1,5 +1,13 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.1] - 2026-10-21
+- Stable und Unstable lassen sich zum Lesen des aktuellen Changelogs anklicken, ohne dadurch den Kanal zu wechseln oder eine Update-Meldung auszulösen; aktueller Stand und Installationsziel werden getrennt angezeigt.
+- Ein Wechsel zu Unstable ist nur mit einem geprüften, tatsächlich neueren Teststand möglich. Gleiche Stände werden verständlich gekennzeichnet.
+- Nach einer Installation selbst zwischen „Jetzt neu starten“ und „Später“ wählen; bis dahin bleibt „Neustart erforderlich“ sichtbar, ohne doppelte Update-Angebote.
+- Ein Hinweis zeigt, wenn die eigenen Teständerungen inzwischen in Stable enthalten sind; ein neuerer Unstable-Teststand bleibt vorrangig.
+- Testprofile werden automatisch erstellt und erhalten. Der zusätzliche Knopf für ein frisches Testprofil entfällt.
+- Bereits geladene Kanal-Changelogs bleiben offline lesbar. Prüfzeitpunkt und Verbindungsfehler werden klar angezeigt.
+
 ## [v0.9.6.1-unstable.2] - 2026-10-21
 
 - Zwischen Stable und Unstable direkt unter Updates wechseln; getrennte Einstellungsprofile, Sicherungen und die Rückkehr zur stabilen Version erhalten die jeweilige Konfiguration.
@@ -100,7 +108,6 @@
 - Einstellungssuche zeigt Treffer kompakt; der Berichtsexport nutzt eine passend breite Auswahl.
 - Die in v0.9.4.9 eingeführte Neuordnung, Suche, Querverweise und sämtliche Funktionen bleiben unverändert erhalten.
 
-
 ## [v0.9.4.9] - 2026-10-19
 - Seitenleiste logisch gruppiert; Einstellungen, Updates und Info bleiben unten fest erreichbar.
 - Einstellungen in sechs Unterbereiche geteilt: Darstellung, MiniHUD & Fenster, Monitoring & Warnungen, Leistung & Energie, Allgemein und zuletzt Grafik-Rendering.
@@ -109,13 +116,11 @@
 - GPU- und Netzwerkansichten verlinken passende Diagnosewerkzeuge. Laufwerke, Netzwerk und Sensoren sinnvoller sortiert.
 - Anleitung, README und Übersetzungen angepasst; bestehende Designs, Überwachung und Benutzeroptionen bleiben erhalten.
 
-
 ## [v0.9.4.8] - 2026-10-19
 - Diagnostic Center als neuer Reiter: lokale Hardware-, Treiber- und Fehleranalysen inklusive optionaler Blackbox.
 - Bestehende Systemberichte und Fehlerdiagnose aus den Einstellungen in das Diagnostic Center verschoben.
 - MiniHUD mit drei Größen, Sensorwahl, Deckkraft und Systemleisten-Steuerung ergänzt.
 - Die modernen Grafik-Rendering-Einstellungen und Designs aus v0.9.4.7 bleiben unverändert.
-
 
 ## [v0.9.4.7] - 2026-10-19
 - Black Glass Gold: RAM-Beschriftung in der Auslastungsgrafik sowie weitere Diagramm-Legenden und Auslastungsringe direkt beim Aufbau an die Goldpalette angepasst.
@@ -123,13 +128,11 @@
 - Ultra Eco sparsamer: Messintervall auf 10 Sekunden erhöht, unnötige Diagramm-Aktualisierungen bei verborgenem Fenster und Logo-Neuzeichnungen vermieden.
 - Kompakte README, integrierte Anleitung und Übersetzungen auf den aktuellen Stand gebracht.
 
-
 ## [v0.9.4.6] - 2026-10-18
 - Ultra Eco als Ein-/Aus-Schalter unter „Leistung & Energie“ ergänzt: besonders primitiver, flacher Skin ohne Glas, Schatten, Hintergrundbilder und Animationen.
 - CPU-Rendering statt GPU, 5 Sekunden Abfrageintervall und reduzierte Zeichenarbeit im Ultra-Eco-Modus.
 - Nach dem Ausschalten kehren das zuvor gewählte Design, die Farben, Hintergründe, Animationen, das Messintervall und der gespeicherte Renderer zurück.
 - Kompakte README, integrierte Anleitung sowie deutsche und englische Texte angepasst.
-
 
 ## [v0.9.4.5] - 2026-10-18
 - Qt Raster als sparsamen CPU-Render-Modus ergänzt: statische Hintergründe bleiben zwischengespeichert; die optionale Funkeln-Animation zeichnet seltener neu.
@@ -137,13 +140,11 @@
 - Im Farbschema Black Glass sind eigene Akzentfarben und deren Aktionen ausgegraut; Standardfarben und gespeicherte eigene Farben bleiben erhalten.
 - Kompakte README, integrierte Anleitung und englische Übersetzungen aktualisiert.
 
-
 ## [v0.9.4.4] - 2026-10-18
 - Endlosschleife bei „Neustart vorgemerkt“ für Wayland-OpenGL, Wayland-Vulkan und X11-OpenGL behoben: Vitalux erkennt nun das tatsächlich aktive Rendering-Profil.
 - Qt-Quick-Kompatibilitätstest öffnet kein sichtbares kleines Testfenster mehr.
 - Ursache eines GPU-Fallbacks und der aktive Fenster-/Grafikmodus werden im Vitalux-Log ausgegeben.
 - Systemleisten-Vorschau verwendet ein vereinfachtes Qt-Stylesheet.
-
 
 ## [v0.9.4.3] - 2026-10-18
 - Experimentelle Grafik-Backends für Wayland mit OpenGL oder Vulkan sowie X11 mit OpenGL ergänzt.

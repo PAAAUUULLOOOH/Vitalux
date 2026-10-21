@@ -13,18 +13,10 @@ from vitalux.logo import load_logo
 from vitalux.diagnostic_center import DiagnosticCenter
 from vitalux.mini_hud import MiniHUD
 
-class Dummy(QObject):
- changed=Signal()
- restart=Signal()
- progress=Signal(object)
- status="idle"
- error=""
- notes=""
- available=False
- latest=''
- def shutdown(self): pass
- def check(self): pass
- def install(self): pass
+from vitalux.update_manager import UpdateManager
+
+class Dummy(UpdateManager):
+    def check(self): pass
 
 app=QApplication([])
 theme.set_mode('glass')

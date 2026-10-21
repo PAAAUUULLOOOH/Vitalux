@@ -58,6 +58,7 @@ def main():
     sync_installed_icon()
     sensors.prime()
     manager = UpdateManager()
+    app.aboutToQuit.connect(manager.finalize_exit)
     win = MainWindow(info, logo, manager)
     if os.environ.get('VITALUX_LOCAL_PREVIEW') == '1':
         win.setWindowTitle('Vitalux · Design Preview · ' + theme.mode().replace('_', ' ').title())

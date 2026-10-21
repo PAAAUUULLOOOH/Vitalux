@@ -1,5 +1,13 @@
 # Vitalux – Changes
 
+## [v0.9.6.1] - 2026-10-21
+- Click Stable or Unstable to read its current changelog without switching channels or triggering an update notification; the running version and installation destination remain distinct.
+- Switching to Unstable requires a verified, genuinely newer test build. Matching channel contents are clearly identified.
+- Choose “Restart now” or “Later” after installation; “Restart required” remains visible without duplicate update offers.
+- A notice explains when the installed test changes have reached Stable; a newer Unstable test build takes priority.
+- Test profiles are created and preserved automatically. The separate fresh-profile button has been removed.
+- Previously downloaded channel changelogs remain readable offline. Check times and connection errors are displayed clearly.
+
 ## [v0.9.6.1-unstable.2] - 2026-10-21
 
 - Switch between Stable and Unstable from Updates, with separate settings profiles, backups and a return to the stable version that preserves each configuration.
@@ -99,7 +107,6 @@
 - Made settings search results and diagnostic report selection more compact.
 - Preserved the full v0.9.4.9 navigation, search, direct links and all existing functionality.
 
-
 ## [v0.9.4.9] - 2026-10-19
 - Grouped the sidebar while keeping Settings, Updates and Info pinned at the bottom.
 - Organized Settings into six sections: Appearance, MiniHUD & window, Monitoring & alerts, Performance & energy, General, and Graphics rendering last.
@@ -108,13 +115,11 @@
 - Added contextual links from GPU and Network to their diagnostics; reorganized disk, network and sensor details.
 - Updated the built-in guide, concise README and translations without removing existing features or saved preferences.
 
-
 ## [v0.9.4.8] - 2026-10-19
 - Added Diagnostic Center with read-only system, crash, display, PCIe, thermal, network, process and change diagnostics, plus opt-in Blackbox.
 - Moved existing system and error report exports out of Settings into Diagnostic Center.
 - Added MiniHUD with three sizes, configurable metrics, opacity and system-tray controls.
 - Preserved modern render settings and themes from v0.9.4.7.
-
 
 ## [v0.9.4.7] - 2026-10-19
 - Black Glass Gold: fixed the RAM chart-series label, legends and load/status ring colors to use the gold palette from the initial frame.
@@ -122,13 +127,11 @@
 - Lower Eco overhead: 10-second sampling, no hidden-window chart repaints, and fewer logo updates.
 - Updated the compact README, built-in guide and localized strings.
 
-
 ## [v0.9.4.6] - 2026-10-18
 - Added an Ultra Eco on/off switch under Performance & energy with an extremely simple flat skin: no glass, shadows, wallpapers or animation.
 - Ultra Eco uses CPU raster rendering, five-second monitoring and reduced redraw work.
 - Turning it off restores the previous theme, accents, wallpapers, animations, polling interval and saved renderer.
 - Updated the compact README, built-in guide and localized texts.
-
 
 ## [v0.9.4.5] - 2026-10-18
 - Added power-saving Qt Raster CPU mode: cached static backgrounds and a slower optional Sparkle animation.
@@ -136,13 +139,11 @@
 - Black Glass disables personal accent colors and related controls without removing saved colors or built-in accents.
 - Updated concise README, built-in guide, and English translations.
 
-
 ## [v0.9.4.4] - 2026-10-18
 - Fixed the repeated “restart pending” state for Wayland/OpenGL, Wayland/Vulkan, and X11/OpenGL by reporting the active backend correctly.
 - Graphics preflight no longer opens a visible small Qt Quick test window.
 - Added explicit logging of display backend, rendering profile and GPU fallback details.
 - Simplified Qt styling for the system-tray preview.
-
 
 ## [v0.9.4.3] - 2026-10-18
 - Added experimental Wayland/OpenGL, Wayland/Vulkan and X11/OpenGL graphics profiles.

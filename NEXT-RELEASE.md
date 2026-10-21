@@ -1,3 +1,20 @@
+# Release plan — v0.9.6.1: clear, deliberate channel updates
+
+Owner approved implementation of the collected update changes. Previous discussion-only instructions are superseded by “ja setz das mal umalles”.
+
+- Channel clicks display the channel's latest localized notes without changing preferences, authorizing an install or producing cross-channel update alerts.
+- Require a verified test manifest, a newer test version, the current Stable baseline, application differences and inclusion of main. Version labels, README images and documentation alone never qualify.
+- Before a genuine Unstable build, prepend its actual DE/EN test changes to both changelogs; use `python scripts/prepare-unstable-build.py --next` for the next internal version. Never copy Stable notes as new test changes.
+- Keep technical test build identifiers for comparison/recovery; present a caught-up release as “Unstable — based on Stable v…”. No mirror packaging or test-number increase when no application changes remain.
+- Preserve actual running version/channel, browsed channel and pending installation target independently. Freeze prepared installations until restart; suppress repeated offers and stale check replies.
+- Provide Restart now / Later. On normal exit activate a deferred AppImage without reopening it; persist pending state per installation and clear it only in the newly running version.
+- Automatically initialize/preserve/migrate isolated test profiles with backups; remove the manual fresh-profile button/function.
+- Show when an installed test's changes reached Stable; prefer a newer eligible Unstable build when one exists. Returning to Stable remains possible.
+- Cache notes for reading offline only, show successful check times and failures honestly, and never authorize downloads from stale cached metadata.
+- Update English instructions and DE/EN app translations. Changelogs describe only app-visible changes.
+
+---
+
 # Release plan — v0.9.6.0 with a permanent Unstable channel
 
 Baseline: published stable v0.9.5.9. Status: implemented and locally verified; release package validation is repeated before publication. The owner requests the current changes as a Stable release on main, alongside a working permanent Unstable channel.

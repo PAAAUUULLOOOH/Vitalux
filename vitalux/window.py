@@ -406,9 +406,10 @@ class MainWindow(QMainWindow):
                                     for scroll,value in scrolls])
 
     def _sync_glow(self):
-        on = self.manager.available and bool(self.manager.latest)
+        update_version=getattr(self.manager,'notification_version',self.manager.latest)
+        on = self.manager.available and bool(update_version)
         animated = on and not eco.enabled()
-        version = self.manager.latest if on else ''
+        version = update_version if on else ''
         if self.update_btn is not None:
             self.update_btn.set_glow(animated)
             self.update_btn.set_update_version('v' + version if on else '')
@@ -430,9 +431,9 @@ class MainWindow(QMainWindow):
 
     def _announce_update(self):
         self._update_notice_queued = False
-        if not self.manager.available or not self.manager.latest:
+        if not self.manager.available or not getattr(self.manager,'notification_version',self.manager.latest):
             return
-        version = self.manager.latest
+        version = getattr(self.manager,'notification_version',self.manager.latest)
         if version == self._notified_update_version:
             return
         if not (self._tray and self._tray.isVisible()
@@ -982,6 +983,10 @@ class MainWindow(QMainWindow):
 
     def restart_for_renderer(self, commit=None):
         """Defer reset commits until workers have stopped and a restart is safe."""
+        if getattr(self.manager,'pending_restart',False):
+            if commit is not None:return False
+            self.manager._restart()
+            return True
         if self.restart_requested:
             return True
         if getattr(self.manager, 'status', '') == 'installing':

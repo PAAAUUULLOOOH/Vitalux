@@ -93,7 +93,7 @@ SLIDES = [
         "Updates und Informationen",
         "Unter Updates wählst du Stable oder Unstable und installierst den geprüften Zielstand. Beide Kanäle behalten getrennte Einstellungen; die Rückkehr zu einer älteren Stable-Version ist möglich.",
         "Bei einem Update glüht das Vitalux-Logo in der App und im Tray. Der Updates-Reiter pulsiert; eine Tray-Nachricht nennt die Version.",
-        "Vor dem Wechsel werden Neuerungen angezeigt und Profile gesichert. Einstellungen lassen sich aus dem anderen Kanal übernehmen; ein frisches Testprofil betrifft nur Unstable.",
+        "Ein Kanal-Klick zeigt nur den Changelog. Installationen und Neustarts werden separat bestätigt; Testprofile entstehen automatisch und bleiben erhalten.",
         "Der Changelog und die Update-Hinweise folgen deiner ausgewählten Sprache. Die bisherige Versionshistorie bleibt auch nach dem Update offline verfügbar.",
         "updates",
     ),

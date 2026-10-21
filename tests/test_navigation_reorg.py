@@ -23,18 +23,10 @@ def qwait(milliseconds):
 
 
 
-class DummyManager(QObject):
-    changed = Signal()
-    progress = Signal(object)
-    restart = Signal()
-    status = "idle"
-    error = ""
-    notes = ""
-    available = False
-    latest = ""
-    def shutdown(self): pass
+from vitalux.update_manager import UpdateManager
+
+class DummyManager(UpdateManager):
     def check(self): pass
-    def install(self): pass
 
 
 def main():

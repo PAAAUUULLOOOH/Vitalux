@@ -38,8 +38,7 @@ with patch('vitalux.profiles.installed',return_value='unstable'):
     update_page=UpdatePage(manager)
 app.removeEventFilter(watcher)
 assert not watcher.windows,'Update page mapped an unparented startup control'
-assert not update_page.fresh_profile.isWindow()
-assert not update_page.fresh_profile.isHidden()
+assert not hasattr(update_page,'fresh_profile'),'Test profiles are created automatically, without a reset button'
 update_page.close()
 
 class FakeTray:

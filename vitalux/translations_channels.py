@@ -4,16 +4,13 @@ EN={
 'Update-Kanal':'Update channel',
 'Stable und Unstable verwenden getrennte Einstellungen. Ein Kanalwechsel wird erst mit der Installation ausgeführt.':'Stable and Unstable use separate settings. A channel switch takes effect when its package is installed.',
 'Einstellungen übernehmen …':'Import settings …',
-'Frisches Testprofil …':'Fresh test profile …',
 'Einstellungsprofile':'Settings profiles',
-'Testprofil sichern und zurücksetzen? Vitalux startet mit Standardwerten neu.':'Back up and reset the test profile? Vitalux will restart with default settings.',
 'Kompatible Einstellungen und Hintergrundbilder aus dem anderen Kanal übernehmen? Das aktuelle Profil wird gesichert. Vitalux startet mit CPU-Rendering neu.':'Import compatible settings and backgrounds from the other channel? The current profile will be backed up. Vitalux will restart with CPU rendering.',
 'Ein aktiver Vorgang verhindert den Neustart. Bitte später erneut versuchen.':'An active operation prevents restarting. Please try again later.',
 'Zu Unstable wechseln':'Switch to Unstable',
 'Zu Stable zurückkehren':'Return to Stable',
 'Für den anderen Kanal ist kein Profil vorhanden.':'There is no profile for the other channel.',
 'Das andere Profil verwendet ein neueres Einstellungsformat.':'The other profile uses a newer settings format.',
-'Ein frisches Testprofil ist nur im Testkanal verfügbar.':'A fresh test profile is available in the test channel only.',
 'Unbekannter Update-Kanal.':'Unknown update channel.',
 'Noch kein Unstable-Testpaket veröffentlicht.':'No Unstable test package has been published yet.',
 'Testpaket und Manifest stimmen nicht überein. Bitte erneut prüfen.':'The test package does not match its manifest. Please check again.',
@@ -34,5 +31,45 @@ EN={
 'Netzwerk → Programme & Verbindungen zeigt laufende Apps und Verbrauch. Sperren und Entsperren stehen direkt in der App-Liste; die Systemfreigabe wird bei Bedarf angefragt. Einzelne TCP-/UDP-Sockets findest du unter Erweiterte Verbindungen.':'Network → Apps & connections shows running apps and usage. Block and Unblock are directly in the app list; system authorization is requested when needed. Individual TCP/UDP sockets appear under Advanced connections.',
 'Alle zwölf Designs stehen im gleichen Vorschau-Raster. Beim Darüberfahren zeigen Farbkreis und Bildsymbol die Anpassbarkeit; graue Schlösser kennzeichnen feste Optionen. Ein/Aus-Schalter passen sich jedem Design an.':'All twelve designs use the same preview grid. Hovering reveals a color wheel and image indicator; grey locks mark fixed options. On/off switches follow each design.',
 'Unter Updates wählst du Stable oder Unstable und installierst den geprüften Zielstand. Beide Kanäle behalten getrennte Einstellungen; die Rückkehr zu einer älteren Stable-Version ist möglich.':'Choose Stable or Unstable in Updates and install the verified destination build. Both channels retain separate settings; returning to an older stable version is supported.',
-'Vor dem Wechsel werden Neuerungen angezeigt und Profile gesichert. Einstellungen lassen sich aus dem anderen Kanal übernehmen; ein frisches Testprofil betrifft nur Unstable.':'Changes are shown and profiles backed up before switching. Import settings from the other channel; a fresh test profile affects Unstable only.',
+'Ein Kanal-Klick zeigt nur den Changelog. Installationen und Neustarts werden separat bestätigt; Testprofile entstehen automatisch und bleiben erhalten.':'Clicking a channel only shows its changelog. Installation and restarting are separate actions; test profiles are created automatically and preserved.',
 }
+
+EN.update({
+'Kanal ansehen':'Browse channel',
+'Ein Klick zeigt den Changelog. Ein Kanalwechsel wird separat vorbereitet und erst nach dem Neustart aktiv.':'Click a channel to read its changelog. Prepare a switch separately; it takes effect after restarting.',
+'Stable ansehen':'View Stable',
+'Deine Teständerungen sind jetzt in Stable verfügbar.':'Your test changes are now available in Stable.',
+'Installation':'Installation',
+'Aktuell':'Current',
+'Zielstand':'Destination',
+'Neustart erforderlich.':'Restart required.',
+'Neustart erforderlich. Du kannst Vitalux bis dahin weiterverwenden.':'Restart required. You can continue using Vitalux until then.',
+'Jetzt neu starten':'Restart now',
+'Später':'Later',
+'Unstable · Teststand für v{version}':'Unstable · testing v{version}',
+'Unstable · entspricht Stable v{version}':'Unstable · matches Stable v{version}',
+'Unstable · derzeit kein neuerer Teststand':'Unstable · no newer test build',
+'Paket herunterladen …':'Downloading package …',
+'Paket prüfen …':'Verifying package …',
+'Installation vorbereiten …':'Preparing installation …',
+'Derzeit gibt es keinen neueren Unstable-Teststand.':'There is currently no newer Unstable test build.',
+'Der gewählte Kanal kann separat installiert werden.':'The selected channel can be installed separately.',
+'Prüfung nicht möglich.':'Unable to check.',
+'Prüfung unvollständig: {reason}':'Check incomplete: {reason}',
+'Zuletzt geprüft: {time}':'Last checked: {time}',
+'Noch nicht geprüft.':'Not checked yet.',
+'Gespeicherter Stand; offline lesbar.':'Saved information; available offline.',
+'Ein Wechsel ist nur mit einem geprüften, neueren Teststand möglich.':'Switching requires a verified, newer test build.',
+'Keine zusätzlichen Teständerungen. Es gilt der aktuelle Stable-Changelog.':'No additional test changes. The current Stable changelog applies.',
+'Für diesen Kanal ist noch kein Changelog verfügbar.':'No changelog is available for this channel yet.',
+})
+
+EN.update({
+'Unstable · Verfügbarkeit nicht bestätigt':'Unstable · availability unconfirmed',
+'Hinweis: {reason}':'Note: {reason}',
+'Vorgang fehlgeschlagen.':'Operation failed.',
+})
+
+EN['Vitalux – Versionsstatus']='Vitalux – version status'
+
+EN['Vitalux-Ordner ist schreibgeschützt. Bitte eine beschreibbare Installation verwenden.']='The Vitalux folder is read-only. Please use a writable installation.'
