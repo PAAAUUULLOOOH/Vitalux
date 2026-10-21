@@ -29,12 +29,17 @@ with tempfile.TemporaryDirectory() as folder,patch.dict(os.environ,{f'XDG_{k.upp
     page=UpdatePage(m);page.resize(1100,900);page.show();app.processEvents()
     assert page.changelog_card.isHidden()
     assert not hasattr(page,'fresh_profile')
+    assert not hasattr(page,'import_profile')
     page.channel_buttons['unstable'].click();app.processEvents()
     assert page.changelog_card.isVisible() and 'Aktueller Stand' in page.changelog_details.text()
     assert not page.install_button.isEnabled() and not m.available
+    assert page.status.text()=='Vitalux ist auf dem neuesten Stand.','Browsing Unstable changed the running Stable status'
+    assert not page.latest.isVisible(),'An unavailable channel displayed a duplicate destination'
     assert profiles.selected()=='unstable','Browsing rewrote the saved installation channel'
     page.channel_buttons['stable'].click();app.processEvents()
     assert page.changelog_card.isVisible() and not m.can_install and not m.available
+    page.changelog_button.click();app.processEvents();assert page.changelog_card.isHidden()
+    page.changelog_button.click();app.processEvents();assert page.changelog_card.isVisible()
     i18n.set_lang('en');page.retranslate()
     assert 'Current changes' in page.changelog_details.text() and 'Aktueller Stand' not in page.changelog_details.text()
     i18n.set_lang('de');page.retranslate()

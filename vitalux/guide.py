@@ -75,7 +75,7 @@ SLIDES = [
     ),
     (
         "Darstellung und Einstellungen",
-        "Alle zwölf Designs stehen im gleichen Vorschau-Raster. Beim Darüberfahren zeigen Farbkreis und Bildsymbol die Anpassbarkeit; graue Schlösser kennzeichnen feste Optionen. Ein/Aus-Schalter passen sich jedem Design an.",
+        "Alle zwölf Designs stehen im gleichen Vorschau-Raster. Kleine Symbole erscheinen beim Darüberfahren rechts mittig untereinander: Farbkreis für Akzentfarben, Bildsymbol für Hintergründe; Schlösser kennzeichnen feste Optionen.",
         "Bei anpassbaren Designs wählst du integrierte Hintergründe oder eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
         "Die Suche gleitet zu Treffern und schließt fünf Sekunden nach der Auswahl weich. Beim Öffnen der erweiterten Einstellungen scrollt die Seite mit; dort liegen Grafik-Renderer und Wartung.",
         "Zurücksetzen-Buttons blenden weich ein und aus. Ganz unten setzt du alle Standardwerte wieder her und startest Vitalux neu; einzelne Bereiche benötigen keinen Neustart. Das Logo zeigt einen sanften Herzschlagimpuls.",
@@ -91,7 +91,7 @@ SLIDES = [
     ),
     (
         "Updates und Informationen",
-        "Unter Updates wählst du Stable oder Unstable und installierst den geprüften Zielstand. Beide Kanäle behalten getrennte Einstellungen; die Rückkehr zu einer älteren Stable-Version ist möglich.",
+        "Im Updates-Reiter stehen laufender Stand, Stable/Unstable und Changelogs übersichtlich zusammen. Kanal-Klicks öffnen die Hinweise direkt auf der Seite; nur die separate Installationsaktion wechselt den Kanal.",
         "Bei einem Update glüht das Vitalux-Logo in der App und im Tray. Der Updates-Reiter pulsiert; eine Tray-Nachricht nennt die Version.",
         "Ein Kanal-Klick zeigt nur den Changelog. Installationen und Neustarts werden separat bestätigt; Testprofile entstehen automatisch und bleiben erhalten.",
         "Der Changelog und die Update-Hinweise folgen deiner ausgewählten Sprache. Die bisherige Versionshistorie bleibt auch nach dem Update offline verfügbar.",

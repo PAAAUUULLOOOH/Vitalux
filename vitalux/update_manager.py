@@ -161,6 +161,10 @@ class UpdateManager(QObject):
         self._select_record();self.changed.emit()
         if not self.records and not self.checking and not self.pending_restart:self.check()
 
+    def set_notes_visible(self,visible):
+        self.notes_open=bool(visible);self.changed.emit()
+        if self.notes_open and not self.records and not self.checking and not self.pending_restart:self.check()
+
     def _start_worker(self,worker):
         self._thread=worker;self._active_threads.append(worker)
         worker.finished.connect(lambda w=worker:self._active_threads.remove(w) if w in self._active_threads else None)

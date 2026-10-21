@@ -7,6 +7,7 @@ are released by the kernel when its descriptors close, including after a crash.
 """
 import ctypes
 import errno
+import fcntl
 import hashlib
 import json
 import os
@@ -16,6 +17,7 @@ import select
 import socket
 import struct
 import sys
+import tempfile
 import time
 
 MAX_SOCKETS=16384
@@ -245,7 +247,7 @@ class Instructions:
                         for op,dst,src,off,imm in self.code)
 
 
-def socket_program(uid,owners,blocked):
+def socket_program(uid,owners,blocked,active_groups=None):
     a=Instructions()
     a.emit(0xbf,6,1)
     a.emit(0x85,imm=15)  # get_current_uid_gid
@@ -264,6 +266,10 @@ def socket_program(uid,owners,blocked):
     a.emit(0xb7,4,imm=0)
     a.emit(0x85,imm=2)
     a.lookup(blocked,-16)
+    if active_groups is not None:
+        a.jump(0x15,0,0,'allow')
+        a.emit(0x79,1,0);a.emit(0x7b,10,1,-24)
+        a.lookup(active_groups,-24)
     a.jump(0x55,0,0,'deny')
     a.label('allow')
     a.emit(0xb7,0,imm=1)
@@ -274,7 +280,7 @@ def socket_program(uid,owners,blocked):
     return a.finish()
 
 
-def packet_program(uid,owners,blocked,counts,direction,blocked_sockets=None):
+def packet_program(uid,owners,blocked,counts,direction,blocked_sockets=None,active_groups=None):
     a=Instructions()
     a.emit(0xbf,6,1)
     a.emit(0x85,imm=46)
@@ -288,7 +294,12 @@ def packet_program(uid,owners,blocked,counts,direction,blocked_sockets=None):
     a.emit(0x79,8,0)
     a.emit(0x7b,10,8,-48)
     a.lookup(blocked,-48)
+    if active_groups is not None:
+        a.jump(0x15,0,0,'measure')
+        a.emit(0x79,1,0);a.emit(0x7b,10,1,-56)
+        a.lookup(active_groups,-56)
     a.jump(0x55,0,0,'deny')
+    a.label('measure')
     a.lookup(counts,-8)
     a.jump(0x55,0,0,'count')
     a.emit(0x7a,10,offset=-40,imm=0)
@@ -312,6 +323,48 @@ def packet_program(uid,owners,blocked,counts,direction,blocked_sockets=None):
     a.emit(0xb7,0,imm=0)
     a.emit(0x95)
     return a.finish()
+
+
+def fork_program(blocked,active_groups,child_offset):
+    """Inherit an active app block before the new task can create a socket."""
+    a=Instructions();a.emit(0xbf,6,1)
+    a.emit(0x85,imm=14);a.emit(0x77,0,imm=32);a.emit(0x7b,10,0,-8)
+    a.emit(0x61,1,6,child_offset);a.emit(0x7b,10,1,-16)
+    a.lookup(blocked,-8);a.jump(0x15,0,0,'clear')
+    a.emit(0x79,1,0);a.emit(0x7b,10,1,-24)
+    a.lookup(active_groups,-24);a.jump(0x15,0,0,'clear')
+    a.map(1,blocked);a.pointer(2,-16);a.pointer(3,-24);a.emit(0xb7,4,imm=0)
+    a.emit(0x85,imm=2);a.jump(0x05,0,0,'done')
+    # A reused PID must never retain a previous application's inherited rule.
+    a.label('clear');a.map(1,blocked);a.pointer(2,-16);a.emit(0x85,imm=3)
+    a.label('done');a.emit(0xb7,0,imm=0);a.emit(0x95)
+    return a.finish()
+
+
+def fork_event():
+    """Read tracepoint metadata without enabling a global tracing session."""
+    import re
+    def read(root):
+        folder=root/'events/sched/sched_process_fork'
+        identifier=int((folder/'id').read_text())
+        text=(folder/'format').read_text()
+        offset=re.search(r'field:[^;]*\bchild_pid;\s*offset:(\d+);\s*size:4;',text)
+        if not offset:raise OSError(errno.ENOTSUP,'Unsupported process-fork tracepoint format')
+        return identifier,int(offset.group(1))
+    for root in (Path('/sys/kernel/tracing'),Path('/sys/kernel/debug/tracing')):
+        try:return read(root)
+        except FileNotFoundError:pass
+    # Some desktops do not mount tracefs. Mount it only inside the helper's
+    # private mount namespace; no host mount or tracing configuration changes.
+    lib=ctypes.CDLL(None,use_errno=True)
+    if lib.unshare(0x00020000):raise OSError(ctypes.get_errno(),'Cannot isolate process-fork tracing')
+    lib.mount.argtypes=[ctypes.c_char_p,ctypes.c_char_p,ctypes.c_char_p,ctypes.c_ulong,ctypes.c_void_p]
+    if lib.mount(None,b'/',None,16384|262144,None):raise OSError(ctypes.get_errno(),'Cannot isolate tracefs mounts')
+    with tempfile.TemporaryDirectory(prefix='vitalux-network-trace-') as folder:
+        target=os.fsencode(folder)
+        if lib.mount(b'tracefs',target,b'tracefs',2|4|8,None):raise OSError(ctypes.get_errno(),'Process-fork tracing is unavailable')
+        try:return read(Path(folder))
+        finally:lib.umount2(ctypes.c_char_p(target),2)
 
 
 class BPF:
@@ -387,6 +440,30 @@ class BPF:
         fd=self.call(28,struct.pack('=IIII',program,cgroup,attach,0)+bytes(48))
         self.fds.append(fd)
 
+    def tracepoint(self,program,identifier):
+        number={'x86_64':298,'amd64':298,'aarch64':241}[platform.machine().lower()]
+        attributes=bytearray(128)
+        struct.pack_into('=IIQQ',attributes,0,2,len(attributes),identifier,1)
+        struct.pack_into('=Q',attributes,40,1)  # disabled until the BPF filter is attached
+        online=Path('/sys/devices/system/cpu/online').read_text().strip()
+        for part in online.split(','):
+            bounds=[int(value) for value in part.split('-')]
+            for cpu in range(bounds[0],bounds[-1]+1):
+                raw=ctypes.create_string_buffer(bytes(attributes))
+                fd=self.lib.syscall(ctypes.c_long(number),ctypes.byref(raw),ctypes.c_int(-1),
+                                    ctypes.c_int(cpu),ctypes.c_int(-1),ctypes.c_ulong(8))
+                if fd<0:
+                    error=ctypes.get_errno()
+                    if error==errno.ENODEV:continue
+                    raise OSError(error,'Cannot attach process-fork protection: '+os.strerror(error))
+                self.fds.append(fd)
+                fcntl.ioctl(fd,0x40042408,program)
+                fcntl.ioctl(fd,0x2400,0)
+                # Tracepoint programs attach to the global event, not just
+                # this perf event's CPU. A second attachment returns EEXIST.
+                return
+        raise OSError(errno.ENODEV,'No online CPU is available for process-fork protection')
+
     def close(self):
         for fd in reversed(self.fds):
             try:os.close(fd)
@@ -399,6 +476,8 @@ class NetworkSession:
         self.uid=uid
         self.bpf=BPF()
         self.rules=set()
+        self.rule_groups={}
+        self.active_rule_groups=set()
         self.connection_rules={}
         self.blocked_pids=set()
         self.metadata={}
@@ -408,16 +487,19 @@ class NetworkSession:
         try:
             self.owners=self.bpf.map(8)
             self.blocked=self.bpf.map(8)
+            self.active_groups=self.bpf.map(8)
             self.counts=self.bpf.map(32)
             self.blocked_sockets=self.bpf.map(8)
             group=os.open('/sys/fs/cgroup',os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC)
             self.bpf.fds.append(group)
             self.refresh()
-            for code,kind,attach in ((socket_program(uid,self.owners,self.blocked),9,2),
-                (packet_program(uid,self.owners,self.blocked,self.counts,'rx',self.blocked_sockets),8,0),
-                (packet_program(uid,self.owners,self.blocked,self.counts,'tx',self.blocked_sockets),8,1)):
+            for code,kind,attach in ((socket_program(uid,self.owners,self.blocked,self.active_groups),9,2),
+                (packet_program(uid,self.owners,self.blocked,self.counts,'rx',self.blocked_sockets,self.active_groups),8,0),
+                (packet_program(uid,self.owners,self.blocked,self.counts,'tx',self.blocked_sockets,self.active_groups),8,1)):
                 program=self.bpf.program(code,kind,attach)
                 self.bpf.link(program,group,attach)
+            identifier,offset=fork_event()
+            self.bpf.tracepoint(self.bpf.program(fork_program(self.blocked,self.active_groups,offset),5,0),identifier)
         except BaseException:
             self.bpf.close()
             raise
@@ -425,9 +507,29 @@ class NetworkSession:
     def refresh(self):
         self.base=socket_snapshot(self.uid)
         self.apps=self.base['applications']
+        for key in self.rules:
+            if key not in self.rule_groups:self.rule_groups[key]=len(self.rule_groups)+1
+        active={self.rule_groups[key]:key for key in self.rules}
+        for group in self.active_rule_groups-set(active):self.bpf.delete(self.active_groups,group)
+        for group in set(active)-self.active_rule_groups:self.bpf.update(self.active_groups,group,struct.pack('=Q',1))
+        self.active_rule_groups=set(active)
+        members={pid:struct.unpack('=Q',raw)[0] for pid,raw in self.bpf.entries(self.blocked,8)}
+        for pid,group in list(members.items()):
+            app=self.apps.get(pid) or application(pid,self.uid)
+            if group not in active or app is None:
+                self.bpf.delete(self.blocked,pid);members.pop(pid,None)
+                continue
+            app['key']=active[group]
+            self.apps[pid]=app
+        for pid,app in self.apps.items():
+            group=self.rule_groups.get(app['key']) if app['key'] in self.rules else None
+            if group and members.get(pid)!=group:
+                self.bpf.update(self.blocked,pid,struct.pack('=Q',group));members[pid]=group
+        self.blocked_pids=set(members)
         for row in self.base['connections']:
             pid=row.get('pid')
             if not pid:continue
+            if pid in members:row['key']=active[members[pid]]
             cookie=row['cookie']
             if cookie<=0:continue  # proc fallback has no kernel socket cookie
             self.metadata[cookie]={key:row[key] for key in ('pid','start','name','exe','key')}
@@ -438,10 +540,6 @@ class NetworkSession:
             current={row['cookie'] for row in self.base['connections']}
             self.owner_pids={key:value for key,value in self.owner_pids.items() if key in current}
             self.metadata={key:value for key,value in self.metadata.items() if key in current}
-        wanted={pid for pid,app in self.apps.items() if app['key'] in self.rules}
-        for pid in wanted-self.blocked_pids:self.bpf.update(self.blocked,pid,struct.pack('=Q',1))
-        for pid in self.blocked_pids-wanted:self.bpf.delete(self.blocked,pid)
-        self.blocked_pids=wanted
         live={row['cookie']:(row.get('pid'),row.get('start')) for row in self.base['connections']}
         for cookie,identity in list(self.connection_rules.items()):
             if live.get(cookie)!=identity:
@@ -473,7 +571,11 @@ class NetworkSession:
         if not app or app['start']!=start or not app['exe']:
             raise ValueError('The selected process has ended or changed')
         self.refresh()
+        live=application(pid,self.uid)
+        if not live or live['start']!=start:
+            raise ValueError('The selected process has ended or changed')
         app=self.apps.get(pid,app)
+        if app['start']!=start:raise ValueError('The selected process has ended or changed')
         if request['op']=='block':self.rules.add(app['key'])
         else:self.rules.discard(app['key'])
         self.refresh()

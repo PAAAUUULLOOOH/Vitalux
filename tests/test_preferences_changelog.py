@@ -324,7 +324,7 @@ def check_changelog(app):
     assert page.changelog_card.isHidden(), 'Changelog opens only when a channel is clicked'
     page.channel_buttons['stable'].click();app.processEvents()
     assert page.changelog_card.isVisible() and 'Etwas Neues' in page.changelog_details.text()
-    assert not page.update_card.isVisible()
+    assert not page.action_panel.isVisible()
     i18n.set_lang('en');page.retranslate()
     assert 'A new feature' in page.changelog_details.text() and 'Etwas Neues' not in page.changelog_details.text()
     manager._on_checked({'error':'Offline'})

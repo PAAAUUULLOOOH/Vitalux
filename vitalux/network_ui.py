@@ -1,5 +1,5 @@
 """App traffic, socket details and explicit session network controls."""
-from PySide6.QtCore import Qt,Signal
+from PySide6.QtCore import Qt,Signal,QItemSelectionModel
 import ipaddress
 from PySide6.QtNetwork import QDnsLookup
 from PySide6.QtWidgets import (QAbstractItemView,QHeaderView,QHBoxLayout,QInputDialog,
@@ -193,6 +193,7 @@ class NetworkWatch(QWidget):
             self.state_label.setToolTip('\n'.join(self.ledger.errors))
 
     def _render(self,*_):
+        scroll=(self.table.verticalScrollBar().value(),self.table.horizontalScrollBar().value())
         needle=self.filter.text().casefold()
         rows=[row for row in self.ledger.apps.values() if not needle or needle in
               (row['name']+' '+row['exe']).casefold()]
@@ -202,7 +203,7 @@ class NetworkWatch(QWidget):
         self.table.blockSignals(True)
         self.table.setSortingEnabled(False)
         self.table.setRowCount(len(rows))
-        selected_row=-1
+        selected_item=None
         for index,row in enumerate(rows):
             name=row['name'] or (row['exe'].rsplit('/',1)[-1] if row['exe'] else tr('Nicht zugeordnet'))
             item=QTableWidgetItem(name)
@@ -228,13 +229,23 @@ class NetworkWatch(QWidget):
             button.setText(tr('Entsperren' if row['blocked'] else 'Sperren'))
             button.setEnabled(bool(row['pids'] or row['blocked']) and not self._busy and not pending)
             button.setToolTip(self._action_errors.get(row['key'],'') or tr('Ein- und ausgehenden Netzwerkverkehr dieser App sperren oder freigeben.'))
-            if row['key']==selected:selected_row=index
-        if selected_row>=0:self.table.selectRow(selected_row)
+            if row['key']==selected:selected_item=item
         self.table.setSortingEnabled(True)
+        self._restore_selection(self.table,selected_item)
         self.table.blockSignals(False)
         self.table.setUpdatesEnabled(True)
         self.empty.setVisible(not rows)
         self._selection()
+        self.table.verticalScrollBar().setValue(scroll[0]);self.table.horizontalScrollBar().setValue(scroll[1])
+
+    @staticmethod
+    def _restore_selection(table,item):
+        # selectRow also scrolls to the row, even when the user is browsing elsewhere.
+        selection=table.selectionModel();selection.clearSelection()
+        if item is not None:
+            index=table.model().index(item.row(),0)
+            selection.select(index,QItemSelectionModel.Select|QItemSelectionModel.Rows)
+            selection.setCurrentIndex(index,QItemSelectionModel.NoUpdate)
 
     def _selection(self):
         selected=self.table.selectionModel().selectedRows()
@@ -255,11 +266,13 @@ class NetworkWatch(QWidget):
         self._render_connections()
 
     def _render_connections(self):
+        scroll=(self.connections.verticalScrollBar().value(),self.connections.horizontalScrollBar().value())
         current=self._selected_connection()
         selected=current.get('cookie') if current else None
         rows=[row for row in self.ledger.connections if row.get('key')==self._key]
         self.connections.blockSignals(True)
         self.connections.setRowCount(len(rows))
+        selected_item=None
         for index,row in enumerate(rows):
             address=row['remote']
             remote=f"[{address}]:{row['remote_port']}" if ':' in address else f"{address}:{row['remote_port']}"
@@ -272,9 +285,11 @@ class NetworkWatch(QWidget):
                 if column==0:item.setData(Qt.UserRole,row['cookie'])
                 item.setToolTip(local if column==2 else value)
                 self.connections.setItem(index,column,item)
-            if row['cookie']==selected:self.connections.selectRow(index)
+            if row['cookie']==selected:selected_item=self.connections.item(index,0)
+        self._restore_selection(self.connections,selected_item)
         self.connections.blockSignals(False)
         self._connection_selection()
+        self.connections.verticalScrollBar().setValue(scroll[0]);self.connections.horizontalScrollBar().setValue(scroll[1])
 
     def _selected_connection(self):
         selected=self.connections.selectionModel().selectedRows() if hasattr(self,'connections') else []

@@ -39,6 +39,7 @@ with patch('vitalux.profiles.installed',return_value='unstable'):
 app.removeEventFilter(watcher)
 assert not watcher.windows,'Update page mapped an unparented startup control'
 assert not hasattr(update_page,'fresh_profile'),'Test profiles are created automatically, without a reset button'
+assert not hasattr(update_page,'import_profile'),'Channel profiles need no manual transfer button'
 update_page.close()
 
 class FakeTray:

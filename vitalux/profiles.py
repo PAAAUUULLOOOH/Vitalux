@@ -117,16 +117,3 @@ def initialize():
     if updated!=data or not path.exists():
         if path.exists():backup()
         atomic_json(path,updated)
-
-
-def import_other():
-    target=directory('config');other='stable' if installed()=='unstable' else 'unstable'
-    source=directory('config',other)
-    if not (source/'settings.json').is_file():raise ValueError('Für den anderen Kanal ist kein Profil vorhanden.')
-    data=read(source/'settings.json')
-    if data.get('_schema_version',0)>SCHEMA:raise ValueError('Das andere Profil verwendet ein neueres Einstellungsformat.')
-    backup();data=validate({k:v for k,v in data.items() if not k.startswith('_')})
-    # Import appearance/monitoring preferences, never an unfinished GPU boot.
-    for key in ('gpu_boot_pending','gpu_boot_backend','update_channel'):data.pop(key,None)
-    data.update(_schema_version=SCHEMA,_soft_click_revision=1,render_backend='software')
-    _resources(source,target);atomic_json(target/'settings.json',data)

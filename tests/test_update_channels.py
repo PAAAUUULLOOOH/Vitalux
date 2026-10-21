@@ -24,7 +24,7 @@ def run():
             profiles.initialize();assert profiles.read(target/'settings.json')['ui_sound_volume']==35
             profiles.initialize();assert profiles.read(target/'settings.json')['ui_sound_volume']==35
             assert (stable/'settings.json').read_bytes()==saved
-            profiles.import_other();assert profiles.read(target/'settings.json')['theme']=='glass'
+            assert profiles.read(target/'settings.json')['theme']=='light','Later launches overwrote the automatic test profile'
             assert all(profiles.directory(kind)!=profiles.directory(kind,'stable') for kind in profiles.KINDS)
             profiles.select('stable');assert profiles.selected()=='stable' and profiles.installed()=='unstable'
         assert (stable/'settings.json').read_bytes()==saved
