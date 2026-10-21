@@ -1,1 +1,1 @@
-Original Vitalux crystal tap, synthesized locally: 180 ms, mono 48 kHz PCM16. Rounded attack, warm D6 fundamental and softly detuned crystal overtones, with a short smooth decay. No external samples. Licensed with Vitalux.
+Original Vitalux soft glass tap, synthesized locally: 115 ms, mono 48 kHz PCM16. Rounded attack, 440 Hz fundamental with quiet, quickly damped 660/880 Hz overtones and a smooth release. Default playback volume is 50%. No external samples or additional dependencies. Licensed with Vitalux.

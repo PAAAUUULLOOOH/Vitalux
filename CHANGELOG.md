@@ -1,5 +1,14 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.3-unstable.2] - 2026-10-21
+- Liquid Silver ergänzt die Designauswahl mit hellem Platin, satiniertem Silber, Kristallglas, analogen Instrumenten und einem eigenen animierten Silberlogo. Palette und Hintergrund sind aufeinander abgestimmt und fest.
+- Das Löschen persönlicher Einstellungen in Unstable stellt echte Standardwerte her und zeigt die Anleitung erneut. Ein vorhandenes Stable-Profil wird dabei nicht erneut übernommen.
+- Gewollte Neustarts warten auf eine noch beendende Instanz; der Schutz vor echten Mehrfachstarts bleibt erhalten.
+- Nach einem erfolgreich vorbereiteten Update oder Kanalwechsel startet Vitalux automatisch neu, sobald die Hintergrundaufgaben beendet sind. Die Knöpfe für sofortigen oder späteren Neustart entfallen.
+- Black Glass unterstützt eigene Akzentfarben einschließlich Bearbeiten und Löschen. Bei festen Paletten sind die Farbknöpfe einheitlich grau; feste Hintergründe sperren nur die Hintergrundauswahl.
+- Ein kürzerer, weicherer Klicksound ersetzt den bisherigen Ton. Die Standardlautstärke bleibt bei 50 Prozent.
+- Der frühere Platzhalter-Teststand erscheint nicht mehr in der Versionsauswahl, auch nicht über gespeicherte Changelog-Hinweise.
+
 ## [v0.9.6.3-unstable.1] - 2026-10-21
 - Die Designkacheln zeigen kleinere Symbole ohne Schlösser: verfügbare Akzentfarben und Hintergründe farbig, feste Optionen ausgegraut.
 - Im Updates-Reiter bleibt der Changelog sichtbar. Die Versionsauswahl zeigt frühere Stable- oder Unstable-Hinweise, ohne das Installationsziel oder den Kanal zu ändern.
@@ -19,15 +28,6 @@
 - Ein Hinweis zeigt, wenn die eigenen Teständerungen inzwischen in Stable enthalten sind; ein neuerer Unstable-Teststand bleibt vorrangig.
 - Testprofile werden automatisch erstellt und erhalten. Der zusätzliche Knopf für ein frisches Testprofil entfällt.
 - Bereits geladene Kanal-Changelogs bleiben offline lesbar. Prüfzeitpunkt und Verbindungsfehler werden klar angezeigt.
-
-## [v0.9.6.1-unstable.2] - 2026-10-21
-
-- Zwischen Stable und Unstable direkt unter Updates wechseln; getrennte Einstellungsprofile, Sicherungen und die Rückkehr zur stabilen Version erhalten die jeweilige Konfiguration.
-- Apps direkt in der Netzwerkliste sperren und entsperren. Die erforderliche Systemfreigabe wird beim Sperren angefragt, Fehler werden sichtbar erklärt.
-- Einzelne TCP-/UDP-Verbindungen lassen sich in den sanft aufklappbaren erweiterten Verbindungsdetails unabhängig sperren und freigeben.
-- Alle Designs erscheinen auch in Aether Glass und Eclipse Crystal als vollständiges Vorschau-Raster. Beim Darüberfahren zeigen Farbkreis- und Bildsymbole die Anpassbarkeit; feste Optionen tragen ein Schloss.
-- Einheitliche, zum Design passende Ein/Aus-Schalter; Mehrfachauswahlen behalten ihre Häkchen.
-- Weicher, gedämpfter Klickton mit 50 % Standardlautstärke und zuverlässiger Wiedergabe bei wiederholten Klicks.
 
 ## [v0.9.6.0] - 2026-10-21
 - Zwischen Stable und Unstable direkt unter Updates wechseln; getrennte Einstellungsprofile, Sicherungen und die Rückkehr zur stabilen Version erhalten die jeweilige Konfiguration.

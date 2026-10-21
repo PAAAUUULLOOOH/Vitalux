@@ -75,7 +75,7 @@ SLIDES = [
     ),
     (
         "Darstellung und Einstellungen",
-        "Alle zwölf Designs stehen im gleichen Vorschau-Raster. Kleine Symbole erscheinen beim Darüberfahren rechts mittig untereinander: Farbkreis für Akzentfarben, Bildsymbol für Hintergründe; verfügbare Optionen sind farbig, feste Optionen grau, ohne Schlösser.",
+        "Alle dreizehn Designs stehen im gleichen Vorschau-Raster. Kleine Symbole erscheinen beim Darüberfahren rechts mittig untereinander: Farbkreis für Akzentfarben, Bildsymbol für Hintergründe; verfügbare Optionen sind farbig, feste Optionen grau, ohne Schlösser.",
         "Bei anpassbaren Designs wählst du integrierte Hintergründe oder eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
         "Die Suche gleitet zu Treffern und schließt fünf Sekunden nach der Auswahl weich. Beim Öffnen der erweiterten Einstellungen scrollt die Seite mit; dort liegen Grafik-Renderer und Wartung.",
         "Zurücksetzen-Buttons blenden weich ein und aus. Ganz unten setzt du alle Standardwerte wieder her und startest Vitalux neu; einzelne Bereiche benötigen keinen Neustart. Das Logo zeigt einen sanften Herzschlagimpuls.",
@@ -93,7 +93,7 @@ SLIDES = [
         "Updates und Informationen",
         "Im Updates-Reiter stehen laufender Stand, Stable/Unstable und dauerhaft sichtbare Changelogs zusammen. Die Versionsauswahl blättert durch die Historie des Kanals, ohne das Installationsziel zu ändern; nur die separate Installationsaktion wechselt den Kanal.",
         "Bei einem Update glüht das Vitalux-Logo in der App und im Tray. Der Updates-Reiter pulsiert; eine Tray-Nachricht nennt die Version.",
-        "Ein Kanal-Klick zeigt nur den Changelog. Installationen und Neustarts bleiben separate Aktionen; Testprofile entstehen automatisch und bleiben erhalten. Vitalux läuft pro Benutzer nur einmal; ein weiterer Start zeigt einen Hinweis. Zum Beenden auch das Tray-Symbol beachten.",
+        "Ein Kanal-Klick zeigt nur den Changelog. Nach einem geprüften Update oder Kanalwechsel beendet Vitalux die Hintergrundaufgaben und startet automatisch neu. Testprofile entstehen automatisch; das Löschen persönlicher Einstellungen setzt nur das aktive Profil zurück und öffnet die Anleitung erneut.",
         "Der Changelog und die Update-Hinweise folgen deiner ausgewählten Sprache. Die bisherige Versionshistorie bleibt auch nach dem Update offline verfügbar.",
         "updates",
     ),
@@ -377,6 +377,8 @@ class GuideDialog(QDialog):
 def offer_first_start_guide(parent):
     """Automatically show the guide once on the first successful launch."""
     from . import settings
+    if getattr(parent,'_shutdown_pending',False) or getattr(parent,'restart_requested',False):
+        return
     if settings.get("guide_intro_choice") in ("completed", "never"):
         return
     dialog = GuideDialog(parent)

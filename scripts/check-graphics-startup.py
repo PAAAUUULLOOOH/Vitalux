@@ -119,7 +119,7 @@ def child(mode, output):
             win.stack.setCurrentIndex(index)
             QTest.qWait(100)
             sampler = win.sampler
-            for key in ('champagne_glass', 'dark', 'aurora_gold'):
+            for key in ('champagne_glass', 'dark', 'liquid_silver', 'aurora_gold'):
                 preferences.select_design(key)
                 assert win._appearance_overlay is not None
                 overlay = win._appearance_overlay
@@ -129,6 +129,14 @@ def child(mode, output):
                 if mode in renderer.QUICK_MODES:
                     assert not win.centralWidget()._upload_timer.isActive()
                 QTest.qWait(100)
+                if key == 'liquid_silver':
+                    settled(lambda: win._appearance_overlay is None)
+                    assert win.grab().save(str(output/(mode+'-liquid-silver.png')))
+                    win.nav_buttons[1].click()
+                    assert win._page_overlay is not None
+                    settled(lambda: win._page_overlay is None)
+                    win.nav_buttons[index].click()
+                    settled(lambda: win._page_overlay is None)
             settled(lambda: win._appearance_overlay is None)
             assert win._appearance_overlay is None
             assert win.sampler is sampler and sampler.isRunning()
@@ -150,7 +158,7 @@ def child(mode, output):
             renderer.successful_start()
             print(json.dumps({'mode': mode, 'active': win.render_backend_active,
                   'platform': app.platformName(), 'live_sample': True,
-                  'theme_transitions': True, 'search_interruptions': True,
+                  'theme_transitions': True, 'liquid_silver_transitions': True, 'search_interruptions': True,
                   'size': [win.width(), win.height()]}), flush=True)
             result[0] = 0
         finally:

@@ -33,8 +33,9 @@ def run():
         for key in theme.FIXED_MODES:
             theme.set_mode(key)
             mark.sync_theme()
+            suffix = '-light' if theme.is_light() else ''
             assert wordmark_pixmap(200, 42).toImage() == _pixmap(
-                f"brand/vitalux-wordmark-{key.replace('_', '-')}.svg", 200, 42, 2).toImage()
+                f"brand/vitalux-wordmark-{key.replace('_', '-')}{suffix}.svg", 200, 42, 2).toImage()
             fixed_words.add(bytes(wordmark_pixmap(200, 42).toImage().constBits()))
         assert len(fixed_words) == len(theme.FIXED_MODES), 'Gold themes share a wordmark palette'
         mark._phase = .15
@@ -105,7 +106,7 @@ def run():
         button.close()
         with wave.open(str(SOUND)) as source:
             assert source.getnchannels() == 1 and source.getsampwidth() == 2
-            assert .16 <= source.getnframes()/source.getframerate() <= .19
+            assert .10 <= source.getnframes()/source.getframerate() <= .13
             pcm = source.readframes(source.getnframes())
         samples = struct.unpack('<'+'h'*(len(pcm)//2), pcm)
         assert samples[0] == samples[-1] == 0

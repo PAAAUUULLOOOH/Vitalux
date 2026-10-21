@@ -40,7 +40,7 @@ time.sleep(60)
                 assert result.code == 0, 'A normal second start must not trigger launcher recovery'
             else:
                 raise AssertionError('Second launch was not stopped')
-            notice.assert_called_once();initialize.assert_not_called();prepare.assert_not_called()
+            notice.assert_called_once_with(restarting=False);initialize.assert_not_called();prepare.assert_not_called()
         child.send_signal(signal.SIGKILL);child.wait(timeout=10)
         assert other.acquire(), 'Crash left an unusable instance lock'
         assert not InstanceGuard(directory).acquire()
@@ -90,6 +90,27 @@ assert already_running()==0
 """
     for language in ('de','en'):
         subprocess.run([sys.executable,'-c',notice_script,language],check=True,timeout=20)
+
+    restarting_script="""
+import sys,time
+from vitalux.single_instance import InstanceGuard
+guard=InstanceGuard(sys.argv[1]);assert guard.acquire()
+guard.mark_restarting();print('restarting',flush=True);time.sleep(.4)
+"""
+    process=subprocess.Popen([sys.executable,'-c',restarting_script,str(directory)],stdout=subprocess.PIPE,text=True)
+    try:
+        assert process.stdout.readline().strip()=='restarting'
+        waiting=InstanceGuard(directory)
+        assert not waiting.acquire(wait=.01,restart_wait=.05) and waiting.restarting
+        successor=InstanceGuard(directory)
+        assert successor.acquire(wait=.01,restart_wait=2),'Restart successor was rejected during clean shutdown'
+        assert process.poll() is not None and not successor.restarting
+        duplicate=InstanceGuard(directory)
+        assert not duplicate.acquire(wait=.01) and not duplicate.restarting
+        successor.close()
+    finally:
+        if process.poll() is None:process.kill()
+        process.wait(timeout=10)
 
     # Never follow a substituted lock file outside the protected directory.
     unsafe=Path(folder)/'unsafe';unsafe.mkdir(mode=0o700)

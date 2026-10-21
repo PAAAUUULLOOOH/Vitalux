@@ -147,6 +147,12 @@ class DesignShell(QObject):
             w._outer_layout.setContentsMargins(0,0,0,0)
             w._outer_layout.setSpacing(0)
             w._apply_sidebar_state()
+            if mode=='liquid_silver':
+                w._outer_layout.setContentsMargins(8,8,12,8)
+                w._outer_layout.setSpacing(8)
+                w.pulse_core.setFixedSize(108,108)
+                w.brand_mark.setFixedSize(174,33)
+                if not w._sidebar_collapsed:w.sidebar_layout.setContentsMargins(18,24,16,20)
         self.retranslate()
         self._footer_compact=None
         self._responsive()

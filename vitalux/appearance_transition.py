@@ -8,11 +8,12 @@ from . import motion
 class AppearanceTransition(QWidget):
     finished = Signal()
 
-    def __init__(self, parent, before, after):
+    def __init__(self, parent, before, after, *, slide=0):
         super().__init__(parent)
         self.setObjectName('appearanceTransition')
         self.before, self.after = before, after
         self.progress = 0.0
+        self.slide=slide
         self.setAttribute(Qt.WA_TransparentForMouseEvents, True)
         self.setAttribute(Qt.WA_OpaquePaintEvent, True)
         self.setGeometry(parent.rect())
@@ -53,5 +54,6 @@ class AppearanceTransition(QWidget):
         painter = QPainter(self)
         painter.drawPixmap(0, 0, self.before)
         painter.setOpacity(self.progress)
+        if self.slide:painter.translate(round(self.slide*(1-self.progress)),0)
         painter.drawPixmap(0, 0, self.after)
         painter.end()

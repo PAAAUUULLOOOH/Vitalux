@@ -39,6 +39,8 @@ COLLECTIONS = {
 }
 from . import signature_designs
 COLLECTIONS.update(signature_designs.COLLECTIONS)
+from . import liquid_silver
+COLLECTIONS[liquid_silver.KEY]=liquid_silver.PALETTE
 KEYS = tuple(COLLECTIONS)
 
 
@@ -63,6 +65,7 @@ def rounded(rect, radius):
 
 def scene_pixmap(size, mode):
     """Fixed geometry and soft light; independent of frame rate or sensors."""
+    if mode==liquid_silver.KEY:return liquid_silver.scene_pixmap(size)
     if mode in signature_designs.KEYS:
         return signature_designs.scene_pixmap(size,mode)
     pal = palette(mode)
@@ -120,6 +123,8 @@ def scene_pixmap(size, mode):
 def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
     """Position-correct frost, smoked depth, inner bevel and metallic edge."""
     from . import theme
+    if theme.mode()==liquid_silver.KEY:
+        return liquid_silver.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
     if theme.mode() in signature_designs.KEYS:
         return signature_designs.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
     from .glass import draw_frosted_backdrop
@@ -191,6 +196,7 @@ def paint_edge(p, rect, radius, *, active=False, compact=False):
 
 def paint_sidebar(p, widget, rect):
     from . import theme
+    if theme.mode()==liquid_silver.KEY:return liquid_silver.paint_sidebar(p,widget,rect)
     if theme.mode() in signature_designs.KEYS:
         return signature_designs.paint_panel(p,widget,rect.adjusted(1,1,-1,-1),strong=True)
     from .glass import draw_frosted_backdrop
@@ -222,6 +228,8 @@ def paint_nav(p, widget, rect, selected, hover):
 
 
 def paint_gauge(p, widget, value, text, ring_color):
+    from . import theme
+    if theme.mode()==liquid_silver.KEY:return liquid_silver.paint_gauge(p,widget,value,text,ring_color)
     pal = palette()
     side = min(widget.width(), widget.height())
     center = QPointF(widget.width()/2, widget.height()/2)
@@ -277,6 +285,7 @@ def paint_gauge(p, widget, value, text, ring_color):
 
 
 def stylesheet(mode):
+    if mode==liquid_silver.KEY:return liquid_silver.stylesheet()
     if mode in signature_designs.KEYS:
         return signature_designs.stylesheet(mode)
     pal = palette(mode)

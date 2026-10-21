@@ -48,6 +48,10 @@ def mode():
     return _mode
 
 
+def is_light():
+    return _mode in ('light','liquid_silver')
+
+
 def source_accent():
     """Selected/detected hue before contrast adjustment, for authored assets."""
     return _accent
@@ -361,11 +365,20 @@ QLabel#benchmarkResultWrite { color: $SECONDARY; }
 """)
 
 
+def disabled_controls(light=False):
+    ink,bg,edge=('#717983','#e4e8ec','#c5ccd3') if light else ('#9299a3','#1b1e23','#41464e')
+    return f'''
+    QPushButton:disabled,QPushButton#ghostBtn:disabled,QPushButton#primaryBtn:disabled,
+    QPushButton#langBtn:disabled,QToolButton:disabled,QToolButton#layoutAction:disabled {{
+        color:{ink};background:{bg};border-color:{edge};}}
+    '''
+
+
 def stylesheet():
     from . import eco
     base = accent()
     pal = _THEMES[_mode]
-    light = _mode == "light"
+    light = is_light()
     result_bg = blend(base, pal['card'], .055 if light else .10)
     active_bg = blend(base, pal['sidebar'], .18 if light else .22)
     qss = _QSS.substitute(
@@ -397,9 +410,9 @@ def stylesheet():
     """
     if _mode in PREMIUM_MODES:
         from .premium import stylesheet as premium_stylesheet
-        return qss + premium_stylesheet(_mode)
+        return qss + premium_stylesheet(_mode) + disabled_controls(light)
     if _mode == "black_glass_gold":
-        return qss + _BLACK_GLASS_GOLD_QSS.substitute(ACCENT=base)
+        return qss + _BLACK_GLASS_GOLD_QSS.substitute(ACCENT=base) + disabled_controls(light)
     if eco.enabled():
         # Intentionally primitive Qt widgets: no rounded cards, light effects,
         # shadow treatments or decorative surfaces. All selectors are native.
@@ -412,4 +425,4 @@ def stylesheet():
             border-radius: 0px; }
         QPushButton:hover, QToolButton:hover { background-color: #222528; }
         """
-    return qss + (_HOLOGRAPHIC_QSS.substitute(ACCENT=base) if _mode == "holographic" else "")
+    return qss + (_HOLOGRAPHIC_QSS.substitute(ACCENT=base) if _mode == "holographic" else "") + disabled_controls(light)

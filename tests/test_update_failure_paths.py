@@ -78,10 +78,14 @@ def run():
         assert host.restart_requested and events == ['close']
         assert not spawn.called, 'ZIP update started another process before clean shutdown'
     events.clear()
+    manager._restart_requested=False
     manager.pending_path = '/tmp/staged-appimage'
-    with patch.object(updater, 'activate_appimage_update', side_effect=lambda _: events.append('activate')):
+    manager.pending_restart=True
+    with patch.object(updater, 'activate_appimage_update', side_effect=lambda *a,**k: events.append('activate')):
         manager._restart()
-    assert events == ['activate', 'close'] and not host.restart_requested
+        assert events==['close'],'Activation preceded the worker-shutdown barrier'
+        assert manager.prepare_exit()
+    assert events == ['close','activate'] and not host.restart_requested
     manager.shutdown()
     print('Update failures: no space, read-only folder, truncated transfer and interrupted install retain old app PASS')
 

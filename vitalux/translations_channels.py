@@ -1,5 +1,6 @@
 """Update channels, customization indicators and network controls."""
 EN={
+'Black Glass · Tiefschwarze Glasflächen mit dezenten Reflexionen und silbernen Kanten. Akzentfarben und Hintergründe sind frei anpassbar.':'Black Glass · Deep black glass with subtle reflections and silver edges. Accent colors and backgrounds are fully customizable.',
 'Vitalux läuft bereits.':'Vitalux is already running.',
 'Versionsverlauf':'Version history',
 'Für diese Version ist noch kein Changelog verfügbar.':'No release notes are available for this version yet.',
@@ -90,4 +91,14 @@ EN.update({
 'Testversionen mit neuen Änderungen vor dem Stable-Release.':'Test builds with new changes ahead of the Stable release.',
 'Verfügbarkeit nicht bestätigt. Gespeicherte Changelogs bleiben lesbar.':'Availability is unconfirmed. Saved changelogs remain readable.',
 'Die vorbereitete Version wird beim Neustart aktiv. Bis dahin kannst du Vitalux weiterverwenden.':'The prepared version takes effect after restarting. You can continue using Vitalux until then.',
+})
+
+EN.update({
+'Update geprüft. Vitalux wird automatisch neu gestartet.':'Update verified. Vitalux is restarting automatically.',
+'Hintergrundaufgaben werden beendet. Anschließend startet Vitalux automatisch mit der vorbereiteten Version.':'Background tasks are finishing. Vitalux will then restart automatically into the prepared version.',
+'Neustart fehlgeschlagen. Bitte unter Updates erneut versuchen.':'Restart could not be prepared. Please retry in Updates.',
+'Vitalux wird gerade neu gestartet. Bitte einen Moment warten.':'Vitalux is restarting. Please wait a moment.',
+'Liquid Silver · Helles Platin, satiniertes Silber und Kristallglas. Feste Palette, analog gezeichnete Instrumente und ein dunkler Herzschlag im Silberlogo.':'Liquid Silver · Light platinum, satin silver and crystal glass. Fixed palette, analog instruments and a dark heartbeat in the silver logo.',
+'Alle dreizehn Designs stehen im gleichen Vorschau-Raster. Kleine Symbole erscheinen beim Darüberfahren rechts mittig untereinander: Farbkreis für Akzentfarben, Bildsymbol für Hintergründe; verfügbare Optionen sind farbig, feste Optionen grau, ohne Schlösser.':'All thirteen designs share the same preview grid. Small indicators fade in at the right center, vertically stacked: a color wheel for accents and an image symbol for backgrounds. Available options are colored; fixed options are grey, without locks.',
+'Ein Kanal-Klick zeigt nur den Changelog. Nach einem geprüften Update oder Kanalwechsel beendet Vitalux die Hintergrundaufgaben und startet automatisch neu. Testprofile entstehen automatisch; das Löschen persönlicher Einstellungen setzt nur das aktive Profil zurück und öffnet die Anleitung erneut.':'Clicking a channel only shows release notes. After a verified update or channel switch, Vitalux finishes background tasks and restarts automatically. Test profiles are created automatically; deleting personal preferences resets only the active profile and reopens the guide.',
 })

@@ -76,4 +76,48 @@ assert Path(sys.argv[3]).read_text()=='old-image\\n'
     wait_for(lambda:image.read_text().startswith('#!/bin/sh'))
     assert image.with_name(image.name+'.previous').read_text()=='old-image\n'
     assert not marker.exists(),'Deferred AppImage unexpectedly reopened'
-print('Actual ZIP/AppImage helpers: wait for exit, checksum recheck, backups and no reopening with Later PASS')
+
+    # Automatic activation uses the same real helpers and reopens exactly once.
+    shutil.copytree(SOURCE/'vitalux', root/'vitalux', dirs_exist_ok=True,
+                    ignore=shutil.ignore_patterns('__pycache__'))
+    with ZipFile(archive, 'w') as zipped:
+        zipped.writestr('Vitalux/vitalux/__main__.py', 'automatic=True\n')
+        zipped.writestr('Vitalux/vitalux/__init__.py', '__version__ = "0.9.6.2"\n')
+        zipped.writestr('Vitalux/run.sh', '#!/bin/sh\nprintf x >> "'+str(marker)+'"\n')
+    raw=archive.read_bytes();digest=hashlib.sha256(raw).hexdigest()
+    prepared.parent.mkdir(parents=True,exist_ok=True);prepared.write_bytes(raw)
+    profiles.atomic_json(pending,{'version':'0.9.6.2'})
+    env.pop('APPIMAGE',None)
+    code='''import sys,time
+from pathlib import Path
+sys.path.insert(0,sys.argv[1])
+from vitalux import updater
+root,archive,digest,pending=sys.argv[1:]
+old=Path(root,'vitalux/__main__.py').read_bytes()
+updater.activate_zip_update(archive,digest,pending,relaunch=True)
+time.sleep(.25)
+assert Path(root,'vitalux/__main__.py').read_bytes()==old
+'''
+    result=subprocess.run([sys.executable,'-c',code,str(root),str(prepared),digest,str(pending)],env=env,capture_output=True,text=True,timeout=15)
+    assert result.returncode==0,result.stdout+result.stderr
+    wait_for(marker.exists);time.sleep(.3)
+    assert marker.read_text()=='x' and not pending.exists()
+    assert (root/'vitalux/__main__.py').read_text()=='automatic=True\n'
+    marker.unlink()
+    image.write_text('old-again\n')
+    candidate.write_text('#!/bin/sh\nprintf x >> "'+str(marker)+'"\n');candidate.chmod(0o755)
+    env['APPIMAGE']=str(image)
+    code='''import sys,time
+from pathlib import Path
+sys.path.insert(0,sys.argv[1])
+from vitalux import updater
+updater.activate_appimage_update(sys.argv[2],relaunch=True)
+time.sleep(.25)
+assert Path(sys.argv[3]).read_text()=='old-again\\n'
+'''
+    result=subprocess.run([sys.executable,'-c',code,str(SOURCE),str(candidate),str(image)],env=env,capture_output=True,text=True,timeout=15)
+    assert result.returncode==0,result.stdout+result.stderr
+    wait_for(marker.exists);time.sleep(.3)
+    assert marker.read_text()=='x'
+    assert image.with_name(image.name+'.previous').read_text()=='old-again\n'
+print('Actual ZIP/AppImage helpers: exit coordination, checksums, backups, manual exit and exactly one automatic relaunch PASS')

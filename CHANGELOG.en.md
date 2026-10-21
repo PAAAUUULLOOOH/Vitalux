@@ -1,5 +1,14 @@
 # Vitalux – Changes
 
+## [v0.9.6.3-unstable.2] - 2026-10-21
+- Liquid Silver adds light platinum, satin silver, crystal-glass panels, analog instruments and its own animated silver identity. Its coordinated palette and background are fixed.
+- Deleting personal preferences in Unstable restores actual defaults and reopens the guide. An existing Stable profile is not imported again during a reset.
+- Intentional restarts wait for an instance that is still shutting down, while genuine duplicate starts remain blocked.
+- After a verified update or channel switch is prepared, Vitalux restarts automatically once background tasks finish. The immediate/later restart buttons are removed.
+- Black Glass supports custom accent creation, editing and removal. Fixed palettes use consistently greyed-out color controls; fixed backgrounds only lock background selection.
+- A shorter, softer click sound replaces the previous tone. The default volume remains 50 percent.
+- The old placeholder test build is removed from the version selector, including cached release notes.
+
 ## [v0.9.6.3-unstable.1] - 2026-10-21
 - Design tiles use smaller indicators without locks: available accent and background options are colored, while fixed options are grey.
 - Release notes always remain visible in Updates. The version selector browses previous Stable or Unstable notes without changing the installation destination or channel.
@@ -19,15 +28,6 @@
 - A notice explains when the installed test changes have reached Stable; a newer Unstable test build takes priority.
 - Test profiles are created and preserved automatically. The separate fresh-profile button has been removed.
 - Previously downloaded channel changelogs remain readable offline. Check times and connection errors are displayed clearly.
-
-## [v0.9.6.1-unstable.2] - 2026-10-21
-
-- Switch between Stable and Unstable from Updates, with separate settings profiles, backups and a return to the stable version that preserves each configuration.
-- Block and unblock applications directly in the network list. Blocking requests necessary system authorization and explains failures visibly.
-- Individually block or allow TCP/UDP sockets in smoothly expanding advanced connection details.
-- Aether Glass and Eclipse Crystal now show the complete design-preview grid. Hovering reveals color-wheel and image indicators; fixed options carry a lock.
-- Consistent on/off switches follow every design, while multiple selections retain checkmarks.
-- A softer, damped click tone defaults to 50% volume and remains reliable for repeated clicks.
 
 ## [v0.9.6.0] - 2026-10-21
 - Switch between Stable and Unstable from Updates, with separate settings profiles, backups and a return to the stable version that preserves each configuration.

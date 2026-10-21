@@ -1,13 +1,15 @@
-"""Black Glass keeps preset accents while disabling custom accent edits."""
+"""Black Glass permits preset/custom accents and preserves them across designs."""
 import os
 import sys
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, os.getcwd())
 
 from PySide6.QtWidgets import QApplication, QWidget
+from PySide6.QtGui import QColor
 from vitalux import settings, theme
 from vitalux.control import PreferencesPage
 
@@ -48,15 +50,35 @@ def run():
             app.processEvents()
             assert page.accent_combo.isEnabled(), "Built-in colors must remain available"
             assert page.accent_combo.model().item(preset).isEnabled()
-            assert not page.accent_combo.model().item(custom).isEnabled()
-            assert not page.custom_accent_button.isEnabled()
+            assert page.accent_combo.model().item(custom).isEnabled()
+            assert page.custom_accent_button.isEnabled()
             page.change_accent("#123456")
-            assert settings.get("accent") == "#4f8cff"
-            page.remove_custom_accent()
-            page.edit_custom_accent()
-            page.custom_accent(page.accent_combo)
+            assert settings.get("accent") == "#123456"
             assert settings.get("custom_accents") == [
                 {"name": "Mein Petrol", "color": "#123456"}]
+
+            with patch('vitalux.control.QColorDialog.getColor', return_value=QColor('#965173')), \
+                    patch('vitalux.control.QInputDialog.getText', return_value=('Beere', True)):
+                page.custom_accent_button.click()
+            assert settings.get('accent') == '#965173'
+            assert settings.get('custom_accents')[-1] == dict(name='Beere', color='#965173')
+            with patch('vitalux.control.QColorDialog.getColor', return_value=QColor('#736495')), \
+                    patch('vitalux.control.QInputDialog.getText', return_value=('Lavendel', True)):
+                page.edit_custom_accent_button.click()
+            assert settings.get('accent') == '#736495'
+            assert settings.get('custom_accents')[-1] == dict(name='Lavendel', color='#736495')
+            assert page.accent_combo.findData('#965173') == -1
+            page.remove_custom_accent_button.click()
+            assert settings.get('accent') == 'auto'
+            assert page.accent_combo.findData('#736495') == -1
+            assert settings.get('custom_accents') == [dict(name='Mein Petrol', color='#123456')]
+
+            page.select_design('liquid_silver')
+            with patch('vitalux.control.QColorDialog.getColor') as dialog:
+                page.custom_accent_button.click()
+                page.custom_accent(page.accent_combo)
+                assert not dialog.called
+            assert not page.custom_accent_button.isEnabled()
 
             page.select_design("glass")
             app.processEvents()
@@ -67,7 +89,7 @@ def run():
         finally:
             settings.PATH = old
             theme.set_mode("glass")
-    print("Black Glass custom accent lock and non-destructive restore: OK")
+    print("Black Glass create/apply/edit/delete, fixed-theme guards and cross-design persistence: OK")
 
 
 if __name__ == "__main__":

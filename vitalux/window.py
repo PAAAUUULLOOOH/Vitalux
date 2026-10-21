@@ -153,6 +153,7 @@ class MainWindow(QMainWindow):
         self._build(0)
         self._appearance_key = self._appearance_signature()
         self._appearance_overlay = None
+        self._page_overlay = None
         if settings.get('mini_hud_enabled', False):
             self.set_mini_hud_enabled(True)
 
@@ -328,6 +329,11 @@ class MainWindow(QMainWindow):
     def _switch_page(self, index):
         # Leaving edit mode commits the layout; neither the editor nor its
         # unsaved arrangement is silently destroyed on navigation.
+        overlay = getattr(self, '_page_overlay', None)
+        if overlay is not None:
+            overlay.finish()
+        before=(self.stack.grab() if theme.mode()=='liquid_silver' and motion.enabled()
+                and index!=self.stack.currentIndex() and self.stack.isVisible() else None)
         overview = self.pages[0][1]
         if index != 0 and hasattr(overview, 'board') and overview.board.editing:
             overview.save_editor()
@@ -359,6 +365,14 @@ class MainWindow(QMainWindow):
             QTimer.singleShot(0, page_widget.request_smart)
         # Keep sampling while refreshing only the visible page.
         self._refresh_visible_page()
+
+        if before is not None:
+            from .appearance_transition import AppearanceTransition
+            overlay=AppearanceTransition(self.stack,before,self.stack.grab(),slide=16)
+            self._page_overlay=overlay
+            overlay.finished.connect(lambda:setattr(self,'_page_overlay',None)
+                                     if self._page_overlay is overlay else None)
+            overlay.start()
 
     def set_language(self, code):
         """Translate widgets in place; never rebuild a running benchmark/page."""
@@ -698,7 +712,7 @@ class MainWindow(QMainWindow):
         self.sidebar_version.setVisible(not compact)
         self.nav_host.layout().setContentsMargins(1,2,1 if compact else 3,2)
         for btn in self.nav_buttons:btn.set_compact(compact)
-        self.sidebar.setFixedWidth(74 if compact else 250)
+        self.sidebar.setFixedWidth(74 if compact else 218 if theme.mode()=='liquid_silver' else 250)
         self.collapse_button.set_collapsed(compact)
         self.sidebar._position_toggle()
 
@@ -1014,6 +1028,17 @@ class MainWindow(QMainWindow):
         self._force_quit = True
         self.close()
 
+    def _cancel_shutdown(self,message):
+        self._shutdown_pending = self.restart_requested = self._force_quit = False
+        self.centralWidget().setEnabled(True)
+        if not self.sampler.isRunning():self.sampler.start()
+        for _title,page in self.pages:
+            if isinstance(page,NetworkPage):page.watcher.resume_after_shutdown()
+        self.manager.resume_after_shutdown()
+        for _title,page in self.pages:
+            if isinstance(page,PreferencesPage):page._refresh_restore_button()
+        self.statusBar().showMessage(tr(message),8000)
+
     def quit_from_tray(self):
         self._tray_click_timer.stop()
         self._force_quit = True
@@ -1076,19 +1101,13 @@ class MainWindow(QMainWindow):
                 committed = False
             if not committed:
                 event.ignore()
-                self._shutdown_pending = self.restart_requested = self._force_quit = False
-                self.centralWidget().setEnabled(True)
-                self.sampler.start()
-                for _title,page in self.pages:
-                    if isinstance(page,NetworkPage):page.watcher.resume_after_shutdown()
-                resume = getattr(self.manager, 'resume_after_shutdown', None)
-                if callable(resume):
-                    resume()
-                for _title, page in self.pages:
-                    if isinstance(page, PreferencesPage):
-                        page._refresh_restore_button()
-                self.statusBar().showMessage(tr('Einstellungen konnten nicht zurückgesetzt werden.'), 8000)
+                self._cancel_shutdown('Einstellungen konnten nicht zurückgesetzt werden.')
                 return
+        if (getattr(self.manager,'_restart_requested',False)
+                and not self.manager.prepare_exit()):
+            event.ignore()
+            self._cancel_shutdown('Neustart fehlgeschlagen. Bitte unter Updates erneut versuchen.')
+            return
         self._tray_click_timer.stop()
         self._tray_glow.stop()
         self._mini_hud.hide()

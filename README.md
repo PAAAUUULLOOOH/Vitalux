@@ -7,14 +7,16 @@
 </p>
 
 <p align="center"><strong>Your Linux system, clearly in view.</strong><br>A native desktop monitor with live telemetry, glass interfaces and practical hardware diagnostics.</p>
-<p align="center"><a href="https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest"><strong>Download</strong></a> · <a href="USER-GUIDE.md">User guide</a> · <a href="CHANGELOG.en.md">Changelog</a> · <a href="https://github.com/PAAAUUULLOOOH/Vitalux/issues">Support</a> · <a href="THIRD-PARTY.md">Licenses</a></p>
+<p align="center"><a href="https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable"><strong>Download</strong></a> · <a href="USER-GUIDE.md">User guide</a> · <a href="CHANGELOG.en.md">Changelog</a> · <a href="https://github.com/PAAAUUULLOOOH/Vitalux/issues">Support</a> · <a href="THIRD-PARTY.md">Licenses</a></p>
 
 ![Vitalux running in English with Obsidian Gold and real system measurements](assets/vitalux-dashboard-preview.png)
+
+**Unstable preview**, based on Stable v0.9.6.2. Test downloads use the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable); [Main / Latest](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest) remains Stable.
 
 ## Features
 
 - Live CPU, GPU, memory, storage, network and sensor measurements, with charts, alerts and local history.
-- A rearrangeable dashboard, MiniHUD and twelve coordinated designs. **Obsidian Gold is the default.**
+- A rearrangeable dashboard, MiniHUD and thirteen coordinated designs, including light platinum **Liquid Silver**. **Obsidian Gold is the default.**
 - Per-app connections, usage warnings and optional, reversible TCP/UDP session blocks.
 - SMART information, drive benchmarks and local diagnostic reports.
 - German and English interfaces, guides and release notes; monitoring works offline.
@@ -29,21 +31,21 @@ Full app networking additionally requires cgroup v2/BPF, process-fork tracepoint
 
 ## Start Vitalux
 
-Download a package from the [latest release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest).
+Download a package from the [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable).
 
 **AppImage:**
 
 ```bash
-chmod +x Vitalux-v0.9.6.2-x86_64.AppImage
-./Vitalux-v0.9.6.2-x86_64.AppImage
+chmod +x Vitalux-v0.9.6.3-unstable.2-x86_64.AppImage
+./Vitalux-v0.9.6.3-unstable.2-x86_64.AppImage
 ```
 
 First launch offers user-account installation or **Run once**. Use `--portable` to skip integration, `--install` to add it later, or `--uninstall` to remove it while keeping preferences.
 
-**Portable ZIP:** extract the complete `Vitalux-v0.9.6.2-linux-x86_64.zip` into its own writable folder:
+**Portable ZIP:** extract the complete `Vitalux-v0.9.6.3-unstable.2-linux-x86_64.zip` into its own writable folder:
 
 ```bash
-cd Vitalux-v0.9.6.2
+cd Vitalux-v0.9.6.3-unstable.2
 bash run.sh
 ```
 
@@ -53,7 +55,14 @@ Keep the runtime, libraries, assets and launcher together. **Code → Download Z
 
 ## Appearance and controls
 
-Choose a design in **Settings → Appearance**. Hover or keyboard-focus a preview to reveal two small symbols, stacked at its right edge: a color wheel for accents and an image symbol for backgrounds. Colored symbols indicate available options; grey symbols indicate fixed options, without locks. Saved accents and images remain available in compatible designs.
+Choose a design in **Settings → Appearance**. Hover or keyboard-focus a preview to reveal two small symbols, stacked at its right edge: a color wheel for accents and an image symbol for backgrounds. Colored symbols indicate available options; grey symbols indicate fixed options, without locks. Saved accents and images remain available in compatible designs. Black Glass supports custom colors; fixed palettes use consistently greyed-out color buttons. Liquid Silver has its own fixed silver palette and background.
+
+<details>
+<summary>Preview Liquid Silver</summary>
+
+![Liquid Silver: pearl glass, satin silver and analog instruments](assets/vitalux-liquid-silver-preview.png)
+
+</details>
 
 Settings search glides to matches and closes softly after five seconds. **Advanced settings** contains renderers and Maintenance; the full **Restore defaults** action sits at the bottom and restarts Vitalux. Section resets apply in place. Optional soft click sounds default to 50% volume. On/off controls use themed switches; multiple selections retain checkmarks.
 
@@ -63,12 +72,12 @@ See the [user guide](USER-GUIDE.md) for design restrictions, graphics, network c
 
 Everything stays in **Updates**: installed version and check status at the top, **Stable / Unstable** and their changelogs below. Release notes stay visible. A **Version** selector browses each channel’s history without changing the installation target. Clicking a channel only browses its notes; a separate action shows the target version and prepares installation. Unstable is selectable for installation only when a verified test build contains genuinely newer app changes. GitHub's **Latest** download remains Stable.
 
-Choose **Restart now** or **Later** after preparation. The target stays fixed until restart, with no duplicate update offers. Normal exit applies a deferred package without reopening Vitalux. Stable and Unstable automatically retain separate profiles; the first test launch copies Stable preferences. Notes follow your selected language and remain readable offline. Cached information alone cannot authorize an update.
+After a verified update or channel switch, Vitalux finishes background work and **restarts automatically**. The target stays fixed throughout. An activation failure retains recovery data and offers **Retry**. Stable and Unstable use separate profiles; only the first test launch copies Stable preferences. **Delete personal preferences** restores defaults and reopens the guide for the active profile. Notes follow your selected language and remain readable offline. Cached information alone cannot authorize an update.
 
 Updates check SHA-256 and preserve recovery data. For manual verification, put the matching release manifest beside your downloads and run:
 
 ```bash
-sha256sum --ignore-missing -c Vitalux-v0.9.6.2-SHA256SUMS.txt
+sha256sum --ignore-missing -c Vitalux-v0.9.6.3-unstable.2-SHA256SUMS.txt
 ```
 
 A matching checksum verifies consistency with that manifest, not an independent digital signature.
@@ -85,7 +94,7 @@ VITALUX_RENDERER=software bash run.sh
 For an AppImage/FUSE problem:
 
 ```bash
-./Vitalux-v0.9.6.2-x86_64.AppImage --appimage-extract
+./Vitalux-v0.9.6.3-unstable.2-x86_64.AppImage --appimage-extract
 VITALUX_RENDERER=software bash squashfs-root/AppRun --portable
 ```
 

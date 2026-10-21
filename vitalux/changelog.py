@@ -5,8 +5,13 @@ import re
 ROOT = Path(__file__).resolve().parent.parent
 CHANGELOG_PATH = ROOT / "CHANGELOG.md"
 ENGLISH_CHANGELOG_PATH = ROOT / "CHANGELOG.en.md"
-_HEADING = re.compile(r"^## \[v(\d+\.\d+\.\d+(?:\.\d+)?(?:-unstable\.\d+)?)\](?:\s+-.*)?$", re.M)
+_HEADING = re.compile(r"^## \[v(\d+\.\d+\.\d+(?:\.\d+)?(?:-unstable\.\d+)?)\](?:[ \t]+-.*)?$", re.M)
 _LANGUAGE_SECTION = re.compile(r"^## (Deutsch|English)\s*$", re.M)
+RETIRED_VERSIONS = frozenset({'0.9.6.1-unstable.2'})
+
+
+def visible_version(version):
+    return str(version).lstrip('v') not in RETIRED_VERSIONS
 
 
 def entries(path=None, lang=None):
@@ -24,7 +29,7 @@ def entries(path=None, lang=None):
     results = []
     seen_versions = set()
     for idx, match in enumerate(heads):
-        if match.group(1) in seen_versions:
+        if match.group(1) in seen_versions or not visible_version(match.group(1)):
             continue
         seen_versions.add(match.group(1))
         until = heads[idx + 1].start() if idx + 1 < len(heads) else len(data)
@@ -76,7 +81,7 @@ def channel_history(channel, record=None, lang=None):
     record = record or {}
     version = record.get('latest', '')
     try:
-        matching = versions.channel(version) == channel
+        matching = versions.channel(version) == channel and visible_version(version)
     except ValueError:
         matching = False
     if matching:

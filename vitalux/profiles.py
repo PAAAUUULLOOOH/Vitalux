@@ -100,9 +100,30 @@ def validate(data):
     return result
 
 
+def _defaults(data):
+    updated=validate(data)
+    if updated.get('_soft_click_revision')!=1:
+        updated.update(ui_sound_volume=50,_soft_click_revision=1)
+    updated['_schema_version']=SCHEMA
+    return updated
+
+
+def reset_preferences(path=None):
+    """Commit an empty active profile, retaining resources and first-use state.
+
+    Keeping a valid settings file also prevents older test builds from
+    interpreting this explicit reset as their first-ever launch.
+    """
+    path=Path(path) if path is not None else directory('config')/'settings.json'
+    atomic_json(path,_defaults({}))
+    atomic_json(path.parent/'profile-state.json',{'initialized':True,'schema':SCHEMA})
+    return True
+
+
 def initialize():
     target=directory('config');path=target/'settings.json'
-    if installed()=='unstable' and not path.exists():
+    marker=target/'profile-state.json'
+    if installed()=='unstable' and not path.exists() and not read(marker).get('initialized'):
         source=directory('config','stable')
         data=read(source/'settings.json');_resources(source,target)
     else:data=read(path)
@@ -110,10 +131,9 @@ def initialize():
     if type(schema) is not int or schema>SCHEMA:
         backup();data={}
         atomic_json(root('config')/'profile-notice.json',{'channel':installed(),'reason':'incompatible_profile'})
-    updated=validate(data)
-    if updated.get('_soft_click_revision')!=1:
-        updated.update(ui_sound_volume=50,_soft_click_revision=1)
-    updated['_schema_version']=SCHEMA
+    updated=_defaults(data)
     if updated!=data or not path.exists():
         if path.exists():backup()
         atomic_json(path,updated)
+    if not read(marker).get('initialized'):
+        atomic_json(marker,{'initialized':True,'schema':SCHEMA})

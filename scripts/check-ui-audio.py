@@ -96,9 +96,11 @@ def check(args, output):
                     # The monitor may omit initial silence while negotiating.
                     # Compare observed note intervals, not its wall-clock origin.
                     groups = []
+                    clip=ui_sound._samples(70)
+                    threshold=max(100,round(max(map(abs,clip))*.18))
                     for offset in range(0, len(samples), 480):
                         peak = max(map(abs, samples[offset:offset+480]), default=0)
-                        if peak > 1200:
+                        if peak > threshold:
                             moment = offset/48000
                             if groups and moment-groups[-1][1] < .055:
                                 groups[-1][1] = moment

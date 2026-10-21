@@ -49,7 +49,8 @@ def run():
             for mode, variant in config['theme_assets'].items():
                 theme.set_mode(mode)
                 assert _brand_asset(True) == f'brand/vitalux-pulse-{variant}.svg'
-                assert _brand_asset(False) == f'brand/vitalux-wordmark-{variant}.svg'
+                suffix = '-light' if config['variants'][variant].get('light_lens') else ''
+                assert _brand_asset(False) == f'brand/vitalux-wordmark-{variant}{suffix}.svg'
             theme.set_mode('light')
             for key in ('blue', 'cyan', 'violet', 'green', 'orange', 'yellow', 'red', 'pink'):
                 theme.set_accent(config['variants'][key]['accent'])

@@ -20,7 +20,7 @@ STATUS_TEXT = {
     "uptodate": "Vitalux ist auf dem neuesten Stand.",
     "available": "Eine neue Vitalux-Version ist verfügbar!",
     "installing": "Update wird heruntergeladen und geprüft …",
-    "installed": "Neustart erforderlich.",
+    "installed": "Update geprüft. Vitalux wird automatisch neu gestartet.",
 }
 
 class UpdatePage(Page):
@@ -72,15 +72,11 @@ class UpdatePage(Page):
         self.progress_bar=Bar();self.progress_bar.flat=True
         self.phase=label('', 'muted',wrap=True)
         actions.addWidget(self.progress_bar);actions.addWidget(self.phase)
-        self.restart_hint=label('Die vorbereitete Version wird beim Neustart aktiv. Bis dahin kannst du Vitalux weiterverwenden.','muted',wrap=True)
+        self.restart_hint=label('Hintergrundaufgaben werden beendet. Anschließend startet Vitalux automatisch mit der vorbereiteten Version.','muted',wrap=True)
         actions.addWidget(self.restart_hint)
-        restart_row=QHBoxLayout()
-        self.restart_button=QPushButton('Jetzt neu starten',self);self.restart_button.setObjectName('primaryBtn')
-        self.later_button=QPushButton('Später',self);self.later_button.setObjectName('ghostBtn')
-        self.restart_button.clicked.connect(self.m._restart)
-        self.later_button.clicked.connect(self.m.defer_restart)
-        restart_row.addWidget(self.restart_button);restart_row.addWidget(self.later_button);restart_row.addStretch(1)
-        actions.addLayout(restart_row)
+        self.retry_button=QPushButton('Erneut versuchen',self);self.retry_button.setObjectName('ghostBtn')
+        self.retry_button.clicked.connect(self.m._restart)
+        actions.addWidget(self.retry_button,0,Qt.AlignLeft)
         self.channel_card.body.addWidget(self.action_panel)
 
         self.changelog_card=QWidget(self)
@@ -168,7 +164,8 @@ class UpdatePage(Page):
 
     def _running_status(self):
         m=self.m
-        if m.pending_restart or m.status=='installed':return tr('Neustart erforderlich.')
+        if m.pending_restart or m.status=='installed':
+            return tr('Neustart fehlgeschlagen. Bitte unter Updates erneut versuchen.' if m.error else STATUS_TEXT['installed'])
         if m.status in ('preview','installing') or m.checking:
             return tr(STATUS_TEXT['checking' if m.checking else m.status])
         if m.error and m.error_kind!='check':return tr('Vorgang fehlgeschlagen.')
@@ -221,8 +218,8 @@ class UpdatePage(Page):
         self.install_button.setStyleSheet(f'QPushButton#primaryBtn:disabled {{ background: {theme.CARD}; color: {theme.MUTED}; border: 1px solid {theme.BORDER}; }}')
         self.install_button.setToolTip(tr('Ein Wechsel ist nur mit einem geprüften, neueren Teststand möglich.') if show_disabled else '')
         self.progress_bar.setVisible(busy);self.phase.setVisible(busy)
-        self.restart_hint.setVisible(pending);self.restart_button.setVisible(pending)
-        self.later_button.setVisible(pending and not m.restart_deferred)
+        self.restart_hint.setVisible(pending and not m.error)
+        self.retry_button.setVisible(pending and bool(m.error) and m.error_kind=='restart')
         self.action_panel.setVisible(pending or busy or m.can_install or show_disabled)
         self._sync_history(record)
 

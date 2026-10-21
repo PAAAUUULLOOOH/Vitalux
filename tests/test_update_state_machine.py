@@ -26,13 +26,13 @@ with tempfile.TemporaryDirectory() as folder,patch.dict(os.environ,{f'XDG_{k.upp
     profiles.select('unstable')  # An old saved destination must not change the installed channel.
     m=module.UpdateManager();m._timer.stop()
     assert m.channel=='stable'
-    m._on_checked({'stable':record('stable','0.9.6.0'), 'unstable':record('unstable','0.9.6.1-unstable.2',False,False)})
+    m._on_checked({'stable':record('stable','0.9.6.0'), 'unstable':record('unstable','0.9.6.1-unstable.1',False,False)})
     page=UpdatePage(m);page.resize(1100,900);page.show();app.processEvents()
     assert page.changelog_card.isVisible() and not hasattr(page,'changelog_button')
     assert not hasattr(page,'fresh_profile')
     assert not hasattr(page,'import_profile')
     page.channel_buttons['unstable'].click();app.processEvents()
-    page.history_combo.setCurrentIndex(page.history_combo.findData('0.9.6.1-unstable.2'))
+    page.history_combo.setCurrentIndex(page.history_combo.findData('0.9.6.1-unstable.1'))
     assert page.changelog_card.isVisible() and 'Aktueller Stand' in page.changelog_details.text()
     assert not page.install_button.isEnabled() and not m.available
     assert page.status.text()=='Vitalux ist auf dem neuesten Stand.','Browsing Unstable changed the running Stable status'
@@ -58,14 +58,13 @@ with tempfile.TemporaryDirectory() as folder,patch.dict(os.environ,{f'XDG_{k.upp
     events=[];m.restart.connect(lambda:events.append('restart'))
     worker=SimpleNamespace(channel='unstable',version='0.9.6.1-unstable.3',pending_path=None,sha256='a'*64)
     m._on_installed('',worker);assert m.pending_restart and not m.available
-    QTest.qWait(1000);assert not events,'Restart happened without the user choosing it'
+    QTest.qWait(350);assert events==['restart'],'Prepared update did not restart automatically'
+    assert not hasattr(page,'restart_button') and not hasattr(page,'later_button')
     page.channel_buttons['stable'].click();app.processEvents()
     assert m.status=='installed' and not m.available and not m.can_install
     assert m.pending['channel']=='unstable' and '0.9.6.1' in page.latest.v.text()
     before=dict(m.pending);m.check();assert m._thread is None
     m._on_checked({'stable':record('stable','0.9.6.2',True)});assert m.pending==before and not m.available
-    m.defer_restart();assert m.restart_deferred
-    assert not page.later_button.isVisible() and page.restart_button.isVisible()
     m._restart();assert events==['restart']
     pending_file=m._pending_file
     again=module.UpdateManager();again._timer.stop();assert again.pending_restart and not again.available
@@ -80,12 +79,12 @@ with tempfile.TemporaryDirectory() as folder,patch.dict(os.environ,{f'XDG_{k.upp
     cached._on_checked({'error':'Offline'})
     assert cached.status=='error' and cached.last_checked==checked and 'Aktueller Stand' in cached.notes
     cached.shutdown()
-    # AppImages prepared with Later are activated on Exit, without reopening.
+    # Explicit Exit before the automatic restart still applies without reopening.
     image=Path(folder)/'staged.AppImage';image.write_bytes(b'candidate')
     m=module.UpdateManager();m._timer.stop()
     m._on_installed('',SimpleNamespace(channel='unstable',version='0.9.6.1-unstable.4',pending_path=str(image),sha256='a'*64))
     with patch.object(updater,'activate_appimage_update') as activate:
-        m.defer_restart();assert not activate.called
+        assert not activate.called
         m.finalize_exit();activate.assert_called_once_with(str(image),relaunch=False)
         m.finalize_exit();assert activate.call_count==1
     m._pending_file.unlink(missing_ok=True);m.shutdown()
@@ -98,4 +97,4 @@ with tempfile.TemporaryDirectory() as folder,patch.dict(os.environ,{f'XDG_{k.upp
         m._on_checked({'stable':record('stable','0.9.6.1',True),'unstable':record('unstable','0.9.6.2-unstable.1',True,True)})
         assert not m.stable_has_test_changes and m.available and m.notification_version=='0.9.6.2-unstable.1'
         m.shutdown()
-print('Channel views, gated switching, explicit restart, pending snapshot, offline notes and Stable promotion PASS')
+print('Channel views, gated switching, automatic single restart, pending snapshot, offline notes and Stable promotion PASS')

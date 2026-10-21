@@ -8,7 +8,7 @@ def main():
     # CLOEXEC lets renderer/update launchers start after this process exits.
     instance = InstanceGuard()
     if not instance.acquire():
-        sys.exit(already_running())
+        sys.exit(already_running(restarting=instance.restarting))
     from . import profiles
     profiles.initialize()
     from PySide6.QtCore import QTimer
@@ -61,6 +61,8 @@ def main():
     manager = UpdateManager()
     app.aboutToQuit.connect(manager.finalize_exit)
     win = MainWindow(info, logo, manager)
+    app.aboutToQuit.connect(lambda:instance.mark_restarting()
+                            if win.restart_requested or manager.pending_restart else None)
     if os.environ.get('VITALUX_LOCAL_PREVIEW') == '1':
         win.setWindowTitle('Vitalux · Design Preview · ' + theme.mode().replace('_', ' ').title())
     print(f"Vitalux: Fensterplattform={app.platformName()}, "

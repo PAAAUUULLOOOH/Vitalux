@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Reproduce the original, softly damped Vitalux button tone (no samples)."""
+"""Build Vitalux's original soft glass tap, without third-party samples."""
 from pathlib import Path
 import math,struct,wave
 
 RATE=48000
-DURATION=.18
+DURATION=.115
 
 
 def build(path):
@@ -12,11 +12,14 @@ def build(path):
     count=round(RATE*DURATION)
     for index in range(count):
         t=index/RATE
-        attack=math.sin(min(1,t/.012)*math.pi/2)**2
-        release=min(1,(DURATION-t)/.035)**2
-        envelope=attack*math.exp(-t/.040)*release
-        tone=(math.sin(2*math.pi*740*t)+.16*math.sin(2*math.pi*1110*t)+.045*math.sin(2*math.pi*1480*t))
-        values.append(round(6400*envelope*tone))
+        attack=math.sin(min(1,t/.008)*math.pi/2)**2
+        release=min(1,(DURATION-t)/.028)**2
+        # A rounded fundamental and a short, quiet crystal overtone avoid the
+        # former sustained high bell note during repeated navigation.
+        tone=(math.sin(2*math.pi*440*t)*math.exp(-t/.029)
+              +.22*math.sin(2*math.pi*660*t)*math.exp(-t/.018)
+              +.035*math.sin(2*math.pi*880*t)*math.exp(-t/.012))
+        values.append(round(4800*attack*release*tone))
     values[0]=values[-1]=0
     with wave.open(str(path),'wb') as output:
         output.setparams((1,2,RATE,0,'NONE','not compressed'))

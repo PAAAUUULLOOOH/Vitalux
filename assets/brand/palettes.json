@@ -150,6 +150,18 @@
       "spec": "#fff8e9",
       "secondary": "#f4a86e",
       "fixed": true
+    },
+    "liquid-silver": {
+      "name": "Liquid Silver",
+      "accent": "#849aaf",
+      "top": "#f0f6fb",
+      "mid": "#a7bbcc",
+      "low": "#4d667e",
+      "spec": "#ffffff",
+      "secondary": "#81adc8",
+      "fixed": true,
+      "light_lens": true,
+      "pulse_base": "#4b6378"
     }
   },
   "theme_assets": {
@@ -158,7 +170,8 @@
     "champagne_glass": "champagne-glass",
     "aurora_gold": "aurora-gold",
     "aether_glass": "aether-glass",
-    "eclipse_crystal": "eclipse-crystal"
+    "eclipse_crystal": "eclipse-crystal",
+    "liquid_silver": "liquid-silver"
   },
   "custom_accent_policy": "Preserve the outlined geometry; moderately richer tint for the circle logo only.",
   "motion_seconds": {

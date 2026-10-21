@@ -80,9 +80,11 @@ def logo(pal, animated=False):
     gradient(defs, 'outer-edge', [(0, pal['spec']), (.48, pal['low']),
                                  (.72, pal['top']), (1, pal['spec'])],
              gradientUnits='userSpaceOnUse', x1=140, y1=100, x2=1070, y2=1160)
-    gradient(defs, 'glass', [(0, mix(pal['secondary'], '#292820', .88)),
+    lens_stops=([(0,'#ffffff'),(.31,'#e9f1f8'),(.67,'#d1dfe9'),(1,'#aebfce')]
+                if pal.get('light_lens') else [(0, mix(pal['secondary'], '#292820', .88)),
                               (.31, mix(pal['low'], '#151515', .88)),
-                              (.67, '#121211'), (1, '#08090b')],
+                              (.67, '#121211'), (1, '#08090b')])
+    gradient(defs, 'glass', lens_stops,
              radial=True, cx='36%', cy='24%', r='83%')
     gradient(defs, 'metal-reflection', [(0, pal['spec'], .34),
                                         (.42, pal['spec'], .015),
@@ -97,11 +99,14 @@ def logo(pal, animated=False):
     gradient(defs, 'lens-metal', [(0, pal['spec']), (.19, pal['mid']),
                                   (.53, pal['low']), (.79, pal['mid']), (1, pal['top'])],
              x1='0%', y1='0%', x2='100%', y2='100%')
-    gradient(defs, 'pulse-metal', [(0, mix(pal['low'], pal['mid'], .26)),
-                                   (.48, pal['low']), (.82, pal['mid']),
-                                   (1, mix(pal['low'], pal['mid'], .35))],
+    pulse_base=pal.get('pulse_base',pal['low'])
+    pulse_mid=pal.get('pulse_base',pal['mid'])
+    gradient(defs, 'pulse-metal', [(0, mix(pulse_base, pulse_mid, .26)),
+                                   (.48, pulse_base), (.82, pulse_mid),
+                                   (1, mix(pulse_base,pulse_mid,.35))],
              gradientUnits='userSpaceOnUse', x1=320, y1=460, x2=900, y2=790)
-    gradient(defs, 'pulse-light', [(0, pal['mid']), (.48, pal['top']), (1, pal['spec'])],
+    gradient(defs, 'pulse-light', ([(0,'#47657e'),(.48,'#294c68'),(1,'#122f48')] if pal.get('light_lens')
+                                  else [(0, pal['mid']), (.48, pal['top']), (1, pal['spec'])]),
              gradientUnits='userSpaceOnUse', x1=318, y1=616, x2=939, y2=616)
 
     lens = node(root, 'g', id='stationary-lens')
@@ -226,7 +231,7 @@ def main():
                 path = directory / f'vitalux-{kind}-{key}.svg'
                 write(path, builder(pal, animated))
                 files.append(path)
-            if key != 'gold' and not pal.get('fixed'):
+            if key != 'gold' and (not pal.get('fixed') or pal.get('light_lens')):
                 path = directory / f'vitalux-wordmark-{key}-light.svg'
                 write(path, wordmark(pal, animated, light=True))
                 files.append(path)

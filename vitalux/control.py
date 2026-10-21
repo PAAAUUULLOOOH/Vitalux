@@ -248,8 +248,9 @@ class PreferencesPage(Page):
         self.mode_notes = {
             'dark': 'Dark · Kontrastreiche, ruhige Flächen ohne Glasunschärfe.',
             'light': 'Light · Helle, gut lesbare Karten ohne Glaseffekt.',
+            'liquid_silver': 'Liquid Silver · Helles Platin, satiniertes Silber und Kristallglas. Feste Palette, analog gezeichnete Instrumente und ein dunkler Herzschlag im Silberlogo.',
             'glass': 'Glass · Halbtransparente Panels mit Lichtreflexen und weichgezeichnetem Hintergrund.',
-            'black_glass': 'Black Glass · Tiefschwarze Glasflächen mit dezenten Reflexionen und silbernen Kanten. Eigene Akzentfarben sind hier gesperrt.',
+            'black_glass': 'Black Glass · Tiefschwarze Glasflächen mit dezenten Reflexionen und silbernen Kanten. Akzentfarben und Hintergründe sind frei anpassbar.',
             'black_glass_gold': 'Black Glass Gold · Tiefschwarze Glasflächen, helles Gold für Logo, Diagramme, Anzeigen, Icons und Rahmen. Akzentfarbe und Hintergrund sind fest aufeinander abgestimmt.',
             'holographic': 'Holographic · Eigenständige, undurchsichtige Sci-Fi-HUD-Oberfläche mit leuchtenden Konturen, technischen Kacheln und Diagrammen – ohne Glas.',
             'minimal': 'Minimalistisch · Einfache Flächen ohne Glas, Schatten und dekorative Animationen. Spart Zeichenaufwand.',
@@ -604,7 +605,7 @@ class PreferencesPage(Page):
         self._refresh_restore_button()
         self._search_targets = [
             ('appearance', 'Glas Klang Ton Sound Klicks', self.sound_toggle),
-            ('appearance', 'Design Dark Light Glass Black Glass Gold Holographic Minimalistisch Obsidian Champagne Aurora Aether Eclipse Crystal', self.design_tiles[0]),
+            ('appearance', 'Design Dark Light Glass Black Glass Gold Holographic Minimalistisch Obsidian Champagne Aurora Aether Eclipse Crystal Liquid Silver Platin Silber', self.design_tiles[0]),
             ('appearance', 'Akzentfarbe Eigene Farben Bearbeiten Löschen', self.accent_combo),
             ('appearance', 'Hintergrund Bild Hintergrundfarbe automatisch', self.background_combo),
             ('appearance', 'Animationen Bewegung Übergang', self.motion_combo),
@@ -866,8 +867,8 @@ class PreferencesPage(Page):
                               'Einstellungen und importierte Bilder bleiben erhalten.'))
 
     def delete_personal_preferences(self):
-        """Explicitly confirmed deletion of only the personal settings file."""
-        from pathlib import Path
+        """Reset the active profile and guide without reimporting Stable."""
+        from . import profiles
         answer = QMessageBox.question(
             self, 'Vitalux',
             tr('Wirklich alle gespeicherten Vitalux-Einstellungen löschen? '
@@ -879,8 +880,7 @@ class PreferencesPage(Page):
             return
         def commit():
             try:
-                Path(settings.PATH).unlink(missing_ok=True)
-                return True
+                return profiles.reset_preferences(settings.PATH)
             except OSError as exc:
                 QMessageBox.warning(self, 'Vitalux', str(exc))
                 return False
@@ -1020,9 +1020,6 @@ class PreferencesPage(Page):
     def change_accent(self, val):
         if eco.enabled() or theme.mode() == 'black_glass_gold' or theme.mode() in premium.KEYS or not self.accent_combo.isEnabled():
             return
-        if theme.mode() == 'black_glass' and any(
-                item['color'] == val for item in self.custom_accents):
-            return
         if not val or (wallpaper_accents.is_wallpaper_accent(val)
                        and not wallpaper_accents.available()):
             return
@@ -1077,8 +1074,9 @@ class PreferencesPage(Page):
         self.custom_accent_button.setEnabled(not custom_locked)
         self.edit_custom_accent_button.setEnabled(not custom_locked)
         self.remove_custom_accent_button.setEnabled(not custom_locked)
-        # In Black Glass individual accent entries are grayed out like
-        # the unavailable automatic wallpaper accent; presets still work.
+        for button in (self.custom_accent_button,self.edit_custom_accent_button,self.remove_custom_accent_button):
+            button.setCursor(Qt.ArrowCursor if custom_locked else Qt.PointingHandCursor)
+        # Stored custom colors follow the same capability as creating them.
         model = self.accent_combo.model()
         for i in range(self.accent_combo.count()):
             if any(item['color'] == self.accent_combo.itemData(i)
