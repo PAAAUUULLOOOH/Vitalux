@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 
-DESIGNS = ('obsidian_gold', 'champagne_glass', 'aurora_gold')
+DESIGNS = ('obsidian_gold', 'black_glass_gold', 'aether_glass', 'eclipse_crystal', 'champagne_glass', 'aurora_gold', 'liquid_silver')
 
 
 def prepare(design=None):
@@ -27,7 +27,10 @@ def prepare(design=None):
     if design is not None:
         if design not in DESIGNS:
             raise ValueError('Unknown Vitalux preview design')
-        changes.update(theme=design, background_style='theme_default', ultra_eco=False)
+        from .appearance import migrate
+        choices=migrate(dict(theme=design))
+        changes.update({k:v for k,v in choices.items() if not k.endswith('_migration')})
+        changes.update(ultra_eco=False,background_tint='')
     if changes and not settings.set_many(changes):
         raise RuntimeError('Unable to save local preview preferences')
 

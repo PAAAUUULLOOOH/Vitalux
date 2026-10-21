@@ -1,5 +1,11 @@
 # Vitalux – Changes
 
+## [v0.9.6.3-unstable.5] - 2026-10-21
+- Design, Background and Accent colors are separate and freely combinable: use all previous backgrounds, personal images, background tint, preset accents and custom colors with any design.
+- Obsidian Gold is renamed Obsidian and keeps its original gold appearance as the default. Black Glass Gold becomes Black Glass, replacing the former Black Glass. Champagne, Aurora and Liquid Silver remain available as backgrounds and accents instead of duplicate surface tiles.
+- Existing preferences migrate with backups to their corresponding combination, retaining personal images, colors and dashboard settings.
+- The update bar shows a centered percentage. Slow downloads report progress more often; stalled connections produce an error. Downloads can be cancelled and retried after failures.
+
 ## [v0.9.6.3-unstable.4] - 2026-10-21
 - Liquid Silver now uses the Obsidian Gold interface with dark smoked glass and a coordinated satin-silver palette. The former light layout is replaced.
 - Liquid Chrome is removed; saved selections move to the replacement Liquid Silver without resetting other preferences.

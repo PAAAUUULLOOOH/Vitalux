@@ -1,3 +1,18 @@
+# Unstable plan — v0.9.6.3-unstable.5
+
+Owner authorizes implementation and publication on Unstable. Main remains at v0.9.6.2.
+
+Validation: all 68 scripts pass using the shipped runtime, including real slow/stalled and size-header-free HTTPS transfers, actual install-worker cancel/retry, appearance migration, default-image equality and all-design image/palette compatibility. All five native renderers and scale factors 1/1.25/1.5/2 pass. The candidate updater downloaded and SHA-256-verified the public Stable AppImage, activated it after shutdown and reopened it once. The original-container backup remains intact.
+
+- Keep original Obsidian Gold appearance as the default, renaming its visible design to Obsidian. Rename Black Glass Gold to Black Glass and remove the former Black Glass surface. Combine Champagne Glass, Aurora Gold and Liquid Silver into Obsidian; retain all backgrounds and authored colors.
+- Separate Design, Background and Accent colors into clear cards. Every retained design supports every built-in background, imported image, preset/custom accent and independent background tint. Responsive native preview grids, protected presets, coherent materials/identity and accessible color selection.
+- Back up and migrate old profiles once while preserving visible combinations, dormant choices, custom resources, dashboard settings and Stable isolation. Resets retain original gold defaults.
+- Center update preparation percentage inside the bar. Investigate reported hangs with real slow/stalled HTTPS transfers. Read available smaller chunks, bound idle waits, support cancellation and retry while preserving verification, frozen destinations and automatic restart.
+- Refresh compact English docs, DE/EN guide, translations and actual screenshots. Changelogs contain only app-visible changes. Keep licenses and source offers.
+- Platinum Atelier remains deferred; this does not authorize implementing that concept.
+
+---
+
 # Unstable plan — v0.9.6.3-unstable.4
 
 Owner explicitly requests publication on Unstable. Main remains at v0.9.6.2.

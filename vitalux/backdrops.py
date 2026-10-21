@@ -15,7 +15,15 @@ PRESETS = (
     ('dark', 'Dark'),
     ('light', 'Light'),
     ('glass', 'Glass'),
-    ('black_glass', 'Black Glass'),
+    ('black_glass', 'Black Glass · Original'),
+    ('black_glass_gold', 'Black Glass'),
+    ('obsidian_gold', 'Obsidian'),
+    ('champagne_glass', 'Champagne Glass'),
+    ('aurora_gold', 'Aurora Gold'),
+    ('liquid_silver', 'Liquid Silver'),
+    ('aether_glass', 'Aether Glass'),
+    ('eclipse_crystal', 'Eclipse Crystal'),
+    ('holographic', 'Holographic'),
     ('minimal', 'Minimalistisch'),
     ('daybreak', 'Hell · Morgenlicht'),
     ('prism', 'Regenbogen · Prisma'),
@@ -37,12 +45,9 @@ def resolve(style, theme_mode):
     from . import eco
     if eco.enabled():
         return 'minimal'  # No file decode, gradient, blur or animation.
-    from . import theme
-    if theme_mode in theme.PREMIUM_MODES:
-        return theme_mode
-    if theme_mode == 'black_glass_gold':
-        return 'black_glass'
-    return style if style == 'custom_image' else (theme_mode if style not in KEYS or style == 'theme_default' else style)
+    if style == 'custom_image':return style
+    return theme_mode if style not in KEYS or style == 'theme_default' else style
+
 
 
 # Colors within each collection share similar saturation and luminance.
@@ -64,6 +69,12 @@ _PALETTES = {
 
 
 def _colors(style, accent, light):
+    from .premium import COLLECTIONS
+    if style in COLLECTIONS:
+        pal=COLLECTIONS[style]
+        return tuple(QColor(pal[key]) for key in ('bg','accent','bloom','shadow'))
+    if style=='holographic':
+        return QColor('#030b13'),QColor(accent),QColor('#236282'),QColor('#071421')
     if style == 'adaptive':
         base = QColor(accent)
         if not base.isValid():
@@ -139,6 +150,25 @@ def render(size, style='glass', accent='#4f8cff', light=False, phase=0.0):
     width, height = int(size.width()), int(size.height())
     if width < 1 or height < 1:
         return QPixmap(), QPixmap()
+    from . import premium
+    if style in premium.SCENE_KEYS or style == 'holographic':
+        if style == 'holographic':
+            from .holographic import scene_pixmap
+            sharp = scene_pixmap(size, accent)
+        else:
+            sharp = premium.scene_pixmap(size, style)
+        small = sharp.scaled(max(12,width//12),max(12,height//12), Qt.IgnoreAspectRatio,Qt.SmoothTransformation)
+        return sharp, small.scaled(width,height,Qt.IgnoreAspectRatio,Qt.SmoothTransformation)
+    if style in ('glass','black_glass','black_glass_gold'):
+        from pathlib import Path
+        prefix = 'glass' if style == 'glass' else 'black-glass'
+        assets = Path(__file__).resolve().parents[1]/'assets'
+        result=[]
+        for suffix in ('-atmosphere.jpg','-atmosphere-blur.jpg'):
+            source=QPixmap(str(assets/(prefix+suffix)))
+            scaled=source.scaled(size,Qt.KeepAspectRatioByExpanding,Qt.SmoothTransformation)
+            result.append(scaled.copy(max(0,(scaled.width()-width)//2),max(0,(scaled.height()-height)//2),width,height))
+        return tuple(result)
     style = style if style in KEYS else 'glass'
     # Render at reduced resolution; smooth upscaling keeps painting inexpensive.
     scale = min(1., 900. / max(width, height))
@@ -247,3 +277,14 @@ def render(size, style='glass', accent='#4f8cff', light=False, phase=0.0):
                          Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
     soft = small.scaled(width, height, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
     return sharp, soft
+
+
+def tint(pixmap, value):
+    """Apply a restrained tint once; preserve native detail and light structure."""
+    chosen=QColor(str(value))
+    if pixmap.isNull() or not value or not chosen.isValid():return pixmap
+    result=pixmap.copy();p=QPainter(result)
+    chosen.setAlpha(130)
+    p.setCompositionMode(QPainter.CompositionMode_SoftLight)
+    p.fillRect(result.rect(),chosen);p.end()
+    return result

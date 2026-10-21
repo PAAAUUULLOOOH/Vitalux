@@ -17,12 +17,13 @@ _THEMES = {
 }
 _THEMES.update({key: {name: pal[name] for name in (
     'bg', 'sidebar', 'card', 'border', 'track', 'grid', 'text', 'muted')}
-    for key, pal in COLLECTIONS.items()})
+    for key, pal in COLLECTIONS.items() if key in PREMIUM_MODES})
 CHOICES = (('dark', 'Dark'), ('light', 'Light'), ('glass', 'Glass'),
-           ('black_glass', 'Black Glass'), ('black_glass_gold', 'Black Glass Gold'),
+           ('black_glass_gold', 'Black Glass'),
            ('holographic', 'Holographic'), ('minimal', 'Minimalistisch')) + tuple(
-               (key, pal['title']) for key, pal in COLLECTIONS.items())
-FIXED_MODES = (*PREMIUM_MODES, 'black_glass_gold')
+               (key, 'Obsidian' if key == 'obsidian_gold' else pal['title']) for key, pal in COLLECTIONS.items() if key in PREMIUM_MODES)
+FIXED_MODES = ()
+_THEMES.pop('black_glass')
 
 
 def background_locked():
@@ -39,9 +40,10 @@ BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED = (_THEMES[_mode][key] for k
 
 def set_mode(value):
     global _mode, BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED
-    value = 'liquid_silver' if value == 'liquid_chrome' else value
+    from .appearance import canonical
+    value = canonical(value)
     _mode = "dark" if value == "amoled" else value if value in _THEMES else DEFAULT_THEME
-    a = _THEMES[_mode]
+    a = material_palette(_THEMES[_mode])
     BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED = (a[x] for x in ("bg", "sidebar", "card", "border", "track", "grid", "text", "muted"))
 
 
@@ -59,10 +61,12 @@ def source_accent():
 
 
 def set_accent(color):
-    global _accent
+    global _accent, BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED
     candidate = QColor(color)
     if candidate.isValid():
         _accent = candidate.name()
+        a = material_palette(_THEMES[_mode])
+        BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED = (a[x] for x in ('bg','sidebar','card','border','track','grid','text','muted'))
 
 
 def _luminance(c):
@@ -75,11 +79,7 @@ def _luminance(c):
 
 def accent():
     """Keep user-selected hues readable against white/dark backgrounds."""
-    if _mode in PREMIUM_MODES:
-        return COLLECTIONS[_mode]['accent']
-    if _mode == "black_glass_gold":
-        return "#f3cd79"  # The gold theme ignores user and wallpaper accents.
-    c = QColor("#52d3ff" if _mode == "holographic" and _accent == "#4f8cff" else _accent)
+    c = QColor(_accent)
     if _mode == 'light':
         for _ in range(12):
             if (1.05 / (_luminance(c) + .05)) >= 4.0:
@@ -100,10 +100,12 @@ def accent_qcolor(alpha=255):
 
 
 def secondary_accent():
-    if _mode in PREMIUM_MODES:
-        return COLLECTIONS[_mode]['secondary']
-    if _mode == "black_glass_gold":
-        return "#ffe4a2"
+    from .appearance import authored
+    selected = authored(_accent)
+    if selected:
+        return selected['secondary']
+    if _accent == '#f3cd79':
+        return '#ffe4a2'
     c = QColor(accent())
     h, s, v, _ = c.getHsv()
     if h < 0:
@@ -115,7 +117,7 @@ def level_color(pct):
     # Black Glass Gold does not inherit the default yellow/red load palette.
     # Warnings remain semantically distinguishable via their own labels.
     if _mode == "black_glass_gold":
-        return "#bb8c45" if pct >= 90 else "#dfb963" if pct >= 75 else accent()
+        return QColor(accent()).darker(135 if pct >= 90 else 112).name() if pct >= 75 else accent()
     return CRIT if pct >= 90 else WARN if pct >= 75 else accent()
 
 
@@ -124,6 +126,37 @@ def blend(foreground, background, strength):
     return QColor(round(fg.red()*strength + bg.red()*(1-strength)),
                   round(fg.green()*strength + bg.green()*(1-strength)),
                   round(fg.blue()*strength + bg.blue()*(1-strength))).name()
+
+
+def default_accent(mode=None):
+    mode = mode or _mode
+    if mode in COLLECTIONS:return COLLECTIONS[mode]['accent']
+    return '#f3cd79' if mode == 'black_glass_gold' else '#52d3ff' if mode == 'holographic' else '#4f8cff'
+
+
+def material_palette(base):
+    """Keep surface geometry and luminance; coordinate selected metal tones."""
+    from .appearance import authored
+    result = dict(base)
+    native = default_accent()
+    if _accent == native:
+        result.setdefault('accent', _accent)
+        return result
+    chosen = authored(_accent)
+    if chosen and not is_light():
+        for key in ('bg','sidebar','card','border','track','grid','text','muted','secondary','light','bloom','shadow','series'):
+            result[key] = chosen[key]
+    else:
+        for key, amount in (('sidebar',.06),('card',.09),('border',.52),('track',.22),('grid',.18)):
+            if key in result:result[key] = blend(_accent, result[key], amount)
+        if not is_light():
+            result['text']=blend(_accent,'#f4f6fa',.06)
+            result['muted']=blend(_accent,'#bcc5cf',.10)
+        result.update(secondary=QColor(_accent).lighter(125).name(),
+                      light=QColor(_accent).darker(150).name(), bloom=QColor(_accent).darker(220).name(),
+                      series=(_accent, QColor(_accent).lighter(140).name(), '#9baebd', '#c4cfda'))
+    result['accent'] = _accent
+    return result
 
 
 def combo_surface():
@@ -143,30 +176,30 @@ def combo_surface():
 
 
 _BLACK_GLASS_GOLD_QSS = Template(r"""
-/* Special fixed-gold material; user-selected accents are intentionally ignored. */
-#pageTitle, #heroTitle, #telemetryValue, #chipValue, #bigName { color: #ffebb5; }
+/* Black Glass material with independent selected accents. */
+#pageTitle, #heroTitle, #telemetryValue, #chipValue, #bigName { color: $TEXT; }
 #cardTitle, #chipTitle, #metricCaption, #overviewLive, #statusTag, #focusReading { color: $ACCENT; }
-#pageSub, #metricDetail, #sidebarDistro, #sidebarVersion, #muted { color: #d0b984; }
-QToolTip { background: #16130f; border: 1px solid #b99147; color: #ffe7af; }
+#pageSub, #metricDetail, #sidebarDistro, #sidebarVersion, #muted { color: $MUTED; }
+QToolTip { background: $CARD; border: 1px solid $BORDER; color: $TEXT; }
 QLineEdit, QComboBox, QSpinBox, QTextEdit, QListWidget,
-QFrame#alertThresholdField { background: #17130e; color: #fbe8b8; border: 1px solid #9a783a; }
-QComboBox::drop-down { background: #211a10; border-left: 1px solid #9a783a; }
-QComboBox::drop-down:hover { background: #382913; }
-QComboBox QAbstractItemView { background: #16120d; color: #ffe6a9; border: 1px solid #b99147;
-    selection-background-color: #403019; selection-color: #fff0c9; }
-QComboBox QAbstractItemView::item:selected { background: #403019; color: #fff0c9; }
+QFrame#alertThresholdField { background: $SIDEBAR; color: $TEXT; border: 1px solid $BORDER; }
+QComboBox::drop-down { background: $TRACK; border-left: 1px solid $BORDER; }
+QComboBox::drop-down:hover { background: $ACTIVE; }
+QComboBox QAbstractItemView { background: $SIDEBAR; color: $TEXT; border: 1px solid $BORDER;
+    selection-background-color: $TRACK; selection-color: $TEXT; }
+QComboBox QAbstractItemView::item:selected { background: $TRACK; color: $TEXT; }
 QPushButton#ghostBtn, QPushButton#langBtn, QToolButton#layoutAction,
 QPushButton#systemUpdatesDetails, QPushButton#systemUpdatesInstall {
-    background: #211a11; color: #fbe8b8; border: 1px solid #8c703e;
+    background: $TRACK; color: $TEXT; border: 1px solid $BORDER;
 }
 QPushButton#ghostBtn:hover, QPushButton#langBtn:hover, QToolButton#layoutAction:hover,
 QPushButton#systemUpdatesDetails:hover, QPushButton#systemUpdatesInstall:hover {
-    border-color: $ACCENT; background: #382c17; color: #ffefb8;
+    border-color: $ACCENT; background: $ACTIVE; color: $TEXT;
 }
-QProgressBar { background: #17130c; border: 1px solid #9a783a; }
+QProgressBar { background: $SIDEBAR; border: 1px solid $BORDER; }
 QProgressBar::chunk { background: $ACCENT; }
-QGroupBox#insightGroup { background: #16120c; border-color: #9a783a; }
-#primaryBtn { background: #f3cd79; border-color: #f3cd79; color: #160e03; }
+QGroupBox#insightGroup { background: $CARD; border-color: $BORDER; }
+#primaryBtn { background: $ACCENT; border-color: $ACCENT; color: $INK; }
 QComboBox:disabled, QPushButton:disabled { color: #877858; border-color: #51432c; background: #16120e; }
 """)
 
@@ -378,7 +411,7 @@ def disabled_controls(light=False):
 def stylesheet():
     from . import eco
     base = accent()
-    pal = _THEMES[_mode]
+    pal = material_palette(_THEMES[_mode])
     light = is_light()
     result_bg = blend(base, pal['card'], .055 if light else .10)
     active_bg = blend(base, pal['sidebar'], .18 if light else .22)
@@ -413,7 +446,7 @@ def stylesheet():
         from .premium import stylesheet as premium_stylesheet
         return qss + premium_stylesheet(_mode) + disabled_controls(light)
     if _mode == "black_glass_gold":
-        return qss + _BLACK_GLASS_GOLD_QSS.substitute(ACCENT=base) + disabled_controls(light)
+        return qss + _BLACK_GLASS_GOLD_QSS.substitute(ACCENT=base, TEXT=TEXT, MUTED=MUTED, CARD=CARD, BORDER=BORDER, SIDEBAR=SIDEBAR, TRACK=TRACK, ACTIVE=active_bg, INK='#07111b') + disabled_controls(light)
     if eco.enabled():
         # Intentionally primitive Qt widgets: no rounded cards, light effects,
         # shadow treatments or decorative surfaces. All selectors are native.

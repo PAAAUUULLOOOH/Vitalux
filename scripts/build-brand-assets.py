@@ -231,7 +231,7 @@ def main():
                 path = directory / f'vitalux-{kind}-{key}.svg'
                 write(path, builder(pal, animated))
                 files.append(path)
-            if key != 'gold' and (not pal.get('fixed') or pal.get('light_lens')):
+            if key != 'gold':
                 path = directory / f'vitalux-wordmark-{key}-light.svg'
                 write(path, wordmark(pal, animated, light=True))
                 files.append(path)

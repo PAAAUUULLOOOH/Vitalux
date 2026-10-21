@@ -131,6 +131,8 @@ def _sample(style, filename, fit, stamp, theme_mode):
 
 def resolve_accent(stored, distro_color='#4f8cff'):
     stored = effective_selection(stored)
+    if stored == 'design_default':
+        return theme.default_accent()
     if stored == 'auto':
         return distro_color
     if is_wallpaper_accent(stored):

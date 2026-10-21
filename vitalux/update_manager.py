@@ -27,6 +27,7 @@ class _InstallThread(QThread):
         super().__init__(parent)
         self.url,self.sha256=url,sha256
         self.channel,self.version=parent.channel,parent.latest
+        self.expected_size=parent.records.get(parent.channel,{}).get('bytes')
         self.pending_path=None
         self.kind='appimage' if updater.appimage_path() else 'zip'
 
@@ -34,10 +35,17 @@ class _InstallThread(QThread):
         try:
             if self.channel!=profiles.installed():
                 profiles.backup('stable');profiles.backup('unstable')
-            self.pending_path=updater.install(self.url,sha256=self.sha256,progress=self.progress.emit,defer=True)
+            self.pending_path=updater.install(self.url,sha256=self.sha256,progress=self._report_progress,defer=True,expected_size=self.expected_size)
             profiles.select(self.channel)
             self.done.emit('')
-        except Exception as exc:self.done.emit(f"{tr('Installation fehlgeschlagen:')} {exc}")
+        except Exception as exc:
+            reason=tr('Die Verbindung hat zu lange nicht geantwortet. Bitte den Download erneut versuchen.') if isinstance(exc,TimeoutError) else str(exc)
+            self.done.emit(f"{tr('Installation fehlgeschlagen:')} {reason}")
+
+    def _report_progress(self,value):
+        if value<=80 and self.isInterruptionRequested():
+            raise RuntimeError(tr('Download abgebrochen.'))
+        self.progress.emit(value)
 
 
 class _RestoreThread(QThread):
@@ -66,7 +74,7 @@ class UpdateManager(QObject):
         self.latest=self.notes=self.url=self.error=self.sha256=''
         self.error_kind='check'
         self.records={};self.last_checked=0.;self.last_attempt=0.
-        self.checking=False
+        self.checking=False;self.progress_value=0.;self.cancelling=False
         self.pending_path=None;self.pending_restart=False;self.pending={}
         self._activation_started=False;self._restart_requested=False
         self._relaunch_on_exit=False
@@ -205,13 +213,28 @@ class UpdateManager(QObject):
 
     def install(self):
         if self._shutting_down or os.environ.get('VITALUX_LOCAL_PREVIEW')=='1' or not self.can_install:return
-        self.status='installing';self.changed.emit()
+        self.status='installing';self.cancelling=False;self.progress_value=0.;self.progress.emit(0.);self.changed.emit()
         worker=_InstallThread(self.url,self.sha256,self)
-        worker.progress.connect(self.progress)
+        worker.progress.connect(self._on_progress)
         worker.done.connect(lambda error,w=worker:self._on_installed(error,w))
         self._start_worker(worker)
 
+    def _on_progress(self,value):
+        self.progress_value=max(0.,min(100.,float(value)))
+        self.progress.emit(self.progress_value)
+
+    def cancel_install(self):
+        if self.status!='installing' or self.progress_value>=80:return
+        if isinstance(self._thread,_InstallThread):
+            self.cancelling=True;self._thread.requestInterruption();self.changed.emit()
+
+    def retry_install(self):
+        if self.error_kind!='install' or self.status!='error':return
+        if any(w.isRunning() for w in self._active_threads):return
+        self.error='';self._select_record();self.install()
+
     def _on_installed(self,error,worker=None):
+        self.cancelling=False
         if error:
             self.status='error';self.error=error;self.error_kind='install';self.changed.emit();return
         worker=worker or self._thread
@@ -221,6 +244,7 @@ class UpdateManager(QObject):
                       'kind':getattr(worker,'kind','appimage' if self.pending_path else 'zip'),
                       'sha256':getattr(worker,'sha256',self.sha256)}
         self.pending_restart=True;self.status='installed';self.error='';self._timer.stop()
+        self._on_progress(100.)
         try:profiles.atomic_json(self._pending_file,self.pending)
         except OSError:pass
         self.changed.emit()
@@ -266,6 +290,8 @@ class UpdateManager(QObject):
 
     def shutdown(self):
         self._shutting_down=True;self._timer.stop();self._restart_timer.stop()
+        if isinstance(self._thread,_InstallThread) and self._thread.isRunning() and self.progress_value<80:
+            self._thread.requestInterruption()
         return not any(worker.isRunning() for worker in self._active_threads)
 
     def resume_after_shutdown(self):

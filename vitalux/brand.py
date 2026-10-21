@@ -138,7 +138,7 @@ def icon_pixmap(size=96):
 # Presets use their authored SVG palettes; arbitrary and distribution colors
 # tint the same original vector contours with the effective theme hue.
 ACCENT_VARIANTS = {pal['accent']: key for key, pal in _PALETTES['variants'].items()
-                   if key not in ('gold', *_PALETTES['theme_assets'].values())}
+                   if key != 'gold'}
 
 
 def _selected_variant():
@@ -146,8 +146,6 @@ def _selected_variant():
     if theme.mode() in theme.FIXED_MODES:
         return _PALETTES['theme_assets'][theme.mode()]
     chosen = theme.source_accent()
-    if theme.mode() == "holographic" and str(chosen).lower() == "#4f8cff":
-        return "cyan"
     return ACCENT_VARIANTS.get(str(chosen).lower())
 
 

@@ -9,14 +9,14 @@
 <p align="center"><strong>Your Linux system, clearly in view.</strong><br>A native desktop monitor with live telemetry, glass interfaces and practical hardware diagnostics.</p>
 <p align="center"><a href="https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable"><strong>Download</strong></a> · <a href="USER-GUIDE.md">User guide</a> · <a href="CHANGELOG.en.md">Changelog</a> · <a href="https://github.com/PAAAUUULLOOOH/Vitalux/issues">Support</a> · <a href="THIRD-PARTY.md">Licenses</a></p>
 
-![Vitalux running in English with Obsidian Gold and real system measurements](assets/vitalux-dashboard-preview.png)
+![Vitalux running in English with the default Obsidian gold appearance and real system measurements](assets/vitalux-dashboard-preview.png)
 
 **Unstable preview**, based on Stable v0.9.6.2. Test downloads use the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable); [Main / Latest](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest) remains Stable.
 
 ## Features
 
 - Live CPU, GPU, memory, storage, network and sensor measurements, with charts, alerts and local history.
-- A rearrangeable dashboard, MiniHUD and thirteen coordinated designs, including **Liquid Silver**: Obsidian Gold’s interface in satin silver and dark smoked glass. **Obsidian Gold is the default.**
+- A rearrangeable dashboard, MiniHUD and nine distinct designs. **Obsidian is the default**, retaining the original Obsidian Gold appearance. Mix every design with shared backgrounds, preset accents and your own colors or images.
 - Per-app connections, usage warnings and optional, reversible TCP/UDP session blocks.
 - SMART information, drive benchmarks and local diagnostic reports.
 - German and English interfaces, guides and release notes; monitoring works offline.
@@ -36,16 +36,16 @@ Download a package from the [Unstable release](https://github.com/PAAAUUULLOOOH/
 **AppImage:**
 
 ```bash
-chmod +x Vitalux-v0.9.6.3-unstable.4-x86_64.AppImage
-./Vitalux-v0.9.6.3-unstable.4-x86_64.AppImage
+chmod +x Vitalux-v0.9.6.3-unstable.5-x86_64.AppImage
+./Vitalux-v0.9.6.3-unstable.5-x86_64.AppImage
 ```
 
 First launch offers user-account installation or **Run once**. Use `--portable` to skip integration, `--install` to add it later, or `--uninstall` to remove it while keeping preferences.
 
-**Portable ZIP:** extract the complete `Vitalux-v0.9.6.3-unstable.4-linux-x86_64.zip` into its own writable folder:
+**Portable ZIP:** extract the complete `Vitalux-v0.9.6.3-unstable.5-linux-x86_64.zip` into its own writable folder:
 
 ```bash
-cd Vitalux-v0.9.6.3-unstable.4
+cd Vitalux-v0.9.6.3-unstable.5
 bash run.sh
 ```
 
@@ -55,12 +55,16 @@ Keep the runtime, libraries, assets and launcher together. **Code → Download Z
 
 ## Appearance and controls
 
-Choose a design in **Settings → Appearance**. Hover or keyboard-focus a preview to reveal two small symbols, stacked at its right edge: a color wheel for accents and an image symbol for backgrounds. Colored symbols indicate available options; grey symbols indicate fixed options, without locks. Saved accents and images remain available in compatible designs. Black Glass supports custom colors; fixed palettes use consistently greyed-out color buttons. Liquid Silver uses a fixed silver palette and dark background, with the same interface as Obsidian Gold.
+Appearance uses three separate cards in **Settings**: **Design**, **Background** and **Accent colors**. Choose one of nine surface styles, then independently select any of the 22 built-in background options or **Own image…**. All backgrounds work with every design, including Holographic, Aether Glass and Eclipse Crystal. Personal images, placement and optional background tint stay together in Background.
+
+Accent colors offers named swatches, the original Gold, Champagne, Liquid Silver and Aurora tones, plus **Custom color…** and saved-color editing. Metal reflections, text, icons, charts and the animated identity follow the selection. **Design colors** restores the active design’s native palette. Ultra Eco temporarily disables decoration controls without overwriting their saved choices.
+
+Obsidian Gold is renamed **Obsidian**, and Black Glass Gold becomes **Black Glass**, replacing the former Black Glass surface. Champagne Glass, Aurora Gold and Liquid Silver are now reusable backgrounds and accents instead of duplicate design tiles. Existing profiles migrate with backups, preserving their previous visible combination and personal resources.
 
 <details>
-<summary>Preview Liquid Silver</summary>
+<summary>Appearance controls</summary>
 
-![Liquid Silver: dark smoked glass and satin silver in the Obsidian interface](assets/vitalux-liquid-silver-preview.png)
+![Shared background gallery and preset accents](assets/vitalux-appearance-preview.png)
 
 </details>
 
@@ -72,12 +76,14 @@ See the [user guide](USER-GUIDE.md) for design restrictions, graphics, network c
 
 Everything stays in **Updates**: installed version and check status at the top, **Stable / Unstable** and their changelogs below. Release notes stay visible. A **Version** selector browses each channel’s history without changing the installation target. Clicking a channel only browses its notes; a separate action shows the target version and prepares installation. Unstable is selectable for installation only when a verified test build contains genuinely newer app changes. GitHub's **Latest** download remains Stable.
 
+The update bar shows a centered percentage for the complete preparation process. Slow downloads report progress in smaller chunks; an idle connection times out. Use **Cancel download** while downloading or **Retry download** after a failure. If the server omits its size header, verified release metadata supplies the total. Without either size, progress stays at 0 until reception completes. Verification and preparation occupy the final part of the bar.
+
 After a verified update or channel switch, Vitalux finishes background work and **restarts automatically**. The target stays fixed throughout. An activation failure retains recovery data and offers **Retry**. Stable and Unstable use separate profiles; only the first test launch copies Stable preferences. **Delete personal preferences** restores defaults and reopens the guide for the active profile. When starting from the older Stable v0.9.6.2, its existing updater still requires **Restart now** once to enter Unstable. Promoting this updater to Stable also makes Stable → Unstable restarts automatic. Notes follow your selected language and remain readable offline. Cached information alone cannot authorize an update.
 
 Updates check SHA-256 and preserve recovery data. For manual verification, put the matching release manifest beside your downloads and run:
 
 ```bash
-sha256sum --ignore-missing -c Vitalux-v0.9.6.3-unstable.4-SHA256SUMS.txt
+sha256sum --ignore-missing -c Vitalux-v0.9.6.3-unstable.5-SHA256SUMS.txt
 ```
 
 A matching checksum verifies consistency with that manifest, not an independent digital signature.
@@ -94,7 +100,7 @@ VITALUX_RENDERER=software bash run.sh
 For an AppImage/FUSE problem:
 
 ```bash
-./Vitalux-v0.9.6.3-unstable.4-x86_64.AppImage --appimage-extract
+./Vitalux-v0.9.6.3-unstable.5-x86_64.AppImage --appimage-extract
 VITALUX_RENDERER=software bash squashfs-root/AppRun --portable
 ```
 

@@ -171,6 +171,7 @@ def check(channel=None, stable_result=None):
         if record.get('sha256')!=checksum.split(':',1)[1].lower():
             return {'ok':False,'error':tr('Testpaket und Manifest stimmen nicht überein. Bitte erneut prüfen.')}
     common.update(url=download_url,sha256=checksum.split(':',1)[1].lower(),
+                  bytes=manifest['assets'][expected_name].get('bytes') if manifest else item.get('size'),
                   newer=switching or _ver(version)>_ver(__version__))
     return common
 
@@ -199,22 +200,31 @@ def _directory_bytes(path):
                if not os.path.islink(os.path.join(folder, name)))
 
 
-def _download_verified(url, output_path, sha256, progress, download_limit):
+def _download_verified(url, output_path, sha256, progress, download_limit, expected_size=None):
     """Stream to disk with size cap and SHA-256 check (digest taken from GitHub Releases API)."""
     if not re.fullmatch('[0-9a-fA-F]{64}', sha256 or ''):
         raise RuntimeError(tr('SHA-256-Prüfsumme fehlt. Update aus Sicherheitsgründen abgebrochen.'))
     digest = hashlib.sha256()
     length = 0
     request = urllib.request.Request(url, headers={'User-Agent': HEADERS['User-Agent']})
-    with _github_request(request, timeout=45) as response, open(output_path, 'wb') as f:
+    progress(0.)
+    last_report = time.monotonic()
+    with _github_request(request, timeout=15) as response, open(output_path, 'wb') as f:
         if response.geturl().split(':', 1)[0] != 'https':
             raise RuntimeError(tr('Update-Download ohne HTTPS abgebrochen.'))
-        total = int(response.headers.get('Content-Length') or '0')
+        declared = int(response.headers.get('Content-Length') or '0')
+        known = expected_size if type(expected_size) is int and expected_size > 0 else 0
+        if known and declared and known != declared:
+            raise RuntimeError(tr('Der Update-Download wurde unterbrochen. Bitte erneut versuchen.'))
+        total = declared or known
         if total > download_limit:
             raise RuntimeError(tr('Updatepaket überschreitet Größenlimit.'))
         _require_space(os.path.dirname(os.path.abspath(output_path)), total)
+        # HTTPResponse.read(n) waits for n bytes and can make a slow transfer
+        # appear frozen. read1 returns the available data within one socket read.
+        read = getattr(response, 'read1', response.read)
         while True:
-            chunk = response.read(1024 * 1024)
+            chunk = read(64 * 1024)
             if not chunk:
                 break
             length += len(chunk)
@@ -222,12 +232,15 @@ def _download_verified(url, output_path, sha256, progress, download_limit):
                 raise RuntimeError(tr('Updatepaket überschreitet Größenlimit.'))
             f.write(chunk)
             digest.update(chunk)
-            if total:
-                progress(min(80., 80. * length / total))
+            now = time.monotonic()
+            if now-last_report >= .1 or (total and length >= total):
+                progress(min(80., 80.*length/total) if total else 0.)
+                last_report = now
         f.flush()
         os.fsync(f.fileno())
     if total and length != total:
         raise RuntimeError(tr('Der Update-Download wurde unterbrochen. Bitte erneut versuchen.'))
+    progress(80.)
     if digest.hexdigest() != sha256.lower():
         raise RuntimeError(tr('Sicherheitsprüfung fehlgeschlagen: SHA-256 stimmt nicht überein.'))
 
@@ -236,7 +249,7 @@ def appimage_path():
     return os.environ.get('APPIMAGE') or ''
 
 
-def _stage_appimage(url, sha256, progress):
+def _stage_appimage(url, sha256, progress, expected_size=None):
     target = os.path.realpath(appimage_path())
     if not target or not os.path.isfile(target):
         raise RuntimeError(tr('Vitalux ist nicht als AppImage gestartet.'))
@@ -246,7 +259,7 @@ def _stage_appimage(url, sha256, progress):
     fd, staged = tempfile.mkstemp(prefix='.vitalux-next-', suffix='.AppImage', dir=folder)
     os.close(fd)
     try:
-        _download_verified(url, staged, sha256, progress, 900 * 1024 * 1024)
+        _download_verified(url, staged, sha256, progress, 900 * 1024 * 1024, expected_size=expected_size)
         with open(staged, 'rb') as f:
             head = f.read(11)
         if not head.startswith(b'\x7fELF') or head[8:11] != b'AI\x02':
@@ -579,8 +592,8 @@ if relaunch=='yes' and process_exited:
                          stdout=stream,stderr=subprocess.STDOUT,start_new_session=True)
 
 
-def install(url, root=None, progress=lambda p: None, sha256=None, defer=False):
-    if appimage_path():return _stage_appimage(url,sha256,progress)
+def install(url, root=None, progress=lambda p: None, sha256=None, defer=False, expected_size=None):
+    if appimage_path():return _stage_appimage(url,sha256,progress,expected_size=expected_size)
     root=root or app_root()
     if defer:
         if not os.path.isdir(os.path.join(root,APP_ID)):
@@ -591,7 +604,7 @@ def install(url, root=None, progress=lambda p: None, sha256=None, defer=False):
         directory=tempfile.mkdtemp(prefix='prepared-zip-',dir=cache)
         try:
             archive=Path(directory)/'package.zip'
-            _download_verified(url,str(archive),sha256,progress,700*1024*1024)
+            _download_verified(url,str(archive),sha256,progress,700*1024*1024,expected_size=expected_size)
             with zipfile.ZipFile(archive) as zipped:_zip_members(zipped)
             progress(100)
             return str(archive)
@@ -599,6 +612,6 @@ def install(url, root=None, progress=lambda p: None, sha256=None, defer=False):
             shutil.rmtree(directory,ignore_errors=True);raise
     with tempfile.TemporaryDirectory(prefix=f'{APP_ID}-update-') as directory:
         archive=os.path.join(directory,'update.zip')
-        _download_verified(url,archive,sha256,progress,700*1024*1024)
+        _download_verified(url,archive,sha256,progress,700*1024*1024,expected_size=expected_size)
         progress(85)
         _apply_zip(archive,root,progress)

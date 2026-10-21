@@ -52,7 +52,7 @@ def check_zip_permissions():
                 item = ZipInfo('Vitalux-test/'+name)
                 item.external_attr = mode << 16
                 zipped.writestr(item, content)
-        def download(url, output, *args):
+        def download(url, output, *args, **kwargs):
             import shutil
             shutil.copyfile(archive, output)
         with patch.object(updater, '_download_verified', download), patch.dict('os.environ', {}, clear=False):

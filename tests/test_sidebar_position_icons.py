@@ -78,7 +78,7 @@ def main():
                        for i in range(len(frames))
                        for j in range(i+1, len(frames)))
             assert PreferencesPage.DEFAULTS['theme'] == 'obsidian_gold'
-            assert PreferencesPage.DEFAULTS['accent'] == '#4f8cff'
+            assert PreferencesPage.DEFAULTS['accent'] == 'design_default'
 
             # A per-color icon filename works around KDE caching.
             os.environ['XDG_DATA_HOME'] = temp

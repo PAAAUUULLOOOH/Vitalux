@@ -85,7 +85,7 @@ def child(mode, output):
     from vitalux import hover_hints
     guard = hover_hints.install(app)
     theme.set_mode('obsidian_gold')
-    theme.set_accent(settings.get('accent', '#4f8cff'))
+    theme.set_accent(theme.default_accent())
     app.setStyleSheet(theme.stylesheet())
     info = distro.info()
     win = MainWindow(info, load_logo(info, 96), UpdateManager())
@@ -119,8 +119,10 @@ def child(mode, output):
             win.stack.setCurrentIndex(index)
             QTest.qWait(100)
             sampler = win.sampler
-            for key in ('champagne_glass', 'dark', 'liquid_silver', 'aurora_gold'):
+            for key in ('black_glass_gold', 'dark', 'obsidian_gold', 'aether_glass'):
                 preferences.select_design(key)
+                preferences.select_background('liquid_silver')
+                preferences.change_accent('#b9ccdc')
                 assert win._appearance_overlay is not None
                 overlay = win._appearance_overlay
                 # A static design must already be present in the target
@@ -129,7 +131,7 @@ def child(mode, output):
                 if mode in renderer.QUICK_MODES:
                     assert not win.centralWidget()._upload_timer.isActive()
                 QTest.qWait(100)
-                if key == 'liquid_silver':
+                if key == 'obsidian_gold':
                     settled(lambda: win._appearance_overlay is None)
                     assert win.grab().save(str(output/(mode+'-'+key+'.png')))
             settled(lambda: win._appearance_overlay is None)
@@ -153,7 +155,7 @@ def child(mode, output):
             renderer.successful_start()
             print(json.dumps({'mode': mode, 'active': win.render_backend_active,
                   'platform': app.platformName(), 'live_sample': True,
-                  'theme_transitions': True, 'liquid_silver_transitions': True,
+                  'theme_transitions': True, 'shared_background_transitions': True,
                   'search_interruptions': True,
                   'size': [win.width(), win.height()]}), flush=True)
             result[0] = 0

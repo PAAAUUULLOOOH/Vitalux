@@ -39,8 +39,8 @@ def run():
 
     for sequence in (
         ("glass", "minimal", "glass"),
-        ("black_glass", "minimal", "black_glass"),
-        ("glass", "minimal", "black_glass", "minimal", "glass"),
+        ("black_glass_gold", "minimal", "black_glass_gold"),
+        ("glass", "minimal", "black_glass_gold", "minimal", "glass"),
         ("glass", "minimal", "glass", "minimal", "glass"),
     ):
         for mode in sequence:

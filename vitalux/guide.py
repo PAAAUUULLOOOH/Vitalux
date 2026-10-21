@@ -75,8 +75,8 @@ SLIDES = [
     ),
     (
         "Darstellung und Einstellungen",
-        "Alle dreizehn Designs stehen im gleichen Vorschau-Raster. Kleine Symbole erscheinen beim Darüberfahren rechts mittig untereinander: Farbkreis für Akzentfarben, Bildsymbol für Hintergründe; verfügbare Optionen sind farbig, feste Optionen grau, ohne Schlösser.",
-        "Bei anpassbaren Designs wählst du integrierte Hintergründe oder eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
+        "Neun eigenständige Designs bleiben: Obsidian ist das bisherige Obsidian Gold mit unverändertem Gold-Look als Standard. Black Glass ersetzt Black Glass Gold. Reine Obsidian-Varianten sind zusammengeführt.",
+        "Design, Hintergrund und Akzentfarben stehen in getrennten Bereichen. Alle bisherigen Hintergründe, fertigen Farbakzente und eigene Farben lassen sich mit jedem Design kombinieren. Eigene Bilder und Hintergrundtönung findest du direkt unter Hintergrund.",
         "Die Suche gleitet zu Treffern und schließt fünf Sekunden nach der Auswahl weich. Beim Öffnen der erweiterten Einstellungen scrollt die Seite mit; dort liegen Grafik-Renderer und Wartung.",
         "Zurücksetzen-Buttons blenden weich ein und aus. Ganz unten setzt du alle Standardwerte wieder her und startest Vitalux neu; einzelne Bereiche benötigen keinen Neustart. Das Logo zeigt einen sanften Herzschlagimpuls.",
         "settings",
@@ -94,7 +94,7 @@ SLIDES = [
         "Im Updates-Reiter stehen laufender Stand, Stable/Unstable und dauerhaft sichtbare Changelogs zusammen. Die Versionsauswahl blättert durch die Historie des Kanals, ohne das Installationsziel zu ändern; nur die separate Installationsaktion wechselt den Kanal.",
         "Bei einem Update glüht das Vitalux-Logo in der App und im Tray. Der Updates-Reiter pulsiert; eine Tray-Nachricht nennt die Version.",
         "Ein Kanal-Klick zeigt nur den Changelog. Nach einem geprüften Update oder Kanalwechsel beendet Vitalux die Hintergrundaufgaben und startet automatisch neu. Testprofile entstehen automatisch; das Löschen persönlicher Einstellungen setzt nur das aktive Profil zurück und öffnet die Anleitung erneut. Stable v0.9.6.2 verwendet beim Wechsel zu Unstable noch seinen älteren Neustart-Knopf.",
-        "Der Changelog und die Update-Hinweise folgen deiner ausgewählten Sprache. Die bisherige Versionshistorie bleibt auch nach dem Update offline verfügbar.",
+        "Die Prozentzahl steht mittig im Update-Ladebalken. Downloads lassen sich abbrechen und bei Fehlern erneut versuchen. Changelogs folgen deiner Sprache und bleiben offline lesbar.",
         "updates",
     ),
 ]

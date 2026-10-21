@@ -83,8 +83,8 @@ def backup(channel=None):
 
 def validate(data):
     result=dict(data)
-    if result.get('theme')=='liquid_chrome':
-        result['theme']='liquid_silver'
+    from .appearance import migrate
+    result = migrate(result)
     booleans=('ui_sounds','close_to_tray','alerts_enabled','ultra_eco','mini_hud_enabled')
     for name in booleans:
         if name in result and type(result[name]) is not bool:result.pop(name)

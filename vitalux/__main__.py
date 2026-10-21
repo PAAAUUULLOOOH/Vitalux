@@ -46,7 +46,7 @@ def main():
     theme.set_mode('minimal' if eco.enabled() else requested_theme)
     if not eco.enabled() and requested_theme != theme.mode():
         settings.set('theme', theme.mode())  # Migrate removed/unknown themes to Obsidian Gold.
-    user_accent = settings.get('accent', '#4f8cff')
+    user_accent = settings.get('accent', 'design_default')
     from . import wallpaper_accents
     effective_accent = wallpaper_accents.effective_selection(user_accent)
     if effective_accent != user_accent:

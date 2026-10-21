@@ -20,7 +20,7 @@ def run():
     theme.set_mode("holographic")
     theme.set_accent("#4f8cff")
     assert theme.mode() == "holographic"
-    assert theme.accent() == "#52d3ff"
+    assert theme.accent() == "#4f8cff"
     assert theme.BG == "#030b13"
     assert "QComboBox" in theme.stylesheet()
     image = scene_pixmap(QSize(800, 560), theme.accent())

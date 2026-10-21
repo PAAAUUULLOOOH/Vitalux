@@ -7,7 +7,8 @@ from . import APP_NAME, __version__, changelog, settings, theme, profiles, versi
 from .i18n import tr
 from .pages import Page
 from .ui_locale import QLabel, QPushButton, QMessageBox, QComboBox
-from .widgets import Bar, Card, KeyValue, label
+from .update_progress import UpdateProgress
+from .widgets import Card, KeyValue, label
 
 AUTHOR_URL = "https://github.com/PAAAUUULLOOOH"
 CREDIT_URL = "https://github.com/TimBooH"
@@ -69,9 +70,13 @@ class UpdatePage(Page):
         self.latest=KeyValue('Zielversion');actions.addWidget(self.latest)
         self.install_button=QPushButton('Jetzt aktualisieren',self);self.install_button.setObjectName('primaryBtn')
         self.install_button.clicked.connect(self.m.install);actions.addWidget(self.install_button,0,Qt.AlignLeft)
-        self.progress_bar=Bar();self.progress_bar.flat=True
+        self.progress_bar=UpdateProgress()
         self.phase=label('', 'muted',wrap=True)
         actions.addWidget(self.progress_bar);actions.addWidget(self.phase)
+        self.cancel_button=QPushButton('Download abbrechen',self);self.cancel_button.setObjectName('ghostBtn')
+        self.cancel_button.clicked.connect(self.m.cancel_install);actions.addWidget(self.cancel_button,0,Qt.AlignLeft)
+        self.install_retry=QPushButton('Download erneut versuchen',self);self.install_retry.setObjectName('ghostBtn')
+        self.install_retry.clicked.connect(self.m.retry_install);actions.addWidget(self.install_retry,0,Qt.AlignLeft)
         self.restart_hint=label('Hintergrundaufgaben werden beendet. Anschließend startet Vitalux automatisch mit der vorbereiteten Version.','muted',wrap=True)
         actions.addWidget(self.restart_hint)
         self.retry_button=QPushButton('Erneut versuchen',self);self.retry_button.setObjectName('ghostBtn')
@@ -158,7 +163,9 @@ class UpdatePage(Page):
     def _progress(self,value):
         self.progress_bar.set_value(value)
         text='Paket herunterladen …' if value<80 else 'Paket prüfen …' if value<85 else 'Installation vorbereiten …'
-        self.phase.setText(tr(text))
+        self.phase.setText(tr('Download wird abgebrochen …' if self.m.cancelling else text))
+        self.cancel_button.setVisible(self.m.status=='installing' and value<80)
+        self.cancel_button.setEnabled(not self.m.cancelling)
 
     def retranslate(self):self.sync()
 
@@ -224,9 +231,12 @@ class UpdatePage(Page):
         self.install_button.setStyleSheet(f'QPushButton#primaryBtn:disabled {{ background: {theme.CARD}; color: {theme.MUTED}; border: 1px solid {theme.BORDER}; }}')
         self.install_button.setToolTip(tr('Ein Wechsel ist nur mit einem geprüften, neueren Teststand möglich.') if show_disabled else '')
         self.progress_bar.setVisible(busy);self.phase.setVisible(busy)
+        self._progress(m.progress_value)
+        retry_install=m.status=='error' and m.error_kind=='install'
+        self.install_retry.setVisible(retry_install)
         self.restart_hint.setVisible(pending and not m.error)
         self.retry_button.setVisible(pending and bool(m.error) and m.error_kind=='restart')
-        self.action_panel.setVisible(pending or busy or m.can_install or show_disabled)
+        self.action_panel.setVisible(pending or busy or m.can_install or show_disabled or retry_install)
         self._sync_history(record)
 
 

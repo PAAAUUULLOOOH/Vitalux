@@ -741,7 +741,7 @@ class MainWindow(QMainWindow):
 
     @staticmethod
     def _appearance_signature():
-        return tuple(settings.get_many(dict(theme=theme.DEFAULT_THEME, accent='#4f8cff',
+        return tuple(settings.get_many(dict(theme=theme.DEFAULT_THEME, accent='design_default', background_tint='',
             background_style='theme_default', custom_background_selected='',
             custom_background_fit='cover', ultra_eco=False)).values())
 
@@ -753,11 +753,12 @@ class MainWindow(QMainWindow):
                 and getattr(self, '_appearance_key', next_key) != next_key):
             before = self.grab()
         overlay = getattr(self, '_appearance_overlay', None)
-        if overlay is not None:
+        changed = getattr(self, '_appearance_key', next_key) != next_key
+        if overlay is not None and (changed or not motion.duration(300) or not self.isVisible()):
             overlay.finish()
-        self._appearance_overlay = None
+            self._appearance_overlay = None
         theme.set_mode(eco.theme_name())
-        user_accent = settings.get('accent', '#4f8cff')
+        user_accent = settings.get('accent', 'design_default')
         theme.set_accent('#4f8cff' if eco.enabled() else resolve_accent(user_accent, self.distro['color']))
         stylesheet = theme.stylesheet()
         if QApplication.instance().styleSheet() != stylesheet:
