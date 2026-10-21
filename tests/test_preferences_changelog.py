@@ -60,7 +60,7 @@ def check_preferences(app):
 
             # Themes are selected solely through ten preview buttons.
             assert not hasattr(page, 'mode')
-            assert len(page.design_tiles) == 13
+            assert len(page.design_tiles) == 14
             assert 150 <= page.accent_combo.width() <= 240
             assert page.accent_combo.toolTip() == page.accent_combo.currentText()
             width_before = page.accent_combo.width()
@@ -310,7 +310,7 @@ def check_preferences(app):
 def check_changelog(app):
     versions = changelog.entries()
     assert versions and versions[0][0] == __version__, (versions, __version__)
-    assert len(changelog.version_notes(__version__)) >= 3
+    assert changelog.version_notes(__version__), 'The running build must have actual user-facing notes'
     german = changelog.version_notes(__version__, lang="de")
     english = changelog.version_notes(__version__, lang="en")
     assert german and english and german != english

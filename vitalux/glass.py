@@ -653,7 +653,7 @@ class GlassSurface(QFrame):
         super().leaveEvent(event)
 
     def _animate_silver(self,value):
-        if theme.mode()!='liquid_silver':return
+        if theme.mode() not in ('liquid_silver','liquid_chrome'):return
         from . import motion
         if self._silver_animation is None:
             self._silver_animation=QVariantAnimation(self)

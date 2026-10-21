@@ -1,3 +1,9 @@
+# Unstable plan — v0.9.6.3-unstable.3
+
+Owner requested an additional, entirely distinct dark silver/chrome premium design and explicitly retained the existing light Liquid Silver. Add Liquid Chrome with graphite/smoked-glass surfaces, sculpted mercury ribbons, orbital instruments and an asymmetric responsive dashboard; fixed palette/background and existing customization explanations. Preserve all reset, guide, update, sound and profile fixes from Unstable .2. Update English docs, DE/EN guide and app-only notes; publish on the same rolling Unstable entry. Main remains unchanged.
+
+---
+
 # Unstable plan — v0.9.6.3-unstable.2 (implementation authorized)
 
 Implemented for the rolling Unstable update. Local validation: all 66 regression scripts pass with the shipped Python/Qt runtime, including real launcher resets and guide reopening, both automatic update destinations and actual ZIP/AppImage activation helpers. Native audio and all five renderers pass, including Liquid Silver transitions. Main remains unchanged.

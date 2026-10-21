@@ -162,6 +162,17 @@
       "fixed": true,
       "light_lens": true,
       "pulse_base": "#4b6378"
+    },
+    "liquid-chrome": {
+      "name": "Liquid Chrome",
+      "accent": "#b6cbdc",
+      "top": "#d9e4ec",
+      "mid": "#9ab0c0",
+      "low": "#425b70",
+      "spec": "#eef5fa",
+      "secondary": "#82b7cf",
+      "fixed": true,
+      "pulse_base": "#587185"
     }
   },
   "theme_assets": {
@@ -171,7 +182,8 @@
     "aurora_gold": "aurora-gold",
     "aether_glass": "aether-glass",
     "eclipse_crystal": "eclipse-crystal",
-    "liquid_silver": "liquid-silver"
+    "liquid_silver": "liquid-silver",
+    "liquid_chrome": "liquid-chrome"
   },
   "custom_accent_policy": "Preserve the outlined geometry; moderately richer tint for the circle logo only.",
   "motion_seconds": {

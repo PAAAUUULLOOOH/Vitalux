@@ -249,6 +249,7 @@ class PreferencesPage(Page):
             'dark': 'Dark · Kontrastreiche, ruhige Flächen ohne Glasunschärfe.',
             'light': 'Light · Helle, gut lesbare Karten ohne Glaseffekt.',
             'liquid_silver': 'Liquid Silver · Helles Platin, satiniertes Silber und Kristallglas. Feste Palette, analog gezeichnete Instrumente und ein dunkler Herzschlag im Silberlogo.',
+            'liquid_chrome': 'Liquid Chrome · Dunkles Graphit und Rauchglas mit fließendem Chrom, polierten Silberkanten und eigenen Orbitalinstrumenten. Palette und Hintergrund sind fest.',
             'glass': 'Glass · Halbtransparente Panels mit Lichtreflexen und weichgezeichnetem Hintergrund.',
             'black_glass': 'Black Glass · Tiefschwarze Glasflächen mit dezenten Reflexionen und silbernen Kanten. Akzentfarben und Hintergründe sind frei anpassbar.',
             'black_glass_gold': 'Black Glass Gold · Tiefschwarze Glasflächen, helles Gold für Logo, Diagramme, Anzeigen, Icons und Rahmen. Akzentfarbe und Hintergrund sind fest aufeinander abgestimmt.',

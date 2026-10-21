@@ -1,5 +1,9 @@
 # Vitalux – Changes
 
+## [v0.9.6.3-unstable.3] - 2026-10-21
+- Liquid Chrome adds a distinct dark graphite and smoked-glass design with sculpted silver/chrome surfaces, orbital instruments and an asymmetric dashboard. It has its own fixed palette and background.
+- The existing light Liquid Silver design remains available separately; saved design choices are preserved.
+
 ## [v0.9.6.3-unstable.2] - 2026-10-21
 - Liquid Silver adds light platinum, satin silver, crystal-glass panels, analog instruments and its own animated silver identity. Its coordinated palette and background are fixed.
 - Deleting personal preferences in Unstable restores actual defaults and reopens the guide. An existing Stable profile is not imported again during a reset.

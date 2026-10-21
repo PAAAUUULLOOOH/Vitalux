@@ -205,6 +205,16 @@
     "sha256": "ab56c34fee489ce634dc4ce57f5d16aba05a09ae957b4e5eecfe82838e34f652"
   },
   {
+    "file": "assets/brand/vitalux-pulse-liquid-chrome.svg",
+    "bytes": 65871,
+    "sha256": "8d11d93c918c738c4ea0acf91e19deb79b8d106b973477e27c798fe8caeef3b5"
+  },
+  {
+    "file": "assets/brand/vitalux-wordmark-liquid-chrome.svg",
+    "bytes": 6407,
+    "sha256": "ba25f1d4d8f86dc6ca1466b26df887f5ee0a952f9673f45b6cc25b0e724aed62"
+  },
+  {
     "file": "assets/vitalux-pulse.svg",
     "bytes": 65862,
     "sha256": "4d0484fa9d4b9bf53d8db7058743bc84be346f0e2b92993ce3d8dc814c35b630"
@@ -423,6 +433,16 @@
     "file": "assets/brand/animated/vitalux-wordmark-liquid-silver-light.svg",
     "bytes": 6753,
     "sha256": "24707cf17e7b77a20965580a7fe4f5a7229033bd8e3eca42c1493046267ebebb"
+  },
+  {
+    "file": "assets/brand/animated/vitalux-pulse-liquid-chrome.svg",
+    "bytes": 66689,
+    "sha256": "d44dc4a245e3c2d747fc1b8d6bed9f2a4a0ef915e5abe4921480c196dfd73cb6"
+  },
+  {
+    "file": "assets/brand/animated/vitalux-wordmark-liquid-chrome.svg",
+    "bytes": 6753,
+    "sha256": "0caea3f01fa189b376f20e9696aba4e4ca2337cdc1e860980e266cba237cd528"
   },
   {
     "file": "assets/brand/animated/vitalux-pulse.svg",

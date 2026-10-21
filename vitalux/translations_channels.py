@@ -1,5 +1,7 @@
 """Update channels, customization indicators and network controls."""
 EN={
+'Liquid Chrome · Dunkles Graphit und Rauchglas mit fließendem Chrom, polierten Silberkanten und eigenen Orbitalinstrumenten. Palette und Hintergrund sind fest.':'Liquid Chrome · Dark graphite and smoked glass with flowing chrome, polished silver edges and distinct orbital instruments. The palette and background are fixed.',
+'Alle vierzehn Designs stehen im gleichen Vorschau-Raster. Kleine Symbole erscheinen beim Darüberfahren rechts mittig untereinander: Farbkreis für Akzentfarben, Bildsymbol für Hintergründe; verfügbare Optionen sind farbig, feste Optionen grau, ohne Schlösser.':'All fourteen designs share the same preview grid. Small indicators fade in at the right center, vertically stacked: a color wheel for accents and an image symbol for backgrounds. Available options are colored; fixed options are grey, without locks.',
 'Black Glass · Tiefschwarze Glasflächen mit dezenten Reflexionen und silbernen Kanten. Akzentfarben und Hintergründe sind frei anpassbar.':'Black Glass · Deep black glass with subtle reflections and silver edges. Accent colors and backgrounds are fully customizable.',
 'Vitalux läuft bereits.':'Vitalux is already running.',
 'Versionsverlauf':'Version history',

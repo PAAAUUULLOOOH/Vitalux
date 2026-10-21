@@ -147,7 +147,7 @@ class DesignShell(QObject):
             w._outer_layout.setContentsMargins(0,0,0,0)
             w._outer_layout.setSpacing(0)
             w._apply_sidebar_state()
-            if mode=='liquid_silver':
+            if mode in ('liquid_silver','liquid_chrome'):
                 w._outer_layout.setContentsMargins(8,8,12,8)
                 w._outer_layout.setSpacing(8)
                 w.pulse_core.setFixedSize(108,108)

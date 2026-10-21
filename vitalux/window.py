@@ -332,7 +332,7 @@ class MainWindow(QMainWindow):
         overlay = getattr(self, '_page_overlay', None)
         if overlay is not None:
             overlay.finish()
-        before=(self.stack.grab() if theme.mode()=='liquid_silver' and motion.enabled()
+        before=(self.stack.grab() if theme.mode() in ('liquid_silver','liquid_chrome') and motion.enabled()
                 and index!=self.stack.currentIndex() and self.stack.isVisible() else None)
         overview = self.pages[0][1]
         if index != 0 and hasattr(overview, 'board') and overview.board.editing:
@@ -712,7 +712,7 @@ class MainWindow(QMainWindow):
         self.sidebar_version.setVisible(not compact)
         self.nav_host.layout().setContentsMargins(1,2,1 if compact else 3,2)
         for btn in self.nav_buttons:btn.set_compact(compact)
-        self.sidebar.setFixedWidth(74 if compact else 218 if theme.mode()=='liquid_silver' else 250)
+        self.sidebar.setFixedWidth(74 if compact else 218 if theme.mode() in ('liquid_silver','liquid_chrome') else 250)
         self.collapse_button.set_collapsed(compact)
         self.sidebar._position_toggle()
 
