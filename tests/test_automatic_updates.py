@@ -6,6 +6,7 @@ from unittest.mock import patch
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QThread
 from vitalux import distro,profiles,settings,updater
 from vitalux.logo import load_logo
 from vitalux.pages_extra import UpdatePage
@@ -28,13 +29,18 @@ with tempfile.TemporaryDirectory(prefix='vitalux-auto-update-') as folder,patch.
             events=[];m.restart.connect(lambda:events.append('request'))
             attempts=[]
             def activate(path,relaunch=True):
+                assert QThread.currentThread()==app.thread(),'Restart ran outside the GUI thread'
                 assert not win.sampler.isRunning(),'Activated before live telemetry stopped'
                 assert m.shutdown(),'Activated before update workers stopped'
                 attempts.append((path,relaunch))
                 if len(attempts)==1:raise OSError('Simulated helper launch failure')
             worker=SimpleNamespace(channel=target,version='0.9.6.2' if target=='stable' else '0.9.6.3-unstable.3',pending_path=str(image),kind='appimage',sha256=hashlib.sha256(b'candidate').hexdigest())
-            with patch.object(updater,'activate_appimage_update',side_effect=activate):
-                m._on_installed('',worker)
+            m.channel=target;m.latest=worker.version;m.status='available'
+            m.url='https://example.invalid/verified-test.AppImage';m.sha256=worker.sha256
+            with patch.object(updater,'activate_appimage_update',side_effect=activate), \
+                    patch.object(updater,'install',return_value=str(image)), \
+                    patch.object(updater,'appimage_path',return_value=str(Path(folder)/'running.AppImage')):
+                m.install()
                 m.set_channel('unstable' if target=='stable' else 'stable')
                 wait_for(lambda:bool(m.error))
                 assert win.isVisible() and win.centralWidget().isEnabled()

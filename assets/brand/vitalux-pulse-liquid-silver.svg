@@ -19,10 +19,10 @@
       <stop offset="1" stop-color="#ffffff" />
     </linearGradient>
     <radialGradient id="glass" cx="36%" cy="24%" r="83%">
-      <stop offset="0" stop-color="#ffffff" />
-      <stop offset="0.31" stop-color="#e9f1f8" />
-      <stop offset="0.67" stop-color="#d1dfe9" />
-      <stop offset="1" stop-color="#aebfce" />
+      <stop offset="0" stop-color="#343834" />
+      <stop offset="0.31" stop-color="#1c1f22" />
+      <stop offset="0.67" stop-color="#121211" />
+      <stop offset="1" stop-color="#08090b" />
     </radialGradient>
     <radialGradient id="metal-reflection" cx="19%" cy="13%" r="90%">
       <stop offset="0" stop-color="#ffffff" stop-opacity="0.34" />
@@ -31,9 +31,9 @@
       <stop offset="1" stop-color="#f0f6fb" stop-opacity="0" />
     </radialGradient>
     <radialGradient id="pulse-aura" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#849aaf" stop-opacity="0.13" />
-      <stop offset="0.55" stop-color="#849aaf" stop-opacity="0.035" />
-      <stop offset="1" stop-color="#849aaf" stop-opacity="0" />
+      <stop offset="0" stop-color="#b9ccdc" stop-opacity="0.13" />
+      <stop offset="0.55" stop-color="#b9ccdc" stop-opacity="0.035" />
+      <stop offset="1" stop-color="#b9ccdc" stop-opacity="0" />
     </radialGradient>
     <linearGradient id="glass-reflection" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#ffffff" stop-opacity="0.12" />
@@ -48,15 +48,15 @@
       <stop offset="1" stop-color="#f0f6fb" />
     </linearGradient>
     <linearGradient id="pulse-metal" gradientUnits="userSpaceOnUse" x1="320" y1="460" x2="900" y2="790">
-      <stop offset="0" stop-color="#4b6378" />
-      <stop offset="0.48" stop-color="#4b6378" />
-      <stop offset="0.82" stop-color="#4b6378" />
-      <stop offset="1" stop-color="#4b6378" />
+      <stop offset="0" stop-color="#718ba2" />
+      <stop offset="0.48" stop-color="#718ba2" />
+      <stop offset="0.82" stop-color="#718ba2" />
+      <stop offset="1" stop-color="#718ba2" />
     </linearGradient>
     <linearGradient id="pulse-light" gradientUnits="userSpaceOnUse" x1="318" y1="616" x2="939" y2="616">
-      <stop offset="0" stop-color="#47657e" />
-      <stop offset="0.48" stop-color="#294c68" />
-      <stop offset="1" stop-color="#122f48" />
+      <stop offset="0" stop-color="#a7bbcc" />
+      <stop offset="0.48" stop-color="#f0f6fb" />
+      <stop offset="1" stop-color="#ffffff" />
     </linearGradient>
   </defs>
   <g id="stationary-lens">

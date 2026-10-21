@@ -1,5 +1,10 @@
 # Vitalux – Changes
 
+## [v0.9.6.3-unstable.4] - 2026-10-21
+- Liquid Silver now uses the Obsidian Gold interface with dark smoked glass and a coordinated satin-silver palette. The former light layout is replaced.
+- Liquid Chrome is removed; saved selections move to the replacement Liquid Silver without resetting other preferences.
+- Updates explains when an older Stable build still requires a manual restart for its subsequent updates; installations initiated by current Unstable restart automatically.
+
 ## [v0.9.6.3-unstable.3] - 2026-10-21
 - Liquid Chrome adds a distinct dark graphite and smoked-glass design with sculpted silver/chrome surfaces, orbital instruments and an asymmetric dashboard. It has its own fixed palette and background.
 - The existing light Liquid Silver design remains available separately; saved design choices are preserved.

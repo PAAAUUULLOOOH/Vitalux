@@ -396,11 +396,6 @@ class Metric(QWidget):
         p=QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
         p.setRenderHint(QPainter.TextAntialiasing)
-        if theme.mode()=='liquid_chrome':
-            from .liquid_chrome import paint_metric
-            paint_metric(p,self)
-            p.end()
-            return
         pal=COLLECTIONS[theme.mode()]
         rect=QRectF(self.rect()).adjusted(5,3,-5,-3)
         width=rect.width()

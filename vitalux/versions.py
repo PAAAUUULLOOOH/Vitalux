@@ -19,3 +19,8 @@ def key(value):
 
 def channel(value):
     return 'unstable' if parse(value)[1] is not None else 'stable'
+
+
+def has_automatic_restart(value):
+    """The updater belongs to the running build, not its download target."""
+    return key(value) >= key('0.9.6.3-unstable.2')

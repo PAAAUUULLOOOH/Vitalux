@@ -153,7 +153,6 @@ class MainWindow(QMainWindow):
         self._build(0)
         self._appearance_key = self._appearance_signature()
         self._appearance_overlay = None
-        self._page_overlay = None
         if settings.get('mini_hud_enabled', False):
             self.set_mini_hud_enabled(True)
 
@@ -329,11 +328,6 @@ class MainWindow(QMainWindow):
     def _switch_page(self, index):
         # Leaving edit mode commits the layout; neither the editor nor its
         # unsaved arrangement is silently destroyed on navigation.
-        overlay = getattr(self, '_page_overlay', None)
-        if overlay is not None:
-            overlay.finish()
-        before=(self.stack.grab() if theme.mode() in ('liquid_silver','liquid_chrome') and motion.enabled()
-                and index!=self.stack.currentIndex() and self.stack.isVisible() else None)
         overview = self.pages[0][1]
         if index != 0 and hasattr(overview, 'board') and overview.board.editing:
             overview.save_editor()
@@ -365,14 +359,6 @@ class MainWindow(QMainWindow):
             QTimer.singleShot(0, page_widget.request_smart)
         # Keep sampling while refreshing only the visible page.
         self._refresh_visible_page()
-
-        if before is not None:
-            from .appearance_transition import AppearanceTransition
-            overlay=AppearanceTransition(self.stack,before,self.stack.grab(),slide=16)
-            self._page_overlay=overlay
-            overlay.finished.connect(lambda:setattr(self,'_page_overlay',None)
-                                     if self._page_overlay is overlay else None)
-            overlay.start()
 
     def set_language(self, code):
         """Translate widgets in place; never rebuild a running benchmark/page."""
@@ -712,7 +698,7 @@ class MainWindow(QMainWindow):
         self.sidebar_version.setVisible(not compact)
         self.nav_host.layout().setContentsMargins(1,2,1 if compact else 3,2)
         for btn in self.nav_buttons:btn.set_compact(compact)
-        self.sidebar.setFixedWidth(74 if compact else 218 if theme.mode() in ('liquid_silver','liquid_chrome') else 250)
+        self.sidebar.setFixedWidth(74 if compact else 250)
         self.collapse_button.set_collapsed(compact)
         self.sidebar._position_toggle()
 

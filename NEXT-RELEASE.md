@@ -1,3 +1,19 @@
+# Unstable plan — v0.9.6.3-unstable.4
+
+Owner explicitly requests publication on Unstable. Main remains at v0.9.6.2.
+
+Validated with the shipped runtime: 67 regression scripts, all five native renderers and four scale factors. The actual published Unstable AppImage downloaded, SHA-256-verified and activated the real Stable AppImage, reopened it once automatically and retained its previous-image backup. Separate regression coverage compiles the same updater behavior as the future Stable version and exercises both destinations through the real install worker.
+
+- Remove Liquid Chrome and replace the original light Liquid Silver with Obsidian Gold geometry/materials in satin silver and dark smoked glass; retain the Liquid Silver name, fixed palette/background, coordinated icons/graphs and continuously animated identity. Migrate saved Liquid Chrome selections safely to the replacement.
+- The reported Restart now button occurs specifically on Stable → Unstable. Published Stable v0.9.6.2 contains the old manual updater, verified directly in the actual release ZIP. Current Unstable does not contain that Updates button and already restarts automatically. Do not claim an Unstable-only release can modify the updater in an already running older Stable. Test a real install worker and actual AppImage activation; explain the legacy behavior inline when returning to the older Stable and in the guide.
+- Refresh compact English README/user guide and DE/EN native help; changelogs contain app-visible changes only.
+
+## Deferred: Platinum Atelier
+
+Keep the concept for a later release; do not implement or publish its PNG yet. Original design study uses a horizontal workspace navigation, large typographic readings and charts instead of repeated round dials, a right status inspector and a slim bottom status shelf. Palette: ink blue/graphite with platinum/silver edges, petrol and restrained iris accents. The preview uses demo data. Approved only for keeping as a plan, not for implementation.
+
+---
+
 # Unstable plan — v0.9.6.3-unstable.3
 
 Owner requested an additional, entirely distinct dark silver/chrome premium design and explicitly retained the existing light Liquid Silver. Add Liquid Chrome with graphite/smoked-glass surfaces, sculpted mercury ribbons, orbital instruments and an asymmetric responsive dashboard; fixed palette/background and existing customization explanations. Preserve all reset, guide, update, sound and profile fixes from Unstable .2. Update English docs, DE/EN guide and app-only notes; publish on the same rolling Unstable entry. Main remains unchanged.

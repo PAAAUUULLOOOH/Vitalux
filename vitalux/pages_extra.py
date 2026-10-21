@@ -3,7 +3,7 @@ from html import escape
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QHBoxLayout,QVBoxLayout,QWidget,QButtonGroup
 
-from . import APP_NAME, __version__, changelog, settings, theme, profiles
+from . import APP_NAME, __version__, changelog, settings, theme, profiles, versions
 from .i18n import tr
 from .pages import Page
 from .ui_locale import QLabel, QPushButton, QMessageBox, QComboBox
@@ -204,6 +204,12 @@ class UpdatePage(Page):
             channel_message='Verfügbarkeit nicht bestätigt. Gespeicherte Changelogs bleiben lesbar.'
         elif m.channel=='unstable' and record and not record.get('eligible',False):
             channel_message='Derzeit gibt es keinen neueren Unstable-Teststand.'
+        elif m.channel=='stable' and m.can_install and not pending:
+            try:
+                if not versions.has_automatic_restart(record.get('latest','')):
+                    channel_message=tr('Dieser Wechsel startet automatisch neu. Stable v{version} verwendet bei späteren Updates noch „Jetzt neu starten“.').format(version=record['latest'])
+            except ValueError:
+                pass
         self.channel_status.setText(tr(channel_message));self.channel_status.setVisible(bool(channel_message))
         destination=m.pending if pending else record
         target_channel=destination.get('channel',m.channel)

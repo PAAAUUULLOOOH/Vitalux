@@ -322,7 +322,7 @@ class OverviewPage(Page):
 
     def refresh_design(self):
         from .signature_designs import active
-        selected=active() or theme.mode()=='liquid_chrome'
+        selected=active()
         for host in self.design_metric_hosts.values():
             host.setCurrentIndex(1 if selected else 0)
         self.root.setContentsMargins(16 if selected else 30,45,16 if selected else 30,24 if selected else 30)

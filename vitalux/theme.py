@@ -39,6 +39,7 @@ BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED = (_THEMES[_mode][key] for k
 
 def set_mode(value):
     global _mode, BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED
+    value = 'liquid_silver' if value == 'liquid_chrome' else value
     _mode = "dark" if value == "amoled" else value if value in _THEMES else DEFAULT_THEME
     a = _THEMES[_mode]
     BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED = (a[x] for x in ("bg", "sidebar", "card", "border", "track", "grid", "text", "muted"))
@@ -49,7 +50,7 @@ def mode():
 
 
 def is_light():
-    return _mode in ('light','liquid_silver')
+    return _mode == 'light'
 
 
 def source_accent():

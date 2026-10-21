@@ -164,15 +164,6 @@ class DashboardBoard(QWidget):
 
     def _render_positions(self,order=None):
         from .signature_designs import active
-        if theme.mode()=='liquid_chrome':
-            sizes=dict(DEFAULT)
-            sizes.update(hero=(0,0,12,5),cpu=(0,0,6,9),gpu=(0,0,3,9),ram=(0,0,3,9),
-                         graph_load=(0,0,7,10),graph_net=(0,0,5,10),disk=(0,0,3,7),
-                         health=(0,0,3,7),network=(0,0,6,7),drives=(0,0,12,5))
-            selected=list(self.order if order is None else order)
-            if selected==list(ORDER):
-                selected=['hero','cpu','gpu','ram','graph_load','graph_net','disk','health','network','drives']
-            return grid_pack(selected,self.hidden,self._cols(),sizes)
         if active():
             sizes=dict(DEFAULT)
             sizes.update(hero=(0,0,12,4),cpu=(0,0,6,8),gpu=(0,0,3,8),

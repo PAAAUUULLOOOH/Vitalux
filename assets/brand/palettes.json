@@ -153,26 +153,14 @@
     },
     "liquid-silver": {
       "name": "Liquid Silver",
-      "accent": "#849aaf",
+      "accent": "#b9ccdc",
       "top": "#f0f6fb",
       "mid": "#a7bbcc",
       "low": "#4d667e",
       "spec": "#ffffff",
       "secondary": "#81adc8",
       "fixed": true,
-      "light_lens": true,
-      "pulse_base": "#4b6378"
-    },
-    "liquid-chrome": {
-      "name": "Liquid Chrome",
-      "accent": "#b6cbdc",
-      "top": "#d9e4ec",
-      "mid": "#9ab0c0",
-      "low": "#425b70",
-      "spec": "#eef5fa",
-      "secondary": "#82b7cf",
-      "fixed": true,
-      "pulse_base": "#587185"
+      "pulse_base": "#718ba2"
     }
   },
   "theme_assets": {
@@ -182,8 +170,7 @@
     "aurora_gold": "aurora-gold",
     "aether_glass": "aether-glass",
     "eclipse_crystal": "eclipse-crystal",
-    "liquid_silver": "liquid-silver",
-    "liquid_chrome": "liquid-chrome"
+    "liquid_silver": "liquid-silver"
   },
   "custom_accent_policy": "Preserve the outlined geometry; moderately richer tint for the circle logo only.",
   "motion_seconds": {

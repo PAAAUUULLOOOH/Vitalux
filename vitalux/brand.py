@@ -555,8 +555,6 @@ class PulseCore(QWidget):
         mid = palette['mid'] if palette else theme.accent()
         top = palette['top'] if palette else theme.blend('#ffffff', mid, .46)
         spec = palette['spec'] if palette else theme.blend('#ffffff', mid, .83)
-        if theme.mode()=='liquid_silver':
-            mid,top,spec='#47657e','#294c68','#122f48'
         path = self._waveform
         segment = path.trimmed(tail, finish)
         start = path.pointAtPercent(path.percentAtLength(path.length()*tail))

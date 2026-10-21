@@ -7,7 +7,7 @@ No KWin compositor transparency or blur-behind is required.
 from __future__ import annotations
 
 from pathlib import Path
-from PySide6.QtCore import QPoint, QPointF, QRectF, Qt, QTimer, QVariantAnimation, QEasingCurve
+from PySide6.QtCore import QPoint, QPointF, QRectF, Qt, QTimer
 from PySide6.QtGui import (QBrush, QColor, QLinearGradient, QPainter,
                            QPainterPath, QPen, QPixmap, QRadialGradient)
 from PySide6.QtWidgets import QFrame, QWidget
@@ -634,44 +634,20 @@ class GlassSurface(QFrame):
         self._hero = hero
         self._compact = compact
         self._hover = False
-        self._silver_hover=0.;self._silver_animation=None
         self.setObjectName('heroCard' if hero else 'chip' if compact else 'card')
         self.setAutoFillBackground(False)
 
     def enterEvent(self, event):
         self._hover = True
-        self._animate_silver(1.)
         if theme.mode() != "minimal":
             self.update()
         super().enterEvent(event)
 
     def leaveEvent(self, event):
         self._hover = False
-        self._animate_silver(0.)
         if theme.mode() != "minimal":
             self.update()
         super().leaveEvent(event)
-
-    def _animate_silver(self,value):
-        if theme.mode() not in ('liquid_silver','liquid_chrome'):return
-        from . import motion
-        if self._silver_animation is None:
-            self._silver_animation=QVariantAnimation(self)
-            self._silver_animation.setEasingCurve(QEasingCurve.OutCubic)
-            self._silver_animation.valueChanged.connect(self._silver_frame)
-        self._silver_animation.stop()
-        duration=motion.duration(210)
-        if not duration:self._silver_frame(value);return
-        self._silver_animation.setDuration(duration)
-        self._silver_animation.setStartValue(self._silver_hover)
-        self._silver_animation.setEndValue(value);self._silver_animation.start()
-
-    def _silver_frame(self,value):
-        self._silver_hover=float(value);self.update()
-
-    def hideEvent(self,event):
-        if self._silver_animation is not None:self._silver_animation.stop()
-        super().hideEvent(event)
 
     def paintEvent(self, event):
         p = QPainter(self)
