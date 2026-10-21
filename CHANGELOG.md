@@ -1,6 +1,6 @@
 # Vitalux – Änderungen
 
-## [v0.9.6.3-unstable.6] - 2026-10-21
+## [v0.9.6.3-unstable.6] - 2026-10-22
 - Beim Verlassen der automatischen Akzentfarbe aus einem eigenen Hintergrundbild wird die vorherige Auswahl „Designfarben“ wiederhergestellt. Obsidian erhält damit seine ursprünglichen Goldfarben statt Vitalux-Blau.
 
 ## [v0.9.6.3-unstable.5] - 2026-10-21

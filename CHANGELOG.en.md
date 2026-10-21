@@ -1,6 +1,6 @@
 # Vitalux – Changes
 
-## [v0.9.6.3-unstable.6] - 2026-10-21
+## [v0.9.6.3-unstable.6] - 2026-10-22
 - Leaving automatic accents from a personal wallpaper restores the previous Design colors selection. Obsidian returns to its original gold palette instead of Vitalux Blue.
 
 ## [v0.9.6.3-unstable.5] - 2026-10-21
