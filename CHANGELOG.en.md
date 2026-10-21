@@ -1,5 +1,13 @@
 # Vitalux – Changes
 
+## [v0.9.6.1] - 2026-10-21
+- Click Stable or Unstable to read its current changelog without switching channels or triggering an update notification; the running version and installation destination remain distinct.
+- Switching to Unstable requires a verified, genuinely newer test build. Matching channel contents are clearly identified.
+- Choose “Restart now” or “Later” after installation; “Restart required” remains visible without duplicate update offers.
+- A notice explains when the installed test changes have reached Stable; a newer Unstable test build takes priority.
+- Test profiles are created and preserved automatically. The separate fresh-profile button has been removed.
+- Previously downloaded channel changelogs remain readable offline. Check times and connection errors are displayed clearly.
+
 ## [v0.9.6.0] - 2026-10-21
 - Switch between Stable and Unstable from Updates, with separate settings profiles, backups and a return to the stable version that preserves each configuration.
 - Block and unblock applications directly in the network list. Blocking requests necessary system authorization and explains failures visibly.

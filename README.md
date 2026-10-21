@@ -36,27 +36,27 @@ CPU rendering is the default. Optional GPU renderers require suitable drivers an
 
 ### AppImage
 
-Download the `.AppImage` from [the latest release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). For v0.9.6.0:
+Download the `.AppImage` from [the latest release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). For v0.9.6.1:
 
 ```bash
-chmod +x Vitalux-v0.9.6.0-x86_64.AppImage
-./Vitalux-v0.9.6.0-x86_64.AppImage
+chmod +x Vitalux-v0.9.6.1-x86_64.AppImage
+./Vitalux-v0.9.6.1-x86_64.AppImage
 ```
 
 The first-run dialog offers installation in your user account, including an application-menu entry. Administrator rights are not required. You can also choose **Run once**, or run explicitly without integration:
 
 ```bash
-./Vitalux-v0.9.6.0-x86_64.AppImage --portable
+./Vitalux-v0.9.6.1-x86_64.AppImage --portable
 ```
 
 To add or remove desktop integration later, use `--install` or `--uninstall`. Uninstalling keeps personal preferences.
 
 ### Portable ZIP or source ZIP
 
-Download **`Vitalux-v0.9.6.0-linux-x86_64.zip`**, extract the entire archive into its own writable folder, and run:
+Download **`Vitalux-v0.9.6.1-linux-x86_64.zip`**, extract the entire archive into its own writable folder, and run:
 
 ```bash
-cd Vitalux-v0.9.6.0
+cd Vitalux-v0.9.6.1
 bash run.sh
 ```
 
@@ -89,11 +89,15 @@ A soft, damped tone accompanies Vitalux buttons, selections and dropdowns at 50%
 
 ## Stable and Unstable channels
 
-Open **Updates → Update channel** and select **Stable** or **Unstable**. The installed version and active channel remain visible. Review the destination version and its changes, then use **Switch to Unstable** or **Return to Stable**. Switching verifies the package, backs up profiles and restarts Vitalux; returning to an older stable package is supported.
+Click **Stable** or **Unstable** under **Updates → Browse channel** to read the current changelog. Clicking a tab only changes the view. A separate action prepares the installation and shows the running version alongside its destination. Switching to Unstable is available only when a verified test build contains real application changes beyond the current Stable baseline; a larger build number or a Stable mirror does not qualify. Returning to Stable remains possible.
 
-Stable retains your existing preferences. Unstable creates its own settings profile on first launch by copying Stable's preferences and imported backgrounds. Later switches retain each channel's configuration, caches and diagnostic data. **Import settings** transfers compatible preferences with a backup and CPU-rendered restart. **Fresh test profile** resets only the test profile. Backups precede format migrations and are kept locally (the latest five per channel).
+After installation, choose **Restart now** or **Later**. A prepared installation stays marked **Restart required**, even while browsing the other channel. It cannot generate another update offer or be installed twice. With Later, the prepared ZIP or AppImage is activated on normal exit without reopening Vitalux. On your next launch the new version uses its own profile.
 
-Test versions use names such as `v0.9.6.1-unstable.1`. A single rolling **Unstable — current test build** prerelease supplies the latest test package across development cycles. GitHub's **Latest** download remains Stable. Test packages can change frequently; the previous test package in the rolling entry is replaced. Download the full ZIP or AppImage from that entry when installing manually.
+Stable keeps its existing preferences. Unstable automatically creates a separate profile on first launch using Stable's preferences and imported backgrounds. Subsequent launches, updates and switches preserve each profile; migrations receive local backups (the latest five per channel). **Import settings** explicitly transfers compatible preferences with a backup and CPU-rendered restart. No fresh-profile button is needed.
+
+When your test changes reach Stable, Vitalux offers a notice and lets you view the Stable destination. A newer eligible Unstable build takes precedence. A single rolling prerelease supplies test packages; when it has caught up with Stable it is marked **Unstable — based on Stable v…**, without creating another mirror build or consuming another test number. GitHub's **Latest** download always remains Stable. Technical test versions are retained internally for correct ordering and recovery.
+
+Channel changelogs are cached for offline reading with their check time. Offline or failed checks are reported explicitly; cached information alone cannot authorize an installation.
 
 ## Updates and verification
 
@@ -102,7 +106,7 @@ Vitalux checks official GitHub releases at startup and approximately every six h
 To check a manually downloaded package, download its release's `SHA256SUMS.txt` file into the same directory and run:
 
 ```bash
-sha256sum --ignore-missing -c Vitalux-v0.9.6.0-SHA256SUMS.txt
+sha256sum --ignore-missing -c Vitalux-v0.9.6.1-SHA256SUMS.txt
 ```
 
 A matching checksum confirms consistency with that manifest; it is not an independent digital signature.
@@ -134,7 +138,7 @@ VITALUX_RENDERER=software bash run.sh
 For an AppImage that cannot mount through FUSE, extract its payload instead:
 
 ```bash
-./Vitalux-v0.9.6.0-x86_64.AppImage --appimage-extract
+./Vitalux-v0.9.6.1-x86_64.AppImage --appimage-extract
 VITALUX_RENDERER=software bash squashfs-root/AppRun --portable
 ```
 
@@ -178,7 +182,7 @@ python3.12 -m venv .venv
 
 Branding uses outlined SVG geometry and the separate `assets/brand/palettes.json` configuration. After editing a palette, regenerate assets with `.venv/bin/python scripts/build-brand-assets.py` and README artwork with `.venv/bin/python scripts/build-readme-brand.py`; no external fonts or tracing tools are needed.
 
-Native renderer checks use `scripts/run-graphics-checks.py` with Xvfb, Weston and Mesa. `scripts/check-ui-audio.py` tests repeated sound playback through a private PulseAudio sink. CI also validates offline startup, AppImage integration, update/rollback and release checksums. Releases advance from `.0` through `.9`, then increment the preceding component: `0.9.5.9 → 0.9.6.0`.
+Native renderer checks use `scripts/run-graphics-checks.py` with Xvfb, Weston and Mesa. `scripts/check-ui-audio.py` tests repeated sound playback through a private PulseAudio sink. CI also validates offline startup, AppImage integration, update/rollback and release checksums. Releases advance from `.0` through `.9`, then increment the preceding component: `0.9.5.9 → 0.9.6.1`.
 
 ## Credits and licenses
 

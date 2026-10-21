@@ -88,7 +88,7 @@ def _unstable_manifest(data):
     return manifest
 
 
-def check(channel=None):
+def check(channel=None, stable_result=None):
     """Only releases from the official GitHub repo with the exact app binary."""
     repo = DEFAULT_REPO
     channel=channel or profiles.selected()
@@ -102,7 +102,7 @@ def check(channel=None):
             manifest=_unstable_manifest(data)
     except urllib.error.HTTPError as e:
         if e.code == 404:
-            return {"ok": False, "error": tr('Noch kein Unstable-Testpaket veröffentlicht.' if channel=='unstable' else "Noch keine Vitalux-Version über GitHub Releases veröffentlicht.")}
+            return {"ok": False, "missing":True, "error": tr('Noch kein Unstable-Testpaket veröffentlicht.' if channel=='unstable' else "Noch keine Vitalux-Version über GitHub Releases veröffentlicht.")}
         return {"ok": False, "error": f"GitHub: HTTP {e.code}"}
     except (urllib.error.URLError, OSError, TimeoutError) as exc:
         reason = getattr(exc, "reason", exc)
@@ -123,11 +123,31 @@ def check(channel=None):
     if not valid:
         return {"ok": False, "error": tr("Ungültige Versionsangabe bei GitHub.")}
     is_appimage = bool(os.environ.get("APPIMAGE"))
-    # A current/older release is not an update even while its artifacts build.
+    notes=(data.get('body') or '').strip()
+    common={'ok':True,'latest':version,'notes':notes,'url':'','sha256':'',
+            'kind':'appimage' if is_appimage else 'zip','newer':False,
+            'channel':channel,'eligible':channel=='stable'}
+    if channel=='unstable':
+        stable_result=stable_result if stable_result is not None else check('stable')
+        baseline=manifest.get('stable_version','')
+        stable_version=stable_result.get('latest','') if stable_result.get('ok') else ''
+        try:
+            eligible=(manifest.get('has_test_changes') is True and baseline==stable_version
+                      and versions.channel(baseline)=='stable' and _ver(version)>_ver(stable_version))
+        except ValueError:eligible=False
+        common.update(eligible=eligible,stable_version=stable_version or baseline,
+                      has_test_changes=manifest.get('has_test_changes') is True,
+                      stable_verified=bool(stable_result.get('ok')),same_as_stable=manifest.get('same_as_stable') is True and baseline==stable_version)
+        if not eligible:
+            # Metadata without a verified Stable baseline never enables a switch.
+            # Retain the real Stable notes instead of advertising a mirrored build.
+            common.update(notes=stable_result.get('notes','') if stable_result.get('ok') else notes,
+                          reason='no_newer_test')
+            return common
+    # Current releases still provide their notes for channel browsing.
     switching=versions.channel(__version__)!=channel
     if not switching and _ver(version) <= _ver(__version__):
-        return {"ok": True, "latest": version, "notes": "", "url": "",
-                "sha256": "", "kind": "appimage" if is_appimage else "zip", "newer": False}
+        return common
     # Neuer Standardname ohne „Portabel“; ältere Releases bleiben kompatibel.
     suffixes = ("-x86_64.AppImage",) if is_appimage else (
         "-linux-x86_64.zip", "-linux-x86_64-Portabel.zip")
@@ -150,9 +170,20 @@ def check(channel=None):
         record=manifest.get('assets',{}).get(expected_name,{})
         if record.get('sha256')!=checksum.split(':',1)[1].lower():
             return {'ok':False,'error':tr('Testpaket und Manifest stimmen nicht überein. Bitte erneut prüfen.')}
-    return {"ok": True, "latest": version, "notes": (data.get('body') or '').strip(),
-            "url": download_url, "sha256": checksum.split(':', 1)[1].lower(),
-            "kind": "appimage" if is_appimage else "zip", "newer": switching or _ver(version) > _ver(__version__), 'channel':channel}
+    common.update(url=download_url,sha256=checksum.split(':',1)[1].lower(),
+                  newer=switching or _ver(version)>_ver(__version__))
+    return common
+
+
+def catalog():
+    """One consistent Stable baseline and both channels, including current notes."""
+    stable=check('stable')
+    unstable=check('unstable',stable_result=stable)
+    if unstable.get('missing') and stable.get('ok'):
+        unstable=dict(ok=True,latest='',notes=stable.get('notes',''),url='',sha256='',newer=False,
+                      eligible=False,channel='unstable',stable_version=stable['latest'],reason='no_test_package')
+    return {'stable':stable,'unstable':unstable}
+
 
 
 def _require_space(path, required):
@@ -228,7 +259,7 @@ def _stage_appimage(url, sha256, progress):
         raise
 
 
-def activate_appimage_update(staged):
+def activate_appimage_update(staged, relaunch=True):
     """External /bin/sh helper survives unmounting old AppImage and replaces file atomically."""
     target = os.path.realpath(appimage_path())
     if not os.path.isfile(target) or os.path.dirname(staged) != os.path.dirname(target):
@@ -262,9 +293,11 @@ mv -f -- "$staged" "$target"
 unset APPDIR APPIMAGE LD_LIBRARY_PATH LD_PRELOAD PYTHONHOME PYTHONPATH PYTHONUSERBASE
 stamp "Vitalux update activation: old version v$version, launching newly installed AppImage."
 # Record even early loader failures in restart.log, with date and source version.
-( "$target" --launch 2>&1 | while IFS= read -r line || [ -n "$line" ]; do
-    stamp "$line"
-  done ) &
+if [ {q('yes' if relaunch else 'no')} = yes ]; then
+  ( "$target" --launch 2>&1 | while IFS= read -r line || [ -n "$line" ]; do
+      stamp "$line"
+    done ) &
+fi
 """
     try:
         with os.fdopen(fd, 'w', encoding='utf-8') as f:
@@ -468,37 +501,104 @@ def restore_previous(root=None, restore_settings=True):
             shutil.rmtree(stage, ignore_errors=True)
 
 
-def install(url, root=None, progress=lambda p: None, sha256=None):
-    if appimage_path():
-        return _stage_appimage(url, sha256, progress)
-    root = root or app_root()
-    tmp = tempfile.mkdtemp(prefix=f'{APP_ID}-update-')
+def _zip_members(zipped):
+    members=zipped.infolist()
+    if len(members)>12000 or sum(item.file_size for item in members)>1200*1024*1024:
+        raise RuntimeError(tr('Updatepaket ist zu groß.'))
+    for item in members:
+        path=PurePosixPath(item.filename)
+        if path.is_absolute() or '..' in path.parts or stat.S_ISLNK(item.external_attr>>16) or '\\' in item.filename:
+            raise RuntimeError(tr('Unsicherer Pfad im Updatepaket.'))
+    names={item.filename for item in members}
+    if not any(name.endswith('vitalux/__main__.py') and name[:-len('vitalux/__main__.py')]+'run.sh' in names for name in names):
+        raise RuntimeError(tr('Das Update-Paket hat eine unbekannte Struktur.'))
+    return members
+
+
+def _apply_zip(archive,root,progress):
+    with tempfile.TemporaryDirectory(prefix='vitalux-extract-') as directory:
+        with zipfile.ZipFile(archive) as zipped:
+            members=_zip_members(zipped)
+            _require_space(directory,sum(item.file_size for item in members))
+            zipped.extractall(directory)
+            for item in members:
+                destination=os.path.join(directory,item.filename);mode=(item.external_attr>>16)&0o777
+                if mode and os.path.isfile(destination):os.chmod(destination,mode)
+        source=_find_root(directory)
+        if not source:raise RuntimeError(tr('Das Update-Paket hat eine unbekannte Struktur.'))
+        _install_from_directory(source,root,progress)
+
+
+def apply_prepared_zip(archive,root,sha256):
+    with open(archive,'rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
+    if digest!=sha256:raise RuntimeError(tr('Sicherheitsprüfung fehlgeschlagen: SHA-256 stimmt nicht überein.'))
+    _apply_zip(archive,root,lambda value:None)
+
+
+def activate_zip_update(archive,sha256,pending_file,relaunch=True):
+    """An external helper applies prepared files only after this process exits."""
+    import sys
+    root=app_root();folder=Path(archive).parent
+    helper=folder/'apply-after-exit.py'
+    # This helper imports the current implementation before replacing its files.
+    code="""import os,sys,time,json,subprocess,traceback,shutil
+from pathlib import Path
+root,archive,digest,pending_file,pid,relaunch=sys.argv[1:]
+sys.path.insert(0,root)
+from vitalux import updater
+process_exited=False
+try:
+    deadline=time.monotonic()+45
+    while True:
+        try:os.kill(int(pid),0)
+        except ProcessLookupError:
+            process_exited=True
+            break
+        if time.monotonic()>deadline:raise RuntimeError('Vitalux did not exit; prepared update retained')
+        time.sleep(.1)
+    updater.apply_prepared_zip(archive,root,digest)
+    Path(pending_file).unlink(missing_ok=True)
+    shutil.rmtree(Path(archive).parent,ignore_errors=True)
+except Exception as error:
+    path=Path(pending_file)
     try:
-        zpath = os.path.join(tmp, 'update.zip')
-        _download_verified(url, zpath, sha256, progress, 700 * 1024 * 1024)
-        extracted = os.path.join(tmp, 'x')
-        with zipfile.ZipFile(zpath) as z:
-            members = z.infolist()
-            if len(members) > 12000 or sum(item.file_size for item in members) > 1200 * 1024 * 1024:
-                raise RuntimeError(tr('Updatepaket ist zu groß.'))
-            _require_space(tmp, sum(item.file_size for item in members))
-            for item in members:
-                path = PurePosixPath(item.filename)
-                unix_mode = item.external_attr >> 16
-                if path.is_absolute() or '..' in path.parts or stat.S_ISLNK(unix_mode) or '\\' in item.filename:
-                    raise RuntimeError(tr('Unsicherer Pfad im Updatepaket.'))
-            z.extractall(extracted)
-            # zipfile does not restore Unix execute bits. Keep the official
-            # launcher and interpreter runnable, without accepting special bits.
-            for item in members:
-                destination = os.path.join(extracted, item.filename)
-                mode = (item.external_attr >> 16) & 0o777
-                if mode and os.path.isfile(destination):
-                    os.chmod(destination, mode)
+        state=json.loads(path.read_text());state['activation_error']=str(error)
+        updater.profiles.atomic_json(path,state)
+    except Exception:pass
+    traceback.print_exc()
+if relaunch=='yes' and process_exited:
+    env=os.environ.copy()
+    for key in ('PYTHONHOME','PYTHONPATH','PYTHONUSERBASE','APPDIR','APPIMAGE'):env.pop(key,None)
+    subprocess.Popen(['bash',str(Path(root)/'run.sh')],env=env,start_new_session=True)
+"""
+    helper.write_text(code);helper.chmod(0o700)
+    log=Path(pending_file).parent/'activation.log';log.parent.mkdir(parents=True,exist_ok=True)
+    with log.open('ab') as stream:
+        subprocess.Popen([sys.executable,'-I',str(helper),root,str(archive),sha256,str(pending_file),
+                          str(os.getpid()),'yes' if relaunch else 'no'],stdin=subprocess.DEVNULL,
+                         stdout=stream,stderr=subprocess.STDOUT,start_new_session=True)
+
+
+def install(url, root=None, progress=lambda p: None, sha256=None, defer=False):
+    if appimage_path():return _stage_appimage(url,sha256,progress)
+    root=root or app_root()
+    if defer:
+        if not os.path.isdir(os.path.join(root,APP_ID)):
+            raise RuntimeError(tr('Bestehende Vitalux-Installation nicht gefunden.'))
+        if not os.access(root,os.W_OK):
+            raise RuntimeError(tr('Vitalux-Ordner ist schreibgeschützt. Bitte eine beschreibbare Installation verwenden.'))
+        cache=profiles.directory('cache');cache.mkdir(parents=True,exist_ok=True)
+        directory=tempfile.mkdtemp(prefix='prepared-zip-',dir=cache)
+        try:
+            archive=Path(directory)/'package.zip'
+            _download_verified(url,str(archive),sha256,progress,700*1024*1024)
+            with zipfile.ZipFile(archive) as zipped:_zip_members(zipped)
+            progress(100)
+            return str(archive)
+        except BaseException:
+            shutil.rmtree(directory,ignore_errors=True);raise
+    with tempfile.TemporaryDirectory(prefix=f'{APP_ID}-update-') as directory:
+        archive=os.path.join(directory,'update.zip')
+        _download_verified(url,archive,sha256,progress,700*1024*1024)
         progress(85)
-        src = _find_root(extracted)
-        if not src:
-            raise RuntimeError(tr('Das Update-Paket hat eine unbekannte Struktur.'))
-        _install_from_directory(src, root, progress)
-    finally:
-        shutil.rmtree(tmp, ignore_errors=True)
+        _apply_zip(archive,root,progress)

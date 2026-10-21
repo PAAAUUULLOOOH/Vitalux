@@ -1,173 +1,259 @@
+"""Independent channel browsing, verified installations and explicit restarts."""
+import hashlib
+import math
 import os
+import time
+from pathlib import Path
 
 from PySide6.QtCore import QObject, QThread, QTimer, Signal
 
-from . import updater, profiles
+from . import __version__, updater, profiles, versions
 from .i18n import tr
 
 
 class _CheckThread(QThread):
     done = Signal(object)
 
-    def __init__(self, parent, channel):
-        super().__init__(parent)
-        self.channel=channel
-
     def run(self):
-        try:
-            self.done.emit(updater.check(self.channel))
-        except Exception as exc:
-            self.done.emit({"ok": False, "error": str(exc)})
+        try:self.done.emit(updater.catalog())
+        except Exception as exc:self.done.emit({'error':str(exc)})
 
 
 class _InstallThread(QThread):
     progress = Signal(float)
-    done = Signal(str)          # leer = Erfolg, sonst Fehlertext
+    done = Signal(str)
 
     def __init__(self, url, sha256, parent):
         super().__init__(parent)
-        self.url, self.sha256 = url, sha256
-        self.pending_path = None
-        self.channel=parent.channel
+        self.url,self.sha256=url,sha256
+        self.channel,self.version=parent.channel,parent.latest
+        self.pending_path=None
+        self.kind='appimage' if updater.appimage_path() else 'zip'
 
     def run(self):
         try:
             if self.channel!=profiles.installed():
                 profiles.backup('stable');profiles.backup('unstable')
-            self.pending_path = updater.install(self.url, sha256=self.sha256, progress=self.progress.emit)
+            self.pending_path=updater.install(self.url,sha256=self.sha256,progress=self.progress.emit,defer=True)
             profiles.select(self.channel)
-            self.done.emit("")
-        except Exception as exc:
-            self.done.emit(f"{tr('Installation fehlgeschlagen:')} {exc}")
+            self.done.emit('')
+        except Exception as exc:self.done.emit(f"{tr('Installation fehlgeschlagen:')} {exc}")
 
 
 class _RestoreThread(QThread):
     done = Signal(str)
+    pending_path=None
 
     def run(self):
         try:
+            metadata=profiles.read(Path(updater.app_root())/'.backup/metadata.json')
+            self.version=metadata.get('version','')
+            self.channel=versions.channel(self.version)
             updater.restore_previous()
             self.done.emit('')
-        except Exception as exc:
-            self.done.emit(str(exc))
+        except Exception as exc:self.done.emit(str(exc))
 
 
 class UpdateManager(QObject):
-    """Hält den Update-Status. Bleibt bestehen, auch wenn die Oberfläche (z. B. bei Sprachwechsel) neu aufgebaut wird."""
     changed = Signal()
     progress = Signal(float)
     restart = Signal()
 
     def __init__(self):
         super().__init__()
-        self.status = 'preview' if os.environ.get('VITALUX_LOCAL_PREVIEW') == '1' else 'idle'
-        self.latest = self.notes = self.url = self.error = self.sha256 = ""
-        self.pending_path = None
-        self.channel=profiles.selected()
-        self._shutting_down = False
-        self._thread = None
-        self._active_threads = []  # Do not destroy Qt threads while queued signals are still finishing.
-        self._timer = QTimer(self)
-        self._timer.setInterval(6 * 3600 * 1000)       # alle 6 Stunden prüfen
+        self.status='preview' if os.environ.get('VITALUX_LOCAL_PREVIEW')=='1' else 'idle'
+        self.channel=profiles.installed()  # Tabs browse; only installation changes the channel.
+        self.latest=self.notes=self.url=self.error=self.sha256=''
+        self.error_kind='check'
+        self.records={};self.last_checked=0.;self.last_attempt=0.
+        self.notes_open=False;self.checking=False
+        self.pending_path=None;self.pending_restart=False;self.pending={}
+        self.restart_deferred=False;self._activation_started=False
+        self._shutting_down=False;self._thread=None;self._active_threads=[]
+        self._cache_path=profiles.directory('cache')/'release-catalog.json'
+        application=os.path.realpath(updater.appimage_path() or updater.app_root())
+        identity=hashlib.sha256(os.fsencode(application)).hexdigest()[:24]
+        self._pending_file=profiles.root('state')/'updates'/identity/'pending.json'
+        if self.status!='preview':self._load_cache();self._load_pending()
+        self._timer=QTimer(self);self._timer.setInterval(6*3600*1000)
         self._timer.timeout.connect(self.check)
-        if self.status != 'preview':
-            self._timer.start()
+        if self.status!='preview' and not self.pending_restart:self._timer.start()
+        self._select_record()
+
+    def _load_cache(self):
+        cached=profiles.read(self._cache_path)
+        stamp=cached.get('checked_at',0)
+        self.last_checked=stamp if isinstance(stamp,(int,float)) and math.isfinite(stamp) and 0<=stamp<=time.time()+300 else 0
+        for channel,record in cached.get('records',{}).items() if isinstance(cached.get('records'),dict) else ():
+            if (channel in ('stable','unstable') and isinstance(record,dict)
+                    and isinstance(record.get('latest',''),str) and isinstance(record.get('notes',''),str)):
+                # Cached notes are display-only. A fresh verified check authorizes installs.
+                self.records[channel]=dict(record,stale=True,url='',sha256='',newer=False)
+                stamp=record.get('checked_at',self.last_checked)
+                if not isinstance(stamp,(int,float)) or not math.isfinite(stamp) or not 0<=stamp<=time.time()+300:
+                    self.records[channel]['checked_at']=self.last_checked
+
+    def _load_pending(self):
+        pending=profiles.read(self._pending_file)
+        if pending.get('version')==__version__:
+            try:self._pending_file.unlink(missing_ok=True)
+            except OSError:pass
+        elif pending.get('source_version')==__version__ and pending.get('channel') in ('stable','unstable'):
+            path=pending.get('path')
+            if path:
+                if not isinstance(path,str) or not Path(path).is_file():return
+                try:
+                    with open(path,'rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
+                    if digest!=pending.get('sha256'):return
+                except OSError:return
+            self.pending=pending;self.pending_path=path;self.pending_restart=True
+            self.status='installed'
+            self.error=pending.get('activation_error','')
+            self.error_kind='restart'
+
+    @property
+    def notification_version(self):
+        record=self.records.get(profiles.installed(),{})
+        return record.get('latest','') if record.get('ok') else self.latest
 
     @property
     def available(self):
-        return self.status == "available"
+        if self.pending_restart or self.status in ('installing','installed','preview'):return False
+        record=self.records.get(profiles.installed())
+        if record is not None:
+            return bool(record.get('ok') and not record.get('stale') and record.get('newer') and record.get('eligible',True))
+        return self.status=='available' and self.channel==profiles.installed()
+
+    @property
+    def can_install(self):
+        return (not self.pending_restart and not self.checking and self.status in ('available','switch_available')
+                and bool(self.url) and bool(self.sha256))
+
+    @property
+    def stable_has_test_changes(self):
+        if profiles.installed()!='unstable':return False
+        stable=self.records.get('stable',{});test=self.records.get('unstable',{})
+        try:
+            return (bool(stable.get('ok')) and not stable.get('stale') and test.get('ok') and not test.get('stale') and not test.get('eligible',False)
+                    and versions.parse(stable['latest'])[0]>=versions.parse(__version__)[0])
+        except (ValueError,KeyError):return False
+
+    def _select_record(self):
+        record=self.records.get(self.channel,{})
+        self.latest=record.get('latest','');self.notes=record.get('notes','')
+        self.url=record.get('url','') if not record.get('stale') else ''
+        self.sha256=record.get('sha256','') if not record.get('stale') else ''
+        if self.pending_restart:self.status='installed';return
+        if self.status=='preview':return
+        if self.checking:self.status='checking';return
+        if not record:
+            self.status='error' if self.error else 'idle';return
+        if not record.get('ok') or record.get('stale'):
+            self.status='error' if self.error or record.get('error') else 'idle';return
+        if self.channel=='unstable' and not record.get('eligible',False):self.status='unavailable'
+        elif record.get('newer') and self.url:
+            self.status='available' if self.channel==profiles.installed() else 'switch_available'
+        else:self.status='uptodate'
 
     def set_channel(self,channel):
-        if channel not in ('stable','unstable') or channel==self.channel:return
-        if self.status in ('checking','installing','installed'):return
-        try:profiles.select(channel)
-        except OSError as exc:
-            self.status='error';self.error=str(exc);self.changed.emit();return
-        self.channel=channel
-        self.latest=self.notes=self.url=self.error=self.sha256=''
-        self.status='preview' if os.environ.get('VITALUX_LOCAL_PREVIEW')=='1' else 'idle'
-        self.changed.emit()
-        self.check()
+        if channel not in ('stable','unstable') or self.status=='installing':return
+        self.channel=channel;self.notes_open=True
+        self._select_record();self.changed.emit()
+        if not self.records and not self.checking and not self.pending_restart:self.check()
 
-    def _start_worker(self, worker):
-        self._thread = worker
-        self._active_threads.append(worker)
-        worker.finished.connect(lambda w=worker: self._active_threads.remove(w)
-                                if w in self._active_threads else None)
+    def _start_worker(self,worker):
+        self._thread=worker;self._active_threads.append(worker)
+        worker.finished.connect(lambda w=worker:self._active_threads.remove(w) if w in self._active_threads else None)
         worker.start()
 
     def check(self):
-        if self._shutting_down or os.environ.get('VITALUX_LOCAL_PREVIEW') == '1':
-            return
-        if self.status in ("checking", "installing"):
-            return
-        self.status = "checking"
-        self.error = ""
-        self.changed.emit()
-        thread = _CheckThread(self,self.channel)
-        thread.done.connect(self._on_checked)
-        self._start_worker(thread)
+        if self._shutting_down or os.environ.get('VITALUX_LOCAL_PREVIEW')=='1':return
+        if self.checking or self.pending_restart or self.status in ('installing','installed'):return
+        self.checking=True;self.last_attempt=time.time();self.error='';self.error_kind='check'
+        self._select_record();self.changed.emit()
+        worker=_CheckThread(self);worker.done.connect(self._on_checked);self._start_worker(worker)
 
-    def _on_checked(self, res):
-        if res.get("ok"):
-            self.latest, self.notes, self.url, self.sha256 = res["latest"], res["notes"], res["url"], res["sha256"]
-            self.status = "available" if res["newer"] else "uptodate"
-        else:
-            self.latest = self.notes = self.url = self.sha256 = ""
-            self.status, self.error = "error", res.get("error", "Updateprüfung fehlgeschlagen")
-        self.changed.emit()
+    def _on_checked(self,result):
+        self.checking=False
+        if self.pending_restart or self.status=='installing':return
+        failures=[];success=False
+        for channel in ('stable','unstable'):
+            record=result.get(channel)
+            if not isinstance(record,dict):continue
+            if record.get('ok'):
+                self.records[channel]=dict(record,stale=False,checked_at=time.time());success=True
+            else:
+                prior=self.records.get(channel,{})
+                self.records[channel]=dict(prior,ok=False,stale=True,url='',sha256='',newer=False,
+                                           error=record.get('error',''))
+                failures.append(record.get('error',''))
+        self.error=result.get('error','') or next((failure for failure in failures if failure),'')
+        if success:
+            self.last_checked=time.time()
+            try:profiles.atomic_json(self._cache_path,{'checked_at':self.last_checked,'records':self.records})
+            except OSError:pass  # The verified in-memory result remains usable.
+        elif result.get('error'):
+            for record in self.records.values():record.update(stale=True,url='',sha256='',newer=False)
+        self._select_record();self.changed.emit()
 
     def install(self):
-        if self._shutting_down or os.environ.get('VITALUX_LOCAL_PREVIEW') == '1':
-            return
-        if self.status != "available" or not self.url:
-            return
-        self.status = "installing"
-        self.changed.emit()
-        thread = _InstallThread(self.url, self.sha256, self)
-        thread.progress.connect(self.progress)
-        thread.done.connect(self._on_installed)
-        self._start_worker(thread)
+        if self._shutting_down or os.environ.get('VITALUX_LOCAL_PREVIEW')=='1' or not self.can_install:return
+        self.status='installing';self.changed.emit()
+        worker=_InstallThread(self.url,self.sha256,self)
+        worker.progress.connect(self.progress)
+        worker.done.connect(lambda error,w=worker:self._on_installed(error,w))
+        self._start_worker(worker)
 
-    def _on_installed(self, err):
-        if err:
-            self.status, self.error = "error", err
-            self.changed.emit()
-            return
-        self.pending_path = getattr(self._thread, 'pending_path', None)
-        self.status = "installed"
-        self.changed.emit()
-        if not self._shutting_down:
-            QTimer.singleShot(900, self._restart)
+    def _on_installed(self,error,worker=None):
+        if error:
+            self.status='error';self.error=error;self.error_kind='install';self.changed.emit();return
+        worker=worker or self._thread
+        self.pending_path=getattr(worker,'pending_path',None)
+        self.pending={'source_version':__version__,'version':getattr(worker,'version',self.latest),
+                      'channel':getattr(worker,'channel',self.channel),'path':self.pending_path,
+                      'kind':getattr(worker,'kind','appimage' if self.pending_path else 'zip'),
+                      'sha256':getattr(worker,'sha256',self.sha256)}
+        self.pending_restart=True;self.status='installed';self.error='';self._timer.stop()
+        try:profiles.atomic_json(self._pending_file,self.pending)
+        except OSError:pass
+        self.changed.emit()  # Restart is the user's choice, never an automatic timer.
+
+    def defer_restart(self):
+        if self.pending_restart:self.restart_deferred=True;self.changed.emit()
 
     def rollback(self):
-        if updater.appimage_path() or self.status in ('checking', 'installing') or not updater.backup_available():
-            return
-        self.status = 'installing'
-        self.changed.emit()
-        thread = _RestoreThread(self)
-        thread.done.connect(self._on_installed)
-        self._start_worker(thread)
+        if self.pending_restart or updater.appimage_path() or self.checking or self.status=='installing' or not updater.backup_available():return
+        self.status='installing';self.changed.emit()
+        worker=_RestoreThread(self)
+        worker.done.connect(lambda error,w=worker:self._on_installed(error,w))
+        self._start_worker(worker)
 
     def _restart(self):
-        if self._shutting_down:
-            return
-        if self.pending_path:
+        if self._shutting_down:return
+        if self.pending_path and not self._activation_started:
             try:
-                updater.activate_appimage_update(self.pending_path)
+                if self.pending.get('kind','appimage')=='zip':
+                    updater.activate_zip_update(self.pending_path,self.pending.get('sha256',''),self._pending_file)
+                else:updater.activate_appimage_update(self.pending_path)
+                self._activation_started=True
             except Exception as exc:
-                self.status, self.error = 'error', str(exc)
-                self.changed.emit()
-                return
+                self.error=str(exc);self.error_kind='restart';self.changed.emit();return
         self.restart.emit()
 
+    def finalize_exit(self):
+        """Apply prepared packages on normal Exit without reopening the app."""
+        if self.pending_path and self.pending_restart and not self._activation_started:
+            try:
+                if self.pending.get('kind','appimage')=='zip':
+                    updater.activate_zip_update(self.pending_path,self.pending.get('sha256',''),self._pending_file,relaunch=False)
+                else:updater.activate_appimage_update(self.pending_path,relaunch=False)
+                self._activation_started=True
+            except Exception:pass  # Retain the staged package and pending state for a retry.
+
     def shutdown(self):
-        """Stop scheduling work; let the GUI await workers without blocking."""
-        self._shutting_down = True
-        self._timer.stop()
-        return not any(thread.isRunning() for thread in self._active_threads)
+        self._shutting_down=True;self._timer.stop()
+        return not any(worker.isRunning() for worker in self._active_threads)
 
     def resume_after_shutdown(self):
-        self._shutting_down = False
-        if self.status != 'preview':
-            self._timer.start()
+        self._shutting_down=False
+        if self.status!='preview' and not self.pending_restart:self._timer.start()

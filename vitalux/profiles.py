@@ -130,10 +130,3 @@ def import_other():
     for key in ('gpu_boot_pending','gpu_boot_backend','update_channel'):data.pop(key,None)
     data.update(_schema_version=SCHEMA,_soft_click_revision=1,render_backend='software')
     _resources(source,target);atomic_json(target/'settings.json',data)
-
-
-def fresh_test():
-    if installed()!='unstable':raise ValueError('Ein frisches Testprofil ist nur im Testkanal verfügbar.')
-    backup()
-    atomic_json(directory('config')/'settings.json',{'_schema_version':SCHEMA,'_soft_click_revision':1,
-        'ui_sound_volume':50,'render_backend':'software'})

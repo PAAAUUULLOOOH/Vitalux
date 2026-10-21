@@ -1,5 +1,13 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.1] - 2026-10-21
+- Stable und Unstable lassen sich zum Lesen des aktuellen Changelogs anklicken, ohne dadurch den Kanal zu wechseln oder eine Update-Meldung auszulösen; aktueller Stand und Installationsziel werden getrennt angezeigt.
+- Ein Wechsel zu Unstable ist nur mit einem geprüften, tatsächlich neueren Teststand möglich. Gleiche Stände werden verständlich gekennzeichnet.
+- Nach einer Installation selbst zwischen „Jetzt neu starten“ und „Später“ wählen; bis dahin bleibt „Neustart erforderlich“ sichtbar, ohne doppelte Update-Angebote.
+- Ein Hinweis zeigt, wenn die eigenen Teständerungen inzwischen in Stable enthalten sind; ein neuerer Unstable-Teststand bleibt vorrangig.
+- Testprofile werden automatisch erstellt und erhalten. Der zusätzliche Knopf für ein frisches Testprofil entfällt.
+- Bereits geladene Kanal-Changelogs bleiben offline lesbar. Prüfzeitpunkt und Verbindungsfehler werden klar angezeigt.
+
 ## [v0.9.6.0] - 2026-10-21
 - Zwischen Stable und Unstable direkt unter Updates wechseln; getrennte Einstellungsprofile, Sicherungen und die Rückkehr zur stabilen Version erhalten die jeweilige Konfiguration.
 - Apps direkt in der Netzwerkliste sperren und entsperren. Die erforderliche Systemfreigabe wird beim Sperren angefragt, Fehler werden sichtbar erklärt.

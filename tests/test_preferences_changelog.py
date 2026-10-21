@@ -315,50 +315,25 @@ def check_changelog(app):
     assert german and english and german != english
 
     manager = UpdateManager()
+    manager._timer.stop()
+    manager._on_checked({'stable':dict(ok=True,latest=__version__,channel='stable',eligible=True,newer=False,
+        url='',sha256='',notes="## Deutsch\n- Etwas Neues\n## English\n- A new feature"),
+        'unstable':dict(ok=True,latest='',channel='unstable',eligible=False,newer=False,url='',sha256='',notes='')})
     page = UpdatePage(manager)
-    page.resize(1100, 900)
-    page.show()
-    app.processEvents()
-    assert page.changelog_select.currentData() == __version__
-    assert "• " in page.changelog_details.text()
+    page.resize(1100,900);page.show();app.processEvents()
+    assert page.changelog_card.isHidden(), 'Changelog opens only when a channel is clicked'
+    page.channel_buttons['stable'].click();app.processEvents()
+    assert page.changelog_card.isVisible() and 'Etwas Neues' in page.changelog_details.text()
     assert not page.update_card.isVisible()
-    manager.status = "available"
-    manager.latest = "0.9.3.55"
-    manager.notes = ("## Deutsch\n\n### Neu in nächster Version\n\n- Etwas Neues"
-                     "\n\n## English\n\n### New in next version\n\n- A new feature")
-    page.sync()
-    app.processEvents()
-    assert page.update_card.isVisible(), "New-release notes must be visible before updating"
-    assert "Etwas Neues" in page.notes.text()
-    i18n.set_lang("en")
-    page.retranslate()
-    app.processEvents()
-    assert "A new feature" in page.notes.text()
-    assert "Etwas Neues" not in page.notes.text()
-    assert page.changelog_details.text() and "Zeitstempel" not in page.changelog_details.text()
-    assert page.changelog_select.currentData() == __version__
-    i18n.set_lang("de")
-    page.retranslate()
-    assert "Etwas Neues" in page.notes.text()
-    assert page.changelog_details.text() and page.changelog_details.text() != ''
-    manager.status = "uptodate"
-    manager.notes = ""
-    page.sync()
-    app.processEvents()
-    assert page.changelog_card.isVisible(), "History must stay visible after installing"
-    assert page.changelog_select.count() >= 1
-    if page.changelog_select.count() > 1:
-        page.changelog_select.setCurrentIndex(1)
-    assert page.changelog_details.text(), "Available offline release notes must stay visible"
-    selected = page.changelog_select.currentData()
-    i18n.set_lang("en")
-    page.retranslate()
-    assert page.changelog_select.currentData() == selected
-    assert page.changelog_details.text() == changelog.displayed_changes(page.changelog_list[page.changelog_select.currentIndex()][1])
-    i18n.set_lang("de")
-    page.close()
-    manager.shutdown()
-    print("Offline changelog history and pre-/post-update visibility: PASS")
+    i18n.set_lang('en');page.retranslate()
+    assert 'A new feature' in page.changelog_details.text() and 'Etwas Neues' not in page.changelog_details.text()
+    manager._on_checked({'error':'Offline'})
+    assert manager.status=='error' and 'A new feature' in page.changelog_details.text()
+    i18n.set_lang('de');page.retranslate()
+    assert 'Etwas Neues' in page.changelog_details.text()
+    page.close();manager.shutdown()
+    print('On-demand channel changelogs, language changes and offline notes: PASS')
+
 
 
 if __name__ == "__main__":
