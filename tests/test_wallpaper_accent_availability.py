@@ -59,6 +59,16 @@ def run():
             (folder / 'bg.png').unlink()
             page.refresh_background_images()
             assert not item.isEnabled() and settings.get('accent') == '#f472b6'
+            # Design colors is now a valid manual choice, not a malformed hex.
+            assert image.save(str(folder/'bg.png'))
+            page.refresh_background_images()
+            page.background_combo.setCurrentIndex(page.background_combo.findData('custom_image'))
+            page.change_accent('design_default')
+            page.change_accent(wallpaper_accents.AUTO)
+            assert settings.get('accent_before_wallpaper_auto')=='design_default'
+            page.select_background('aurora_gold')
+            assert settings.get('accent')=='design_default'
+            assert wallpaper_accents.resolve_accent(settings.get('accent'))==theme.default_accent()
             page.select_design('black_glass_gold')
             app.processEvents()
             assert not page.accent_combo.isLocked()

@@ -1,3 +1,9 @@
+# Unstable follow-up — v0.9.6.3-unstable.6
+
+Final verification of the authorized appearance/update release found that the existing wallpaper-auto fallback did not recognize the new `design_default` choice and fell back to blue. Preserve that choice alongside manual/distribution colors. Extend the real PreferencesPage test through image selection, automatic accent selection and background deselection; retain all v0.9.6.3-unstable.5 changes and isolated profiles. Publish this small follow-up on the same rolling Unstable entry; Main remains unchanged. English docs and app-only DE/EN notes are updated.
+
+---
+
 # Unstable plan — v0.9.6.3-unstable.5
 
 Owner authorizes implementation and publication on Unstable. Main remains at v0.9.6.2.

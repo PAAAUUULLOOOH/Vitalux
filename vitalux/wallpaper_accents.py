@@ -33,7 +33,7 @@ def available():
 def manual_fallback():
     """Restore the previous accent if the custom wallpaper is deselected."""
     previous = settings.get('accent_before_wallpaper_auto', '#4f8cff')
-    return previous if previous == 'auto' or QColor(str(previous)).isValid() else '#4f8cff'
+    return previous if previous in ('auto','design_default') or QColor(str(previous)).isValid() else '#4f8cff'
 
 
 def effective_selection(stored):

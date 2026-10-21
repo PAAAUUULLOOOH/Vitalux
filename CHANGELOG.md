@@ -1,5 +1,8 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.3-unstable.6] - 2026-10-21
+- Beim Verlassen der automatischen Akzentfarbe aus einem eigenen Hintergrundbild wird die vorherige Auswahl „Designfarben“ wiederhergestellt. Obsidian erhält damit seine ursprünglichen Goldfarben statt Vitalux-Blau.
+
 ## [v0.9.6.3-unstable.5] - 2026-10-21
 - Design, Hintergrund und Akzentfarben sind klar getrennt und frei kombinierbar: alle bisherigen Hintergründe, eigene Bilder, Hintergrundtönung sowie fertige und eigene Farben funktionieren mit jedem Design.
 - Obsidian Gold heißt Obsidian und bleibt mit originalem Gold-Look Standard. Black Glass Gold heißt Black Glass; das bisherige Black Glass entfällt. Champagne, Aurora und Liquid Silver bleiben als Hintergründe und Farbakzente erhalten, ihre doppelten Design-Kacheln entfallen.

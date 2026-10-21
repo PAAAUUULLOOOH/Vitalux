@@ -1,5 +1,8 @@
 # Vitalux – Changes
 
+## [v0.9.6.3-unstable.6] - 2026-10-21
+- Leaving automatic accents from a personal wallpaper restores the previous Design colors selection. Obsidian returns to its original gold palette instead of Vitalux Blue.
+
 ## [v0.9.6.3-unstable.5] - 2026-10-21
 - Design, Background and Accent colors are separate and freely combinable: use all previous backgrounds, personal images, background tint, preset accents and custom colors with any design.
 - Obsidian Gold is renamed Obsidian and keeps its original gold appearance as the default. Black Glass Gold becomes Black Glass, replacing the former Black Glass. Champagne, Aurora and Liquid Silver remain available as backgrounds and accents instead of duplicate surface tiles.
