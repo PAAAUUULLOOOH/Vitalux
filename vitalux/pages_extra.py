@@ -1,13 +1,14 @@
 from html import escape
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QHBoxLayout,QButtonGroup
+from PySide6.QtWidgets import QHBoxLayout,QVBoxLayout,QWidget,QButtonGroup
 
 from . import APP_NAME, __version__, changelog, settings, theme, profiles
 from .i18n import tr
 from .pages import Page
 from .ui_locale import QLabel, QPushButton, QMessageBox
 from .widgets import Bar, Card, KeyValue, label
+from .soft_controls import ResponsiveActions
 
 AUTHOR_URL = "https://github.com/PAAAUUULLOOOH"
 CREDIT_URL = "https://github.com/TimBooH"
@@ -20,73 +21,81 @@ STATUS_TEXT = {
     "uptodate": "Vitalux ist auf dem neuesten Stand.",
     "available": "Eine neue Vitalux-Version ist verfügbar!",
     "installing": "Update wird heruntergeladen und geprüft …",
-    "installed": "Update wird installiert. Vitalux startet anschließend neu …",
+    "installed": "Neustart erforderlich.",
 }
 
 class UpdatePage(Page):
-    """Browse channel notes independently from preparing a verified installation."""
+    """Keep running status, channel browsing and one installation action inline."""
 
     def __init__(self, manager):
         super().__init__("Updates", "Vitalux automatisch über GitHub aktualisieren")
         self.m=manager
-        overview=Card("Vitalux – Versionsstatus")
+        overview=Card("Vitalux")
         self.current=KeyValue("Installierte Version")
         self.current.set(self._installed_name())
         overview.body.addWidget(self.current)
-        self.installed_channel=KeyValue('Aktiver Kanal')
-        self.installed_channel.set('Unstable' if profiles.installed()=='unstable' else 'Stable')
-        overview.body.addWidget(self.installed_channel)
-        overview.body.addWidget(label('Kanal ansehen','strong'))
+        self.status=label('', 'strong',wrap=True);self.status.setTextFormat(Qt.PlainText)
+        self.check_error=label('', 'muted',wrap=True);self.check_error.setTextFormat(Qt.PlainText)
+        overview.body.addWidget(self.status);overview.body.addWidget(self.check_error)
+        promotion=QHBoxLayout()
+        self.stable_notice=label('Deine Teständerungen sind jetzt in Stable verfügbar.','muted',wrap=True)
+        self.return_stable=QPushButton('Stable ansehen',self);self.return_stable.setObjectName('ghostBtn')
+        self.return_stable.clicked.connect(lambda:self._channel('stable'))
+        promotion.addWidget(self.stable_notice,1);promotion.addWidget(self.return_stable)
+        overview.body.addLayout(promotion)
+        self.check_button=QPushButton('Nach Updates suchen',self);self.check_button.setObjectName('ghostBtn')
+        self.check_button.clicked.connect(self.m.check)
+        self.changelog_button=QPushButton('Changelog ansehen',self);self.changelog_button.setObjectName('ghostBtn')
+        self.changelog_button.clicked.connect(lambda:self.m.set_notes_visible(not self.m.notes_open))
+        overview.body.addWidget(ResponsiveActions([self.check_button,self.changelog_button],self))
+        self.checked_at=label('', 'muted',wrap=True);overview.body.addWidget(self.checked_at)
+        self.content.addWidget(overview)
+
+        self.channel_card=Card('Updatekanäle')
         self.channel_group=QButtonGroup(self);self.channel_buttons={}
         row=QHBoxLayout()
         for key,title in (('stable','Stable'),('unstable','Unstable')):
             button=QPushButton(title,self);button.setCheckable(True);button.setObjectName('langBtn')
+            button.setToolTip('Changelog ansehen; ein Wechsel wird separat gestartet.')
             self.channel_group.addButton(button)
             button.clicked.connect(lambda checked=False,key=key:self._channel(key))
             self.channel_buttons[key]=button;row.addWidget(button)
-        row.addStretch(1);overview.body.addLayout(row)
-        overview.body.addWidget(label('Ein Klick zeigt den Changelog. Ein Kanalwechsel wird separat vorbereitet und erst nach dem Neustart aktiv.','muted',wrap=True))
-        self.status=label('', 'strong',wrap=True);self.status.setTextFormat(Qt.PlainText)
-        self.checked_at=label('', 'muted',wrap=True)
-        self.check_error=label('', 'muted',wrap=True);self.check_error.setTextFormat(Qt.PlainText)
-        self.stable_notice=label('Deine Teständerungen sind jetzt in Stable verfügbar.','strong',wrap=True)
-        self.return_stable=QPushButton('Stable ansehen',self);self.return_stable.setObjectName('ghostBtn')
-        self.return_stable.clicked.connect(lambda:self._channel('stable'))
-        for widget in (self.status,self.checked_at,self.check_error,self.stable_notice,self.return_stable):overview.body.addWidget(widget)
-        self.check_button=QPushButton('Erneut nach Updates suchen',self);self.check_button.setObjectName('ghostBtn')
-        self.check_button.clicked.connect(self.m.check);overview.body.addWidget(self.check_button,0,Qt.AlignLeft)
-        self.import_profile=QPushButton('Einstellungen übernehmen …',self);self.import_profile.setObjectName('ghostBtn')
-        self.import_profile.clicked.connect(self._profile);overview.body.addWidget(self.import_profile,0,Qt.AlignLeft)
-        self.content.addWidget(overview)
+        row.addStretch(1);self.channel_card.body.addLayout(row)
+        self.channel_description=label('', 'muted',wrap=True)
+        self.channel_status=label('', 'muted',wrap=True)
+        self.channel_card.body.addWidget(self.channel_description)
+        self.channel_card.body.addWidget(self.channel_status)
 
-        self.update_card=Card('Installation')
-        self.source=KeyValue('Aktuell');self.source.set(self._installed_name())
-        self.latest=KeyValue('Zielstand')
-        self.update_card.body.addWidget(self.source);self.update_card.body.addWidget(self.latest)
+        self.action_panel=QWidget(self)
+        actions=QVBoxLayout(self.action_panel);actions.setContentsMargins(0,4,0,0);actions.setSpacing(10)
+        self.latest=KeyValue('Zielversion');actions.addWidget(self.latest)
         self.install_button=QPushButton('Jetzt aktualisieren',self);self.install_button.setObjectName('primaryBtn')
-        self.install_button.clicked.connect(self.m.install);self.update_card.body.addWidget(self.install_button,0,Qt.AlignLeft)
+        self.install_button.clicked.connect(self.m.install);actions.addWidget(self.install_button,0,Qt.AlignLeft)
         self.progress_bar=Bar();self.progress_bar.flat=True
         self.phase=label('', 'muted',wrap=True)
-        self.update_card.body.addWidget(self.progress_bar);self.update_card.body.addWidget(self.phase)
-        self.restart_hint=label('Neustart erforderlich. Du kannst Vitalux bis dahin weiterverwenden.','strong',wrap=True)
-        self.update_card.body.addWidget(self.restart_hint)
+        actions.addWidget(self.progress_bar);actions.addWidget(self.phase)
+        self.restart_hint=label('Die vorbereitete Version wird beim Neustart aktiv. Bis dahin kannst du Vitalux weiterverwenden.','muted',wrap=True)
+        actions.addWidget(self.restart_hint)
         restart_row=QHBoxLayout()
         self.restart_button=QPushButton('Jetzt neu starten',self);self.restart_button.setObjectName('primaryBtn')
         self.later_button=QPushButton('Später',self);self.later_button.setObjectName('ghostBtn')
         self.restart_button.clicked.connect(self.m._restart)
         self.later_button.clicked.connect(self.m.defer_restart)
         restart_row.addWidget(self.restart_button);restart_row.addWidget(self.later_button);restart_row.addStretch(1)
-        self.update_card.body.addLayout(restart_row)
-        self.content.addWidget(self.update_card)
+        actions.addLayout(restart_row)
+        self.channel_card.body.addWidget(self.action_panel)
 
-        self.changelog_card=Card('Changelog')
+        self.changelog_card=QWidget(self)
+        notes=QVBoxLayout(self.changelog_card);notes.setContentsMargins(0,16,0,0);notes.setSpacing(10)
+        notes.addWidget(label('CHANGELOG','cardTitle'))
         self.changelog_heading=label('', 'strong',wrap=True)
         self.changelog_summary=label('', 'muted',wrap=True)
         self.changelog_details=label('', 'muted',wrap=True)
         self.changelog_details.setTextFormat(Qt.PlainText)
         self.changelog_details.setTextInteractionFlags(Qt.TextSelectableByMouse)
-        for widget in (self.changelog_heading,self.changelog_summary,self.changelog_details):self.changelog_card.body.addWidget(widget)
-        self.content.addWidget(self.changelog_card)
+        for widget in (self.changelog_heading,self.changelog_summary,self.changelog_details):notes.addWidget(widget)
+        self.channel_card.body.addWidget(self.changelog_card)
+        self.content.addWidget(self.channel_card)
         self.m.changed.connect(self.sync);self.m.progress.connect(self._progress)
         self.sync()
 
@@ -99,16 +108,9 @@ class UpdatePage(Page):
 
     def _channel(self,channel):self.m.set_channel(channel)
 
-    def _profile(self):
-        text='Kompatible Einstellungen und Hintergrundbilder aus dem anderen Kanal übernehmen? Das aktuelle Profil wird gesichert. Vitalux startet mit CPU-Rendering neu.'
-        if QMessageBox.question(self,tr('Einstellungsprofile'),tr(text),QMessageBox.Yes|QMessageBox.No,QMessageBox.No)!=QMessageBox.Yes:return
-        restart=getattr(self.window(),'restart_for_renderer',None)
-        if not restart or not restart(commit=profiles.import_other):
-            QMessageBox.information(self,tr('Einstellungsprofile'),tr('Ein aktiver Vorgang verhindert den Neustart. Bitte später erneut versuchen.'))
-
     def _name(self,channel,record):
         if channel=='stable':return 'Stable · v'+record.get('latest','–')
-        if not record or record.get('stale') or not record.get('ok',True):
+        if not record or record.get('stale') or not record.get('ok',True) or record.get('stable_verified') is False:
             return tr('Unstable · Verfügbarkeit nicht bestätigt')
         if not record.get('eligible',False):
             version=record.get('stable_version') or self.m.records.get('stable',{}).get('latest','')
@@ -126,6 +128,17 @@ class UpdatePage(Page):
 
     def retranslate(self):self.sync()
 
+    def _running_status(self):
+        m=self.m
+        if m.pending_restart or m.status=='installed':return tr('Neustart erforderlich.')
+        if m.status in ('preview','installing') or m.checking:
+            return tr(STATUS_TEXT['checking' if m.checking else m.status])
+        if m.error and m.error_kind!='check':return tr('Vorgang fehlgeschlagen.')
+        running=m.records.get(profiles.installed(),{})
+        if not running.get('ok') or running.get('stale'):
+            return tr('Prüfung nicht möglich.' if m.error or running.get('error') else STATUS_TEXT['idle'])
+        return tr(STATUS_TEXT['available' if m.available else 'uptodate'])
+
     def sync(self):
         from datetime import datetime
         from .i18n import lang
@@ -134,35 +147,38 @@ class UpdatePage(Page):
         busy=m.status=='installing'
         for key,button in self.channel_buttons.items():
             button.setChecked(key==m.channel);button.setEnabled(not busy)
-        self.current.set(self._installed_name());self.source.set(self._installed_name())
-        self.import_profile.setEnabled(not busy and not m.checking and not pending)
+        self.current.set(self._installed_name())
         self.check_button.setEnabled(not busy and not m.checking and not pending and m.status!='preview')
-        messages=dict(STATUS_TEXT,unavailable='Derzeit gibt es keinen neueren Unstable-Teststand.',
-                      switch_available='Der gewählte Kanal kann separat installiert werden.',
-                      installed='Neustart erforderlich.',error='Prüfung nicht möglich.')
-        message=tr(messages.get(m.status,''))
-        if m.status=='error' and m.error:
-            if m.error_kind!='check':message=tr('Vorgang fehlgeschlagen.')
-            message+=' '+tr(m.error)
-        self.status.setText(message)
-        self.check_error.setText(tr('Hinweis: {reason}').format(reason=tr(m.error)) if m.error and m.status!='error' else '')
+        self.changelog_button.setText('Changelog ausblenden' if m.notes_open else 'Changelog ansehen')
+        self.status.setText(self._running_status())
+        self.check_error.setText(tr('Hinweis: {reason}').format(reason=tr(m.error)) if m.error else '')
         self.check_error.setVisible(bool(self.check_error.text()))
-        stamp=record.get('checked_at',m.last_checked)
+        running=m.records.get(profiles.installed(),{})
+        stamp=running.get('checked_at',m.last_checked)
         if stamp:
             pattern='%d.%m.%Y %H:%M' if lang()=='de' else '%Y-%m-%d %H:%M'
             text=tr('Zuletzt geprüft: {time}').format(time=datetime.fromtimestamp(stamp).strftime(pattern))
         else:text=tr('Noch nicht geprüft.')
-        if record.get('stale'):text+=' · '+tr('Gespeicherter Stand; offline lesbar.')
+        if running.get('stale'):text+=' · '+tr('Gespeicherter Stand; offline lesbar.')
         self.checked_at.setText(text)
         self.stable_notice.setVisible(bool(m.stable_has_test_changes) and not pending)
         self.return_stable.setVisible(bool(m.stable_has_test_changes) and not pending)
+        self.channel_description.setText(tr('Stabile Versionen für den täglichen Einsatz.' if m.channel=='stable'
+                                           else 'Testversionen mit neuen Änderungen vor dem Stable-Release.'))
+        channel_message=''
+        if record and (record.get('stale') or not record.get('ok') or record.get('stable_verified') is False):
+            channel_message='Verfügbarkeit nicht bestätigt. Gespeicherte Changelogs bleiben lesbar.'
+        elif m.channel=='unstable' and record and not record.get('eligible',False):
+            channel_message='Derzeit gibt es keinen neueren Unstable-Teststand.'
+        self.channel_status.setText(tr(channel_message));self.channel_status.setVisible(bool(channel_message))
         destination=m.pending if pending else record
         target_channel=destination.get('channel',m.channel)
         if pending:destination=dict(destination,latest=destination.get('version',''),eligible=True)
         self.latest.set(self._name(target_channel,destination))
+        self.latest.setVisible(pending or busy or m.can_install)
         switching=m.channel!=profiles.installed()
         self.install_button.setText(tr(('Zu Unstable wechseln' if m.channel=='unstable' else 'Zu Stable zurückkehren') if switching else 'Jetzt aktualisieren'))
-        show_disabled=(m.notes_open and m.channel=='unstable' and not record.get('eligible',False))
+        show_disabled=(m.channel=='unstable' and not record.get('eligible',False))
         self.install_button.setVisible(not pending and (m.can_install or show_disabled))
         self.install_button.setEnabled(m.can_install)
         self.install_button.setStyleSheet(f'QPushButton#primaryBtn:disabled {{ background: {theme.CARD}; color: {theme.MUTED}; border: 1px solid {theme.BORDER}; }}')
@@ -170,11 +186,13 @@ class UpdatePage(Page):
         self.progress_bar.setVisible(busy);self.phase.setVisible(busy)
         self.restart_hint.setVisible(pending);self.restart_button.setVisible(pending)
         self.later_button.setVisible(pending and not m.restart_deferred)
-        self.update_card.setVisible(pending or busy or m.can_install or show_disabled)
+        self.action_panel.setVisible(pending or busy or m.can_install or show_disabled)
         self.changelog_card.setVisible(m.notes_open)
-        self.changelog_heading.setText(self._name(m.channel,record))
-        same=(m.channel=='unstable' and record.get('ok') and not record.get('stale') and not record.get('eligible',False))
-        self.changelog_summary.setText(tr('Keine zusätzlichen Teständerungen. Es gilt der aktuelle Stable-Changelog.') if same else '')
+        same=(m.channel=='unstable' and record.get('ok') and not record.get('stale') and not record.get('eligible',False)
+              and record.get('stable_verified') is not False)
+        heading=self._name('stable',dict(latest=record.get('stable_version') or m.records.get('stable',{}).get('latest','–'))) if same else self._name(m.channel,record)
+        self.changelog_heading.setText(heading)
+        self.changelog_summary.setText(tr('Für diesen Kanal gilt der aktuelle Stable-Changelog.') if same else '')
         self.changelog_summary.setVisible(same)
         body=changelog.localized_release_notes(m.notes)
         if not body:

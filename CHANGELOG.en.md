@@ -1,5 +1,12 @@
 # Vitalux – Changes
 
+## [v0.9.6.2] - 2026-10-21
+- Updates presents the running version, Stable/Unstable and changelogs in two clear sections; channel browsing and installation remain separate actions within the tab.
+- Duplicate version labels and the settings-import button are removed. Channel profiles are still created and preserved automatically.
+- Smaller color-wheel and background indicators appear vertically stacked at the right center of design tiles, retaining their soft hover transitions.
+- App network blocks immediately cover new subprocesses and their TCP/UDP sockets; allowing the app releases its inherited blocks together.
+- Application and connection lists retain their selection and scroll position during refreshes, blocking and unblocking.
+
 ## [v0.9.6.1] - 2026-10-21
 - Click Stable or Unstable to read its current changelog without switching channels or triggering an update notification; the running version and installation destination remain distinct.
 - Switching to Unstable requires a verified, genuinely newer test build. Matching channel contents are clearly identified.

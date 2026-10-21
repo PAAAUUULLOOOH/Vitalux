@@ -3,14 +3,9 @@ EN={
 'Aktiver Kanal':'Active channel',
 'Update-Kanal':'Update channel',
 'Stable und Unstable verwenden getrennte Einstellungen. Ein Kanalwechsel wird erst mit der Installation ausgeführt.':'Stable and Unstable use separate settings. A channel switch takes effect when its package is installed.',
-'Einstellungen übernehmen …':'Import settings …',
-'Einstellungsprofile':'Settings profiles',
-'Kompatible Einstellungen und Hintergrundbilder aus dem anderen Kanal übernehmen? Das aktuelle Profil wird gesichert. Vitalux startet mit CPU-Rendering neu.':'Import compatible settings and backgrounds from the other channel? The current profile will be backed up. Vitalux will restart with CPU rendering.',
 'Ein aktiver Vorgang verhindert den Neustart. Bitte später erneut versuchen.':'An active operation prevents restarting. Please try again later.',
 'Zu Unstable wechseln':'Switch to Unstable',
 'Zu Stable zurückkehren':'Return to Stable',
-'Für den anderen Kanal ist kein Profil vorhanden.':'There is no profile for the other channel.',
-'Das andere Profil verwendet ein neueres Einstellungsformat.':'The other profile uses a newer settings format.',
 'Unbekannter Update-Kanal.':'Unknown update channel.',
 'Noch kein Unstable-Testpaket veröffentlicht.':'No Unstable test package has been published yet.',
 'Testpaket und Manifest stimmen nicht überein. Bitte erneut prüfen.':'The test package does not match its manifest. Please check again.',
@@ -35,6 +30,8 @@ EN={
 }
 
 EN.update({
+'Alle zwölf Designs stehen im gleichen Vorschau-Raster. Kleine Symbole erscheinen beim Darüberfahren rechts mittig untereinander: Farbkreis für Akzentfarben, Bildsymbol für Hintergründe; Schlösser kennzeichnen feste Optionen.':'All twelve designs share the same preview grid. Small indicators fade in at the right center, vertically stacked: a color wheel for accents and an image symbol for backgrounds; locks mark fixed options.',
+'Im Updates-Reiter stehen laufender Stand, Stable/Unstable und Changelogs übersichtlich zusammen. Kanal-Klicks öffnen die Hinweise direkt auf der Seite; nur die separate Installationsaktion wechselt den Kanal.':'The Updates tab groups the running version, Stable/Unstable and changelogs clearly. Channel clicks open notes inline; only the separate installation action changes the channel.',
 'Kanal ansehen':'Browse channel',
 'Ein Klick zeigt den Changelog. Ein Kanalwechsel wird separat vorbereitet und erst nach dem Neustart aktiv.':'Click a channel to read its changelog. Prepare a switch separately; it takes effect after restarting.',
 'Stable ansehen':'View Stable',
@@ -73,3 +70,17 @@ EN.update({
 EN['Vitalux – Versionsstatus']='Vitalux – version status'
 
 EN['Vitalux-Ordner ist schreibgeschützt. Bitte eine beschreibbare Installation verwenden.']='The Vitalux folder is read-only. Please use a writable installation.'
+
+EN.update({
+'Nach Updates suchen':'Check for updates',
+'Changelog ansehen':'View changelog',
+'Changelog ausblenden':'Hide changelog',
+'Für diesen Kanal gilt der aktuelle Stable-Changelog.':'The current Stable changelog applies to this channel.',
+'Updatekanäle':'Update channels',
+'Zielversion':'Target version',
+'Changelog ansehen; ein Wechsel wird separat gestartet.':'View the changelog; start a channel switch separately.',
+'Stabile Versionen für den täglichen Einsatz.':'Stable releases for everyday use.',
+'Testversionen mit neuen Änderungen vor dem Stable-Release.':'Test builds with new changes ahead of the Stable release.',
+'Verfügbarkeit nicht bestätigt. Gespeicherte Changelogs bleiben lesbar.':'Availability is unconfirmed. Saved changelogs remain readable.',
+'Die vorbereitete Version wird beim Neustart aktiv. Bis dahin kannst du Vitalux weiterverwenden.':'The prepared version takes effect after restarting. You can continue using Vitalux until then.',
+})

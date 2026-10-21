@@ -22,11 +22,12 @@ def paint(p,tile,pal,amount):
     if amount<=.001:return
     cap=capabilities(tile.key)
     p.save();p.setOpacity(amount);p.translate(0,4*(1-amount))
+    size=24;gap=4
     for index,kind in enumerate(('accent','background')):
-        enabled=cap[kind];x=tile.width()-76+index*35;y=43
+        enabled=cap[kind];x=tile.width()-size-10;y=(tile.height()-(2*size+gap))/2+index*(size+gap)
         p.setPen(QPen(QColor('#8e9aa8'),.75));p.setBrush(QColor(12,16,23,244))
-        p.drawRoundedRect(QRectF(x,y,32,30),7,7)
-        p.save();p.translate(x+5,y+4)
+        p.drawRoundedRect(QRectF(x,y,size,size),6,6)
+        p.save();p.translate(x+2,y+2);p.scale(.86,.86)
         ink=QColor(pal['accent'] if enabled else '#a6aab2')
         p.setPen(QPen(ink,1.5,Qt.SolidLine,Qt.RoundCap,Qt.RoundJoin));p.setBrush(Qt.NoBrush)
         if kind=='accent':

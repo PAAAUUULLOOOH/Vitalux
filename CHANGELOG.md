@@ -1,5 +1,12 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.2] - 2026-10-21
+- Der Updates-Reiter zeigt laufenden Stand, Stable/Unstable und Changelogs in zwei klaren Bereichen; Kanalwahl und Installation bleiben ohne zusätzliches Fenster getrennte Aktionen.
+- Doppelte Versionsangaben und der Knopf zum Übernehmen von Einstellungen entfallen. Kanalprofile werden weiterhin automatisch erstellt und erhalten.
+- Kleinere Farbkreis- und Hintergrundsymbole erscheinen rechts mittig untereinander auf den Designkacheln, weiterhin mit sanftem Ein- und Ausblenden.
+- App-Netzwerksperren erfassen neue Unterprozesse sofort, einschließlich neuer TCP-/UDP-Verbindungen; Entsperren gibt die geerbten Sperren gemeinsam frei.
+- Programm- und Verbindungslisten behalten beim Aktualisieren, Sperren und Entsperren ihre Auswahl und Scrollposition.
+
 ## [v0.9.6.1] - 2026-10-21
 - Stable und Unstable lassen sich zum Lesen des aktuellen Changelogs anklicken, ohne dadurch den Kanal zu wechseln oder eine Update-Meldung auszulösen; aktueller Stand und Installationsziel werden getrennt angezeigt.
 - Ein Wechsel zu Unstable ist nur mit einem geprüften, tatsächlich neueren Teststand möglich. Gleiche Stände werden verständlich gekennzeichnet.

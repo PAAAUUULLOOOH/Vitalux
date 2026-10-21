@@ -3,10 +3,10 @@ import os,sys,tempfile,time,struct
 from pathlib import Path
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from PySide6.QtCore import QTimer,QCoreApplication,QEvent
-from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QTimer,QCoreApplication,QEvent,Qt
+from PySide6.QtWidgets import QApplication,QScrollArea
 from vitalux import settings,i18n
-from vitalux.network_kernel import application,parse_diag,packet_program,socket_program
+from vitalux.network_kernel import application,parse_diag,packet_program,socket_program,NetworkSession
 from vitalux.network_monitor import TrafficLedger
 from vitalux.network_ui import NetworkWatch
 
@@ -56,6 +56,16 @@ def check_ledger():
     assert parse_diag(payload,'UDP')['rx'] is None
     assert application(os.getpid(),os.getuid())['pid']==os.getpid()
     assert application(os.getpid(),os.getuid()+1000000) is None
+    from types import SimpleNamespace
+    from unittest.mock import patch
+    original=dict(pid=123,start=12,exe='/app/original',key='/app/original')
+    replacement=dict(pid=123,start=13,exe='/app/unrelated',key='/app/unrelated')
+    session=SimpleNamespace(uid=1000,rules=set(),apps={123:replacement},refresh=lambda:None)
+    with patch('vitalux.network_kernel.application',side_effect=[original,replacement]):
+        try:NetworkSession.rule(session,dict(op='block',pid=123,start=12))
+        except ValueError:pass
+        else:raise AssertionError('A process replaced during refresh was blocked under an old identity')
+    assert not session.rules
     for code in (packet_program(1000,4,5,6,'rx'),packet_program(1000,4,5,6,'tx'),socket_program(1000,4,5)):
         assert len(code)%8==0 and code[-8]==0x95
 
@@ -118,6 +128,39 @@ def check_ui():
         settings.PATH=previous
         if errors:raise errors[0]
 
+
+def check_scrolling():
+    app=QApplication.instance() or QApplication([])
+    watch=NetworkWatch();watch._closing=True;watch.setMinimumHeight(1600)
+    outer=QScrollArea();outer.setWidgetResizable(True);outer.setWidget(watch);outer.resize(1000,600);outer.show()
+    samples=[row(1000+index,0,0,key=f'/usr/bin/app-{index:03}') for index in range(80)]
+    watch._ingest(dict(monotonic=10,backend='bpf',connections=samples,counters=samples))
+    watch.table.selectRow(0);app.processEvents()
+    selected=watch._key
+    watch.details_reveal.animation.stop();watch.details_reveal._frame(1.)
+    watch.table.cellWidget(0,6).setFocus();app.processEvents()
+    outer.verticalScrollBar().setValue(outer.verticalScrollBar().maximum()//2)
+    page_position=outer.verticalScrollBar().value();assert page_position>0
+    watch.table.verticalScrollBar().setValue(watch.table.verticalScrollBar().maximum()//2)
+    position=watch.table.verticalScrollBar().value();assert position>0
+    for tick in range(5):
+        watch._rules_changed([selected] if tick%2 else [])
+        app.processEvents()
+        assert watch._key==selected
+        assert watch.table.verticalScrollBar().value()==position,'Live rule refresh scrolled back to the selected app'
+        assert outer.verticalScrollBar().value()==page_position,'Rule refresh jumped the enclosing Network page'
+    connections=[row(2000+index,0,0,key=selected) for index in range(80)]
+    watch.ledger.connections=connections;watch.advanced.setExpanded(True,animate=False)
+    watch._render_connections();app.processEvents()
+    watch.connections.selectRow(0)
+    watch.connections.verticalScrollBar().setValue(watch.connections.verticalScrollBar().maximum()//2)
+    position=watch.connections.verticalScrollBar().value();assert position>0
+    for _ in range(5):
+        watch._render_connections();app.processEvents()
+        assert watch._selected_connection()['cookie']==connections[0]['cookie']
+        assert watch.connections.verticalScrollBar().value()==position,'Socket refresh scrolled back to the selected connection'
+    outer.hide();outer.deleteLater();QCoreApplication.sendPostedEvents(None,QEvent.DeferredDelete)
+
 if __name__=='__main__':
-    check_ledger();check_ui()
+    check_ledger();check_ui();check_scrolling()
     print('Per-app traffic, baselines, budgets, unknown UDP, UID ownership and worker shutdown PASS')

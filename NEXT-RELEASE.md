@@ -1,3 +1,19 @@
+# Release plan — v0.9.6.2: focused inline updates and effective app blocks
+
+Owner approved implementation on main, including Firefox/app network blocking and the scroll regression.
+
+- Keep all channel, notes and installation controls inside Updates. No popup or separate channel window.
+- Two clear sections: running installation/check status, then channel browsing with inline notes and one applicable installation/restart action. Show the target only when meaningful; preserve the prepared target while browsing.
+- Remove the settings-import button and unused transfer function. Keep automatic isolated profiles and migrations/backups.
+- Keep Unstable gated by verified newer app changes; retain readable notes and the compact Stable promotion notice.
+- Put smaller capability indicators at the right edge of each design tile, vertically centered and stacked; preserve hover/focus motion and accurate locks.
+- Fix live application/connection selection updates so they retain scrolling rather than repeatedly scrolling to the selected row.
+- Kernel fork protection immediately inherits active app blocks; atomic active-group switches release all inherited members together. Reject stale process identities and clear inherited PID entries at birth to protect unrelated reused PIDs.
+- Verify existing/new TCP and UDP traffic, both directions, all CPUs, unrelated applications, PID reuse, cleanup and a real Firefox session in the isolated Linux VM.
+- Keep the English README compact; update the English user guide and native DE/EN guide. Changelogs contain app-visible changes only. Preserve licenses and source offers.
+
+---
+
 # Release plan — v0.9.6.1: clear, deliberate channel updates
 
 Owner approved implementation of the collected update changes. Previous discussion-only instructions are superseded by “ja setz das mal umalles”.
