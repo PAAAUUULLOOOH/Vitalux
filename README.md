@@ -47,11 +47,13 @@ cd Vitalux-v0.9.6.2
 bash run.sh
 ```
 
+Vitalux runs once per user across current ZIP and AppImage editions, including Stable/Unstable. Starting it again shows “Vitalux is already running”; quit the running instance before switching editions.
+
 Keep the runtime, libraries, assets and launcher together. **Code → Download ZIP** also includes the runtime; first launch extracts it offline using `tar`, `xz` and `sha256sum`. Manual `Update-von-...zip` overlays are only for the immediately preceding ZIP edition, never AppImages.
 
 ## Appearance and controls
 
-Choose a design in **Settings → Appearance**. Hover or keyboard-focus a preview to reveal two small symbols, stacked at its right edge: a color wheel for accents and an image symbol for backgrounds. Grey locks identify fixed options. Saved accents and images remain available in compatible designs.
+Choose a design in **Settings → Appearance**. Hover or keyboard-focus a preview to reveal two small symbols, stacked at its right edge: a color wheel for accents and an image symbol for backgrounds. Colored symbols indicate available options; grey symbols indicate fixed options, without locks. Saved accents and images remain available in compatible designs.
 
 Settings search glides to matches and closes softly after five seconds. **Advanced settings** contains renderers and Maintenance; the full **Restore defaults** action sits at the bottom and restarts Vitalux. Section resets apply in place. Optional soft click sounds default to 50% volume. On/off controls use themed switches; multiple selections retain checkmarks.
 
@@ -59,7 +61,7 @@ See the [user guide](USER-GUIDE.md) for design restrictions, graphics, network c
 
 ## Updates and channels
 
-Everything stays in **Updates**: installed version and check status at the top, **Stable / Unstable** and their changelogs below. **View changelog** opens notes inline. Clicking a channel only browses its notes; a separate action shows the target version and prepares installation. Unstable is selectable for installation only when a verified test build contains genuinely newer app changes. GitHub's **Latest** download remains Stable.
+Everything stays in **Updates**: installed version and check status at the top, **Stable / Unstable** and their changelogs below. Release notes stay visible. A **Version** selector browses each channel’s history without changing the installation target. Clicking a channel only browses its notes; a separate action shows the target version and prepares installation. Unstable is selectable for installation only when a verified test build contains genuinely newer app changes. GitHub's **Latest** download remains Stable.
 
 Choose **Restart now** or **Later** after preparation. The target stays fixed until restart, with no duplicate update offers. Normal exit applies a deferred package without reopening Vitalux. Stable and Unstable automatically retain separate profiles; the first test launch copies Stable preferences. Notes follow your selected language and remain readable offline. Cached information alone cannot authorize an update.
 

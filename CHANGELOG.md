@@ -1,5 +1,10 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.3-unstable.1] - 2026-10-21
+- Die Designkacheln zeigen kleinere Symbole ohne Schlösser: verfügbare Akzentfarben und Hintergründe farbig, feste Optionen ausgegraut.
+- Im Updates-Reiter bleibt der Changelog sichtbar. Die Versionsauswahl zeigt frühere Stable- oder Unstable-Hinweise, ohne das Installationsziel oder den Kanal zu ändern.
+- Vitalux lässt sich pro Benutzer nur einmal starten; ein weiterer Start zeigt einen Hinweis. Der Schutz gilt auch im Tray und gibt die Anwendung beim Beenden oder nach einem Absturz wieder frei.
+
 ## [v0.9.6.2] - 2026-10-21
 - Der Updates-Reiter zeigt laufenden Stand, Stable/Unstable und Changelogs in zwei klaren Bereichen; Kanalwahl und Installation bleiben ohne zusätzliches Fenster getrennte Aktionen.
 - Doppelte Versionsangaben und der Knopf zum Übernehmen von Einstellungen entfallen. Kanalprofile werden weiterhin automatisch erstellt und erhalten.

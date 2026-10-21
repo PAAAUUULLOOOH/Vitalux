@@ -1,3 +1,15 @@
+# Unstable plan — v0.9.6.3-unstable.1
+
+Approved for the next Unstable update; Main remains at published v0.9.6.2.
+
+- Remove design capability lock overlays. Use smaller, colored/grey icons at the right center, vertically stacked, with existing hover/focus motion.
+- Always show the selected channel’s localized changelog and offer its version history. Browsing historical notes must not change the installation target, pending state, saved channel or update notifications.
+- Enforce one instance per user before profile initialization or renderer probing. Share the lock between current package copies/channels, keep it in tray mode, release on process death, and preserve restart behavior. Show a localized notice on a second start.
+- Update the compact English README, user guide and native DE/EN help. Changelogs describe app-visible changes only; retain third-party notices.
+- Validate process contention/crash/restart, version browsing, full regressions, portable packages and native graphics; capture the changed interface before publishing the rolling test package.
+
+---
+
 # Release plan — v0.9.6.2: focused inline updates and effective app blocks
 
 Owner approved implementation on main, including Firefox/app network blocking and the scroll regression.

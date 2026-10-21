@@ -6,9 +6,8 @@ from PySide6.QtWidgets import QHBoxLayout,QVBoxLayout,QWidget,QButtonGroup
 from . import APP_NAME, __version__, changelog, settings, theme, profiles
 from .i18n import tr
 from .pages import Page
-from .ui_locale import QLabel, QPushButton, QMessageBox
+from .ui_locale import QLabel, QPushButton, QMessageBox, QComboBox
 from .widgets import Bar, Card, KeyValue, label
-from .soft_controls import ResponsiveActions
 
 AUTHOR_URL = "https://github.com/PAAAUUULLOOOH"
 CREDIT_URL = "https://github.com/TimBooH"
@@ -30,6 +29,7 @@ class UpdatePage(Page):
     def __init__(self, manager):
         super().__init__("Updates", "Vitalux automatisch über GitHub aktualisieren")
         self.m=manager
+        self._history_choice={};self._history={}
         overview=Card("Vitalux")
         self.current=KeyValue("Installierte Version")
         self.current.set(self._installed_name())
@@ -45,9 +45,7 @@ class UpdatePage(Page):
         overview.body.addLayout(promotion)
         self.check_button=QPushButton('Nach Updates suchen',self);self.check_button.setObjectName('ghostBtn')
         self.check_button.clicked.connect(self.m.check)
-        self.changelog_button=QPushButton('Changelog ansehen',self);self.changelog_button.setObjectName('ghostBtn')
-        self.changelog_button.clicked.connect(lambda:self.m.set_notes_visible(not self.m.notes_open))
-        overview.body.addWidget(ResponsiveActions([self.check_button,self.changelog_button],self))
+        overview.body.addWidget(self.check_button,0,Qt.AlignLeft)
         self.checked_at=label('', 'muted',wrap=True);overview.body.addWidget(self.checked_at)
         self.content.addWidget(overview)
 
@@ -88,6 +86,14 @@ class UpdatePage(Page):
         self.changelog_card=QWidget(self)
         notes=QVBoxLayout(self.changelog_card);notes.setContentsMargins(0,16,0,0);notes.setSpacing(10)
         notes.addWidget(label('CHANGELOG','cardTitle'))
+        history_row=QHBoxLayout()
+        history_row.addWidget(label('Version','muted'))
+        self.history_combo=QComboBox(self.changelog_card)
+        self.history_combo.setMinimumWidth(220)
+        self.history_combo.setAccessibleName(tr('Versionsverlauf'))
+        self.history_combo.currentIndexChanged.connect(self._history_selected)
+        history_row.addWidget(self.history_combo);history_row.addStretch(1)
+        notes.addLayout(history_row)
         self.changelog_heading=label('', 'strong',wrap=True)
         self.changelog_summary=label('', 'muted',wrap=True)
         self.changelog_details=label('', 'muted',wrap=True)
@@ -107,6 +113,38 @@ class UpdatePage(Page):
         return tr('Unstable · Teststand für v{version}').format(version='.'.join(map(str,base)))
 
     def _channel(self,channel):self.m.set_channel(channel)
+
+    def _history_selected(self,index):
+        version=self.history_combo.itemData(index)
+        if version:self._history_choice[self.m.channel]=version
+        self._show_history()
+
+    def _show_history(self):
+        version=self.history_combo.currentData()
+        self.changelog_heading.setText(('Stable' if self.m.channel=='stable' else 'Unstable')+' · v'+version if version else '')
+        body=self._history.get(version,'')
+        lines=[]
+        for line in body.splitlines():
+            if line.startswith('[Changelog '):continue
+            line=line.lstrip('#').strip()
+            if line.startswith('- '):line='• '+line[2:]
+            lines.append(line)
+        self.changelog_details.setText('\n'.join(lines).strip()[:10000] or tr('Für diese Version ist noch kein Changelog verfügbar.'))
+
+    def _sync_history(self,record):
+        items=changelog.channel_history(self.m.channel,record)
+        self._history=dict(items)
+        selected=self._history_choice.get(self.m.channel)
+        self.history_combo.blockSignals(True)
+        self.history_combo.clear()
+        for version,_ in items:self.history_combo.addItem('v'+version,version)
+        index=self.history_combo.findData(selected)
+        self.history_combo.setCurrentIndex(index if index>=0 else 0)
+        self.history_combo.blockSignals(False)
+        self.history_combo.setEnabled(bool(items))
+        self.history_combo.setAccessibleName(tr('Versionsverlauf'))
+        self.changelog_summary.setText(tr('Die Versionsauswahl zeigt nur Hinweise und ändert nicht das Installationsziel.'))
+        self._show_history()
 
     def _name(self,channel,record):
         if channel=='stable':return 'Stable · v'+record.get('latest','–')
@@ -149,7 +187,6 @@ class UpdatePage(Page):
             button.setChecked(key==m.channel);button.setEnabled(not busy)
         self.current.set(self._installed_name())
         self.check_button.setEnabled(not busy and not m.checking and not pending and m.status!='preview')
-        self.changelog_button.setText('Changelog ausblenden' if m.notes_open else 'Changelog ansehen')
         self.status.setText(self._running_status())
         self.check_error.setText(tr('Hinweis: {reason}').format(reason=tr(m.error)) if m.error else '')
         self.check_error.setVisible(bool(self.check_error.text()))
@@ -187,28 +224,7 @@ class UpdatePage(Page):
         self.restart_hint.setVisible(pending);self.restart_button.setVisible(pending)
         self.later_button.setVisible(pending and not m.restart_deferred)
         self.action_panel.setVisible(pending or busy or m.can_install or show_disabled)
-        self.changelog_card.setVisible(m.notes_open)
-        same=(m.channel=='unstable' and record.get('ok') and not record.get('stale') and not record.get('eligible',False)
-              and record.get('stable_verified') is not False)
-        heading=self._name('stable',dict(latest=record.get('stable_version') or m.records.get('stable',{}).get('latest','–'))) if same else self._name(m.channel,record)
-        self.changelog_heading.setText(heading)
-        self.changelog_summary.setText(tr('Für diesen Kanal gilt der aktuelle Stable-Changelog.') if same else '')
-        self.changelog_summary.setVisible(same)
-        body=changelog.localized_release_notes(m.notes)
-        if not body:
-            version=m.latest if not same else record.get('stable_version','')
-            changes=changelog.version_notes(version)
-            if not changes and not version:
-                from .versions import channel
-                changes=next((notes for ident,notes in changelog.entries() if channel(ident)==('stable' if same else m.channel)),[])
-            body=changelog.displayed_changes(changes)
-        lines=[]
-        for line in body.splitlines():
-            if line.startswith('[Changelog '):continue
-            line=line.lstrip('#').strip()
-            if line.startswith('- '):line='• '+line[2:]
-            lines.append(line)
-        self.changelog_details.setText('\n'.join(lines).strip()[:10000] or tr('Für diesen Kanal ist noch kein Changelog verfügbar.'))
+        self._sync_history(record)
 
 
 class AuthorCredit(QLabel):

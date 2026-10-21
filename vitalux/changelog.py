@@ -66,3 +66,26 @@ def localized_release_notes(body, lang=None):
 
 def displayed_changes(changes):
     return "\n".join("• " + change for change in changes)
+
+
+def channel_history(channel, record=None, lang=None):
+    """Read-only, channel-specific history, including fresh or cached remote notes."""
+    from . import versions
+    history = {version: displayed_changes(changes) for version, changes in entries(lang=lang)
+               if versions.channel(version) == channel}
+    record = record or {}
+    version = record.get('latest', '')
+    try:
+        matching = versions.channel(version) == channel
+    except ValueError:
+        matching = False
+    if matching:
+        # Inactive Unstable records can use Stable notes for availability/status.
+        # Those notes must never be filed under a historical test version.
+        raw = record.get('release_notes', '')
+        if not raw and (channel == 'stable' or record.get('eligible')):
+            raw = record.get('notes', '')
+        body = localized_release_notes(raw, lang)
+        if body or version not in history:
+            history[version] = body
+    return sorted(history.items(), key=lambda item: versions.key(item[0]), reverse=True)

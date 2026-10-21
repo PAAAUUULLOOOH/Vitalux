@@ -13,6 +13,7 @@ from PySide6.QtWidgets import QApplication, QColorDialog, QInputDialog, QWidget,
 from vitalux.ui_locale import QMessageBox
 
 from vitalux import __version__, changelog, i18n, settings, theme
+from vitalux import versions as release_versions
 from vitalux.control import PreferencesPage, AlertThresholdField
 from vitalux.pages_extra import UpdatePage
 from vitalux.update_manager import UpdateManager
@@ -316,13 +317,14 @@ def check_changelog(app):
 
     manager = UpdateManager()
     manager._timer.stop()
-    manager._on_checked({'stable':dict(ok=True,latest=__version__,channel='stable',eligible=True,newer=False,
+    channel=release_versions.channel(__version__)
+    manager._on_checked({channel:dict(ok=True,latest=__version__,channel=channel,eligible=True,newer=False,
         url='',sha256='',notes="## Deutsch\n- Etwas Neues\n## English\n- A new feature"),
-        'unstable':dict(ok=True,latest='',channel='unstable',eligible=False,newer=False,url='',sha256='',notes='')})
+        ('unstable' if channel=='stable' else 'stable'):dict(ok=True,latest='',eligible=False,newer=False,url='',sha256='',notes='')})
     page = UpdatePage(manager)
     page.resize(1100,900);page.show();app.processEvents()
-    assert page.changelog_card.isHidden(), 'Changelog opens only when a channel is clicked'
-    page.channel_buttons['stable'].click();app.processEvents()
+    assert page.changelog_card.isVisible(), 'Release notes must always remain visible'
+    page.channel_buttons[channel].click();app.processEvents()
     assert page.changelog_card.isVisible() and 'Etwas Neues' in page.changelog_details.text()
     assert not page.action_panel.isVisible()
     i18n.set_lang('en');page.retranslate()
@@ -332,7 +334,7 @@ def check_changelog(app):
     i18n.set_lang('de');page.retranslate()
     assert 'Etwas Neues' in page.changelog_details.text()
     page.close();manager.shutdown()
-    print('On-demand channel changelogs, language changes and offline notes: PASS')
+    print('Always-visible channel changelogs, language changes and offline notes: PASS')
 
 
 

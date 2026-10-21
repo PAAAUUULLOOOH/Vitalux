@@ -6,6 +6,8 @@ Use the latest AppImage or extract the complete Linux ZIP and run `bash run.sh`.
 
 ## Monitor your system
 
+Current Vitalux editions allow one running instance per user, shared across ZIP/AppImage copies and Stable/Unstable profiles. A second start shows “Vitalux is already running.” Closing to the tray keeps that instance active; use **Exit** to quit. The lock is released automatically when the process exits or crashes, and normal renderer/update restarts remain supported. Older editions without this protection must be closed before opening another edition.
+
 Reopening a sidebar category returns to its page start. The sidebar opens Overview, Processor, Graphics, Memory, Drives, Network, Sensors, Diagnostic Center, System, Settings, Updates and About. The new vector symbols remain recognizable when the sidebar is collapsed. Charts distinguish series by line pattern and identify measurements and timestamps on hover. Sampling interruptions appear as gaps; missing sensors are never replaced with invented readings.
 
 Use **Edit layout** on Overview to arrange cards. Drives loads SMART data asynchronously. Start disk benchmarks or external diagnostics only when needed; writing tests temporarily create files on the selected drive.
@@ -64,7 +66,7 @@ Explicit `Designs-testen.sh` previews keep their separate `design-test-data/` pr
 
 ## Update channels and profiles
 
-Everything stays in the **Updates** tab, without a channel-switch popup. The first card shows the installed channel/version once, its running status, **Check for updates** and **View changelog**. The second card, **Update channels**, holds Stable/Unstable, their availability and inline release notes. **View changelog / Hide changelog** expands or hides the notes; clicking either channel opens that channel's notes even when it is already selected.
+Everything stays in the **Updates** tab, without a channel-switch popup. The first card shows the installed channel/version once, its running status and **Check for updates**. The second card, **Update channels**, holds Stable/Unstable, their availability and release notes that always remain visible. Its **Version** selector browses the selected channel’s release history, including offline notes. Older notes never change the installation destination or enable a downgrade; only the separate installation action prepares the latest verified destination.
 
 Browsing does not alter your installed channel or create an update notification. A separate **Update now**, **Switch to Unstable** or **Return to Stable** action shows the target version and prepares the installation. The target appears only when installation is available, in progress or awaiting restart. Switching to Unstable requires a verified test build with real application changes beyond the current Stable baseline; otherwise its action is disabled with an inline explanation and its notes remain readable. Returning to Stable remains possible.
 
@@ -76,4 +78,4 @@ When your test changes reach Stable, Vitalux offers a notice and lets you view t
 
 Channel changelogs are cached for offline reading with their check time. Offline or failed checks are reported explicitly; cached information alone cannot authorize an installation.
 
-On/off controls use themed switches throughout the interface. Multiple-selection controls retain checkmarks. Design previews form the same multi-row grid in every design; hover or keyboard focus softly reveals a small color wheel for accents and an image indicator for backgrounds, stacked at the right edge and vertically centered on the tile. Grey locks mark fixed options; Black Glass allows accent presets but locks custom colors. Ultra Eco can temporarily restrict customization. The softer click sound defaults to 50% and can be adjusted or muted in Settings.
+On/off controls use themed switches throughout the interface. Multiple-selection controls retain checkmarks. Design previews form the same multi-row grid in every design; hover or keyboard focus softly reveals a small color wheel for accents and an image indicator for backgrounds, stacked at the right edge and vertically centered on the tile. Available options use colored symbols; unavailable options use grey symbols, without lock overlays. Black Glass shows a colored palette for its available accent presets; its description explains that custom colors are unavailable. Ultra Eco can temporarily restrict customization. The softer click sound defaults to 50% and can be adjusted or muted in Settings.

@@ -66,7 +66,7 @@ class UpdateManager(QObject):
         self.latest=self.notes=self.url=self.error=self.sha256=''
         self.error_kind='check'
         self.records={};self.last_checked=0.;self.last_attempt=0.
-        self.notes_open=False;self.checking=False
+        self.checking=False
         self.pending_path=None;self.pending_restart=False;self.pending={}
         self.restart_deferred=False;self._activation_started=False
         self._shutting_down=False;self._thread=None;self._active_threads=[]
@@ -157,13 +157,9 @@ class UpdateManager(QObject):
 
     def set_channel(self,channel):
         if channel not in ('stable','unstable') or self.status=='installing':return
-        self.channel=channel;self.notes_open=True
+        self.channel=channel
         self._select_record();self.changed.emit()
         if not self.records and not self.checking and not self.pending_restart:self.check()
-
-    def set_notes_visible(self,visible):
-        self.notes_open=bool(visible);self.changed.emit()
-        if self.notes_open and not self.records and not self.checking and not self.pending_restart:self.check()
 
     def _start_worker(self,worker):
         self._thread=worker;self._active_threads.append(worker)

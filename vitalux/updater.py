@@ -135,7 +135,7 @@ def check(channel=None, stable_result=None):
             eligible=(manifest.get('has_test_changes') is True and baseline==stable_version
                       and versions.channel(baseline)=='stable' and _ver(version)>_ver(stable_version))
         except ValueError:eligible=False
-        common.update(eligible=eligible,stable_version=stable_version or baseline,
+        common.update(release_notes=notes,eligible=eligible,stable_version=stable_version or baseline,
                       has_test_changes=manifest.get('has_test_changes') is True,
                       stable_verified=bool(stable_result.get('ok')),same_as_stable=manifest.get('same_as_stable') is True and baseline==stable_version)
         if not eligible:

@@ -1,5 +1,10 @@
 # Vitalux – Changes
 
+## [v0.9.6.3-unstable.1] - 2026-10-21
+- Design tiles use smaller indicators without locks: available accent and background options are colored, while fixed options are grey.
+- Release notes always remain visible in Updates. The version selector browses previous Stable or Unstable notes without changing the installation destination or channel.
+- Vitalux allows one running instance per user and shows a notice on a second start. The protection remains active in the tray and releases automatically on exit or a crash.
+
 ## [v0.9.6.2] - 2026-10-21
 - Updates presents the running version, Stable/Unstable and changelogs in two clear sections; channel browsing and installation remain separate actions within the tab.
 - Duplicate version labels and the settings-import button are removed. Channel profiles are still created and preserved automatically.

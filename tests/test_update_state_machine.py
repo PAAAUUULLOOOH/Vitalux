@@ -16,6 +16,7 @@ app=QApplication.instance() or QApplication([])
 
 def record(channel,version,newer=False,eligible=True):
     return dict(ok=True,latest=version,notes='## Deutsch\n- Aktueller Stand\n## English\n- Current changes',
+                release_notes='## Deutsch\n- Aktueller Stand\n## English\n- Current changes',
                 channel=channel,newer=newer,eligible=eligible,stable_version='0.9.6.0',same_as_stable=not eligible,
                 url=f'https://github.com/{updater.DEFAULT_REPO}/releases/download/test/package.zip' if newer else '',
                 sha256='a'*64 if newer else '')
@@ -27,19 +28,19 @@ with tempfile.TemporaryDirectory() as folder,patch.dict(os.environ,{f'XDG_{k.upp
     assert m.channel=='stable'
     m._on_checked({'stable':record('stable','0.9.6.0'), 'unstable':record('unstable','0.9.6.1-unstable.2',False,False)})
     page=UpdatePage(m);page.resize(1100,900);page.show();app.processEvents()
-    assert page.changelog_card.isHidden()
+    assert page.changelog_card.isVisible() and not hasattr(page,'changelog_button')
     assert not hasattr(page,'fresh_profile')
     assert not hasattr(page,'import_profile')
     page.channel_buttons['unstable'].click();app.processEvents()
+    page.history_combo.setCurrentIndex(page.history_combo.findData('0.9.6.1-unstable.2'))
     assert page.changelog_card.isVisible() and 'Aktueller Stand' in page.changelog_details.text()
     assert not page.install_button.isEnabled() and not m.available
     assert page.status.text()=='Vitalux ist auf dem neuesten Stand.','Browsing Unstable changed the running Stable status'
     assert not page.latest.isVisible(),'An unavailable channel displayed a duplicate destination'
     assert profiles.selected()=='unstable','Browsing rewrote the saved installation channel'
     page.channel_buttons['stable'].click();app.processEvents()
+    page.history_combo.setCurrentIndex(page.history_combo.findData('0.9.6.0'))
     assert page.changelog_card.isVisible() and not m.can_install and not m.available
-    page.changelog_button.click();app.processEvents();assert page.changelog_card.isHidden()
-    page.changelog_button.click();app.processEvents();assert page.changelog_card.isVisible()
     i18n.set_lang('en');page.retranslate()
     assert 'Current changes' in page.changelog_details.text() and 'Aktueller Stand' not in page.changelog_details.text()
     i18n.set_lang('de');page.retranslate()
@@ -48,6 +49,11 @@ with tempfile.TemporaryDirectory() as folder,patch.dict(os.environ,{f'XDG_{k.upp
     page.channel_buttons['unstable'].click();app.processEvents()
     assert m.can_install and not m.available and m.status=='switch_available'
     assert page.install_button.isEnabled()
+    snapshot=(m.channel,m.latest,m.url,m.sha256,m.available,profiles.selected())
+    page.history_combo.setCurrentIndex(page.history_combo.findData('0.9.6.0-unstable.1'))
+    assert (m.channel,m.latest,m.url,m.sha256,m.available,profiles.selected())==snapshot
+    assert '0.9.6.1' in page.latest.v.text(),'Historical notes changed the installation destination'
+    assert all('unstable' in page.history_combo.itemData(i) for i in range(page.history_combo.count()))
     # The install snapshot is immutable while the user browses other notes.
     events=[];m.restart.connect(lambda:events.append('restart'))
     worker=SimpleNamespace(channel='unstable',version='0.9.6.1-unstable.3',pending_path=None,sha256='a'*64)

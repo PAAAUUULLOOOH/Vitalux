@@ -1,5 +1,12 @@
 """Update channels, customization indicators and network controls."""
 EN={
+'Vitalux läuft bereits.':'Vitalux is already running.',
+'Versionsverlauf':'Version history',
+'Für diese Version ist noch kein Changelog verfügbar.':'No release notes are available for this version yet.',
+'Die Versionsauswahl zeigt nur Hinweise und ändert nicht das Installationsziel.':'Browsing versions only shows release notes; it does not change the installation destination.',
+'Alle zwölf Designs stehen im gleichen Vorschau-Raster. Kleine Symbole erscheinen beim Darüberfahren rechts mittig untereinander: Farbkreis für Akzentfarben, Bildsymbol für Hintergründe; verfügbare Optionen sind farbig, feste Optionen grau, ohne Schlösser.':'All twelve designs share the same preview grid. Small indicators fade in at the right center, vertically stacked: a color wheel for accents and an image symbol for backgrounds. Available options are colored; fixed options are grey, without locks.',
+'Im Updates-Reiter stehen laufender Stand, Stable/Unstable und dauerhaft sichtbare Changelogs zusammen. Die Versionsauswahl blättert durch die Historie des Kanals, ohne das Installationsziel zu ändern; nur die separate Installationsaktion wechselt den Kanal.':'The Updates tab groups the running version, Stable/Unstable and release notes that always remain visible. The version selector browses the channel’s history without changing the installation destination; only the separate installation action switches channels.',
+'Ein Kanal-Klick zeigt nur den Changelog. Installationen und Neustarts bleiben separate Aktionen; Testprofile entstehen automatisch und bleiben erhalten. Vitalux läuft pro Benutzer nur einmal; ein weiterer Start zeigt einen Hinweis. Zum Beenden auch das Tray-Symbol beachten.':'Clicking a channel only shows release notes. Installation and restarting remain separate actions; test profiles are created automatically and preserved. Vitalux runs once per user; a second start shows a notice. Remember to quit the tray icon as well.',
 'Aktiver Kanal':'Active channel',
 'Update-Kanal':'Update channel',
 'Stable und Unstable verwenden getrennte Einstellungen. Ein Kanalwechsel wird erst mit der Installation ausgeführt.':'Stable and Unstable use separate settings. A channel switch takes effect when its package is installed.',

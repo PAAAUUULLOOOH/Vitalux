@@ -2,22 +2,23 @@ from . import DEFAULT_THEME
 import os
 import sys
 
-from . import profiles
-profiles.initialize()
-
-from PySide6.QtCore import QTimer
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QApplication
-
-from . import APP_NAME, distro, i18n, sensors, settings, theme, diagnostics, hover_hints
-from .logo import load_logo
-from .brand import app_icon
-from .wallpaper_accents import resolve_accent
-from . import renderer, eco
-from .update_manager import UpdateManager
-
-
 def main():
+    from .single_instance import InstanceGuard, already_running
+    # Keep this descriptor until process exit, including tray use and shutdown.
+    # CLOEXEC lets renderer/update launchers start after this process exits.
+    instance = InstanceGuard()
+    if not instance.acquire():
+        sys.exit(already_running())
+    from . import profiles
+    profiles.initialize()
+    from PySide6.QtCore import QTimer
+    from PySide6.QtWidgets import QApplication
+    from . import APP_NAME, distro, i18n, sensors, settings, theme, diagnostics, hover_hints
+    from .logo import load_logo
+    from .brand import app_icon
+    from .wallpaper_accents import resolve_accent
+    from . import renderer, eco
+    from .update_manager import UpdateManager
     sys.excepthook = diagnostics.exception_hook
     diagnostics.enable_native_crash_trace()
     from .window import MainWindow
