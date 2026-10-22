@@ -85,10 +85,12 @@ def validate(data):
     result=dict(data)
     from .appearance import migrate
     result = migrate(result)
-    booleans=('ui_sounds','close_to_tray','alerts_enabled','ultra_eco','mini_hud_enabled')
+    for name in ('ui_sounds', 'ui_sound_volume', '_soft_click_revision'):
+        result.pop(name, None)
+    booleans=('close_to_tray','alerts_enabled','ultra_eco','mini_hud_enabled')
     for name in booleans:
         if name in result and type(result[name]) is not bool:result.pop(name)
-    for name,default,low,high in (('ui_sound_volume',50,0,100),('interval',1,.1,60),
+    for name,default,low,high in (('interval',1,.1,60),
                                 ('cpu_temp',90,40,110),('gpu_temp',90,40,110),
                                 ('ram_usage',90,1,100),('disk_usage',95,1,100)):
         value=result.get(name)
@@ -104,21 +106,51 @@ def validate(data):
 
 def _defaults(data):
     updated=validate(data)
-    if updated.get('_soft_click_revision')!=1:
-        updated.update(ui_sound_volume=50,_soft_click_revision=1)
     updated['_schema_version']=SCHEMA
     return updated
 
 
 def reset_preferences(path=None):
-    """Commit an empty active profile, retaining resources and first-use state.
+    """Reset the active profile and its managed copies, preserving source images.
 
-    Keeping a valid settings file also prevents older test builds from
-    interpreting this explicit reset as their first-ever launch.
+    Move owned data aside before committing defaults. A failed settings write
+    restores the originals; the other channel is never included in the purge.
+    Keep an initialized marker so Unstable cannot reimport Stable after reset.
     """
     path=Path(path) if path is not None else directory('config')/'settings.json'
-    atomic_json(path,_defaults({}))
-    atomic_json(path.parent/'profile-state.json',{'initialized':True,'schema':SCHEMA})
+    marker=path.parent/'profile-state.json'
+    owned=[path.parent/'backgrounds']
+    if path.parent.resolve()==directory('config').resolve():
+        cache=directory('cache')
+        # Stable's cache root also contains Unstable's isolated profile.
+        if installed()=='stable' and cache.is_dir() and not cache.is_symlink():
+            owned.extend(child for child in cache.iterdir() if child.name!='profiles')
+        elif installed()=='unstable':
+            owned.append(cache)
+        owned.append(root('config')/'profile-backups'/installed())
+    moved=[]
+    committing=False
+    try:
+        for source in (*owned,path,marker):
+            if not source.exists() and not source.is_symlink():continue
+            temporary=Path(tempfile.mkdtemp(prefix='.vitalux-reset-',dir=source.parent))
+            try:os.replace(source,temporary/'data')
+            except BaseException:
+                temporary.rmdir()
+                raise
+            moved.append((source,temporary))
+        committing=True
+        atomic_json(path,_defaults({}))
+        atomic_json(marker,{'initialized':True,'schema':SCHEMA})
+    except BaseException:
+        if committing:
+            for created in (path,marker):created.unlink(missing_ok=True)
+        for source,temporary in reversed(moved):
+            os.replace(temporary/'data',source)
+            temporary.rmdir()
+        raise
+    for _source,temporary in moved:
+        shutil.rmtree(temporary)
     return True
 
 

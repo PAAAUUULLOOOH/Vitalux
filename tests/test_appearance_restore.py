@@ -12,7 +12,7 @@ from vitalux import appearance, profiles, theme
 # Values written by Unstable .5/.6 when importing the former fixed designs.
 fixtures = (
     ('obsidian_gold', 'obsidian_gold', '#e5c17b'),
-    ('champagne_glass', 'obsidian_gold', '#f0d5ad'),
+    ('obsidian_gold', 'obsidian_gold', '#e5c17b'),
     ('aurora_gold', 'obsidian_gold', '#ecc784'),
     ('liquid_silver', 'obsidian_gold', '#b9ccdc'),
     ('aether_glass', 'aether_glass', '#b7a6ff'),
@@ -23,7 +23,7 @@ personal = dict(custom_accents=[dict(name='Personal', color='#f472b6')],
                 custom_backgrounds=[dict(name='Personal', file='owned.png')],
                 custom_background_selected='owned.png', dashboard_hidden=['gpu'],
                 lang='de', render_backend='x11_opengl', network_app_limits={'Firefox': 100},
-                _soft_click_revision=1, ui_sound_volume=37)
+                interval=2)
 for original, merged, color in fixtures:
     before = dict(personal, theme=merged, accent=color, background_style=original,
                   background_tint='#273c51', _appearance_revision=1,
@@ -92,6 +92,6 @@ with tempfile.TemporaryDirectory(prefix='vitalux-restored-designs-') as folder:
         profiles.reset_preferences(target)
         assert '_appearance_revision' not in profiles.read(target)
         assert not profiles.read(target).get('first_start_guide_seen')
-        assert stable.read_bytes() == stable_bytes and owned.read_bytes() == image_bytes
+        assert stable.read_bytes() == stable_bytes and not owned.exists()
 
 print('Separate designs restored; .5/.6 migration, backups, personal data, reset and Stable isolation PASS')

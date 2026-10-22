@@ -16,7 +16,7 @@
 ## Features
 
 - Live CPU, GPU, memory, storage, network and sensor measurements, with charts, alerts and local history.
-- A rearrangeable dashboard, MiniHUD and thirteen coordinated designs, including **Liquid Silver**: Obsidian Gold’s interface in satin silver and dark smoked glass. **Obsidian Gold is the default.**
+- A rearrangeable dashboard, MiniHUD and twelve coordinated designs, including **Liquid Silver**: Obsidian Gold’s interface in satin silver and dark smoked glass. **Obsidian Gold is the default.**
 - Per-app connections, usage warnings and optional, reversible TCP/UDP session blocks.
 - SMART information, drive benchmarks and local diagnostic reports.
 - German and English interfaces, guides and release notes; monitoring works offline.
@@ -36,16 +36,16 @@ Download a package from the [Unstable release](https://github.com/PAAAUUULLOOOH/
 **AppImage:**
 
 ```bash
-chmod +x Vitalux-v0.9.6.3-unstable.7-x86_64.AppImage
-./Vitalux-v0.9.6.3-unstable.7-x86_64.AppImage
+chmod +x Vitalux-v0.9.6.3-unstable.8-x86_64.AppImage
+./Vitalux-v0.9.6.3-unstable.8-x86_64.AppImage
 ```
 
 First launch offers user-account installation or **Run once**. Use `--portable` to skip integration, `--install` to add it later, or `--uninstall` to remove it while keeping preferences.
 
-**Portable ZIP:** extract the complete `Vitalux-v0.9.6.3-unstable.7-linux-x86_64.zip` into its own writable folder:
+**Portable ZIP:** extract the complete `Vitalux-v0.9.6.3-unstable.8-linux-x86_64.zip` into its own writable folder:
 
 ```bash
-cd Vitalux-v0.9.6.3-unstable.7
+cd Vitalux-v0.9.6.3-unstable.8
 bash run.sh
 ```
 
@@ -60,11 +60,13 @@ Choose a design in **Settings → Appearance**. Hover or keyboard-focus a previe
 <details>
 <summary>Preview the designs</summary>
 
-![Thirteen separate designs with Obsidian Gold selected](assets/vitalux-designs-preview.png)
+![Twelve separate designs with Obsidian Gold selected](assets/vitalux-designs-preview.png)
 
 </details>
 
-Settings search glides to matches and closes softly after five seconds. **Advanced settings** contains renderers and Maintenance; the full **Restore defaults** action sits at the bottom and restarts Vitalux. Section resets apply in place. Optional soft click sounds default to 50% volume. On/off controls use themed switches; multiple selections retain checkmarks.
+Settings search predicts partial names such as MiniH and scrolls smoothly to their controls. The field closes softly after five seconds. Edit layout gives movable tiles a brief, gentle shake and keeps their hold/X controls visible until editing ends. Controls are silent. On/off controls use themed switches; multiple selections retain checkmarks.
+
+**Advanced settings → Maintenance → Restore defaults** is the one full reset action. Its description and confirmation explain that it removes all active-profile preferences, custom colors/layouts, imported background copies and cache, then restarts into the guide. Original source images and the other channel are preserved. Section resets remain available for individual groups. Champagne Glass is removed; saved selections return to Obsidian Gold.
 
 See the [user guide](USER-GUIDE.md) for design restrictions, graphics, network controls and detailed help, or open **About → Guide** inside Vitalux.
 
@@ -74,12 +76,12 @@ Everything stays in **Updates**: installed version and check status at the top, 
 
 The update bar shows a centered percentage for the complete preparation process. Slow downloads report progress in smaller chunks; an idle connection times out. Use **Cancel download** while downloading or **Retry download** after a failure. If the server omits its size header, verified release metadata supplies the total. Without either size, progress stays at 0 until reception completes. Verification and preparation occupy the final part of the bar.
 
-After a verified update or channel switch, Vitalux finishes background work and **restarts automatically**. The target stays fixed throughout. An activation failure retains recovery data and offers **Retry**. Stable and Unstable use separate profiles; only the first test launch copies Stable preferences. **Delete personal preferences** restores defaults and reopens the guide for the active profile. When starting from the older Stable v0.9.6.2, its existing updater still requires **Restart now** once to enter Unstable. Promoting this updater to Stable also makes Stable → Unstable restarts automatic. Notes follow your selected language and remain readable offline. Cached information alone cannot authorize an update.
+After a verified update or channel switch, Vitalux finishes background work and **restarts automatically**. The target stays fixed throughout. Temporary restart preparation failures are retried automatically, up to three attempts; persistent failures retain the verified package and show an explicit recovery action. Stable and Unstable use separate profiles; only the first test launch copies Stable preferences. **Restore defaults** in Maintenance fully resets only the active profile and reopens the guide. When starting from the older Stable v0.9.6.2, its existing updater still requires **Restart now** once to enter Unstable. Promoting this updater to Stable also makes Stable → Unstable restarts automatic. Notes follow your selected language and remain readable offline. Cached information alone cannot authorize an update.
 
 Updates check SHA-256 and preserve recovery data. For manual verification, put the matching release manifest beside your downloads and run:
 
 ```bash
-sha256sum --ignore-missing -c Vitalux-v0.9.6.3-unstable.7-SHA256SUMS.txt
+sha256sum --ignore-missing -c Vitalux-v0.9.6.3-unstable.8-SHA256SUMS.txt
 ```
 
 A matching checksum verifies consistency with that manifest, not an independent digital signature.
@@ -96,7 +98,7 @@ VITALUX_RENDERER=software bash run.sh
 For an AppImage/FUSE problem:
 
 ```bash
-./Vitalux-v0.9.6.3-unstable.7-x86_64.AppImage --appimage-extract
+./Vitalux-v0.9.6.3-unstable.8-x86_64.AppImage --appimage-extract
 VITALUX_RENDERER=software bash squashfs-root/AppRun --portable
 ```
 
@@ -113,7 +115,7 @@ python3.12 -m venv .venv
 .venv/bin/python scripts/run-regressions.py
 ```
 
-Release validation also covers native renderers, audio, offline startup, AppImage integration and update/rollback. Versions use four components: `0.9.5.9 → 0.9.6.0`.
+Release validation also covers native renderers, offline startup, AppImage integration and update/rollback. Versions use four components: `0.9.5.9 → 0.9.6.0`.
 
 ## Credits and licenses
 

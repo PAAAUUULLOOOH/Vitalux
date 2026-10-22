@@ -25,14 +25,14 @@ def child(root, archive, phase):
     test = profiles.directory('config', 'unstable')/'settings.json'
     if phase == 'enter':
         assert profiles.installed() == 'stable'
-        settings.set_many({'lang': 'de', 'ui_sound_volume': 42})
+        settings.set_many({'lang': 'de', 'interval': 2})
     elif phase == 'leave':
         assert profiles.installed() == 'unstable'
-        assert settings.get('lang') == 'de' and settings.get('ui_sound_volume') == 42
-        settings.set_many({'lang': 'en', 'ui_sound_volume': 35})
+        assert settings.get('lang') == 'de' and settings.get('interval') == 2
+        settings.set_many({'lang': 'en', 'interval': 5})
     elif phase == 'rollback':
         assert profiles.installed() == 'stable'
-        assert settings.get('lang') == 'de' and settings.get('ui_sound_volume') == 42
+        assert settings.get('lang') == 'de' and settings.get('interval') == 2
         saved = stable.read_bytes()
         updater.restore_previous(str(root))
         assert stable.read_bytes() == saved
@@ -40,9 +40,9 @@ def child(root, archive, phase):
         return
     elif phase == 'restored':
         assert profiles.installed() == 'unstable'
-        assert settings.get('lang') == 'en' and settings.get('ui_sound_volume') == 35
+        assert settings.get('lang') == 'en' and settings.get('interval') == 5
         assert profiles.read(stable)['lang'] == 'de'
-        assert profiles.read(stable)['ui_sound_volume'] == 42
+        assert profiles.read(stable)['interval'] == 2
         assert list((profiles.root('config')/'profile-backups/stable').glob('*/backup.json'))
         assert list((profiles.root('config')/'profile-backups/unstable').glob('*/backup.json'))
         return

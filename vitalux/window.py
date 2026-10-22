@@ -1093,7 +1093,8 @@ class MainWindow(QMainWindow):
         if (getattr(self.manager,'_restart_requested',False)
                 and not self.manager.prepare_exit()):
             event.ignore()
-            self._cancel_shutdown('Neustart fehlgeschlagen. Bitte unter Updates erneut versuchen.')
+            self._cancel_shutdown('Neustart wird automatisch erneut vorbereitet …' if self.manager.restart_retrying
+                                  else 'Neustart fehlgeschlagen. Bitte unter Updates erneut versuchen.')
             return
         self._tray_click_timer.stop()
         self._tray_glow.stop()

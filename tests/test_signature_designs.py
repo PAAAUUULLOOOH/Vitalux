@@ -20,7 +20,7 @@ def run():
     with tempfile.TemporaryDirectory() as folder:
         settings.PATH=str(Path(folder)/'settings.json')
         settings.set_many(dict(theme='obsidian_gold',accent='#f472b6',close_to_tray=False,
-            ui_sounds=False,guide_intro_choice='completed'))
+            guide_intro_choice='completed'))
         theme.set_mode('obsidian_gold');app.setStyleSheet(theme.stylesheet())
         info=distro.info();window=MainWindow(info,load_logo(info,96),UpdateManager())
         window.resize(1380,1000);window.show()

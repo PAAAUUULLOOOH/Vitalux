@@ -119,7 +119,7 @@ def child(mode, output):
             win.stack.setCurrentIndex(index)
             QTest.qWait(100)
             sampler = win.sampler
-            for key in ('champagne_glass', 'dark', 'liquid_silver', 'aurora_gold'):
+            for key in ('black_glass_gold', 'dark', 'liquid_silver', 'aurora_gold'):
                 preferences.select_design(key)
                 assert win._appearance_overlay is not None
                 overlay = win._appearance_overlay

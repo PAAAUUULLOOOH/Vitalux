@@ -19,7 +19,7 @@ def capture(output, theme_name):
     from PySide6.QtWidgets import QApplication
     from vitalux import settings, theme
     from vitalux.brand import PulseCore, Wordmark, _MOTION
-    settings.set_many({'theme': theme_name, 'motion': 'smooth', 'ui_sounds': False})
+    settings.set_many({'theme': theme_name, 'motion': 'smooth'})
     theme.set_mode(theme_name)
     app = QApplication([])
     app.setQuitOnLastWindowClosed(False)

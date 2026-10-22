@@ -54,7 +54,7 @@ def run():
             app.processEvents()
             assert window._appearance_overlay is None, 'Resize retained stale snapshots'
             assert not hasattr(preferences, 'mode')
-            assert len(preferences.design_tiles) == len(theme.CHOICES) == 13
+            assert len(preferences.design_tiles) == len(theme.CHOICES) == 12
             assert {tile.key for tile in preferences.design_tiles} == set(theme._THEMES)
             for tile in preferences.design_tiles:
                 tile.click()

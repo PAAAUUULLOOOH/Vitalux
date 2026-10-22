@@ -123,7 +123,7 @@ def run():
 
             # Changing colors and hiding/showing must not reset the clocks.
             pulse._phase, pulse._heartbeat_phase, mark._phase = 123, .34, .27
-            theme.set_mode('champagne_glass')
+            theme.set_mode('aurora_gold')
             pulse.sync_theme()
             mark.sync_theme()
             assert (pulse._phase, pulse._heartbeat_phase, mark._phase) == (123, .34, .27)

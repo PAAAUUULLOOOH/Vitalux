@@ -39,7 +39,7 @@ BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED = (_THEMES[_mode][key] for k
 
 def set_mode(value):
     global _mode, BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED
-    value = 'liquid_silver' if value == 'liquid_chrome' else value
+    value = 'liquid_silver' if value == 'liquid_chrome' else DEFAULT_THEME if value == 'champagne_glass' else value
     _mode = "dark" if value == "amoled" else value if value in _THEMES else DEFAULT_THEME
     a = _THEMES[_mode]
     BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED = (a[x] for x in ("bg", "sidebar", "card", "border", "track", "grid", "text", "muted"))

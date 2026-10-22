@@ -1,5 +1,13 @@
 # Vitalux – Changes
 
+## [v0.9.6.3-unstable.8] - 2026-10-22
+- Champagne Glass is removed completely; saved selections return to Obsidian Gold. Twelve standalone designs remain.
+- Settings search recognizes partial MiniHUD names, distinguishes individual controls and scrolls smoothly to the matching section.
+- Opening layout editing gently shakes movable tiles for two seconds. Hold-to-move captions and X controls remain visible throughout editing.
+- Restore defaults under Advanced settings → Maintenance replaces the separate cache and personal reset actions. Its description and confirmation explain the complete active-profile reset, including imported image copies and cache, followed by restart and the guide. Original images and the other profile are preserved.
+- Click sounds and their settings are removed.
+- Update restart preparation automatically retries temporary failures and resumes verified saved preparations. An additional recovery button appears only after persistent failures.
+
 ## [v0.9.6.3-unstable.7] - 2026-10-22
 - All thirteen designs return as separate choices, including Obsidian Gold, Black Glass, Black Glass Gold, Champagne Glass, Aurora Gold and Liquid Silver. Obsidian Gold remains the default.
 - Each premium design again uses its own coordinated palette and background. Background and accent controls return to their compact selectors; fixed options are greyed out.

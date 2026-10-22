@@ -1,3 +1,19 @@
+# Unstable plan — v0.9.6.3-unstable.8
+
+Owner authorizes implementing all collected changes and publishing on Unstable; Main stays at Stable v0.9.6.2. README clarification: each branch has its own README. Update the Unstable README for this build; update Main's README only when these changes reach Stable.
+
+Local candidate validation: 72/72 regression scripts pass with the shipped Python/Qt runtime, including complete-reset rollback/isolation, partial search, persistent editing controls and bounded automatic restart recovery. All five native renderers and 100/125/150/200% layouts pass. Portable distribution notices, links, source offers and executable bits pass; screenshots show the actual candidate.
+
+- Remove Champagne Glass completely from current design choices, graphics/palette sources, preview launchers and packaging. Migrate existing selections to Obsidian Gold. Retain twelve separate designs and the original Obsidian Gold default.
+- Remove all click audio, volume/toggle settings, synthesizer/player, PCM asset and obsolete audio checks. Preserve unrelated third-party notices/runtime license offers.
+- Fix partial-name search prediction (especially Mini/MiniH/MiniHU/MiniHUD) by grouping tied matches for the same subject; retain distinct subcontrol results, smooth scrolling, advanced expansion, input focus and five-second animated dismissal. Check DE/EN and other settings.
+- Dashboard edit arrow: visible movable tiles shake softly once for about two seconds. Keep the hold-to-move caption and X visible for the entire editing session. Stop cleanly on drag, resize, exit, hiding and disabled motion; preserve native rendering quality.
+- Replace the separate personal-preferences and cache actions with one full Restore defaults action in Advanced settings → Maintenance. Remove the duplicate bottom action. Explain locally and in confirmation that all active-profile preferences, custom colors/layouts, imported image copies and cache are removed; preserve original source images and the other channel. Restart and reopen the guide. Safely handle failed writes and image symlinks; include owned automatic backups in the reset.
+- For update restarts, the actual .6 → .7 public AppImage test completed automatically with one install click; the reported extra click was not reproduced. Address the confirmed manual-recovery paths: automatically retry transient activation preparation failures up to three attempts, automatically resume valid persisted preparations, keep immutable destinations and exactly-one activation, log attempt outcomes, and offer explicit recovery only after retries fail. Do not claim the original user's cause is established.
+- Update compact English branch README/user guide, DE/EN in-app guide/translations, user-facing changelogs and actual UI captures; publish only the single rolling Unstable release after complete checks.
+
+---
+
 # Unstable restoration — v0.9.6.3-unstable.7
 
 Owner explicitly authorizes restoring the separate designs and publishing an Unstable update. This supersedes the appearance consolidation from .5/.6 and the subsequent UI/Black Glass background proposals. Main remains at v0.9.6.2.

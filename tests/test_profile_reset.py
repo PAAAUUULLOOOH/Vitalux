@@ -37,7 +37,7 @@ with tempfile.TemporaryDirectory(prefix='vitalux-profile-reset-') as d,patch.dic
                 assert settings.get('guide_intro_choice') is None
             path.unlink();profiles.initialize()
             assert settings.get('theme') is None,'Missing settings reimported Stable after initialization'
-        assert (resources/'keep.png').read_bytes()==b'owned image'
+        assert not resources.exists()
         assert stable.read_bytes()==original
     with patch.object(profiles,'__version__','0.9.6.2'):
         profiles.reset_preferences(stable);profiles.initialize()

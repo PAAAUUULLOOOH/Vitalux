@@ -79,8 +79,8 @@ class UpdatePage(Page):
         self.install_retry.clicked.connect(self.m.retry_install);actions.addWidget(self.install_retry,0,Qt.AlignLeft)
         self.restart_hint=label('Hintergrundaufgaben werden beendet. Anschließend startet Vitalux automatisch mit der vorbereiteten Version.','muted',wrap=True)
         actions.addWidget(self.restart_hint)
-        self.retry_button=QPushButton('Erneut versuchen',self);self.retry_button.setObjectName('ghostBtn')
-        self.retry_button.clicked.connect(self.m._restart)
+        self.retry_button=QPushButton('Neustart erneut versuchen',self);self.retry_button.setObjectName('ghostBtn')
+        self.retry_button.clicked.connect(self.m.retry_restart)
         actions.addWidget(self.retry_button,0,Qt.AlignLeft)
         self.channel_card.body.addWidget(self.action_panel)
 
@@ -172,6 +172,7 @@ class UpdatePage(Page):
     def _running_status(self):
         m=self.m
         if m.pending_restart or m.status=='installed':
+            if m.restart_retrying:return tr('Neustart wird automatisch erneut vorbereitet …')
             return tr('Neustart fehlgeschlagen. Bitte unter Updates erneut versuchen.' if m.error else STATUS_TEXT['installed'])
         if m.status in ('preview','installing') or m.checking:
             return tr(STATUS_TEXT['checking' if m.checking else m.status])
@@ -235,7 +236,7 @@ class UpdatePage(Page):
         retry_install=m.status=='error' and m.error_kind=='install'
         self.install_retry.setVisible(retry_install)
         self.restart_hint.setVisible(pending and not m.error)
-        self.retry_button.setVisible(pending and bool(m.error) and m.error_kind=='restart')
+        self.retry_button.setVisible(pending and bool(m.error) and m.error_kind=='restart' and not m.restart_retrying)
         self.action_panel.setVisible(pending or busy or m.can_install or show_disabled or retry_install)
         self._sync_history(record)
 

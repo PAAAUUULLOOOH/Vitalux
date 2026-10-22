@@ -20,14 +20,6 @@ COLLECTIONS = {
         'secondary': '#fff0c8', 'light': '#c69b55', 'bloom': '#725435',
         'shadow': '#111726', 'series': ('#e5c17b', '#f7eed8', '#b18c56', '#9aa8b8'),
     },
-    'champagne_glass': {
-        'title': 'Champagne Glass', 'subtitle': 'CRYSTAL / CHAMPAGNE METAL',
-        'bg': '#171719', 'sidebar': '#202023', 'card': '#302e30',
-        'border': '#95877a', 'track': '#4e4640', 'grid': '#454047',
-        'text': '#fff8ef', 'muted': '#cbc0b7', 'accent': '#f0d5ad',
-        'secondary': '#fff6df', 'light': '#dfc7ac', 'bloom': '#a48e89',
-        'shadow': '#393343', 'series': ('#f0d5ad', '#e4deef', '#c5a37f', '#a9c4ca'),
-    },
     'aurora_gold': {
         'title': 'Aurora Gold', 'subtitle': 'IRIDESCENT GLASS / LIQUID GOLD',
         'bg': '#070d16', 'sidebar': '#0c1421', 'card': '#122132',

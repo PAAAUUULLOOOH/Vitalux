@@ -1,5 +1,6 @@
 """Independent channel browsing, verified packages and graceful automatic restarts."""
 import hashlib
+import json
 import math
 import os
 import time
@@ -77,6 +78,7 @@ class UpdateManager(QObject):
         self.checking=False;self.progress_value=0.;self.cancelling=False
         self.pending_path=None;self.pending_restart=False;self.pending={}
         self._activation_started=False;self._restart_requested=False
+        self.restart_attempts=0;self._restart_retrying=False
         self._relaunch_on_exit=False
         self._shutting_down=False;self._thread=None;self._active_threads=[]
         self._cache_path=profiles.directory('cache')/'release-catalog.json'
@@ -90,7 +92,24 @@ class UpdateManager(QObject):
         self._restart_timer.timeout.connect(self._restart)
         if self.status!='preview' and not self.pending_restart:self._timer.start()
         self._select_record()
-        if self.pending_restart and not self.error:self._restart_timer.start(200)
+        if self.pending_restart:
+            # A previous transient preparation failure must not require a
+            # second confirmation on the next launch. Retry the verified target.
+            self._restart_retrying=bool(self.error)
+            self._restart_timer.start(200)
+
+    @property
+    def restart_retrying(self):
+        return self._restart_retrying and self._restart_timer.isActive()
+
+    def _restart_event(self,event,error=''):
+        try:
+            record=dict(time=time.time(),source=__version__,target=self.pending.get('version',''),
+                        event=event,attempt=self.restart_attempts,error=error)
+            self._pending_file.parent.mkdir(parents=True,exist_ok=True)
+            with self._pending_file.with_name('restart-events.jsonl').open('a') as stream:
+                stream.write(json.dumps(record,ensure_ascii=False)+'\n')
+        except OSError:pass
 
     def _load_cache(self):
         cached=profiles.read(self._cache_path)
@@ -244,6 +263,8 @@ class UpdateManager(QObject):
                       'kind':getattr(worker,'kind','appimage' if self.pending_path else 'zip'),
                       'sha256':getattr(worker,'sha256',self.sha256)}
         self.pending_restart=True;self.status='installed';self.error='';self._timer.stop()
+        self.restart_attempts=0;self._restart_retrying=False
+        self._restart_event('installation_prepared')
         self._on_progress(100.)
         try:profiles.atomic_json(self._pending_file,self.pending)
         except OSError:pass
@@ -261,8 +282,16 @@ class UpdateManager(QObject):
         if self._shutting_down or self._restart_requested:return
         self._restart_timer.stop()
         self._restart_requested=True;self._relaunch_on_exit=True
+        self.restart_attempts+=1;self._restart_retrying=False
         self.error=''
+        self._restart_event('restart_requested')
+        self.changed.emit()
         self.restart.emit()
+
+    def retry_restart(self):
+        if not self.pending_restart or self._restart_requested or self._shutting_down:return
+        self.restart_attempts=0
+        self._restart()
 
     def prepare_exit(self):
         """Activate only after the window has finished stopping all workers."""
@@ -272,6 +301,8 @@ class UpdateManager(QObject):
                     updater.activate_zip_update(self.pending_path,self.pending.get('sha256',''),self._pending_file,relaunch=self._relaunch_on_exit)
                 else:updater.activate_appimage_update(self.pending_path,relaunch=self._relaunch_on_exit)
                 self._activation_started=True
+                self._restart_retrying=False
+                self._restart_event('activation_prepared')
                 if self.pending.pop('activation_error', None) is not None:
                     try:profiles.atomic_json(self._pending_file,self.pending)
                     except OSError:pass
@@ -279,8 +310,15 @@ class UpdateManager(QObject):
                 self.error=str(exc);self.error_kind='restart'
                 self._restart_requested=False;self._relaunch_on_exit=False
                 self.pending['activation_error']=self.error
+                self._restart_event('activation_preparation_failed',self.error)
                 try:profiles.atomic_json(self._pending_file,self.pending)
                 except OSError:pass
+                if self.restart_attempts<3:
+                    self._restart_retrying=True
+                    self._restart_timer.start(600*2**max(0,self.restart_attempts-1))
+                else:
+                    self._restart_retrying=False
+                    self._restart_event('automatic_retries_exhausted',self.error)
                 self.changed.emit();return False
         return True
 

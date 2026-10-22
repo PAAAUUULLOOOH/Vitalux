@@ -63,8 +63,8 @@ def run():
             assert abs(page.accent_preview.mapTo(page, QPoint()).y()-
                        page.accent_combo.mapTo(page, QPoint()).y()) < 15
 
-            # The final reset is outside the disclosure, below its full height.
-            assert page.content.indexOf(page.advanced) == page.content.count()-2
+            # The full reset belongs to Maintenance inside the final disclosure.
+            assert page.content.indexOf(page.advanced) == page.content.count()-1
             scroll.verticalScrollBar().setValue(scroll.verticalScrollBar().maximum())
             before = scroll.verticalScrollBar().value()
             page.advanced.header.click()
@@ -75,7 +75,8 @@ def run():
             assert page.advanced.header.mapTo(scroll.viewport(), QPoint()).y() >= -2
             page.interval.setCurrentIndex(page.interval.findData(2))
             QTest.qWait(300)
-            assert page.restore_reveal.mapTo(page, QPoint()).y() >= page.advanced.y()+page.advanced.height()
+            assert page.advanced.isAncestorOf(page.restore_reveal)
+            assert page._maintenance_card.isAncestorOf(page.restore_reveal)
 
             # A changed section reverses its reveal cleanly when reset mid-fade.
             page.alert_boxes['cpu_temp'].setValue(97)
@@ -129,7 +130,7 @@ def run():
             saved = Path(settings.PATH).read_bytes()
             with patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes), \
                  patch.object(QMessageBox, 'warning') as notice:
-                page.delete_personal_preferences()
+                page.restore_defaults()
                 assert notice.called
             assert Path(settings.PATH).read_bytes() == saved
             assert not window.restart_requested

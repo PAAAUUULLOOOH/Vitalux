@@ -51,7 +51,7 @@ jobs:
           set -euo pipefail
           python -m pip install -r requirements-dev.txt
           sudo apt-get update
-          sudo apt-get install -y xvfb weston pulseaudio pulseaudio-utils libegl1 libgl1 libopengl0 libgl1-mesa-dri libglx-mesa0 mesa-vulkan-drivers libvulkan1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-util1 libxcb-shape0 curl squashfs-tools unzip file
+          sudo apt-get install -y xvfb weston libegl1 libgl1 libopengl0 libgl1-mesa-dri libglx-mesa0 mesa-vulkan-drivers libvulkan1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-util1 libxcb-shape0 curl squashfs-tools unzip file
           python -m compileall -q vitalux tests scripts packaging
           bash -n run.sh packaging/AppRun packaging/build-appimage.sh packaging/appimage-integration.sh packaging/appimage-rollback-watch.sh
       - uses: actions/cache@v4
@@ -96,13 +96,6 @@ jobs:
         run: |
           set -euo pipefail
           sudo env VITALUX_NETWORK_TEST_VM=1 /usr/bin/python3 scripts/check-network-kernel.py | tee build/network-kernel.log
-      - name: Check repeated audio playback and idle recovery
-        id: audio
-        run: |
-          set -euo pipefail
-          STAGED="$PWD/build/staged/Vitalux-${TAG}"
-          cd "$STAGED"
-          LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/check-ui-audio.py --output "$GITHUB_WORKSPACE/build/audio-checks"
       - name: Check five native renderers in isolated compositor sessions
         id: graphics
         run: |
@@ -111,13 +104,13 @@ jobs:
           cd "$STAGED"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-graphics-checks.py --output "$GITHUB_WORKSPACE/build/graphics-checks"
       - name: Expose native validation failures for diagnosis
-        if: failure() && (steps.graphics.outcome == 'failure' || steps.audio.outcome == 'failure')
+        if: failure() && steps.graphics.outcome == 'failure'
         run: |
           mkdir -p build/graphics-checks
           sudo dmesg | tail -n 35 > build/graphics-checks/kernel.log || true
           python - <<'PY'
           from pathlib import Path
-          logs = list(Path('build/graphics-checks').glob('*.log')) + list(Path('build/audio-checks').glob('*.log'))
+          logs = list(Path('build/graphics-checks').glob('*.log'))
           for log in sorted(logs):
               tail = '\n'.join(log.read_text(errors='replace').splitlines()[-18:])
               escaped = tail.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
@@ -178,7 +171,6 @@ jobs:
           path: |
             build/regressions/
             build/graphics-checks/
-            build/audio-checks/
             build/source-preview-checks/
             build/ui-scale-checks/
             build/network-kernel.log

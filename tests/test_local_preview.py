@@ -40,9 +40,9 @@ manager.url = 'https://invalid.example/never-download.zip'
 manager.install()
 assert manager._thread is None
 manager.shutdown()
-settings.set('theme', 'champagne_glass')
+settings.set('theme', 'black_glass_gold')
 prepare()
-assert settings.get('theme') == 'champagne_glass'
+assert settings.get('theme') == 'black_glass_gold'
 '''
         subprocess.run([sys.executable, '-c', code], cwd=directory,
                        env=env, check=True, timeout=15)

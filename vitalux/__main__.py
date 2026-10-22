@@ -27,8 +27,6 @@ def main():
     app = QApplication(sys.argv)
     # Disable transient hover help across the entire application, not just navigation.
     app._vitalux_hover_guard = hover_hints.install(app)
-    from .ui_sound import install as install_ui_sound
-    install_ui_sound(app)
     # Hiding the final window must not kill the tray icon and sampler.
     # MainWindow.closeEvent explicitly quits on a genuine Exit command.
     app.setQuitOnLastWindowClosed(False)

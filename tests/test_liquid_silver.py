@@ -17,7 +17,7 @@ def wait(ms):
     while time.monotonic()<deadline:app.processEvents();time.sleep(.01)
 
 with tempfile.TemporaryDirectory(prefix='vitalux-silver-') as folder,patch.object(settings,'PATH',str(Path(folder)/'settings.json')):
-    settings.set_many(dict(theme='obsidian_gold',accent='#f472b6',background_style='prism',close_to_tray=False,ui_sounds=False,motion='off'))
+    settings.set_many(dict(theme='obsidian_gold',accent='#f472b6',background_style='prism',close_to_tray=False,motion='off'))
     theme.set_mode('obsidian_gold');app.setStyleSheet(theme.stylesheet())
     info=distro.info();manager=UpdateManager();manager._timer.stop()
     win=MainWindow(info,load_logo(info,96),manager);win.resize(1380,1000);win.show();wait(300)
@@ -32,7 +32,7 @@ with tempfile.TemporaryDirectory(prefix='vitalux-silver-') as folder,patch.objec
         assert geometry==(win.sidebar.width(),win.pulse_core.size(),overview.board._render_positions(),overview.graph_load.graph.minimumHeight())
         assert all(host.currentIndex()==0 for host in overview.design_metric_hosts.values())
         assert win.sampler is sampler and sampler.isRunning()
-        assert len(theme.CHOICES)==13 and 'liquid_chrome' not in dict(theme.CHOICES)
+        assert len(theme.CHOICES)==12 and 'liquid_chrome' not in dict(theme.CHOICES)
         assert 'liquid-silver.svg' in brand._brand_asset(False)
         assert b'#718ba2' in brand._themed_svg(True)
         assert not any(design_capabilities.capabilities('liquid_silver').values())

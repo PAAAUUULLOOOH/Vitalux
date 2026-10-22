@@ -13,7 +13,6 @@ from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QScrollArea, QWidget
 from vitalux import i18n, settings, theme
 from vitalux.control import PreferencesPage
-from vitalux.ui_sound import install
 
 
 class Host(QWidget):
@@ -31,7 +30,7 @@ def run():
     previous = settings.PATH
     with tempfile.TemporaryDirectory() as folder:
         settings.PATH = str(Path(folder)/'settings.json')
-        settings.set_many({'theme': 'glass', 'motion': 'smooth', 'ui_sounds': True})
+        settings.set_many({'theme': 'glass', 'motion': 'smooth'})
         theme.set_mode('glass')
         app.setStyleSheet(theme.stylesheet())
         host = Host()
@@ -44,9 +43,9 @@ def run():
         scroll.show()
         QTest.qWait(120)
         advanced = page.advanced
-        assert page.content.indexOf(advanced) == page.content.count()-2
+        assert page.content.indexOf(advanced) == page.content.count()-1
         assert not advanced.expanded and advanced.clip.isHidden()
-        assert advanced.isAncestorOf(page.render_combo) and advanced.isAncestorOf(page.clear_cache_btn)
+        assert advanced.isAncestorOf(page.render_combo) and advanced.isAncestorOf(page.restore_button)
         advanced.header.click()
         advanced.animation.setCurrentTime(170)
         height = advanced.clip.height()
@@ -102,27 +101,20 @@ def run():
             assert combo.currentIndex() == index
             assert not combo.view().isVisible()
 
-        guard = install(app)
         combo = page.interval
         scroll.ensureWidgetVisible(combo)
         QTest.qWait(30)
-        with patch.object(guard, 'play') as play:
-            QTest.mouseClick(combo, Qt.LeftButton)
-            assert combo.view().isVisible()
-            assert play.call_count == 1, play.call_count
-            QTest.qWait(50)
-            view = combo.view()
-            QTest.keyClick(view, Qt.Key_Down)
-            QTest.keyClick(view, Qt.Key_Return)
-            assert combo.currentIndex() == 1
-            assert play.call_count == 2, play.call_count
-            page.select_design('aurora_gold')
-            fixed = page.background_combo
-            assert fixed.isLocked() and not fixed.isEnabled()
-            fixed.showPopup()
-            QTest.mouseClick(fixed, Qt.LeftButton)
-            assert not fixed.view().isVisible()
-            assert play.call_count == 2
+        QTest.mouseClick(combo, Qt.LeftButton)
+        assert combo.view().isVisible()
+        QTest.keyClick(combo.view(), Qt.Key_Down)
+        QTest.keyClick(combo.view(), Qt.Key_Return)
+        assert combo.currentIndex() == 1
+        page.select_design('aurora_gold')
+        fixed = page.background_combo
+        assert fixed.isLocked() and not fixed.isEnabled()
+        fixed.showPopup()
+        QTest.mouseClick(fixed, Qt.LeftButton)
+        assert not fixed.view().isVisible()
 
         # Hover paints a small zoom without reflowing or rebuilding its backdrop.
         tile = page.design_tiles[0]
@@ -141,9 +133,8 @@ def run():
         assert tile._hover == 0 and tile.geometry() == geometry
         scroll.close()
         host.close()
-        guard.stop()
         settings.PATH = previous
-    print('Prediction, delayed search close, advanced disclosure, wheel safety, combo audio and tile zoom PASS')
+    print('Prediction, delayed search close, advanced disclosure, wheel safety and tile zoom PASS')
 
 
 if __name__ == '__main__':

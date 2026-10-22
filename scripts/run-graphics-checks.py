@@ -28,7 +28,7 @@ def main():
     if args.sysroot:
         root = args.sysroot.resolve()
         lib = root/'usr/lib/x86_64-linux-gnu'
-        env['LD_LIBRARY_PATH'] = ':'.join(map(str, (lib, lib/'weston', lib/'pulseaudio')))+':'+env.get('LD_LIBRARY_PATH', '')
+        env['LD_LIBRARY_PATH'] = ':'.join(map(str, (lib, lib/'weston')))+':'+env.get('LD_LIBRARY_PATH', '')
         modules = list((lib/'libweston-14').glob('*.so'))+list((lib/'weston').glob('*.so'))
         env['WESTON_MODULE_MAP'] = ';'.join(p.name+'='+str(p) for p in modules)
         programs = {name: str(root/'usr/bin'/name) for name in ('Xvfb', 'weston')}

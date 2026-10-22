@@ -40,7 +40,7 @@ def drive_check(self):
   log('ready',settings=data)
   if phase < int(os.environ['TEST_LAUNCHES']):
    log('reset')
-   next(p for title,p in win.pages if title=='Einstellungen').delete_personal_preferences()
+   next(p for title,p in win.pages if title=='Einstellungen').restore_defaults()
   else:win.quit_from_tray()
  QTimer.singleShot(2700,act)
 with patch.object(single_instance,'InstanceGuard',partial(Guard,directory=stage/'instance')), \
@@ -77,7 +77,7 @@ for channel, launches in (('stable', 2), ('unstable', 3)):
         stable = stage/'config/vitalux/settings.json'
         stable.parent.mkdir(parents=True)
         stable.write_text(json.dumps(dict(guide_intro_choice='completed', lang='en',
-            theme='glass', close_to_tray=False, ui_sounds=False, render_backend='software')))
+            theme='glass', close_to_tray=False,  render_backend='software')))
         stable_before = stable.read_bytes()
         image = stable.parent/'backgrounds/keep.png'
         image.parent.mkdir()
@@ -94,8 +94,10 @@ for channel, launches in (('stable', 2), ('unstable', 3)):
         ready = [e['settings'] for e in events if e['event'] == 'ready']
         assert ready[0]['theme'] == 'glass', 'First Unstable launch must inherit Stable'
         assert all(d.get('theme', 'obsidian_gold') == 'obsidian_gold' for d in ready[1:]), events
-        assert image.read_bytes() == b'resource-kept'
         if channel == 'unstable':
+            assert image.read_bytes() == b'resource-kept'
             assert stable.read_bytes() == stable_before, 'Unstable reset modified Stable'
-            assert (stable.parent/'profiles/unstable/backgrounds/keep.png').read_bytes() == b'resource-kept'
+            assert not (stable.parent/'profiles/unstable/backgrounds/keep.png').exists()
+        else:
+            assert not image.exists()
 print('Real run.sh: repeated reset/exit42/relaunch, guide reopening, default theme, resource and Stable isolation PASS')

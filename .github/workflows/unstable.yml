@@ -52,7 +52,7 @@ jobs:
           set -euo pipefail
           python -m pip install -r requirements-dev.txt
           sudo apt-get update
-          sudo apt-get install -y xvfb weston pulseaudio pulseaudio-utils libegl1 libgl1 libopengl0 libgl1-mesa-dri libglx-mesa0 mesa-vulkan-drivers libvulkan1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-util1 libxcb-shape0 curl squashfs-tools unzip file
+          sudo apt-get install -y xvfb weston libegl1 libgl1 libopengl0 libgl1-mesa-dri libglx-mesa0 mesa-vulkan-drivers libvulkan1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-util1 libxcb-shape0 curl squashfs-tools unzip file
           python -m compileall -q vitalux tests scripts packaging
           bash -n run.sh packaging/AppRun
       - name: Assemble and validate the portable runtime
@@ -72,7 +72,6 @@ jobs:
           sudo env VITALUX_NETWORK_TEST_VM=1 /usr/bin/python3 scripts/check-network-kernel.py | tee build/network-kernel.log
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
-          LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/check-ui-audio.py --output "$GITHUB_WORKSPACE/build/audio-checks"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-graphics-checks.py --output "$GITHUB_WORKSPACE/build/graphics-checks"
           for DESIGN in obsidian_gold aether_glass eclipse_crystal liquid_silver black_glass_gold; do
             LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/capture-release-ui.py --output "$GITHUB_WORKSPACE/build/ui-scale-checks/$DESIGN" --design "$DESIGN" --scales 1,1.25,1.5,2
@@ -82,7 +81,7 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          for folder in ('build/audio-checks', 'build/graphics-checks', 'build/ui-scale-checks'):
+          for folder in ('build/graphics-checks', 'build/ui-scale-checks'):
               for log in sorted(Path(folder).rglob('*.log')):
                   tail = '\n'.join(log.read_text(errors='replace').splitlines()[-24:])
                   escaped = tail.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
@@ -120,7 +119,6 @@ jobs:
           name: Vitalux-Unstable-${{ env.TAG }}
           path: |
             build/regressions/
-            build/audio-checks/
             build/graphics-checks/
             build/ui-scale-checks/
             build/network-kernel.log

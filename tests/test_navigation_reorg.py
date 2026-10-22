@@ -63,7 +63,7 @@ def main():
             assert appearance.mapTo(pref, appearance.rect().topLeft()).y() < hud.mapTo(pref, hud.rect().topLeft()).y()
             assert not hasattr(pref, 'language_combo')
             assert not pref._settings_cards['general']
-            assert pref.content.indexOf(pref.advanced) == pref.content.count()-2
+            assert pref.content.indexOf(pref.advanced) == pref.content.count()-1
             assert pref.advanced.isAncestorOf(pref._settings_cards['render'][0])
             assert pref.advanced.isAncestorOf(pref._maintenance_card)
             assert not hasattr(gpu, 'diagnostic_shortcut')

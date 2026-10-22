@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('design', choices=('obsidian_gold', 'champagne_glass', 'aurora_gold'))
+    parser.add_argument('design', choices=('obsidian_gold', 'aurora_gold'))
     parser.add_argument('output', type=Path)
     parser.add_argument('--settings', action='store_true')
     args = parser.parse_args()

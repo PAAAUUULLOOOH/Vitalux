@@ -32,7 +32,7 @@ def prepare(target):
         shutil.copytree(source/folder, target/folder, ignore=ignore)
     for name in ('run.sh', 'Portable-pruefen.sh', 'README.md', 'USER-GUIDE.md',
                  'CHANGELOG.md', 'CHANGELOG.en.md', 'Designs-testen.sh',
-                 'Obsidian-Gold.sh', 'Champagne-Glass.sh', 'Aurora-Gold.sh',
+                 'Obsidian-Gold.sh', 'Aurora-Gold.sh',
                  'DESIGN-VORSCHAU.md', 'NEUSTART-ANLEITUNG.md', 'requirements-dev.txt',
                  'LICENSE-NOTICE.md', 'THIRD-PARTY.md'):
         shutil.copy2(source/name, target/name)

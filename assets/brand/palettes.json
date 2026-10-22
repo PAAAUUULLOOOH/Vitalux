@@ -111,16 +111,6 @@
       "secondary": "#f3cd79",
       "fixed": true
     },
-    "champagne-glass": {
-      "name": "Champagne Glass",
-      "accent": "#f0d5ad",
-      "top": "#fff0d1",
-      "mid": "#ddbc8d",
-      "low": "#a88457",
-      "spec": "#fff6df",
-      "secondary": "#f0d5ad",
-      "fixed": true
-    },
     "aurora-gold": {
       "name": "Aurora Gold",
       "accent": "#ecc784",
@@ -166,7 +156,6 @@
   "theme_assets": {
     "obsidian_gold": "obsidian-gold",
     "black_glass_gold": "black-glass-gold",
-    "champagne_glass": "champagne-glass",
     "aurora_gold": "aurora-gold",
     "aether_glass": "aether-glass",
     "eclipse_crystal": "eclipse-crystal",

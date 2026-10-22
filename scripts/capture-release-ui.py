@@ -30,7 +30,7 @@ def capture(output, language, checks, warmup, design='obsidian_gold'):
             time.sleep(min(.012,max(0,deadline-time.monotonic())))
     i18n.set_lang(language)
     settings.set_many({'theme': design, 'close_to_tray': False,
-                       'first_start_guide_seen': True, 'ui_sounds': False})
+                       'first_start_guide_seen': True})
     theme.set_mode(design)
     app.setStyleSheet(theme.stylesheet())
     info = distro.info()
@@ -81,7 +81,7 @@ def capture(output, language, checks, warmup, design='obsidian_gold'):
             wait(500)
             assert page.width() <= scroll.viewport().width()+2, (page.width(), scroll.viewport().width())
             for control in (page.accent_combo, page.accent_preview, page.render_combo,
-                            page.clear_cache_btn, page.clear_preferences_btn):
+                            page.restore_button, page.reset_description):
                 assert control.mapTo(page, QPoint(control.width(), 0)).x() <= page.width()
             from PySide6.QtWidgets import QLabel
             for item in page.advanced.panel.findChildren(QLabel):

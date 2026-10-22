@@ -30,7 +30,7 @@ SLIDES = [
         "Der kompakte Systemkopf lässt auf der Startseite mehr Platz für Messwerte und Diagramme.",
         "Du siehst unter anderem Prozessor, Grafik, RAM, Systemlaufwerk und den Systemzustand.",
         "Diagramme zeigen, wie sich die Auslastung im Zeitverlauf verändert.",
-        "Unter „Layout bearbeiten“ verschiebst du Kacheln; freie Flächen füllen sich automatisch, der Kachelabstand bleibt gleich.",
+        "Beim Öffnen von „Layout bearbeiten“ schütteln sich verschiebbare Kacheln zwei Sekunden sanft. „Zum Verschieben halten“ und das X bleiben bis zum Verlassen des Modus sichtbar.",
         "overview",
     ),
     (
@@ -75,10 +75,10 @@ SLIDES = [
     ),
     (
         "Darstellung und Einstellungen",
-        "Alle dreizehn Designs stehen im gleichen Vorschau-Raster. Kleine Symbole erscheinen beim Darüberfahren rechts mittig untereinander: Farbkreis für Akzentfarben, Bildsymbol für Hintergründe; verfügbare Optionen sind farbig, feste Optionen grau, ohne Schlösser.",
+        "Zwölf Designs stehen im Vorschau-Raster. Farbkreis und Bildsymbol rechts auf den Kacheln zeigen verfügbare Optionen farbig und feste Optionen grau. Champagne Glass wurde entfernt; Obsidian Gold bleibt Standard.",
         "Bei anpassbaren Designs wählst du integrierte Hintergründe oder eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
-        "Die Suche gleitet zu Treffern und schließt fünf Sekunden nach der Auswahl weich. Beim Öffnen der erweiterten Einstellungen scrollt die Seite mit; dort liegen Grafik-Renderer und Wartung.",
-        "Zurücksetzen-Buttons blenden weich ein und aus. Ganz unten setzt du alle Standardwerte wieder her und startest Vitalux neu; einzelne Bereiche benötigen keinen Neustart. Das Logo zeigt einen sanften Herzschlagimpuls.",
+        "Die Suche erkennt auch unvollständige Namen wie MiniH oder MiniHU und gleitet zum passenden Bereich. Nach einer Auswahl bleibt sie fünf Sekunden sichtbar und schließt weich. Erweiterte Einstellungen öffnen sich bei passenden Treffern automatisch.",
+        "Unter Erweiterte Einstellungen → Wartung setzt „Standardwerte wiederherstellen“ das gesamte aktive Profil zurück. Einstellungen, eigene Farben, Layouts, importierte Bildkopien und Cache werden gelöscht. Originalbilder und das andere Updateprofil bleiben erhalten; Vitalux startet neu und öffnet die Anleitung.",
         "settings",
     ),
     (
@@ -93,7 +93,7 @@ SLIDES = [
         "Updates und Informationen",
         "Im Updates-Reiter stehen laufender Stand, Stable/Unstable und dauerhaft sichtbare Changelogs zusammen. Die Versionsauswahl blättert durch die Historie des Kanals, ohne das Installationsziel zu ändern; nur die separate Installationsaktion wechselt den Kanal.",
         "Bei einem Update glüht das Vitalux-Logo in der App und im Tray. Der Updates-Reiter pulsiert; eine Tray-Nachricht nennt die Version.",
-        "Ein Kanal-Klick zeigt nur den Changelog. Nach einem geprüften Update oder Kanalwechsel beendet Vitalux die Hintergrundaufgaben und startet automatisch neu. Testprofile entstehen automatisch; das Löschen persönlicher Einstellungen setzt nur das aktive Profil zurück und öffnet die Anleitung erneut. Stable v0.9.6.2 verwendet beim Wechsel zu Unstable noch seinen älteren Neustart-Knopf.",
+        "Nach einer geprüften Installation startet Vitalux automatisch neu. Vorübergehende Fehler bei der Neustartvorbereitung werden bis zu drei Mal automatisch versucht; danach wird ein Fehler mit Wiederholungsaktion angezeigt. Stable v0.9.6.2 besitzt noch seinen älteren manuellen Updater.",
         "Die Prozentzahl steht mittig im Update-Ladebalken. Downloads lassen sich abbrechen und bei Fehlern erneut versuchen. Changelogs folgen deiner Sprache und bleiben offline lesbar.",
         "updates",
     ),

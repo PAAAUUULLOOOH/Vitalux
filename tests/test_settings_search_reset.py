@@ -186,7 +186,7 @@ def check():
             qwait(300)
             assert settings.get('mini_hud_layout') == 'compact'
             assert not page._reset_buttons['hud'].isVisible()
-            assert not page.restore_button.isVisible()
+            assert page.restore_reveal.revealed, 'Full reset must remain available for saved images/layouts'
             assert settings.get('custom_backgrounds')[0]['file'] == 'preserve.png'
             assert settings.get('dashboard_layout') == {'keep':'yes'}
             print('Pinned, animated, centered fuzzy search and targeted resets: OK')

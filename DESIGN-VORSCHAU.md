@@ -6,16 +6,15 @@ Test a design with separate local preferences:
 
 ```bash
 bash Designs-testen.sh obsidian_gold
-bash Champagne-Glass.sh
 bash Aurora-Gold.sh
 ```
 
-All thirteen standalone designs are available in **Settings → Appearance → Design**. **Obsidian Gold** is the default. **Black Glass** and **Black Glass Gold** are separate choices; Champagne Glass, Aurora Gold and the dark Obsidian-style Liquid Silver also have their own tiles, palettes and backgrounds.
+All twelve standalone designs are available in **Settings → Appearance → Design**. **Obsidian Gold** is the default. **Black Glass** and **Black Glass Gold** are separate choices; Aurora Gold and the dark Obsidian-style Liquid Silver also have their own tiles, palettes and backgrounds.
 
 Premium palettes/backgrounds remain fixed. Grey selectors explain these restrictions directly; adjustable designs support built-in backgrounds, personal images and preset/custom accents. Personal selections remain saved when a fixed design is active. See the [user guide](USER-GUIDE.md) for the full capability list and image controls.
 
 Preview shortcuts use `design-test-data/` beside the extracted app. Normal Stable and Unstable profiles remain separate. Preview mode disables update checks and installation. Keep the complete runtime, libraries and assets together.
 
-Animations, sound and graphics controls remain available. Software, OpenGL, X11/OpenGL, Wayland/OpenGL and Wayland/Vulkan availability depends on the session and installed drivers.
+Animations and graphics controls remain available. Software, OpenGL, X11/OpenGL, Wayland/OpenGL and Wayland/Vulkan availability depends on the session and installed drivers.
 
 Third-party notices and source offers remain in [THIRD-PARTY.md](THIRD-PARTY.md).

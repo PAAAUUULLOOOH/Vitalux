@@ -11,18 +11,19 @@ def run():
     assert versions.key('0.9.5.9')<versions.key('0.9.6.0-unstable.1')
     with tempfile.TemporaryDirectory() as folder,patch.dict(os.environ,{f'XDG_{kind.upper()}_HOME':str(Path(folder)/kind) for kind in profiles.KINDS}):
         stable=profiles.directory('config','stable');stable.mkdir(parents=True)
-        original={'ui_sound_volume':70,'lang':'de','theme':'glass','render_backend':'bad'}
+        original={'ui_sound_volume':70,'interval':-1,'lang':'de','theme':'glass','render_backend':'bad'}
         profiles.atomic_json(stable/'settings.json',original)
         (stable/'backgrounds').mkdir();(stable/'backgrounds/a.png').write_bytes(b'profile-owned resource')
         saved=(stable/'settings.json').read_bytes()
         with patch.object(profiles,'__version__','0.9.6.1-unstable.1'):
             profiles.initialize();target=profiles.directory('config')
-            assert profiles.read(target/'settings.json')['ui_sound_volume']==50
+            assert 'ui_sound_volume' not in profiles.read(target/'settings.json')
+            assert profiles.read(target/'settings.json')['interval']==1
             assert profiles.read(target/'settings.json')['render_backend']=='software'
             assert (target/'backgrounds/a.png').read_bytes()==(stable/'backgrounds/a.png').read_bytes()
-            profiles.atomic_json(target/'settings.json',dict(profiles.read(target/'settings.json'),theme='light',ui_sound_volume=35))
-            profiles.initialize();assert profiles.read(target/'settings.json')['ui_sound_volume']==35
-            profiles.initialize();assert profiles.read(target/'settings.json')['ui_sound_volume']==35
+            profiles.atomic_json(target/'settings.json',dict(profiles.read(target/'settings.json'),theme='light',interval=5))
+            profiles.initialize();assert profiles.read(target/'settings.json')['interval']==5
+            profiles.initialize();assert profiles.read(target/'settings.json')['interval']==5
             assert (stable/'settings.json').read_bytes()==saved
             assert profiles.read(target/'settings.json')['theme']=='light','Later launches overwrote the automatic test profile'
             assert all(profiles.directory(kind)!=profiles.directory(kind,'stable') for kind in profiles.KINDS)

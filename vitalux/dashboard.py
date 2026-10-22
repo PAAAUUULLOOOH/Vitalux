@@ -4,7 +4,8 @@ Cards preserve their preferred size except where large gaps would otherwise
 remain. The existing 14 px grid spacing and indivisible hero tile are kept.
 """
 from copy import deepcopy
-from PySide6.QtCore import Qt, QEvent, QRect, QEasingCurve, QPropertyAnimation, Signal
+from math import sin, pi
+from PySide6.QtCore import Qt, QEvent, QPoint, QRect, QEasingCurve, QPropertyAnimation, QVariantAnimation, Signal
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (QApplication, QWidget, QToolButton, QVBoxLayout, QSizePolicy,
                                 QGraphicsOpacityEffect)
@@ -16,7 +17,7 @@ from .dashboard_model import (TITLES, ORDER, DEFAULT, PITCH, GAP, normalize_orde
 
 
 class Grip(QToolButton):
-    """Visible top-right MOVE affordance only while hovering in edit mode."""
+    """Persistent top-right MOVE affordance throughout edit mode."""
     def __init__(self, board, key, parent=None):
         super().__init__(parent)
         self.board, self.key = board, key
@@ -109,9 +110,8 @@ class Tile(QWidget):
         super().leaveEvent(event)
 
     def _sync_grips(self):
-        dragged = self.board._dragging is not None and self.board._dragging['key'] == self.key
-        self.drag.setVisible(self._editing and (self._hover or dragged))
-        self.remove.setVisible(self._editing and (self._hover or dragged))
+        self.drag.setVisible(self._editing)
+        self.remove.setVisible(self._editing)
         if self.drag.isVisible():self.drag.raise_()
         if self.remove.isVisible():self.remove.raise_()
 
@@ -142,6 +142,12 @@ class DashboardBoard(QWidget):
         self._anim_targets = {}
         self._fade_anims = {}
         self._suspend_resize_reflow = False
+        self._wobble_origins = {}
+        self._wobble = QVariantAnimation(self)
+        self._wobble.setStartValue(0.)
+        self._wobble.setEndValue(1.)
+        self._wobble.valueChanged.connect(self._wobble_frame)
+        self._wobble.finished.connect(self._stop_wobble)
         # One geometry reflow at most per display refresh while the user is
         # actively resizing the window; no new tween per pixel.
         from PySide6.QtCore import QTimer
@@ -181,6 +187,7 @@ class DashboardBoard(QWidget):
         return QRect(round(x*cw),y*PITCH,max(28,round(w*cw-GAP)),max(45,h*PITCH-GAP))
 
     def refresh_geometry(self,animate=False,order=None,skip_dragged=False):
+        self._stop_wobble()
         targets=self._render_positions(order)
         bottom=max((p[1]+p[3] for p in targets.values()),default=1)
         height=bottom*PITCH+8
@@ -275,6 +282,7 @@ class DashboardBoard(QWidget):
                 self._resize_coalesce.start()
 
     def begin_edit(self):
+        if self.editing:return
         self.editing=True
         # Intercept mouse gestures for every nested widget, not only the hint.
         QApplication.instance().installEventFilter(self)
@@ -283,8 +291,32 @@ class DashboardBoard(QWidget):
         self._snapshot=(list(self.order),set(self.hidden),self.distro_logo_visible)
         for tile in self.tiles.values():tile.set_editing(True)
         self.refresh_geometry()
+        duration=motion.duration(2000)
+        if duration and self.isVisible():
+            self._wobble_origins={key:QPoint(tile.pos()) for key,tile in self.tiles.items()
+                                  if key not in self.hidden and tile.isVisible()}
+            self._wobble.setDuration(duration)
+            self._wobble.start()
+
+    def _wobble_frame(self,progress):
+        progress=float(progress)
+        envelope=sin(pi*progress)**2
+        for index,(key,origin) in enumerate(self._wobble_origins.items()):
+            phase=6*pi*progress+index*.35
+            self.tiles[key].move(origin+QPoint(round(3*envelope*sin(phase)),
+                                               round(envelope*sin(phase+.6))))
+
+    def _stop_wobble(self):
+        self._wobble.stop()
+        for key,origin in self._wobble_origins.items():self.tiles[key].move(origin)
+        self._wobble_origins.clear()
+
+    def hideEvent(self,event):
+        self._stop_wobble()
+        super().hideEvent(event)
 
     def finish_edit(self,save=True):
+        self._stop_wobble()
         if self._dragging:self.end_drag()
         QApplication.instance().removeEventFilter(self)
         if not save and self._snapshot is not None:
@@ -404,6 +436,7 @@ class DashboardBoard(QWidget):
         return True
 
     def begin_drag(self,key,global_pos):
+        self._stop_wobble()
         if not self.editing or key in self.hidden:return
         # Do not record undo until the order actually changes.
         tile = self.tiles[key]

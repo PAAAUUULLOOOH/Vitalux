@@ -21,7 +21,7 @@ def wait_for(condition):
 
 with tempfile.TemporaryDirectory(prefix='vitalux-auto-update-') as folder,patch.dict(os.environ,{f'XDG_{kind.upper()}_HOME':str(Path(folder)/kind) for kind in profiles.KINDS}):
     with patch.object(settings,'PATH',str(Path(folder)/'settings.json')):
-        settings.set_many(dict(close_to_tray=False,ui_sounds=False,motion='off'))
+        settings.set_many(dict(close_to_tray=False,motion='off'))
         info=distro.info()
         for target in ('stable','unstable'):
             m=UpdateManager();m._timer.stop();win=MainWindow(info,load_logo(info,96),m);win.show()
@@ -47,8 +47,7 @@ with tempfile.TemporaryDirectory(prefix='vitalux-auto-update-') as folder,patch.
                 assert m.pending['channel']==target and not m.available and not m.can_install
                 page=next(p for name,p in win.pages if name=='Updates')
                 assert not hasattr(page,'restart_button') and not hasattr(page,'later_button')
-                assert not page.retry_button.isHidden() and not m._restart_timer.isActive()
-                m._restart();m._restart()  # Repeated requests must not launch two helpers.
+                assert page.retry_button.isHidden() and m.restart_retrying
                 wait_for(win.isHidden)
                 assert len(attempts)==2 and attempts[-1]==(str(image),True)
                 assert events==['request','request'] and m._activation_started

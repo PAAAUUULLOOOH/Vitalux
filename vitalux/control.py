@@ -169,7 +169,7 @@ class PreferencesPage(Page):
     PRESET_COLORS = frozenset(value for _, value in PRESET_ACCENTS)
 
     DEFAULTS = {
-        'theme': DEFAULT_THEME, 'accent': '#4f8cff', 'ui_sounds': True, 'ui_sound_volume': 50, 'motion': 'smooth',
+        'theme': DEFAULT_THEME, 'accent': '#4f8cff', 'motion': 'smooth',
         'background_style': 'theme_default', 'custom_background_fit': 'cover',
         'render_backend': renderer.SOFTWARE, 'ultra_eco': False,
         'interval': 1, 'close_to_tray': True, 'alerts_enabled': False,
@@ -180,7 +180,7 @@ class PreferencesPage(Page):
         'network_app_limits': {},
     }
     SECTION_DEFAULTS = {
-        'appearance': ('theme', 'accent', 'ui_sounds', 'ui_sound_volume', 'motion', 'background_style', 'custom_background_fit'),
+        'appearance': ('theme', 'accent', 'motion', 'background_style', 'custom_background_fit'),
         'hud': ('mini_hud_enabled', 'mini_hud_layout', 'mini_hud_opacity',
                 'mini_hud_metrics'),
         'alerts': ('alerts_enabled', 'cpu_temp', 'gpu_temp', 'ram_usage', 'disk_usage'),
@@ -255,7 +255,6 @@ class PreferencesPage(Page):
             'holographic': 'Holographic · Eigenständige, undurchsichtige Sci-Fi-HUD-Oberfläche mit leuchtenden Konturen, technischen Kacheln und Diagrammen – ohne Glas.',
             'minimal': 'Minimalistisch · Einfache Flächen ohne Glas, Schatten und dekorative Animationen. Spart Zeichenaufwand.',
             'obsidian_gold': 'Obsidian Gold · Rauchglas, gebürstetes Gold und präzise Instrumentringe. Die äußeren Logo-Streifen drehen sich langsam.',
-            'champagne_glass': 'Champagne Glass · Kristallglas, warme Champagnertöne und seidenweiche Reflexionen mit goldenen Instrumenten.',
             'aurora_gold': 'Aurora Gold · Irisierendes Glas mit Petrol- und Violettlicht, flüssigen Goldkanten und leuchtenden Instrumenten.',
             'aether_glass': 'Aether Glass · Optisches Rauchglas, Platinkanten und Violett-/Cyanlicht mit schwebender Navigation und eigenen Instrumenten. Palette und Hintergrund sind fest.',
             'eclipse_crystal': 'Eclipse Crystal · Facettierter schwarzer Kristall, Champagnerkanten und horizontale Navigation. Palette und Hintergrund sind fest.',
@@ -399,28 +398,6 @@ class PreferencesPage(Page):
         r_motion.addStretch(1)
         look.body.addLayout(r_motion)
         look.body.addWidget(label('Übergänge anpassen: weich, verkürzt oder ohne Animation.', 'muted', wrap=True))
-        self.sound_toggle = QCheckBox('Glas-Klang bei Klicks')
-        self.sound_toggle.setChecked(settings.get('ui_sounds', True))
-        self.sound_toggle.toggled.connect(lambda enabled: self._set_preference('ui_sounds', enabled))
-        look.body.addWidget(self.sound_toggle)
-        volume_row = QHBoxLayout()
-        volume_row.addWidget(label('Lautstärke', 'strong'))
-        self.sound_volume = QSlider(Qt.Horizontal)
-        self.sound_volume.setRange(0, 100)
-        self.sound_volume.setValue(settings.get('ui_sound_volume', 50))
-        self.sound_volume.setMaximumWidth(210)
-        self.sound_volume.setAccessibleName(tr('Klanglautstärke'))
-        self.sound_volume_value = label(str(self.sound_volume.value())+' %', 'muted')
-        self._volume_save = QTimer(self)
-        self._volume_save.setSingleShot(True)
-        self._volume_save.setInterval(160)
-        self._volume_save.timeout.connect(lambda: self._set_preference('ui_sound_volume', self.sound_volume.value()))
-        self.sound_volume.valueChanged.connect(lambda value: self.sound_volume_value.setText(str(value)+' %'))
-        self.sound_volume.valueChanged.connect(lambda _value: self._volume_save.start())
-        volume_row.addWidget(self.sound_volume)
-        volume_row.addWidget(self.sound_volume_value)
-        volume_row.addStretch(1)
-        look.body.addLayout(volume_row)
         self._add_section_reset(look.body, 'appearance', 'Darstellung zurücksetzen')
         self._settings_cards['appearance'].append(look)
 
@@ -476,19 +453,19 @@ class PreferencesPage(Page):
         render_card.body.addWidget(self.render_restart_button, 0, Qt.AlignLeft)
         self._refresh_renderer_status()
         self._settings_cards['render'].append(render_card)
-        # These are explicitly different: clearing harmless in-memory previews
-        # does not delete user preferences, wallpapers or the OS page cache.
         maintenance = Card('Wartung')
-        maintenance.body.addWidget(label(
-            'Nur Vitalux-eigene Daten verwalten. Kein Eingriff in Linux-Systemcaches.',
-            'muted', wrap=True))
-        self.clear_cache_btn = QPushButton('Vitalux-Cache leeren')
-        self.clear_cache_btn.setObjectName('ghostBtn')
-        self.clear_cache_btn.clicked.connect(self.clear_app_cache)
-        self.clear_preferences_btn = QPushButton('Persönliche Einstellungen löschen …')
-        self.clear_preferences_btn.setObjectName('ghostBtn')
-        self.clear_preferences_btn.clicked.connect(self.delete_personal_preferences)
-        maintenance.body.addWidget(ResponsiveActions([self.clear_cache_btn, self.clear_preferences_btn]))
+        self.reset_description = label(
+            'Setzt alle Einstellungen dieses Profils zurück: Design, Farben, Layouts, Sprache, '
+            'Warnwerte und Grafik-Renderer. Gespeicherte eigene Farben, importierte Bildkopien '
+            'und der Vitalux-Cache werden gelöscht. Originalbilder und das andere Updateprofil '
+            'bleiben erhalten. Danach startet Vitalux neu und zeigt die Anleitung.',
+            'muted', wrap=True)
+        maintenance.body.addWidget(self.reset_description)
+        self.restore_button = QPushButton('Standardwerte wiederherstellen', self)
+        self.restore_button.setObjectName('ghostBtn')
+        self.restore_button.clicked.connect(self.restore_defaults)
+        self.restore_reveal = SoftReveal(self.restore_button, self)
+        maintenance.body.addWidget(self.restore_reveal, 0, Qt.AlignLeft)
         self._maintenance_card = maintenance
 
         monitor = Card('Live-Monitoring')
@@ -589,23 +566,9 @@ class PreferencesPage(Page):
         self._add_section_reset(notifications.body, 'alerts', 'Warnwerte zurücksetzen')
         self._settings_cards['monitoring'].append(notifications)
 
-        # Only visible when the *preferences* deviate from the original values.
-        # Dashboard tile positions, update source and language are intentionally
-        # not touched by this button.
-        restore_row = QHBoxLayout()
-        restore_row.addStretch(1)
-        # Its visibility is synchronized before the final layout is attached.
-        # A parentless button maps as a tiny standalone window on X11/Wayland.
-        self.restore_button = QPushButton('Standardwerte wiederherstellen', self)
-        self.restore_button.setObjectName('ghostBtn')
-        self.restore_button.clicked.connect(self.restore_defaults)
-        self.restore_reveal = SoftReveal(self.restore_button, self)
-        restore_row.addWidget(self.restore_reveal)
-        self._restore_row = restore_row
         self._refresh_restore_button()
         self._search_targets = [
-            ('appearance', 'Glas Klang Ton Sound Klicks', self.sound_toggle),
-            ('appearance', 'Design Dark Light Glass Black Glass Gold Holographic Minimalistisch Obsidian Champagne Aurora Aether Eclipse Crystal Liquid Silver Platin Silber', self.design_tiles[0]),
+            ('appearance', 'Design Dark Light Glass Black Glass Gold Holographic Minimalistisch Obsidian Aurora Aether Eclipse Crystal Liquid Silver Platin Silber', self.design_tiles[0]),
             ('appearance', 'Akzentfarbe Eigene Farben Bearbeiten Löschen', self.accent_combo),
             ('appearance', 'Hintergrund Bild Hintergrundfarbe automatisch', self.background_combo),
             ('appearance', 'Animationen Bewegung Übergang', self.motion_combo),
@@ -616,10 +579,9 @@ class PreferencesPage(Page):
             ('monitoring', 'Aktualisierungsintervall Live Monitoring', self.interval),
             ('monitoring', 'Warnungen Grenzwerte CPU GPU Temperatur RAM Laufwerk', self.alert_toggle),
             ('energy', 'Ultra Eco Ressourcenschonung Neustarten', self.eco_toggle),
-            ('general', 'Standardwerte wiederherstellen Zurücksetzen', self.restore_button),
             ('render', 'Grafik Rendering Backend CPU OpenGL Wayland Vulkan X11', self.render_combo),
-            ('maintenance', 'Wartung Maintenance Cache leeren Clear', self.clear_cache_btn),
-            ('maintenance', 'Persönliche Einstellungen löschen Delete Preferences Settings', self.clear_preferences_btn),
+            ('maintenance', 'Wartung Maintenance', self._maintenance_card),
+            ('maintenance', 'Standardwerte wiederherstellen Zurücksetzen Werkseinstellungen Cache Reset Restore Defaults Delete Personal Preferences', self.restore_button),
         ]
         self.advanced = ExpandableCard(self)
         for card in self._settings_cards['render']:
@@ -637,7 +599,6 @@ class PreferencesPage(Page):
         self.settings_deck=CardDeck(deck)
         self.content.addWidget(self.settings_deck)
         self.content.addWidget(self.advanced)
-        self.content.addLayout(self._restore_row)
         self.expansion_follower = ExpansionFollower(self)
         self.refresh_appearance()
 
@@ -673,15 +634,13 @@ class PreferencesPage(Page):
 
         ranked = []
         if self._search_words is None:
-            aliases = {self.sound_toggle: 'Glass Sound Click Tone Volume',
-                self.design_tiles[0]: 'Theme Design Preview', self.accent_combo: 'Accent Color Colour Custom',
+            aliases = {self.design_tiles[0]: 'Theme Design Preview', self.accent_combo: 'Accent Color Colour Custom',
                 self.background_combo: 'Background Image Wallpaper', self.motion_combo: 'Animation Motion Transition',
                 self.hud_on: 'MiniHUD Show Enable', self.hud_size: 'MiniHUD Size Layout',
                 self.hud_opacity: 'MiniHUD Opacity Transparency', self.close_to_tray: 'Tray Close Window',
                 self.interval: 'Refresh Interval Live Monitoring', self.alert_toggle: 'Alerts Threshold Temperature',
                 self.eco_toggle: 'Ultra Eco Energy Power Saving Restart', self.restore_button: 'Reset Restore Defaults',
-                self.render_combo: 'Graphics Renderer Rendering Backend', self.clear_cache_btn: 'Maintenance Clear Cache',
-                self.clear_preferences_btn: 'Delete Personal Preferences', self.advanced.header: 'Advanced Settings'}
+                self.render_combo: 'Graphics Renderer Rendering Backend', self._maintenance_card: 'Maintenance', self.advanced.header: 'Advanced Settings'}
             self._search_words = [self._search_normalize(terms+' '+self.SEARCH_CATEGORIES[key]+' '+
                 tr(terms.split(' ')[0])+' '+aliases.get(target, '')).split()
                 for key, terms, target in self._search_targets]
@@ -702,10 +661,16 @@ class PreferencesPage(Page):
             if len(matches) == len(tokens):
                 primary = self._search_normalize(terms.split(' ')[0]+' '+tr(terms.split(' ')[0]))
                 bonus = 2 if any(primary.startswith(token) for token in tokens if len(token) >= 3) else 0
+                if not bonus and any(SequenceMatcher(None,token,word).ratio()>=.72
+                        for token in tokens if len(token)>=3 for word in primary.split()):
+                    bonus=1
                 ranked.append((sum(matches)+bonus, index, key, terms))
         ranked.sort(key=lambda entry: (-entry[0], entry[1]))
+        titles = {self.hud_on: 'MiniHUD anzeigen', self.hud_size: 'MiniHUD-Größe',
+                  self.hud_opacity: 'MiniHUD-Deckkraft'}
         for _score, index, key, terms in ranked[:7]:
-            item = QListWidgetItem(tr(terms.split(' ')[0]) + '  ·  ' +
+            target = self._search_targets[index][2]
+            item = QListWidgetItem(tr(titles.get(target, terms.split(' ')[0])) + '  ·  ' +
                                    tr(self.SEARCH_CATEGORIES[key]))
             item.setData(Qt.UserRole, index)
             self.search_results.addItem(item)
@@ -715,7 +680,13 @@ class PreferencesPage(Page):
         self.search_overlay.suggestions_changed()
         # Navigate only when the leading match is distinct; keep typing in the
         # search field and wait briefly so successive prefixes do not jerk it.
-        distinct = ranked and (len(ranked) == 1 or ranked[0][0] > ranked[1][0])
+        # Prefixes such as MiniH/MiniHU tie across show/layout/opacity. These
+        # are one subject, so predict its first control instead of suppressing
+        # navigation. Keep genuinely different subjects ambiguous.
+        leading = [entry for entry in ranked if entry[0] == ranked[0][0]] if ranked else []
+        subjects = {(entry[2], self._search_normalize(entry[3].split(' ')[0]))
+                    for entry in leading}
+        distinct = bool(leading) and len(subjects) == 1
         candidate = (self._search_targets[ranked[0][1]][2]
                      if distinct and max(map(len, tokens)) >= 3 else None)
         self.search_navigation.predict(candidate)
@@ -855,37 +826,6 @@ class PreferencesPage(Page):
         self.render_status.setText(status)
         self.render_restart_button.setVisible(selected != active)
 
-    def clear_app_cache(self):
-        """Drop only transient Vitalux-render caches, never user/system data."""
-        from . import user_background, wallpaper_accents
-        user_background._scaled_image.cache_clear()
-        wallpaper_accents._sample.cache_clear()
-        self._background_preview_key = None
-        self.sync_background_controls()
-        QMessageBox.information(
-            self, 'Vitalux', tr('Temporärer Vitalux-Bild- und Farb-Cache geleert. '
-                              'Einstellungen und importierte Bilder bleiben erhalten.'))
-
-    def delete_personal_preferences(self):
-        """Reset the active profile and guide without reimporting Stable."""
-        from . import profiles
-        answer = QMessageBox.question(
-            self, 'Vitalux',
-            tr('Wirklich alle gespeicherten Vitalux-Einstellungen löschen? '
-               'Farbauswahl, Layouts, Warnwerte und Programmeinstellungen gehen verloren. '
-               'Importierte Bilddateien bleiben auf dem Datenträger. '
-               'Vitalux wird anschließend neu gestartet.'),
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-        if answer != QMessageBox.Yes:
-            return
-        def commit():
-            try:
-                return profiles.reset_preferences(settings.PATH)
-            except OSError as exc:
-                QMessageBox.warning(self, 'Vitalux', str(exc))
-                return False
-        self._restart_after_reset(commit)
-
     def _restart_after_reset(self, commit):
         if self.window.restart_for_renderer(commit=commit):
             self.restore_reveal.setRevealed(False)
@@ -947,26 +887,36 @@ class PreferencesPage(Page):
             if button is not None:
                 self._reset_reveals[section].setRevealed(any(values[key] != self.DEFAULTS[key] for key in keys))
         self.restore_reveal.setRevealed(
-            any(values[key] != default for key, default in self.DEFAULTS.items()))
+            any(values[key] != default for key, default in self.DEFAULTS.items()) or
+            any(settings.get(key) for key in ('custom_accents', 'custom_backgrounds', 'dashboard_order',
+                'dashboard_hidden', 'dashboard_layout', 'lang')))
 
     def restore_defaults(self):
         answer = QMessageBox.question(
             self, 'Vitalux',
-            tr('Alle Darstellungs-, MiniHUD-, Überwachungs- und Warnungseinstellungen zurücksetzen? Dashboard-Anordnung, importierte Bilder und Sprache bleiben erhalten. Vitalux wird anschließend neu gestartet.'),
+            tr('Alle Einstellungen dieses Profils zurücksetzen und eigene Farben, Layouts, '
+               'importierte Hintergrundbildkopien und den Vitalux-Cache löschen? '
+               'Design, Sprache, Warnwerte und Grafik-Renderer werden auf Standard gesetzt. '
+               'Originalbilder und das andere Updateprofil bleiben erhalten. '
+               'Vitalux startet anschließend neu und zeigt die Anleitung.'),
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if answer != QMessageBox.Yes:
             return
-        self._restart_after_reset(lambda: settings.set_many(self.DEFAULTS))
+        from . import profiles
+        def commit():
+            try:
+                return profiles.reset_preferences(settings.PATH)
+            except OSError as exc:
+                QMessageBox.warning(self, 'Vitalux',
+                    tr('Zurücksetzen konnte nicht vollständig abgeschlossen werden:')+' '+str(exc))
+                return False
+        self._restart_after_reset(commit)
 
     def refresh_appearance(self):
         ultra = eco.enabled()
         self.design_gallery_scroll.sync()
         self.settings_deck.sync()
-        self._check_without_signal(self.sound_toggle, settings.get('ui_sounds', True))
-        self.sound_volume.blockSignals(True)
-        self.sound_volume.setValue(settings.get('ui_sound_volume', 50))
-        self.sound_volume.blockSignals(False)
-        self.sound_volume_value.setText(str(self.sound_volume.value())+' %')
+
         self.eco_toggle.blockSignals(True)
         self.eco_toggle.setChecked(ultra)
         self.eco_toggle.blockSignals(False)
