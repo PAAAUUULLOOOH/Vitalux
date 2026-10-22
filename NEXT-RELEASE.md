@@ -2,7 +2,7 @@
 
 Owner explicitly authorizes restoring the separate designs and publishing an Unstable update. This supersedes the appearance consolidation from .5/.6 and the subsequent UI/Black Glass background proposals. Main remains at v0.9.6.2.
 
-Local candidate validation: 69/69 regression scripts pass, including migration/backup/reset, fixed capabilities, live design switches, and real slow/stalled HTTPS cancel/retry. All five native renderers and 100/125/150/200% compact layouts pass. Actual candidate screenshots show all thirteen separate designs.
+Local candidate validation: 69/69 regression scripts pass, including migration/backup/reset, fixed capabilities, live design switches, and real slow/stalled HTTPS cancel/retry. All five native renderers and 100/125/150/200% compact layouts pass. Actual candidate screenshots show all thirteen separate designs. The assembled portable distribution passes license/source, documentation-link, runtime-cleanliness and executable-bit checks.
 
 - Restore the thirteen standalone designs, their original names, palettes, backgrounds, capability indicators and compact appearance controls from Unstable .4. Obsidian Gold remains the default. Black Glass and Black Glass Gold are separate designs again. Retain the dark Obsidian-style Liquid Silver; do not restore the removed light Liquid Silver or Liquid Chrome.
 - Migrate combined .5/.6 profiles once with a local backup, recover matching original fixed variants and dormant editable choices, and retain custom colors, personal images, dashboard preferences and Stable isolation. Keep a snapshot of the combined appearance for recovery. Explicit resets remain fresh profiles and reopen the guide.

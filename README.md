@@ -60,7 +60,7 @@ Choose a design in **Settings → Appearance**. Hover or keyboard-focus a previe
 <details>
 <summary>Preview the designs</summary>
 
-![Thirteen separate designs with Obsidian Gold selected](docs/screenshots/v0.9.6.3-unstable.7/appearance.png)
+![Thirteen separate designs with Obsidian Gold selected](assets/vitalux-designs-preview.png)
 
 </details>
 
