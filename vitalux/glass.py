@@ -62,7 +62,7 @@ class _AmbientSceneCore:
         self._composed_key = None
         style = backdrops.resolve(settings.get('background_style', 'theme_default'),
                                   theme.mode())
-        active = style in backdrops.ANIMATED_PRESETS
+        active = style in backdrops.ANIMATED_PRESETS and theme.mode() != 'holographic'
         if active and not self._wallpaper_timer.isActive():
             self._wallpaper_timer.start()
         elif not active:
@@ -140,7 +140,7 @@ class _AmbientSceneCore:
         self._render_key = None
         material = style
         if material != self._asset_mode:
-            prefix = 'black-glass' if material in ('black_glass','black_glass_gold') else 'glass'
+            prefix = 'black-glass' if material == 'black_glass' else 'glass'
             self._wallpaper = QPixmap(str(ASSETS / (prefix + '-atmosphere.jpg')))
             self._soft_wallpaper = QPixmap(str(ASSETS / (prefix + '-atmosphere-blur.jpg')))
             self._asset_mode = material
@@ -172,6 +172,26 @@ class _AmbientSceneCore:
         sampled the un-tinted original. Light wallpapers with Glass therefore
         gave three incompatible colors. Compose once and share that result.
         """
+        if theme.mode() in premium.KEYS:
+            key = (theme.mode(), theme.accent(), self.size())
+            if key != self._composed_key or self._composed_sharp.isNull():
+                self._composed_sharp = premium.scene_pixmap(self.size(), theme.mode())
+                tiny = self._composed_sharp.scaled(
+                    max(14, self.width()//16), max(14, self.height()//16),
+                    Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
+                self._composed_soft = tiny.scaled(
+                    self.size(), Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
+                self._composed_key = key
+            return
+        if theme.mode() == 'holographic':
+            # No wallpaper blur, compositing, glass sampling or animation.
+            key = ('holographic', self.size(), theme.accent())
+            if key != self._composed_key or self._composed_sharp.isNull():
+                from .holographic import scene_pixmap
+                self._composed_sharp = scene_pixmap(self.size(), theme.accent())
+                self._composed_soft = self._composed_sharp
+                self._composed_key = key
+            return
         style = backdrops.resolve(settings.get('background_style', 'theme_default'),
                                   theme.mode())
         if style == 'minimal' and theme.mode() == 'minimal':
@@ -185,7 +205,7 @@ class _AmbientSceneCore:
         moving = self._wallpaper_timer.isActive()
         key = (theme.mode(), style, theme.accent(), self.size(),
                round(self._phase, 4) if moving else 0,
-               self._asset_mode, self._render_key, settings.get('background_tint',''))
+               self._asset_mode, self._render_key)
         if key == self._composed_key and not self._composed_sharp.isNull():
             return
         canvas = self._sharp_cache.copy()
@@ -197,7 +217,7 @@ class _AmbientSceneCore:
         # intended palette; the card and sidebar materials provide legibility.
         # Only the original Glass / Black Glass atmosphere retains its
         # purpose-designed shading.
-        if style in ('glass', 'black_glass'):
+        if style == theme.mode() and style in ('glass', 'black_glass', 'black_glass_gold'):
             wash = QLinearGradient(0, 0, canvas.width(), canvas.height())
             if style == 'black_glass':
                 wash.setColorAt(0, rgba(0, 0, 0, 109))
@@ -208,11 +228,7 @@ class _AmbientSceneCore:
             painter.fillRect(full, QBrush(wash))
         painter.end()
 
-        canvas = backdrops.tint(canvas, settings.get('background_tint',''))
         self._composed_sharp = canvas
-        if theme.mode() == 'holographic':
-            self._composed_soft=canvas;self._composed_key=key
-            return
         # The sidebar shows the precise same canvas. Cards use a blur derived
         # from that *same final image*, not from an incompatible raw palette.
         divisor = 10

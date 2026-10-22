@@ -1,5 +1,10 @@
 # Vitalux – Changes
 
+## [v0.9.6.3-unstable.7] - 2026-10-22
+- All thirteen designs return as separate choices, including Obsidian Gold, Black Glass, Black Glass Gold, Champagne Glass, Aurora Gold and Liquid Silver. Obsidian Gold remains the default.
+- Each premium design again uses its own coordinated palette and background. Background and accent controls return to their compact selectors; fixed options are greyed out.
+- Preferences from the combined-design builds return to the corresponding standalone designs with local backups, retaining personal images, saved colors and other settings.
+
 ## [v0.9.6.3-unstable.6] - 2026-10-22
 - Leaving automatic accents from a personal wallpaper restores the previous Design colors selection. Obsidian returns to its original gold palette instead of Vitalux Blue.
 

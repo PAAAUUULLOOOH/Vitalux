@@ -28,9 +28,7 @@ prepare('aurora_gold')
 from vitalux import settings
 from vitalux.update_manager import UpdateManager
 assert Path(settings.PATH).resolve().is_relative_to(Path('design-test-data').resolve())
-assert settings.get('theme') == 'obsidian_gold'
-assert settings.get('background_style')=='aurora_gold'
-assert settings.get('accent')=='#ecc784'
+assert settings.get('theme') == 'aurora_gold'
 assert settings.get('render_backend') == 'software'
 app = QApplication([])
 manager = UpdateManager()
@@ -42,9 +40,9 @@ manager.url = 'https://invalid.example/never-download.zip'
 manager.install()
 assert manager._thread is None
 manager.shutdown()
-settings.set('theme', 'eclipse_crystal')
+settings.set('theme', 'champagne_glass')
 prepare()
-assert settings.get('theme') == 'eclipse_crystal'
+assert settings.get('theme') == 'champagne_glass'
 '''
         subprocess.run([sys.executable, '-c', code], cwd=directory,
                        env=env, check=True, timeout=15)

@@ -60,7 +60,7 @@ def check_preferences(app):
 
             # Themes are selected solely through ten preview buttons.
             assert not hasattr(page, 'mode')
-            assert len(page.design_tiles) == 9
+            assert len(page.design_tiles) == 13
             assert 150 <= page.accent_combo.width() <= 240
             assert page.accent_combo.toolTip() == page.accent_combo.currentText()
             width_before = page.accent_combo.width()
@@ -108,7 +108,7 @@ def check_preferences(app):
             app.processEvents()
             # Backdrop controls persist independently of the color scheme and
             # preserve the readable dropdown styles.
-            assert page.background_combo.count() == 23  # 22 presets + imported image option
+            assert page.background_combo.count() == 15  # 14 presets + imported image option
             assert page.background_combo.findData('custom_image') >= 0
             assert page.background_combo.findData('aurora') == -1
             assert page.background_combo.findData('obsidian') == -1
@@ -143,7 +143,7 @@ def check_preferences(app):
             assert page.background_combo.findData('theme_default') >= 0
             assert [page.background_combo.itemText(page.background_combo.findData(key))
                     for key in ('dark', 'light', 'glass', 'black_glass', 'minimal')] == [
-                    'Dark', 'Light', 'Glass', 'Black Glass · Original', 'Minimalistisch']
+                    'Dark', 'Light', 'Glass', 'Black Glass', 'Minimalistisch']
             assert not hasattr(page, 'background_sliders')
             assert not hasattr(page, 'background_values')
             for name in ('animated_sparkle', 'adaptive'):
@@ -163,7 +163,7 @@ def check_preferences(app):
                 css = theme.stylesheet()
                 assert "QComboBox::drop-down" in css
                 assert "width: 25px; border: none; border-left: 1px solid" in css
-                for dropdown in (page.interval,
+                for dropdown in (page.accent_combo, page.interval,
                                  page.motion_combo, smart.selector):
                     app.processEvents()
                     assert dropdown.view().frameShape() == QFrame.NoFrame
@@ -293,7 +293,7 @@ def check_preferences(app):
             page2.accent_combo.retranslate()
             page2.edit_custom_accent_button.retranslate()
             page2.remove_custom_accent_button.retranslate()
-            assert page2.accent_combo.findData("auto") >= 0
+            assert page2.accent_combo.findData("auto") == 0
             assert page2.edit_custom_accent_button.text() == "Edit"
             assert page2.remove_custom_accent_button.text() == "Delete"
             i18n.set_lang("de")

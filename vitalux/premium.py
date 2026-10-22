@@ -45,16 +45,14 @@ COLLECTIONS['liquid_silver'] = dict(
     track='#2a3543', grid='#2b3442', text='#edf2f7', muted='#afbdc9',
     accent='#b9ccdc', secondary='#e3edf5', light='#657f97', bloom='#34465b',
     shadow='#101b27', series=('#b9ccdc','#e3edf5','#7b95aa','#a7bbcc'))
-SCENE_KEYS = tuple(COLLECTIONS)
-KEYS = ('obsidian_gold', 'aether_glass', 'eclipse_crystal')
+KEYS = tuple(COLLECTIONS)
 
 
 def palette(mode=None):
     if mode is None:
         from . import theme
         mode = theme.mode()
-    from . import theme
-    return theme.material_palette(COLLECTIONS[mode]) if mode == theme.mode() else COLLECTIONS[mode]
+    return COLLECTIONS[mode]
 
 
 def color(value, alpha=255):
@@ -73,7 +71,7 @@ def scene_pixmap(size, mode):
     """Fixed geometry and soft light; independent of frame rate or sensors."""
     if mode in signature_designs.KEYS:
         return signature_designs.scene_pixmap(size,mode)
-    pal = COLLECTIONS[mode]
+    pal = palette(mode)
     w, h = max(1, size.width()), max(1, size.height())
     pixmap = QPixmap(w, h)
     pixmap.fill(QColor(pal['bg']))

@@ -126,16 +126,11 @@ def scene_pixmap(size, mode):
     return pixmap
 
 
-def material_palette(mode):
-    from . import theme
-    return theme.material_palette(COLLECTIONS[mode])
-
-
 def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
     from . import theme
     from .glass import draw_frosted_backdrop
     mode = theme.mode()
-    pal = material_palette(mode)
+    pal = COLLECTIONS[mode]
     path = shape(rect,mode,compact)
     p.save()
     p.setClipPath(path)
@@ -206,7 +201,7 @@ def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
 
 
 def stylesheet(mode):
-    pal=material_palette(mode)
+    pal=COLLECTIONS[mode]
     radius=9 if mode=='aether_glass' else 3
     return f'''
     #heroTitle {{font-size:20px;font-weight:650;color:{pal['text']};}}
@@ -239,7 +234,7 @@ def paint_navigation(button):
     p.setRenderHint(QPainter.Antialiasing)
     rect=QRectF(button.rect()).adjusted(3,3,-3,-3)
     selected=button.isChecked()
-    pal=material_palette(theme.mode())
+    pal=COLLECTIONS[theme.mode()]
     if selected:
         paint_panel(p,button,rect,compact=True,active=True)
         if theme.mode()=='eclipse_crystal':
@@ -275,7 +270,7 @@ def paint_navigation(button):
 
 def paint_toggle(p,rect,checked,progress):
     from . import theme
-    pal=material_palette(theme.mode())
+    pal=COLLECTIONS[theme.mode()]
     p.setPen(QPen(color(pal['accent'] if checked else pal['border']),.8))
     p.setBrush(color(pal['track']))
     p.drawPath(shape(rect,theme.mode(),True))
@@ -401,7 +396,7 @@ class Metric(QWidget):
         p=QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
         p.setRenderHint(QPainter.TextAntialiasing)
-        pal=material_palette(theme.mode())
+        pal=COLLECTIONS[theme.mode()]
         rect=QRectF(self.rect()).adjusted(5,3,-5,-3)
         width=rect.width()
         font=QFont(self.font())

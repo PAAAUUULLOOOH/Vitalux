@@ -46,7 +46,7 @@ def run():
             assert page.custom_accent_button.isEnabled()
             assert page.accent_combo.model().item(custom).isEnabled()
 
-            page.select_design("black_glass_gold")
+            page.select_design("black_glass")
             app.processEvents()
             assert page.accent_combo.isEnabled(), "Built-in colors must remain available"
             assert page.accent_combo.model().item(preset).isEnabled()
@@ -73,11 +73,12 @@ def run():
             assert page.accent_combo.findData('#736495') == -1
             assert settings.get('custom_accents') == [dict(name='Mein Petrol', color='#123456')]
 
-            page.select_design('obsidian_gold')
-            assert page.custom_accent_button.isEnabled()
-            page.change_accent('#b9ccdc')
-            assert theme.accent()=='#b9ccdc'
-            assert settings.get('theme')=='obsidian_gold'
+            page.select_design('liquid_silver')
+            with patch('vitalux.control.QColorDialog.getColor') as dialog:
+                page.custom_accent_button.click()
+                page.custom_accent(page.accent_combo)
+                assert not dialog.called
+            assert not page.custom_accent_button.isEnabled()
 
             page.select_design("glass")
             app.processEvents()

@@ -25,7 +25,6 @@ def run():
     before = theme.mode()
     try:
         theme.set_mode('black_glass_gold')
-        theme.set_accent('#f3cd79')
         chart = ChartPanel(
             ['CPU', 'GPU', 'RAM'],
             [theme.accent(), theme.secondary_accent(), theme.TEAL])

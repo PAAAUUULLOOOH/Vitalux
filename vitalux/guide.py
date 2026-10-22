@@ -75,8 +75,8 @@ SLIDES = [
     ),
     (
         "Darstellung und Einstellungen",
-        "Neun eigenständige Designs bleiben: Obsidian ist das bisherige Obsidian Gold mit unverändertem Gold-Look als Standard. Black Glass ersetzt Black Glass Gold. Reine Obsidian-Varianten sind zusammengeführt.",
-        "Design, Hintergrund und Akzentfarben stehen in getrennten Bereichen. Alle bisherigen Hintergründe, fertigen Farbakzente und eigene Farben lassen sich mit jedem Design kombinieren. Eigene Bilder und Hintergrundtönung findest du direkt unter Hintergrund.",
+        "Alle dreizehn Designs stehen im gleichen Vorschau-Raster. Kleine Symbole erscheinen beim Darüberfahren rechts mittig untereinander: Farbkreis für Akzentfarben, Bildsymbol für Hintergründe; verfügbare Optionen sind farbig, feste Optionen grau, ohne Schlösser.",
+        "Bei anpassbaren Designs wählst du integrierte Hintergründe oder eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
         "Die Suche gleitet zu Treffern und schließt fünf Sekunden nach der Auswahl weich. Beim Öffnen der erweiterten Einstellungen scrollt die Seite mit; dort liegen Grafik-Renderer und Wartung.",
         "Zurücksetzen-Buttons blenden weich ein und aus. Ganz unten setzt du alle Standardwerte wieder her und startest Vitalux neu; einzelne Bereiche benötigen keinen Neustart. Das Logo zeigt einen sanften Herzschlagimpuls.",
         "settings",

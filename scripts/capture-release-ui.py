@@ -30,9 +30,8 @@ def capture(output, language, checks, warmup, design='obsidian_gold'):
             time.sleep(min(.012,max(0,deadline-time.monotonic())))
     i18n.set_lang(language)
     settings.set_many({'theme': design, 'close_to_tray': False,
-                       'first_start_guide_seen': True, 'ui_sounds': False, 'accent': 'design_default'})
+                       'first_start_guide_seen': True, 'ui_sounds': False})
     theme.set_mode(design)
-    theme.set_accent(theme.default_accent())
     app.setStyleSheet(theme.stylesheet())
     info = distro.info()
     window = MainWindow(info, load_logo(info, 96), UpdateManager())
@@ -73,7 +72,7 @@ def capture(output, language, checks, warmup, design='obsidian_gold'):
         wait(500)
         page.accent_combo.setCurrentIndex(page.accent_combo.findData('#52d3ff'))
         wait(500)
-        destination = page.accent_swatch_host.mapTo(page, QPoint()).y()-100
+        destination = page.accent_combo.mapTo(page, QPoint()).y()-100
         scroll.verticalScrollBar().setValue(destination)
         assert window.grab().save(str(output/'accent-color.png'))
         results = {'scale': window.devicePixelRatioF(), 'native_capture': True, 'language': language}
@@ -81,7 +80,7 @@ def capture(output, language, checks, warmup, design='obsidian_gold'):
             window.resize(800, 560)
             wait(500)
             assert page.width() <= scroll.viewport().width()+2, (page.width(), scroll.viewport().width())
-            for control in (page.accent_swatch_host, page.accent_preview, page.render_combo,
+            for control in (page.accent_combo, page.accent_preview, page.render_combo,
                             page.clear_cache_btn, page.clear_preferences_btn):
                 assert control.mapTo(page, QPoint(control.width(), 0)).x() <= page.width()
             from PySide6.QtWidgets import QLabel

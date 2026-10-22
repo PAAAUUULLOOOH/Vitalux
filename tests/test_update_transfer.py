@@ -89,7 +89,7 @@ with tempfile.TemporaryDirectory(prefix='vitalux-transfer-') as folder:
                 assert owned.read_bytes()==b'old image'
                 assert profiles.selected()=='unstable' and manager.progress_value==100
                 for mode,_ in theme.CHOICES:
-                    theme.set_mode(mode);theme.set_accent(theme.default_accent());app.setStyleSheet(theme.stylesheet())
+                    theme.set_mode(mode);theme.set_accent('#4f8cff');app.setStyleSheet(theme.stylesheet())
                     for value in (0,27,50,81,100):
                         page._progress(value);assert page.progress_bar.value==value
                         assert page.progress_bar.accessibleDescription()==f'{value}%'

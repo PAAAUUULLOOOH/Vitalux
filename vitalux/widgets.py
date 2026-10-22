@@ -181,8 +181,8 @@ class Gauge(QWidget):
     def _ring_color(self, value):
         if theme.mode() == 'black_glass_gold':
             if self.semantic == 'score':
-                return theme.accent() if value is None or value >= 86 else (
-                    QColor(theme.accent()).darker(112 if value >= 66 else 135).name())
+                return '#f3cd79' if value is None or value >= 86 else (
+                    '#dfb963' if value >= 66 else '#bb8c45')
             return theme.level_color(value)
         if self.semantic == 'score':
             if value is None or value >= 86:
@@ -611,12 +611,7 @@ class ChartPanel(QWidget):
         if theme.mode() in premium.KEYS:
             return premium.palette()['series'][idx % 4]
         if theme.mode() == 'black_glass_gold':
-            if theme.source_accent()=='#f3cd79':
-                return ("#ffe5a0", "#e0b55d", "#f4cf81", "#ba8739")[idx % 4]
-            from .appearance import authored
-            selected=authored(theme.source_accent())
-            if selected:return selected['series'][idx % 4]
-            return (theme.accent(), theme.secondary_accent(), QColor(theme.accent()).lighter(115).name(), QColor(theme.accent()).darker(125).name())[idx % 4]
+            return ("#ffe5a0", "#e0b55d", "#f4cf81", "#ba8739")[idx % 4]
         role = self.color_roles[idx]
         if role == 'accent': return theme.accent()
         if role == 'secondary': return theme.secondary_accent()

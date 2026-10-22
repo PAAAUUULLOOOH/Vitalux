@@ -38,10 +38,12 @@ def run():
                     assert window.sampler is sampler and sampler.isRunning()
                     assert window.pulse_core._phase>=73,'Design change reset rotation phase'
                     if mode in ('aether_glass','eclipse_crystal'):
-                        assert not preferences.accent_combo.isLocked()
-                        assert not preferences.background_combo.isLocked()
-                        assert preferences.accent_combo.isEnabled()
-                        assert _brand_asset(False)=="brand/vitalux-wordmark-pink.svg"
+                        assert preferences.accent_combo.isLocked()
+                        assert preferences.background_combo.isLocked()
+                        assert not preferences.accent_combo.isEnabled()
+                        preferences.accent_combo.showPopup()
+                        assert not preferences.accent_combo.view().isVisible()
+                        assert _brand_asset(False)==f"brand/vitalux-wordmark-{mode.replace('_','-')}.svg"
                         assert window.pulse_core.parentWidget() is window.design_shell.brand
                         assert window.pages[0][1].design_metric_hosts['cpu'].currentIndex()==1
                         assert window.sidebar.isHidden()==(mode=='eclipse_crystal')

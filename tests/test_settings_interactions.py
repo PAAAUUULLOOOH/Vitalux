@@ -116,13 +116,13 @@ def run():
             QTest.keyClick(view, Qt.Key_Return)
             assert combo.currentIndex() == 1
             assert play.call_count == 2, play.call_count
-            page.select_design('obsidian_gold')
-            background = page.background_combo
-            assert not background.isLocked() and background.isEnabled()
-            tile=next(t for t in page.background_tiles if t.key=='aurora_gold')
-            tile.click()
-            assert settings.get('background_style')=='aurora_gold'
-            assert play.call_count == 3
+            page.select_design('aurora_gold')
+            fixed = page.background_combo
+            assert fixed.isLocked() and not fixed.isEnabled()
+            fixed.showPopup()
+            QTest.mouseClick(fixed, Qt.LeftButton)
+            assert not fixed.view().isVisible()
+            assert play.call_count == 2
 
         # Hover paints a small zoom without reflowing or rebuilding its backdrop.
         tile = page.design_tiles[0]

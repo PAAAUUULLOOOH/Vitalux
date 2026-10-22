@@ -61,7 +61,7 @@ def run():
             scroll = window.stack.currentWidget()
             assert page.accent_preview.width() == 38
             assert abs(page.accent_preview.mapTo(page, QPoint()).y()-
-                       page.selected_accent_label.mapTo(page, QPoint()).y()) < 15
+                       page.accent_combo.mapTo(page, QPoint()).y()) < 15
 
             # The final reset is outside the disclosure, below its full height.
             assert page.content.indexOf(page.advanced) == page.content.count()-2

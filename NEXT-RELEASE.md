@@ -1,3 +1,16 @@
+# Unstable restoration — v0.9.6.3-unstable.7
+
+Owner explicitly authorizes restoring the separate designs and publishing an Unstable update. This supersedes the appearance consolidation from .5/.6 and the subsequent UI/Black Glass background proposals. Main remains at v0.9.6.2.
+
+Local candidate validation: 69/69 regression scripts pass, including migration/backup/reset, fixed capabilities, live design switches, and real slow/stalled HTTPS cancel/retry. All five native renderers and 100/125/150/200% compact layouts pass. Actual candidate screenshots show all thirteen separate designs.
+
+- Restore the thirteen standalone designs, their original names, palettes, backgrounds, capability indicators and compact appearance controls from Unstable .4. Obsidian Gold remains the default. Black Glass and Black Glass Gold are separate designs again. Retain the dark Obsidian-style Liquid Silver; do not restore the removed light Liquid Silver or Liquid Chrome.
+- Migrate combined .5/.6 profiles once with a local backup, recover matching original fixed variants and dormant editable choices, and retain custom colors, personal images, dashboard preferences and Stable isolation. Keep a snapshot of the combined appearance for recovery. Explicit resets remain fresh profiles and reopen the guide.
+- Retain the improved updater, centered percentage, smaller-chunk progress, bounded idle timeouts, cancellation/retry, verification and automatic restart. Retain the no-op appearance transition fix.
+- Update the compact English README, user guide, native DE/EN help and app-only changelogs. Preserve animated brand assets, licenses and third-party source offers.
+
+---
+
 # Unstable follow-up — v0.9.6.3-unstable.6
 
 Final verification of the authorized appearance/update release found that the existing wallpaper-auto fallback did not recognize the new `design_default` choice and fell back to blue. Preserve that choice alongside manual/distribution colors. Extend the real PreferencesPage test through image selection, automatic accent selection and background deselection; retain all v0.9.6.3-unstable.5 changes and isolated profiles. Publish this small follow-up on the same rolling Unstable entry; Main remains unchanged. English docs and app-only DE/EN notes are updated.

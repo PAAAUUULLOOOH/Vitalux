@@ -1,56 +1,64 @@
-"""Merged skins preserve visible palettes/backgrounds and isolate Stable profiles."""
-import os,sys,tempfile
+"""Obsidian geometry in silver, fixed capabilities and safe removed-skin migration."""
+import os,sys,tempfile,time
 from pathlib import Path
 from unittest.mock import patch
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from PySide6.QtGui import QColor
+from PySide6.QtGui import QColor,QPalette
 from PySide6.QtWidgets import QApplication
-from vitalux import appearance,profiles,theme,premium,brand,wallpaper_accents
-app=QApplication.instance() or QApplication([])
+from vitalux import distro,settings,theme,brand,design_capabilities,profiles
+from vitalux.logo import load_logo
+from vitalux.window import MainWindow
+from vitalux.update_manager import UpdateManager
 
-with tempfile.TemporaryDirectory(prefix='vitalux-appearance-migration-') as folder,patch.dict(os.environ,{f'XDG_{kind.upper()}_HOME':str(Path(folder)/kind) for kind in profiles.KINDS}):
+app=QApplication.instance() or QApplication([]);app.setQuitOnLastWindowClosed(False)
+def wait(ms):
+    deadline=time.monotonic()+ms/1000
+    while time.monotonic()<deadline:app.processEvents();time.sleep(.01)
+
+with tempfile.TemporaryDirectory(prefix='vitalux-silver-') as folder,patch.object(settings,'PATH',str(Path(folder)/'settings.json')):
+    settings.set_many(dict(theme='obsidian_gold',accent='#f472b6',background_style='prism',close_to_tray=False,ui_sounds=False,motion='off'))
+    theme.set_mode('obsidian_gold');app.setStyleSheet(theme.stylesheet())
+    info=distro.info();manager=UpdateManager();manager._timer.stop()
+    win=MainWindow(info,load_logo(info,96),manager);win.resize(1380,1000);win.show();wait(300)
+    try:
+        overview=win.pages[0][1];page=dict(win.pages)['Einstellungen']
+        geometry=(win.sidebar.width(),win.pulse_core.size(),overview.board._render_positions(),overview.graph_load.graph.minimumHeight())
+        sampler=win.sampler
+        page.select_design('liquid_silver');wait(300)
+        assert not theme.is_light() and QColor(theme.BG).lightness()<30
+        contrast=(theme._luminance(QColor(theme.TEXT))+.05)/(theme._luminance(QColor(theme.CARD))+.05)
+        assert contrast>10,contrast
+        assert geometry==(win.sidebar.width(),win.pulse_core.size(),overview.board._render_positions(),overview.graph_load.graph.minimumHeight())
+        assert all(host.currentIndex()==0 for host in overview.design_metric_hosts.values())
+        assert win.sampler is sampler and sampler.isRunning()
+        assert len(theme.CHOICES)==13 and 'liquid_chrome' not in dict(theme.CHOICES)
+        assert 'liquid-silver.svg' in brand._brand_asset(False)
+        assert b'#718ba2' in brand._themed_svg(True)
+        assert not any(design_capabilities.capabilities('liquid_silver').values())
+        assert not page.custom_accent_button.isEnabled()
+        assert page.custom_accent_button.palette().color(QPalette.Disabled,QPalette.ButtonText).name()=='#9299a3'
+        assert page.background_combo.isLocked() and page.accent_combo.isLocked()
+        settings.set('motion','smooth');win.apply_appearance();wait(350)
+        assert win.pulse_core._timer.isActive() and win.brand_mark._timer.isActive()
+        page.select_design('glass');wait(350)
+        assert settings.get('accent')=='#f472b6' and settings.get('background_style')=='prism'
+    finally:
+        win.quit_from_tray();wait(400);assert win.isHidden()
+
+with tempfile.TemporaryDirectory(prefix='vitalux-skin-migration-') as folder,patch.dict(os.environ,{f'XDG_{kind.upper()}_HOME':str(Path(folder)/kind) for kind in profiles.KINDS}):
     stable=profiles.directory('config','stable')/'settings.json'
     profiles.atomic_json(stable,dict(theme='glass',lang='de'))
     stable_bytes=stable.read_bytes()
     target=profiles.directory('config')/'settings.json'
-    for source in ('obsidian_gold','champagne_glass','aurora_gold','liquid_silver','liquid_chrome','black_glass_gold','black_glass'):
-        before=dict(theme=source,accent='#f472b6',background_style='prism',dashboard_hidden=['gpu'],custom_accents=[dict(name='Pink',color='#d6498e')])
-        profiles.atomic_json(target,before);profiles.initialize();after=profiles.read(target)
-        assert after['theme']==appearance.canonical(source)
-        if source!='black_glass':
-            origin='liquid_silver' if source=='liquid_chrome' else source
-            expected=premium.COLLECTIONS[origin]['accent'] if origin in premium.COLLECTIONS else '#f3cd79'
-            assert after['accent']==expected and after['background_style']==origin
-            assert after['accent_before_design_migration']=='#f472b6'
-            assert after['background_before_design_migration']=='prism'
-        else:assert after['accent']=='#f472b6' and after['background_style']=='prism'
-        assert after['dashboard_hidden']==['gpu'] and after['custom_accents']==before['custom_accents']
-        assert stable.read_bytes()==stable_bytes
-        raw=target.read_bytes();profiles.initialize();assert target.read_bytes()==raw
-        backups=list((profiles.root('config')/'profile-backups/unstable').glob('*/settings.json'))
-        assert any(profiles.read(p).get('theme')==source and '_appearance_revision' not in profiles.read(p) for p in backups)
-        changed=dict(after,accent='#123456',background_style='deep_ocean')
-        profiles.atomic_json(target,changed);profiles.initialize()
-        assert profiles.read(target)['accent']=='#123456' and profiles.read(target)['background_style']=='deep_ocean'
-    assert appearance.migrate(dict(theme='black_glass'))['background_style']=='black_glass'
-    for source in appearance.MERGED:
-        theme.set_mode(source);assert theme.mode()==appearance.canonical(source)
-    profiles.reset_preferences(target);profiles.initialize()
-    assert profiles.read(target).get('accent','design_default')=='design_default'
-    assert profiles.read(target).get('theme','obsidian_gold')=='obsidian_gold'
+    before=dict(theme='liquid_chrome',accent='#f472b6',background_style='prism',dashboard_hidden=['gpu'])
+    profiles.atomic_json(target,before)
+    profiles.initialize()
+    after=profiles.read(target)
+    assert after['theme']=='liquid_silver'
+    assert all(after[k]==v for k,v in before.items() if k!='theme')
     assert stable.read_bytes()==stable_bytes
-
-# The renamed default keeps the original material roles and authored identity.
-theme.set_mode('obsidian_gold');theme.set_accent(wallpaper_accents.resolve_accent('design_default'))
-assert theme.accent()=='#e5c17b' and premium.palette()==premium.COLLECTIONS['obsidian_gold']
-assert brand._brand_asset(True).endswith('pulse-obsidian-gold.svg')
-assert dict(theme.CHOICES)['obsidian_gold']=='Obsidian'
-assert dict(theme.CHOICES)['black_glass_gold']=='Black Glass'
-for title,color in appearance.ACCENTS:
-    for key,_ in theme.CHOICES:
-        theme.set_mode(key);theme.set_accent(color)
-        assert QColor(theme.accent()).isValid()
-        assert not brand.themed_icon_pixmap(80).isNull()
-        assert not brand.wordmark_pixmap(200,44).isNull()
-print('All merged skin migrations, backups, idempotence, original Obsidian Gold default and all-design preset SVG colors PASS')
+    backups=list((profiles.root('config')/'profile-backups/unstable').glob('*/settings.json'))
+    assert any(profiles.read(p).get('theme')=='liquid_chrome' for p in backups)
+    theme.set_mode('liquid_chrome');assert theme.mode()=='liquid_silver'
+print('Obsidian geometry, dark silver contrast/branding, fixed options, live animation and isolated backed-up skin migration PASS')
