@@ -45,6 +45,10 @@ def capture(output, language, checks, warmup, design='obsidian_gold'):
             remaining -= step
         assert window.last_sample is not None
         assert window.grab().save(str(output/'overview.png'))
+        diagnostic_index = next(i for i, (name, _) in enumerate(window.pages) if name == 'Diagnostic Center')
+        window.nav_buttons[diagnostic_index].click()
+        wait(180)
+        assert window.grab().save(str(output/'diagnostics.png'))
         index = next(i for i, (name, _) in enumerate(window.pages) if name == 'Einstellungen')
         page = window.pages[index][1]
         window.nav_buttons[index].click()

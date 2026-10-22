@@ -1090,3 +1090,41 @@ EN_MORE.update({
     'Setzt alle Einstellungen dieses Profils zurück: Design, Farben, Layouts, Sprache, Warnwerte und Grafik-Renderer. Gespeicherte eigene Farben, importierte Bildkopien und der Vitalux-Cache werden gelöscht. Originalbilder und das andere Updateprofil bleiben erhalten. Danach startet Vitalux neu und zeigt die Anleitung.': 'Resets all preferences in this profile: design, colors, layouts, language, warning thresholds and graphics renderer. Saved custom colors, imported image copies and the Vitalux cache are deleted. Original images and the other update profile are preserved. Vitalux then restarts and opens the guide.',
     'Alle Einstellungen dieses Profils zurücksetzen und eigene Farben, Layouts, importierte Hintergrundbildkopien und den Vitalux-Cache löschen? Design, Sprache, Warnwerte und Grafik-Renderer werden auf Standard gesetzt. Originalbilder und das andere Updateprofil bleiben erhalten. Vitalux startet anschließend neu und zeigt die Anleitung.': 'Reset all preferences in this profile and delete custom colors, layouts, imported wallpaper copies and the Vitalux cache? Design, language, warning thresholds and graphics renderer return to defaults. Original images and the other update profile are preserved. Vitalux then restarts and opens the guide.',
 })
+
+# Compact diagnostic events and measurement status.
+EN_MORE.update({
+    'Letzte Ereignisse': 'Recent events',
+    'LETZTE EREIGNISSE': 'RECENT EVENTS',
+    'Noch keine Ereignisse': 'No events yet',
+    'CPU-Rendering aktiviert': 'CPU rendering activated',
+    'Updateprüfung fehlgeschlagen': 'Update check failed',
+    'Updateinstallation fehlgeschlagen': 'Update installation failed',
+    'Update-Neustart fehlgeschlagen': 'Update restart failed',
+    'Kein Sensor erkannt': 'No sensor detected',
+    'Berechtigung fehlt': 'Permission required',
+    'Nicht unterstützt': 'Not supported',
+    'Vom Treiber nicht geliefert': 'Not reported by driver',
+    'Beim Schließen minimieren': 'Minimize on close',
+    'Grafik-Renderer': 'Graphics renderer',
+    'Im Bearbeitungsmodus bleiben „Zum Verschieben halten“ und das X sichtbar. Halten und ziehen, um Kacheln zu verschieben.': 'In edit mode, Hold to move and the X stay visible. Hold and drag to move tiles.',
+    'Die letzten fünf App-Ereignisse stehen im Diagnosezentrum: Warnwerte, Updatefehler und automatische Renderer-Wechsel.': 'The Diagnostic Center shows the last five app events: warnings, update failures and automatic renderer changes.',
+    'Fehlende Messwerte erhalten kurze Hinweise, wenn die Ursache bekannt ist. Logs wechseln bei etwa 5 MB in eine Sicherungsdatei.': 'Missing readings show short hints when their cause is known. Logs rotate at about 5 MB, retaining one backup.',
+})
+
+EN_MORE.update({'Warnwert überschritten': 'Warning threshold exceeded'})
+
+EN_MORE.update({
+    'Alle lokalen Diagnosen auf einmal (ohne externen Verbindungstest).': 'Run all local checks (without an external connection test).',
+    'Aktuelle Sensorwerte und konfigurierbare Warnschwellen.': 'Current readings and configurable warning thresholds.',
+    'Display-Verbindungen, Modi, Wayland und KScreen-Auskunft.': 'Display connections, modes, Wayland and KScreen details.',
+    'PCIe-GPU-Link, ausgehandelte Geschwindigkeit und Breite.': 'GPU PCIe link, negotiated speed and width.',
+    'Temperatursensoren und Abstand zu gesetzten Warnwerten.': 'Temperatures and distance to warning thresholds.',
+    'Kernel- und Treiberfehler aus dem erreichbaren Systemjournal.': 'Kernel and driver errors from the accessible system journal.',
+    'Schnittstellen und IP-Konfiguration. Verbindungstest nur auf Klick.': 'Interfaces and IP configuration. Connection tests run on request.',
+    'CPU- und RAM-intensive Prozesse in einer kurzen Stichprobe.': 'A short sample of processes using CPU and RAM.',
+    'Aktuellen Kernel, Desktop, Mesa und Hardware mit eigener Basis vergleichen.': 'Compare kernel, desktop, Mesa and hardware with your saved baseline.',
+    'Opt-in-Ereignisprotokoll mit Warnwertüberschreitungen.': 'Optional history of warning-threshold crossings.',
+    'Keine Untersuchung durchgeführt.\nDie Auswertung wird auf Wunsch gestartet.': 'No check performed.\nRun a check when needed.',
+    'Diagnose läuft: {}': 'Running diagnostics: {}',
+    'Abgeschlossen · {} · {}': 'Completed · {} · {}',
+})

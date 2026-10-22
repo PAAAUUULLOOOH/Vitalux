@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                                QPlainTextEdit, QTabWidget, QScrollArea, QFileDialog, QFrame, QComboBox)
 from .ui_locale import QPushButton, QCheckBox, QMessageBox
 from .widgets import Card, label
-from . import diagnostic_engine as engine, settings, theme
+from . import diagnostic_engine as engine, settings, theme, events
 from .i18n import tr
 from .pages import Page
 
@@ -31,6 +31,7 @@ class DiagnosticWorker(QThread):
 
 
 class DiagnosticCenter(Page):
+    EMPTY = 'Keine Untersuchung durchgeführt.\nDie Auswertung wird auf Wunsch gestartet.'
     SECTIONS = (
         ('all', 'Gesamtcheck', 'Alle lokalen Diagnosen auf einmal (ohne externen Verbindungstest).'),
         ('system', 'Systemcheck', 'Aktuelle Sensorwerte und konfigurierbare Warnschwellen.'),
@@ -63,6 +64,7 @@ class DiagnosticCenter(Page):
         self.worker = None
         self._reports = {}
         self.texts = {}
+        self._empty_keys = set()
         self.tabs = QTabWidget()
         self.tabs.setObjectName('diagnosticsTabs')
         self.tabs.setMinimumHeight(350)
@@ -159,13 +161,21 @@ class DiagnosticCenter(Page):
             readout.setReadOnly(True)
             readout.setLineWrapMode(QPlainTextEdit.WidgetWidth)
             readout.setObjectName('diagnosticReadout')
-            readout.setPlainText('Keine Untersuchung durchgeführt.\nDie Auswertung wird auf Wunsch gestartet.')
+            readout.setPlainText(tr(self.EMPTY))
+            self._empty_keys.add(key)
             readout.setMinimumHeight(180)
             layout.addWidget(readout, 1)
             self.texts[key] = readout
             self.section_tabs[key] = self.tabs.count()
             self.tabs.addTab(pane, tr(title))
         self.content.addWidget(intro)
+        recent = Card('Letzte Ereignisse')
+        self.recent_events = label('', 'muted', wrap=True)
+        self.recent_events.setTextFormat(Qt.PlainText)
+        recent.body.addWidget(self.recent_events)
+        self._event_revision = None
+        self._refresh_events()
+        self.content.addWidget(recent)
         diagnostics_card = Card('Einzeldiagnosen · gezielte Prüfungen')
         diagnostics_card.body.addWidget(label('Wähle eine Prüfung aus; die Ergebnisse erscheinen direkt darunter.', 'muted', wrap=True))
         diagnostics_card.body.addWidget(self.tabs)
@@ -184,6 +194,14 @@ class DiagnosticCenter(Page):
 
     def refresh(self, data, _hist):
         self.last_sample = data
+        self._refresh_events()
+
+    def _refresh_events(self):
+        revision, rows = events.snapshot()
+        if revision == self._event_revision:return
+        self._event_revision = revision
+        self.recent_events.setText('\n'.join(events.timestamp(row)+'  ·  '+events.describe(row)
+                                             for row in rows) or tr('Noch keine Ereignisse'))
 
     def select_area(self, category, section=None):
         """Open an existing diagnostic tab without extra category buttons."""
@@ -196,7 +214,7 @@ class DiagnosticCenter(Page):
             self.status.setText('Eine Diagnose läuft bereits. Bitte kurz warten.')
             return
         actual = 'network' if section == 'ping' else section
-        self.status.setText('Diagnose läuft: ' + dict((key, title) for key, title, _ in self.SECTIONS).get(actual, actual))
+        self.status.setText(tr('Diagnose läuft: {}').format(tr(dict((key, title) for key, title, _ in self.SECTIONS).get(actual, actual))))
         self.scan_btn.setEnabled(False)
         self.worker = DiagnosticWorker(section, self.last_sample or {}, self)
         self.worker.completed.connect(self._complete)
@@ -206,9 +224,10 @@ class DiagnosticCenter(Page):
     def _complete(self, section, result):
         key = 'network' if section == 'ping' else section
         self._reports[key] = result
+        self._empty_keys.discard(key)
         self.texts[key].setPlainText(result)
-        self.status.setText(f'Abgeschlossen · {datetime.now().strftime("%H:%M:%S")} · '
-                            + dict((a,b) for a,b,_ in self.SECTIONS).get(key,key))
+        self.status.setText(tr('Abgeschlossen · {} · {}').format(datetime.now().strftime('%H:%M:%S'),
+                            tr(dict((a,b) for a,b,_ in self.SECTIONS).get(key,key))))
         self.scan_btn.setEnabled(True)
         self.last_section = key
         self.report_source.setCurrentIndex(self.report_source.findData(key))
@@ -217,6 +236,7 @@ class DiagnosticCenter(Page):
         self.worker = None
 
     def toggle_blackbox(self, on):
+        self._empty_keys.discard('blackbox')
         settings.set('diag_blackbox_enabled', bool(on))
         self.texts['blackbox'].setPlainText(
             'Blackbox aktiviert. Neue Warnwert-Übergänge werden lokal aufgezeichnet.' if on else
@@ -225,6 +245,7 @@ class DiagnosticCenter(Page):
     def save_baseline(self):
         if self.worker and self.worker.isRunning():
             return
+        self._empty_keys.discard('compare')
         try:
             text = engine.baseline_save()
         except (OSError, ValueError) as exc:
@@ -237,6 +258,7 @@ class DiagnosticCenter(Page):
                                       QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if answer != QMessageBox.Yes:
             return
+        self._empty_keys.discard('blackbox')
         self.texts['blackbox'].setPlainText(engine.blackbox_clear())
 
     def export_report(self):
@@ -244,7 +266,7 @@ class DiagnosticCenter(Page):
         content = self._reports.get(key)
         if not content:
             content = self.texts[key].toPlainText()
-        if not content or content.startswith('Keine Untersuchung'):
+        if not content or key in self._empty_keys:
             QMessageBox.information(self, 'Vitalux', 'Bitte zuerst eine Diagnose durchführen.')
             return
         path, chosen = QFileDialog.getSaveFileName(self, 'Diagnosebericht speichern',
@@ -309,6 +331,9 @@ class DiagnosticCenter(Page):
             QMessageBox.information(self, 'Vitalux', tr('Fehlerbericht gespeichert.'))
 
     def retranslate(self):
+        for key in self._empty_keys:self.texts[key].setPlainText(tr(self.EMPTY))
+        self._event_revision = None
+        self._refresh_events()
         for key, title, _description in self.SECTIONS:
             self.tabs.setTabText(self.section_tabs[key], tr(title))
             position = self.report_source.findData(key)

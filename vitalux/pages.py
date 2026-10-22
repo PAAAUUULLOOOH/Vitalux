@@ -10,6 +10,7 @@ from .ui_locale import QPushButton
 from .dashboard import DashboardBoard, ORDER, TITLES
 from .benchmark_ui import BenchmarkPanel
 from .i18n import tr
+from .measurement_status import unavailable
 from .sensors import drives, fmt_bytes, fmt_duration, fmt_rate, system_static
 from .monitor_extra import graphics_runtime, system_gpu_device
 from . import smart_monitor
@@ -588,8 +589,9 @@ class CpuPage(Page):
         self.name.setText(c["model"])
         self.kv["Kerne / Threads"].set(f"{c['cores']} / {c['threads']}")
         fm = f" (max {c['freq_max'] / 1000:.2f})" if c["freq_max"] else ""
-        self.kv["Takt"].set(f"{c['freq'] / 1000:.2f} GHz{fm}" if c["freq"] else "–")
-        self.kv["Temperatur"].set(f"{c['temp']:.0f} °C" if c["temp"] is not None else tr("nicht verfügbar"))
+        reasons = c.get('unavailable') or {}
+        self.kv["Takt"].set(f"{c['freq'] / 1000:.2f} GHz{fm}" if c["freq"] else unavailable(reasons.get('freq')))
+        self.kv["Temperatur"].set(f"{c['temp']:.0f} °C" if c["temp"] is not None else unavailable(reasons.get('temp')))
         self.kv["CPU-Package-Leistung"].set(f"{c['power']:.1f} W" if c.get("power") is not None else tr("nicht verfügbar"))
         self.kv["Last (1 / 5 / 15 Min)"].set(" / ".join(f"{x:.2f}" for x in c["load"]))
         self.gauge.set(c["usage"], f"{c['threads']} {tr('Threads')}")
@@ -693,10 +695,11 @@ class GpuCard(Card):
         self.meta.setText(" · ".join(str(x) for x in (
             vendor, f"{tr('Treiber')} {driver}" if driver else None
         ) if x))
-        self.g_use.set(g.get("usage"), "")
+        reasons = g.get('unavailable') or {}
+        self.g_use.set(g.get("usage"), unavailable(reasons.get('usage')) if g.get('usage') is None else '')
         used, total = g.get("vram_used"), g.get("vram_total")
         pct = used / total * 100 if valid_number(used) and valid_number(total) and total > 0 else None
-        self.g_vram.set(pct, _vram_text(g) if total else tr("nicht verfügbar"))
+        self.g_vram.set(pct, _vram_text(g) if total else unavailable(reasons.get('vram_total')))
 
         def fmt(value, unit, places=0):
             return f"{value:.{places}f} {unit}" if valid_number(value) else tr("nicht verfügbar")
@@ -706,7 +709,7 @@ class GpuCard(Card):
             ("Spannung", "voltage", "mV"), ("Leistung", "power", "W"),
             ("Lüfterdrehzahl", "fan_rpm", "U/min"), ("Lüfter", "fan", "%"),
         ):
-            self.kv[field].set(fmt(g.get(source), unit))
+            self.kv[field].set(fmt(g.get(source), unit) if valid_number(g.get(source)) else unavailable(reasons.get(source)))
         for field, source in (("PCIe aktuell", "pcie_current"), ("PCIe maximal", "pcie_max")):
             self.kv[field].set(g.get(source) or tr("nicht verfügbar"))
         self.kv["Datenquelle"].set(g.get("sensor_source") or tr("nicht verfügbar"))

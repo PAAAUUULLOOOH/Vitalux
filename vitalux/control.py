@@ -422,12 +422,10 @@ class PreferencesPage(Page):
         self._settings_cards['energy'].append(eco_card)
 
         render_card = Card('Grafik-Rendering')
-        render_row = QHBoxLayout()
-        render_row.addWidget(label('Render-Methode', 'strong'))
+        render_caption = label('Render-Methode', 'strong')
         self.render_combo = QComboBox()
-        self.render_combo.setSizeAdjustPolicy(QComboBox.AdjustToMinimumContentsLengthWithIcon)
-        self.render_combo.setMinimumContentsLength(14)
-        self.render_combo.setMaximumWidth(280)
+        self.render_combo.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+        self.render_combo.setMaximumWidth(380)
         for backend in renderer.CHOICES:
             self.render_combo.addItem(tr(renderer.DESCRIPTIONS[backend]), backend)
         selected_renderer = settings.get('render_backend', renderer.SOFTWARE)
@@ -435,9 +433,7 @@ class PreferencesPage(Page):
             selected_renderer = renderer.SOFTWARE
         self.render_combo.setCurrentIndex(max(0, self.render_combo.findData(selected_renderer)))
         self.render_combo.currentIndexChanged.connect(self.change_renderer)
-        render_row.addWidget(self.render_combo)
-        render_row.addStretch(1)
-        render_card.body.addLayout(render_row)
+        render_card.body.addWidget(ResponsiveActions([render_caption, self.render_combo]))
         render_card.body.addWidget(label(
             'Wayland und X11 bleiben experimentelle GPU-Modi; Diagramme und Qt-Widgets nutzen weiterhin die CPU.',
             'muted', wrap=True))
@@ -667,7 +663,14 @@ class PreferencesPage(Page):
                 ranked.append((sum(matches)+bonus, index, key, terms))
         ranked.sort(key=lambda entry: (-entry[0], entry[1]))
         titles = {self.hud_on: 'MiniHUD anzeigen', self.hud_size: 'MiniHUD-Größe',
-                  self.hud_opacity: 'MiniHUD-Deckkraft'}
+                  self.hud_opacity: 'MiniHUD-Deckkraft',
+                  self.restore_button: 'Standardwerte wiederherstellen',
+                  self.accent_combo: 'Akzentfarbe', self.background_combo: 'Hintergrund',
+                  self.motion_combo: 'Animationen', self.design_tiles[0]: 'Design',
+                  self.close_to_tray: 'Beim Schließen minimieren', self.interval: 'Aktualisierungsintervall',
+                  self.alert_toggle: 'Warnungen', self.eco_toggle: 'Ultra Eco',
+                  self.render_combo: 'Grafik-Renderer', self._maintenance_card: 'Wartung',
+                  self.advanced.header: 'Erweiterte Einstellungen'}
         for _score, index, key, terms in ranked[:7]:
             target = self._search_targets[index][2]
             item = QListWidgetItem(tr(titles.get(target, terms.split(' ')[0])) + '  ·  ' +

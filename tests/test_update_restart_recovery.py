@@ -11,11 +11,13 @@ from unittest.mock import patch
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from PySide6.QtWidgets import QApplication
-from vitalux import __version__,profiles,updater
+from vitalux import __version__,profiles,updater,versions
 from vitalux.update_manager import UpdateManager
 from vitalux.pages_extra import UpdatePage
 
 app=QApplication.instance() or QApplication([])
+base, build = versions.parse(__version__)
+target_version = '.'.join(map(str, base))+f'-unstable.{(build or 0)+1}'
 def wait_for(condition):
     end=time.monotonic()+7
     while not condition() and time.monotonic()<end:app.processEvents();time.sleep(.01)
@@ -29,7 +31,7 @@ for failures in (1,3):
         env['APPIMAGE']=str(image)
         with patch.dict(os.environ,env):
             initial=UpdateManager();initial.shutdown();pending=initial._pending_file
-            state=dict(source_version=__version__,version='0.9.6.3-unstable.9',channel='unstable',
+            state=dict(source_version=__version__,version=target_version,channel='unstable',
                        path=str(prepared),kind='appimage',
                        sha256=hashlib.sha256(prepared.read_bytes()).hexdigest(),
                        activation_error='Previously interrupted preparation')

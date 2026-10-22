@@ -1,3 +1,17 @@
+# Unstable plan — v0.9.6.3-unstable.9
+
+Owner authorizes implementing the collected items with “setz mal um” and publishing the next Unstable update; Main remains unchanged. Use Unstable to polish the app before Stable promotion. Keep new descriptions brief and unobtrusive. Do not add a manual previous-version button; retain the existing automatic rollback protection.
+
+Candidate validation: 75/75 regression scripts pass with the shipped interpreter, including real native crash traces after log rotation, concurrent complete log records, event persistence/localization/isolation, short measurement causes, stationary editing, automatic restart and crash rollback. Five native renderers and 100/125/150/200% layouts pass. Distribution licenses, links and executable bits are verified; screenshots show the actual candidate.
+
+- Add a compact, readable event history inside the Diagnostic Center for useful events such as warning-threshold crossings, update failures and automatic renderer changes. Use short localized entries rather than raw logs or additional popups.
+- Explain unavailable measurements briefly at the affected value when the cause is known (for example, no sensor, no driver data or a required permission). Do not guess causes or add lengthy descriptions.
+- Polish DE/EN labels and constrained controls: fully translate search-result captions (including the English reset result currently showing “Standardwerte”) and make long renderer names readable without cluttering the settings page.
+- Remove the tile-shaking animation when entering dashboard layout editing; the owner dislikes its appearance. Keep the hold-to-move captions and X controls visible throughout editing. This supersedes the two-second shake introduced in Unstable .8.
+- Agreed: rotate Vitalux-owned log files at approximately 5 MB per file instead of using a line-count threshold. Start a fresh active file and retain at most one previous file per log; replace the older backup on the next rotation. Target approximately 10 MB per log including its backup, allowing complete error records to stay together. Keep Stable/Unstable logs separate and avoid rereading whole files on every write or blocking the interface. Update the appropriate branch documentation when the feature is implemented.
+
+---
+
 # Unstable plan — v0.9.6.3-unstable.8
 
 Owner authorizes implementing all collected changes and publishing on Unstable; Main stays at Stable v0.9.6.2. README clarification: each branch has its own README. Update the Unstable README for this build; update Main's README only when these changes reach Stable.

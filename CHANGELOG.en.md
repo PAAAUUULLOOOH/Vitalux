@@ -1,5 +1,12 @@
 # Vitalux – Changes
 
+## [v0.9.6.3-unstable.9] - 2026-10-22
+- Dashboard tiles stay stationary when layout editing opens; hold-to-move captions and X controls remain visible.
+- The Diagnostic Center shows the five most recent app warnings, update failures and automatic renderer fallbacks.
+- Unavailable CPU/GPU measurements show a short cause when confirmed by the data source.
+- Settings search captions are fully translated; the renderer selector gives long names more space.
+- Local log files rotate at approximately 5 MB and retain one backup, keeping complete error records and separate channel logs.
+
 ## [v0.9.6.3-unstable.8] - 2026-10-22
 - Champagne Glass is removed completely; saved selections return to Obsidian Gold. Twelve standalone designs remain.
 - Settings search recognizes partial MiniHUD names, distinguishes individual controls and scrolls smoothly to the matching section.

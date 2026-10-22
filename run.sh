@@ -20,9 +20,14 @@ STATE_DIR="${XDG_STATE_HOME:-${HOME}/.local/state}/vitalux"
 case "$VERSION" in *-unstable.*) STATE_DIR="$STATE_DIR/profiles/unstable" ;; esac
 mkdir -p -- "$STATE_DIR"
 LOG="$STATE_DIR/vitalux.log"
+if [[ -r "$HERE/packaging/logging.sh" ]]; then source "$HERE/packaging/logging.sh"; fi
 # Every launcher, Python and Qt diagnostic line carries a local ISO-8601 time
 # and timezone, even when a native malloc/Qt abort bypasses Python handlers.
 log_line() {
+  if declare -F vitalux_log_line >/dev/null; then
+    vitalux_log_line "$LOG" "$VERSION" "$*"
+    return
+  fi
   printf '[%s] [Vitalux v%s] %s\n' "$(date -Is)" "${VERSION:-unknown}" "$*" >>"$LOG"
 }
 log_line "=== Vitalux ${VERSION:-unknown} start (launcher PID $BASHPID) ==="
@@ -88,8 +93,12 @@ if [ "$STATUS" -eq 42 ]; then
 fi
 # Preserve a timestamped native-crash record before an automatic recovery.
 if [ "$STATUS" -ne 0 ] && [ "$STATUS" -ne 42 ]; then
-  printf '[%s] [Vitalux v%s] Process crashed (exit code %s; see vitalux.log)\n' \
-    "$(date -Is)" "${VERSION:-unknown}" "$STATUS" >>"$STATE_DIR/errors.log"
+  if declare -F vitalux_log_line >/dev/null; then
+    vitalux_log_line "$STATE_DIR/errors.log" "$VERSION" "Process crashed (exit code $STATUS; see vitalux.log)"
+  else
+    printf '[%s] [Vitalux v%s] Process crashed (exit code %s; see vitalux.log)\n' \
+      "$(date -Is)" "${VERSION:-unknown}" "$STATUS" >>"$STATE_DIR/errors.log"
+  fi
 fi
 if [[ "$STATUS" =~ ^(132|134|139)$ ]] && [ "${VITALUX_GPU_RECOVERY:-0}" != "1" ]; then
   if "$PY" - <<'PYGPU'
@@ -99,6 +108,8 @@ if settings.get('render_backend') not in renderer.GPU_MODES:
     raise SystemExit(1)
 if not settings.set_many({'render_backend': 'software', 'gpu_boot_pending': False}):
     raise SystemExit(2)
+from vitalux import events
+events.record('renderer_fallback')
 PYGPU
   then
     log_line "=== GPU-Backend-Absturz ($STATUS) – Neustart mit CPU-Rendering ==="

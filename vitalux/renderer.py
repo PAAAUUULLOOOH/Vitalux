@@ -188,6 +188,8 @@ def fallback():
     if not _failure:
         _failure = 'GPU-Grafikausgabe nicht verfügbar; CPU-Rendering aktiviert.'
     print('Vitalux: Grafik-Backend auf CPU zurückgesetzt:', _failure, flush=True)
+    from . import events
+    events.record('renderer_fallback')
     _preflight_ok = False
     _restore_environment()
     if os.environ.get('VITALUX_RENDERER', '').strip().lower() not in GPU_MODES:

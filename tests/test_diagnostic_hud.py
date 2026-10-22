@@ -45,7 +45,8 @@ assert not any(x.text()=='Diagnose & Berichte' for x in pref.findChildren(__impo
 assert pref.hud_size.count()==3
 assert pref.hud_opacity.findData(50) >= 0
 assert not hasattr(pref, 'language_combo')
-assert len(cent.findChildren(__import__('vitalux.widgets',fromlist=['Card']).Card)) == 3
+assert len(cent.findChildren(__import__('vitalux.widgets',fromlist=['Card']).Card)) == 4
+assert hasattr(cent, 'recent_events')
 assert cent.lab_panel is None
 assert not any('Erweiterte Grafikoptionen' in c.text() for c in pref.findChildren(__import__('PySide6.QtWidgets',fromlist=['QPushButton']).QPushButton))
 w.set_mini_hud_enabled(True)

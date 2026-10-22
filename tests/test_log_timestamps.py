@@ -20,6 +20,8 @@ def test_launcher():
         here = Path(temporary)
         (here / 'runtime' / 'bin').mkdir(parents=True)
         (here / 'run.sh').write_bytes((ROOT/'run.sh').read_bytes())
+        (here/'packaging').mkdir()
+        (here/'packaging/logging.sh').write_bytes((ROOT/'packaging/logging.sh').read_bytes())
         (here / 'vitalux').mkdir()
         (here / 'vitalux' / '__init__.py').write_text(
             '__version__ = "0.9.3.70"\n', encoding='utf-8')
@@ -62,6 +64,7 @@ def test_installer_log():
     with tempfile.TemporaryDirectory(prefix='vitalux-installer-logging-') as temporary:
         root = Path(temporary)
         (root/'packaging').mkdir()
+        (root/'packaging/logging.sh').write_bytes((ROOT/'packaging/logging.sh').read_bytes())
         (root/'vitalux').mkdir()
         (root/'vitalux'/'__init__.py').write_text(
             '__version__ = "0.9.3.70"\n', encoding='utf-8')

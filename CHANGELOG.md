@@ -1,5 +1,12 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.3-unstable.9] - 2026-10-22
+- Dashboard-Kacheln bleiben beim Öffnen der Layoutbearbeitung ruhig; Verschiebehinweise und X bleiben sichtbar.
+- Das Diagnosezentrum zeigt die fünf letzten App-Warnungen, Updatefehler und automatischen Renderer-Wechsel.
+- Fehlende CPU-/GPU-Messwerte erhalten kurze Hinweise, wenn die Datenquelle die Ursache bestätigt.
+- Suchtreffer in den Einstellungen sind vollständig übersetzt; die Renderer-Auswahl bietet langen Namen mehr Platz.
+- Lokale Logdateien wechseln bei etwa 5 MB in eine Sicherungsdatei. Vollständige Fehlereinträge und getrennte Kanalprotokolle bleiben erhalten.
+
 ## [v0.9.6.3-unstable.8] - 2026-10-22
 - Champagne Glass wurde vollständig entfernt; gespeicherte Auswahlen wechseln zu Obsidian Gold. Zwölf eigenständige Designs bleiben erhalten.
 - Die Einstellungssuche erkennt MiniHUD auch bei unvollständigen Namen, zeigt unterscheidbare Treffer und scrollt sanft zum passenden Bereich.

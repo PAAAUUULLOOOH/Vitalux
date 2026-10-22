@@ -57,7 +57,7 @@ for channel, launches in (('stable', 2), ('unstable', 3)):
         stage = Path(folder)
         (stage/'driver.py').write_text(DRIVER)
         shutil.copy2(ROOT/'run.sh', stage/'run.sh')
-        for name in ('vitalux', 'assets'):
+        for name in ('vitalux', 'assets', 'packaging'):
             (stage/name).symlink_to(ROOT/name, target_is_directory=True)
         # The launcher's permission recovery must never chmod the source tree.
         shutil.copytree(ROOT/'bin', stage/'bin')

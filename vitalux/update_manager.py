@@ -8,7 +8,7 @@ from pathlib import Path
 
 from PySide6.QtCore import QObject, QThread, QTimer, Signal
 
-from . import __version__, updater, profiles, versions, changelog
+from . import __version__, updater, profiles, versions, changelog, logfiles, events
 from .i18n import tr
 
 
@@ -107,8 +107,8 @@ class UpdateManager(QObject):
             record=dict(time=time.time(),source=__version__,target=self.pending.get('version',''),
                         event=event,attempt=self.restart_attempts,error=error)
             self._pending_file.parent.mkdir(parents=True,exist_ok=True)
-            with self._pending_file.with_name('restart-events.jsonl').open('a') as stream:
-                stream.write(json.dumps(record,ensure_ascii=False)+'\n')
+            logfiles.append(self._pending_file.with_name('restart-events.jsonl'),
+                            json.dumps(record,ensure_ascii=False)+'\n')
         except OSError:pass
 
     def _load_cache(self):
@@ -222,6 +222,7 @@ class UpdateManager(QObject):
                                            error=record.get('error',''))
                 failures.append(record.get('error',''))
         self.error=result.get('error','') or next((failure for failure in failures if failure),'')
+        if self.error:events.record('update_failed', stage='check')
         if success:
             self.last_checked=time.time()
             try:profiles.atomic_json(self._cache_path,{'checked_at':self.last_checked,'records':self.records})
@@ -253,9 +254,12 @@ class UpdateManager(QObject):
         self.error='';self._select_record();self.install()
 
     def _on_installed(self,error,worker=None):
+        cancelled = self.cancelling
         self.cancelling=False
         if error:
-            self.status='error';self.error=error;self.error_kind='install';self.changed.emit();return
+            self.status='error';self.error=error;self.error_kind='install'
+            if not cancelled:events.record('update_failed', stage='install')
+            self.changed.emit();return
         worker=worker or self._thread
         self.pending_path=getattr(worker,'pending_path',None)
         self.pending={'source_version':__version__,'version':getattr(worker,'version',self.latest),
@@ -319,6 +323,7 @@ class UpdateManager(QObject):
                 else:
                     self._restart_retrying=False
                     self._restart_event('automatic_retries_exhausted',self.error)
+                    events.record('update_failed', stage='restart')
                 self.changed.emit();return False
         return True
 

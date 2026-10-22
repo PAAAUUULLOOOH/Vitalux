@@ -8,11 +8,17 @@ TARGET="${2:?AppImage}"
 shift 2
 PREVIOUS="${TARGET}.previous"
 STATE="${XDG_STATE_HOME:-$HOME/.local/state}/vitalux"
-mkdir -p -- "$STATE"
-LOG="$STATE/restart.log"
 # The running mount identifies the exact version that failed.
 VERSION="$(sed -n 's/^__version__ = "\([^"]*\)".*/\1/p' "$BASE/vitalux/__init__.py" 2>/dev/null)"
+case "$VERSION" in *-unstable.*) STATE="$STATE/profiles/unstable" ;; esac
+mkdir -p -- "$STATE"
+LOG="$STATE/restart.log"
+if [[ -r "$BASE/packaging/logging.sh" ]]; then source "$BASE/packaging/logging.sh"; fi
 log_line() {
+  if declare -F vitalux_log_line >/dev/null; then
+    vitalux_log_line "$LOG" "$VERSION" "$*"
+    return
+  fi
   printf '[%s] [Vitalux v%s] %s\n' "$(date -Is)" "${VERSION:-unknown}" "$*" >> "$LOG"
 }
 log_child() {

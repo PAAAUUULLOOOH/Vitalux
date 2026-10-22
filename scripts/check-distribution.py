@@ -9,6 +9,7 @@ import re
 
 def check(root):
     required = ('README.md', 'USER-GUIDE.md', 'THIRD-PARTY.md', 'LICENSE-NOTICE.md',
+                'packaging/logging.sh', 'vitalux/logfiles.py',
                 'third_party/sources.lock.json', 'licenses/README.md', 'licenses/GPL-2.0.txt',
                 'licenses/GPL-3.0.txt', 'licenses/LGPL-2.1.txt', 'licenses/LGPL-3.0.txt',
                 'licenses/runtime/Python-3.12.7.txt', 'licenses/runtime/psutil-7.2.2.txt',

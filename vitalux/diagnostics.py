@@ -11,7 +11,7 @@ import traceback
 from datetime import datetime
 from pathlib import Path
 
-from . import __version__, profiles
+from . import __version__, profiles, logfiles
 
 LOG_PATH = profiles.directory('state')/'errors.log'
 
@@ -26,12 +26,12 @@ def enable_native_crash_trace():
         return
     try:
         LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-        _fatal_log = LOG_PATH.open('a', encoding='utf-8')
-        _fatal_log.write(
+        logfiles.append(LOG_PATH,
             f'\n=== Vitalux {__version__} started '
             f'{datetime.now().astimezone().isoformat()} '
             f'(PID {os.getpid()}) ===\n'
         )
+        _fatal_log = LOG_PATH.open('a', encoding='utf-8')
         # Flush before handing the descriptor to the native crash handler:
         # a SIGABRT may never return to Python to flush buffered text.
         _fatal_log.flush()
@@ -43,15 +43,10 @@ def enable_native_crash_trace():
 def log_exception(kind, value, tb=None):
     try:
         LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-        with LOG_PATH.open('a', encoding='utf-8') as log:
-            # Always include date, timezone and failing version on *every*
-            # Python exception line. Native faulthandler frames are surrounded
-            # by the timestamped startup marker and the shell's crash footer.
-            at = datetime.now().astimezone().isoformat()
-            log.write(f'[{at}] [Vitalux v{__version__}] Python exception\n')
-            for line in ''.join(traceback.format_exception(kind, value, tb)).splitlines():
-                log.write(f'[{at}] [Vitalux v{__version__}] {line}\n')
-            log.flush()
+        # Every exception line retains its time, timezone and failing version.
+        at = datetime.now().astimezone().isoformat()
+        lines = ['Python exception'] + ''.join(traceback.format_exception(kind, value, tb)).splitlines()
+        logfiles.append(LOG_PATH, ''.join(f'[{at}] [Vitalux v{__version__}] {line}\n' for line in lines))
     except OSError:
         pass
 
@@ -67,6 +62,6 @@ def export_report(path, include_errors=False, sample=None):
               'python': platform.python_version(), 'platform': platform.platform(),
               'errors_log_path': str(LOG_PATH), 'last_sample': sample}
     if include_errors and LOG_PATH.exists():
-        report['recent_errors'] = LOG_PATH.read_text(encoding='utf-8', errors='replace')[-16000:]
+        report['recent_errors'] = logfiles.tail(LOG_PATH, 16000)
     with open(path, 'w', encoding='utf-8') as out:
         json.dump(report, out, indent=2, ensure_ascii=False, default=str)

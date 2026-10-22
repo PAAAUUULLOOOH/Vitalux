@@ -10,7 +10,7 @@ Current Vitalux editions allow one running instance per user, shared across ZIP/
 
 Reopening a sidebar category returns to its page start. The sidebar opens Overview, Processor, Graphics, Memory, Drives, Network, Sensors, Diagnostic Center, System, Settings, Updates and About. The new vector symbols remain recognizable when the sidebar is collapsed. Charts distinguish series by line pattern and identify measurements and timestamps on hover. Sampling interruptions appear as gaps; missing sensors are never replaced with invented readings.
 
-Use **Edit layout** on Overview to arrange cards. Movable tiles gently shake once for about two seconds. Their **Hold to move** captions and X controls stay visible throughout edit mode. Starting a drag or leaving editing stops the shake and preserves exact tile positions. Reduced/off motion is respected. Drives loads SMART data asynchronously. Start disk benchmarks or external diagnostics only when needed; writing tests temporarily create files on the selected drive.
+Use **Edit layout** on Overview to arrange cards. Tiles stay stationary when editing opens. Their **Hold to move** captions and X controls stay visible throughout edit mode. Drives loads SMART data asynchronously. Start disk benchmarks or external diagnostics only when needed; writing tests temporarily create files on the selected drive.
 
 ## Designs and backgrounds
 
@@ -87,3 +87,7 @@ When your test changes reach Stable, Vitalux offers a notice and lets you view t
 Channel changelogs are cached for offline reading with their check time. Offline or failed checks are reported explicitly; cached information alone cannot authorize an installation.
 
 On/off controls use themed switches throughout the interface. Multiple-selection controls retain checkmarks. Design previews form the same multi-row grid in every design; hover or keyboard focus softly reveals a small color wheel for accents and an image indicator for backgrounds, stacked at the right edge and vertically centered on the tile. Available options use colored symbols; unavailable options use grey symbols, without lock overlays. Black Glass supports both preset and custom accent colors, including editing and removing saved custom colors. Fixed-palette designs disable and consistently grey out the custom-color buttons. Background support is independent: Holographic allows accents but retains its fixed background. Ultra Eco can temporarily restrict customization. Controls no longer produce click sounds.
+
+**Recent events:** the Diagnostic Center shows the latest five app warnings, update failures and automatic renderer fallbacks. Entries remain local and follow DE/EN. Repeated identical events are grouped briefly; the optional Blackbox remains separate. Known causes of missing CPU/GPU readings appear as short labels; unknown causes remain unavailable.
+
+**Logs:** Vitalux keeps an active file and one previous file per log, rotating at about 5 MB (roughly 10 MB combined, allowing complete error records). This includes launcher, crash, installation, restart and local event logs. Stable and Unstable use separate directories. Crash recording and automatic version recovery remain active.

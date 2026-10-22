@@ -53,6 +53,8 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
         assert not hasattr(page,'sound_toggle') and not hasattr(page,'sound_volume')
         assert len(page.design_tiles)==12 and all(t.key!='champagne_glass' for t in page.design_tiles)
         assert page.search.hasFocus()
+        if language == 'en':
+            assert page.search_results.item(0).text().startswith('Restore defaults')
         page.choose_search_result(page.search_results.item(0))
         assert page.search_overlay.idle_timer.remainingTime()>=4700
         page.search_overlay.close_search();wait(360)

@@ -273,17 +273,19 @@ def _stage_appimage(url, sha256, progress, expected_size=None):
 
 
 def activate_appimage_update(staged, relaunch=True):
-    """External /bin/sh helper survives unmounting old AppImage and replaces file atomically."""
+    """External Bash helper survives unmounting the old AppImage."""
     target = os.path.realpath(appimage_path())
     if not os.path.isfile(target) or os.path.dirname(staged) != os.path.dirname(target):
         raise RuntimeError(tr('AppImage-Update konnte nicht sicher vorbereitet werden.'))
     cache = str(profiles.directory('cache'))
     os.makedirs(cache, mode=0o700, exist_ok=True)
+    logging_functions = (Path(__file__).resolve().parents[1]/'packaging/logging.sh').read_text()
     fd, script = tempfile.mkstemp(prefix='apply-update-', suffix='.sh', dir=cache)
     q = shlex.quote
     # The current process must exit before the AppImage is switched and reopened.
-    script_text = f"""#!/bin/sh
+    script_text = f"""#!/bin/bash
 set -eu
+{logging_functions}
 oldpid={os.getpid()}
 target={q(target)}
 staged={q(staged)}
@@ -292,7 +294,7 @@ state_dir={q(str(profiles.directory('state')))}
 version={q(__version__)}
 mkdir -p "$state_dir"
 stamp() {{
-  printf '[%s] [Vitalux v%s] %s\\n' "$(date -Is)" "$version" "$*" >> "$state_dir/restart.log"
+  vitalux_log_line "$state_dir/restart.log" "$version" "$*"
 }}
 for i in $(seq 1 150); do
   if ! kill -0 "$oldpid" 2>/dev/null; then break; fi
@@ -316,7 +318,7 @@ fi
         with os.fdopen(fd, 'w', encoding='utf-8') as f:
             f.write(script_text)
         os.chmod(script, 0o700)
-        subprocess.Popen(['/bin/sh', script], start_new_session=True,
+        subprocess.Popen(['/bin/bash', script], start_new_session=True,
                          stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception:
         try: os.unlink(script)
@@ -586,6 +588,8 @@ if relaunch=='yes' and process_exited:
 """
     helper.write_text(code);helper.chmod(0o700)
     log=Path(pending_file).parent/'activation.log';log.parent.mkdir(parents=True,exist_ok=True)
+    from . import logfiles
+    logfiles.append(log, b'')
     with log.open('ab') as stream:
         subprocess.Popen([sys.executable,'-I',str(helper),root,str(archive),sha256,str(pending_file),
                           str(os.getpid()),'yes' if relaunch else 'no'],stdin=subprocess.DEVNULL,

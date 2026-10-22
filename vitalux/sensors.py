@@ -28,11 +28,14 @@ def _rate(key, value):
     return max(0.0, (value - prev[0]) / (now - prev[1]))
 
 
-def _read(path):
+def _read(path, reasons=None, key=None):
     try:
         with open(path, encoding="utf-8", errors="replace") as f:
             return f.read().strip()
-    except OSError:
+    except OSError as exc:
+        if reasons is not None and key:
+            reason = 'permission' if isinstance(exc, PermissionError) else 'driver_no_data' if isinstance(exc, FileNotFoundError) else 'unknown'
+            if reason == 'permission' or key not in reasons:reasons[key] = reason
         return None
 
 
@@ -87,10 +90,12 @@ def _cpu_model():
     return platform.processor() or "Unbekannter Prozessor"
 
 
-def _cpu_temp():
+def _cpu_temp(reasons=None):
     try:
         temps = psutil.sensors_temperatures()
-    except Exception:
+    except Exception as exc:
+        if reasons is not None:
+            reasons['temp'] = 'permission' if isinstance(exc, PermissionError) else 'unsupported' if isinstance(exc, NotImplementedError) else 'unknown'
         return None
     for key in ("coretemp", "k10temp", "zenpower", "cpu_thermal", "acpitz"):
         entries = temps.get(key)
@@ -100,11 +105,16 @@ def _cpu_temp():
             if e.label in ("Package id 0", "Tctl", "Tdie"):
                 return e.current
         return entries[0].current
+    if reasons is not None:reasons['temp'] = 'no_sensor'
     return None
 
 
 def cpu_info():
-    freq = psutil.cpu_freq()
+    reasons = {}
+    try:freq = psutil.cpu_freq()
+    except (OSError, NotImplementedError) as exc:
+        freq = None
+        reasons['freq'] = 'permission' if isinstance(exc, PermissionError) else 'unsupported' if isinstance(exc, NotImplementedError) else 'unknown'
     try:
         load = os.getloadavg()
     except OSError:
@@ -118,7 +128,8 @@ def cpu_info():
         "threads": psutil.cpu_count(logical=True) or 0,
         "freq": freq.current if freq else None,
         "freq_max": freq.max if freq and freq.max else None,
-        "temp": _cpu_temp(),
+        "temp": _cpu_temp(reasons),
+        "unavailable": reasons,
         "power": monitor_extra.cpu_package_power(),
         "load": load,
     }
@@ -217,6 +228,10 @@ def _nvidia_gpus():
                      "clock": _num(p[8]), "clock_mem": _num(p[9]), "hotspot": None,
                      "fan_rpm": None, "voltage": None, "pcie_current": None,
                      "pcie_max": None, "sensor_source": "nvidia-smi"})
+    for gpu in gpus:
+        gpu['unavailable'] = {key: 'driver_no_data' for key in (
+            'usage', 'vram_used', 'vram_total', 'temp', 'power', 'fan', 'clock', 'clock_mem')
+            if gpu.get(key) is None}
     return gpus
 
 
@@ -224,6 +239,7 @@ def _drm_gpus(have_nvidia):
     gpus = []
     vendors = {"0x1002": "AMD", "0x8086": "Intel", "0x10de": "NVIDIA"}
     for card in sorted(glob.glob("/sys/class/drm/card[0-9]")):
+        reasons = {}
         dev = os.path.join(card, "device")
         vendor = vendors.get(_read(os.path.join(dev, "vendor")))
         if not vendor or (vendor == "NVIDIA" and have_nvidia):
@@ -234,9 +250,9 @@ def _drm_gpus(have_nvidia):
         hw = glob.glob(os.path.join(dev, "hwmon", "hwmon*"))
         temp = power = None
         if hw:
-            t = _read(os.path.join(hw[0], "temp1_input"))
+            t = _read(os.path.join(hw[0], "temp1_input"), reasons, 'temp')
             temp = float(t) / 1000 if t and t.isdigit() else None
-            pw = _read(os.path.join(hw[0], "power1_average")) or _read(os.path.join(hw[0], "power1_input"))
+            pw = _read(os.path.join(hw[0], "power1_average"), reasons, 'power') or _read(os.path.join(hw[0], "power1_input"), reasons, 'power')
             power = float(pw) / 1e6 if pw and pw.isdigit() else None
         # These read-only sysfs values are provided by the kernel; do not use
         # optional overclocking drivers, services or elevated permissions.
@@ -252,8 +268,8 @@ def _drm_gpus(have_nvidia):
             _read(os.path.join(dev, "max_link_speed")),
             _read(os.path.join(dev, "max_link_width")),
         )
-        busy = _read(os.path.join(dev, "gpu_busy_percent"))
-        used, total = _read(os.path.join(dev, "mem_info_vram_used")), _read(os.path.join(dev, "mem_info_vram_total"))
+        busy = _read(os.path.join(dev, "gpu_busy_percent"), reasons, 'usage')
+        used, total = _read(os.path.join(dev, "mem_info_vram_used"), reasons, 'vram_used'), _read(os.path.join(dev, "mem_info_vram_total"), reasons, 'vram_total')
         extra = extended.drm_extra(dev)
         gpus.append({"vendor": vendor, "name": name, "driver": extra["driver"],
                      "usage": _num(busy), "vram_used": _num(used), "vram_total": _num(total),
@@ -262,7 +278,7 @@ def _drm_gpus(have_nvidia):
                      "fan_rpm": extra["fan_rpm"], "clock": extra["clock"],
                      "clock_mem": extra["clock_mem"], "voltage": voltage,
                      "pcie_current": pcie_now, "pcie_max": pcie_max,
-                     "sensor_source": "Linux DRM / sysfs"})
+                     "sensor_source": "Linux DRM / sysfs", "unavailable": reasons})
     return gpus
 
 

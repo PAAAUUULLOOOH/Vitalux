@@ -30,7 +30,7 @@ SLIDES = [
         "Der kompakte Systemkopf lässt auf der Startseite mehr Platz für Messwerte und Diagramme.",
         "Du siehst unter anderem Prozessor, Grafik, RAM, Systemlaufwerk und den Systemzustand.",
         "Diagramme zeigen, wie sich die Auslastung im Zeitverlauf verändert.",
-        "Beim Öffnen von „Layout bearbeiten“ schütteln sich verschiebbare Kacheln zwei Sekunden sanft. „Zum Verschieben halten“ und das X bleiben bis zum Verlassen des Modus sichtbar.",
+        "Im Bearbeitungsmodus bleiben „Zum Verschieben halten“ und das X sichtbar. Halten und ziehen, um Kacheln zu verschieben.",
         "overview",
     ),
     (
@@ -70,7 +70,7 @@ SLIDES = [
         "Die Sensorseite zeigt Messwerte, die Linux tatsächlich bereitstellt.",
         "Dazu gehören je nach Gerät Temperaturen, Lüfterdrehzahlen und Spannungen.",
         "Unter Einstellungen aktivierst du Hardware-Warnungen; die schmalen Zahlenfelder stehen rechts neben der Bezeichnung.",
-        "Nicht jeder Sensor ist auf jeder Hardware oder mit jedem Treiber verfügbar.",
+        "Fehlende Messwerte erhalten kurze Hinweise, wenn die Ursache bekannt ist. Logs wechseln bei etwa 5 MB in eine Sicherungsdatei.",
         "sensors",
     ),
     (
@@ -83,7 +83,7 @@ SLIDES = [
     ),
     (
         "Diagnostic Center und MiniHUD",
-        "Das Diagnostic Center trennt Systemanalyse, Einzelprüfungen und lokale Berichte in übersichtliche Kacheln.",
+        "Die letzten fünf App-Ereignisse stehen im Diagnosezentrum: Warnwerte, Updatefehler und automatische Renderer-Wechsel.",
         "Im Diagnostic Center kannst du System- und Fehlerberichte lokal als TXT/JSON exportieren. Externer Ping nur per Klick.",
         "Das MiniHUD lässt sich in den Einstellungen oder über die Systemleiste aktivieren. Drei Größen, Sensoren und 50–100 % Deckkraft sind wählbar.",
         "Das MiniHUD nutzt bestehende Messwerte. Wayland/KWin entscheidet, ob es über einem Vollbildspiel sichtbar bleibt.",

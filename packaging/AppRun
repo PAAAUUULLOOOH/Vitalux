@@ -5,10 +5,15 @@ INTEGRATOR="$BASE/packaging/appimage-integration.sh"
 STATE="${XDG_STATE_HOME:-$HOME/.local/state}/vitalux"
 VERSION="$(sed -n 's/^__version__ = "\([^"]*\)".*/\1/p' "$BASE/vitalux/__init__.py" 2>/dev/null)"
 case "$VERSION" in *-unstable.*) STATE="$STATE/profiles/unstable" ;; esac
+if [[ -r "$BASE/packaging/logging.sh" ]]; then source "$BASE/packaging/logging.sh"; fi
 stamp_install() {
   mkdir -p -- "$STATE"
   while IFS= read -r line || [[ -n "$line" ]]; do
-    printf '[%s] [Vitalux v%s] %s\n' "$(date -Is)" "${VERSION:-unknown}" "$line" >>"$STATE/installation.log"
+    if declare -F vitalux_log_line >/dev/null; then
+      vitalux_log_line "$STATE/installation.log" "$VERSION" "$line"
+    else
+      printf '[%s] [Vitalux v%s] %s\n' "$(date -Is)" "${VERSION:-unknown}" "$line" >>"$STATE/installation.log"
+    fi
   done
 }
 case "${1:-}" in

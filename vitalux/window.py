@@ -843,6 +843,8 @@ class MainWindow(QMainWindow):
                     'ram_usage': tr('RAM-Auslastung'), 'disk_usage': tr('Systemlaufwerk-Belegung')}
         for warning in self._alerts.update(readings_from_sample(sample), limits,
                                            preferences['alerts_enabled']):
+            from . import events
+            events.record('warning', metric=warning.metric, value=warning.value, limit=warning.limit)
             msg = f'{friendly[warning.metric]}: {warning.value:.0f}{warning.unit}  (≥ {warning.limit:.0f}{warning.unit})'
             self.statusBar().showMessage(tr('Grenzwert überschritten') + ' · ' + msg, 16000)
             if self._tray is not None:
