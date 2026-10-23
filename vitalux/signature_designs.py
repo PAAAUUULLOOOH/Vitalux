@@ -64,7 +64,7 @@ def scene_pixmap(size, mode, phase=0.0):
     if mode == 'nebula_prism':
         return nebula_prism.scene_pixmap(size)
     if mode == 'quantum_core':
-        return quantum_core.scene_pixmap(size, phase)
+        return quantum_core.scene_pixmap(size)
     if mode == 'lumen_drift':
         return lumen_drift.scene_pixmap(size, phase)
     pal = COLLECTIONS[mode]
@@ -333,7 +333,10 @@ def paint_preview(p,tile,pal):
     def box(rect,alpha=200):
         p.setPen(QPen(color(pal['accent'],105),.6))
         p.setBrush(color(pal['card'],alpha))
-        p.drawPath(shape(rect,mode,True))
+        if mode=='lumen_drift':
+            p.drawRoundedRect(rect,min(4,rect.height()/2),min(4,rect.height()/2))
+        else:
+            p.drawPath(shape(rect,mode,True))
     if mode=='nebula_prism':
         nebula_prism.preview_contents(p,tile,pal,box,width)
         return _preview_tail(p,tile,pal,mode,width)
@@ -356,7 +359,7 @@ def paint_preview(p,tile,pal):
         for i in range(12):
             x=nav_left+6+i*(nav_width-12)/11
             p.drawPoint(QPointF(x,21.5))
-        y=31
+        y=30
     else:
         box(QRectF(5,17,width-10,8))
         for i in range(7):
@@ -388,7 +391,11 @@ def _preview_tail(p,tile,pal,mode,width):
     p.setBrush(Qt.NoBrush)
     selected=tile.isChecked() or tile.hasFocus()
     p.setPen(QPen(color(pal['accent'],245 if selected else round(75+100*tile._hover)),2 if selected else 1))
-    p.drawPath(shape(QRectF(tile.rect()).adjusted(2,2,-2,-2),mode,True))
+    outline=QRectF(tile.rect()).adjusted(2,2,-2,-2)
+    if mode=='lumen_drift':
+        p.drawRoundedRect(outline,12,12)
+    else:
+        p.drawPath(shape(outline,mode,True))
     if tile.isChecked():
         p.setPen(Qt.NoPen);p.setBrush(color(pal['accent']))
         p.drawEllipse(QPointF(width-15,14),7,7)

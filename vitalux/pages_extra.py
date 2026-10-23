@@ -8,6 +8,7 @@ from .i18n import tr
 from .pages import Page
 from .ui_locale import QLabel, QPushButton, QMessageBox, QComboBox
 from .update_progress import UpdateProgress
+from .changelog_view import ChangelogView
 from .widgets import Card, KeyValue, label
 
 AUTHOR_URL = "https://github.com/PAAAUUULLOOOH"
@@ -100,7 +101,9 @@ class UpdatePage(Page):
         self.changelog_details=label('', 'muted',wrap=True)
         self.changelog_details.setTextFormat(Qt.PlainText)
         self.changelog_details.setTextInteractionFlags(Qt.TextSelectableByMouse)
-        for widget in (self.changelog_heading,self.changelog_summary,self.changelog_details):notes.addWidget(widget)
+        for widget in (self.changelog_heading,self.changelog_summary):notes.addWidget(widget)
+        self.changelog_scroll=ChangelogView(self.changelog_details,self.changelog_card)
+        notes.addWidget(self.changelog_scroll)
         self.channel_card.body.addWidget(self.changelog_card)
         self.content.addWidget(self.channel_card)
         self.m.changed.connect(self.sync);self.m.progress.connect(self._progress)
@@ -130,7 +133,10 @@ class UpdatePage(Page):
             line=line.lstrip('#').strip()
             if line.startswith('- '):line='• '+line[2:]
             lines.append(line)
-        self.changelog_details.setText('\n'.join(lines).strip()[:10000] or tr('Für diese Version ist noch kein Changelog verfügbar.'))
+        from .i18n import lang
+        self.changelog_scroll.set_notes(
+            '\n'.join(lines).strip() or tr('Für diese Version ist noch kein Changelog verfügbar.'),
+            (self.m.channel,version,lang()))
 
     def _sync_history(self,record):
         items=changelog.channel_history(self.m.channel,record)

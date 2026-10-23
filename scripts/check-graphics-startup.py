@@ -126,7 +126,7 @@ def child(mode, output):
                 # The target design must already be present in the snapshot,
                 # rather than jumping to its GPU texture at the end.
                 target = overlay.after.toImage()
-                if mode in renderer.QUICK_MODES and key not in ('quantum_core','lumen_drift'):
+                if mode in renderer.QUICK_MODES and key != 'lumen_drift':
                     assert not win.centralWidget()._upload_timer.isActive()
                 QTest.qWait(100)
                 if key == 'liquid_silver':
@@ -138,8 +138,13 @@ def child(mode, output):
                     phase = scene._phase
                     background = scene.sharp_backdrop().toImage()
                     QTest.qWait(520)
-                    assert scene._wallpaper_timer.isActive() and scene._phase != phase
-                    assert background != scene.sharp_backdrop().toImage()
+                    if key == 'quantum_core':
+                        assert not scene._wallpaper_timer.isActive() and scene._phase == phase
+                        assert background == scene.sharp_backdrop().toImage()
+                        assert win.pulse_core._timer.isActive() and win.brand_mark._timer.isActive()
+                    else:
+                        assert scene._wallpaper_timer.isActive() and scene._phase != phase
+                        assert background != scene.sharp_backdrop().toImage()
             settled(lambda: win._appearance_overlay is None)
             assert win._appearance_overlay is None
             assert win.sampler is sampler and sampler.isRunning()
@@ -164,7 +169,7 @@ def child(mode, output):
             print(json.dumps({'mode': mode, 'active': win.render_backend_active,
                   'platform': app.platformName(), 'live_sample': True,
                   'theme_transitions': True, 'liquid_silver_transitions': True,
-                  'quantum_core_animation': True,
+                  'quantum_core_static_background': True,
                   'lumen_drift_animation': True,
                   'search_interruptions': True,
                   'size': [win.width(), win.height()]}), flush=True)

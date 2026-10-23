@@ -1,10 +1,7 @@
-"""Quantum Core: a living HUD reactor skin with a real animated backdrop.
+"""Quantum Core: reactor instruments over a cached, static circuitry image.
 
-The expensive circuitry/nebula base layer is cached per pixel size in
-``_BASE_CACHE`` (module-level, bounded) and painted once; every animation
-tick only adds a cheap radar sweep, a handful of drifting embers and a
-scanline on top of a *copy* of that cached pixmap, so the continuous motion
-stays affordable even on modest hardware.
+The native image is rendered at the actual pixel size without moving layers.
+Logo animation and live instruments are independent of the background.
 """
 import math
 
@@ -119,41 +116,10 @@ def _base_layer(w, h):
     return pixmap
 
 
-def scene_pixmap(size, phase=0.0):
-    """Cached base plus a cheap, genuinely moving overlay: sweep, embers, scanline."""
+def scene_pixmap(size):
+    """Return the same sharp background image until the pixel size changes."""
     w, h = max(1, size.width()), max(1, size.height())
-    pixmap = _base_layer(w, h).copy()
-    p = QPainter(pixmap)
-    p.setRenderHint(QPainter.Antialiasing)
-    cx, cy = w * .52, h * .40
-    sweep = QConicalGradient(QPointF(cx, cy), math.degrees(phase) % 360)
-    sweep.setColorAt(0, color(PALETTE['accent'], 50))
-    sweep.setColorAt(.05, color(PALETTE['accent'], 0))
-    sweep.setColorAt(.97, color(PALETTE['secondary'], 0))
-    sweep.setColorAt(1, color(PALETTE['secondary'], 26))
-    p.setCompositionMode(QPainter.CompositionMode_Plus)
-    p.fillRect(QRectF(0, 0, w, h), sweep)
-    p.setCompositionMode(QPainter.CompositionMode_SourceOver)
-    seed = 4242
-    p.setPen(Qt.NoPen)
-    for i in range(34):
-        seed = (seed * 1103515245 + 12345) & 0x7fffffff
-        bx = (seed % 10000) / 10000 * w
-        seed = (seed * 1103515245 + 12345) & 0x7fffffff
-        by = (seed % 10000) / 10000 * h
-        drift = math.sin(phase + i) * 9
-        tone = SPECTRUM[i % 4]
-        p.setBrush(color(tone, 55 + (i * 37) % 120))
-        r = 1.0 + (i % 3) * .6
-        p.drawEllipse(QPointF(bx, by + drift), r, r)
-    sy = (phase / (2 * math.pi)) * h % h
-    scan = QLinearGradient(0, sy - 22, 0, sy + 22)
-    scan.setColorAt(0, color(PALETTE['accent'], 0))
-    scan.setColorAt(.5, color(PALETTE['accent'], 28))
-    scan.setColorAt(1, color(PALETTE['accent'], 0))
-    p.fillRect(QRectF(0, sy - 22, w, 44), scan)
-    p.end()
-    return pixmap
+    return _base_layer(w, h)
 
 
 # -------------------------------------------------------------------- panels

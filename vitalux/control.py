@@ -258,7 +258,7 @@ class PreferencesPage(Page):
             'aether_glass': 'Aether Glass · Optisches Rauchglas, Platinkanten und Violett-/Cyanlicht mit schwebender Navigation und eigenen Instrumenten. Palette und Hintergrund sind fest.',
             'eclipse_crystal': 'Eclipse Crystal · Facettierter schwarzer Kristall, Champagnerkanten und horizontale Navigation. Palette und Hintergrund sind fest.',
             'nebula_prism': 'Nebula Prism · Prismatisches Weltraumglas mit Spektralkanten, Ringinstrumenten und schwebendem Dock am unteren Rand. Palette und Hintergrund sind fest.',
-            'quantum_core': 'Quantum Core · Animiertes HUD-Reaktor-Design mit rotierendem Radarlicht, schwebenden Partikeln und kantigen Neon-Panels. Palette und Hintergrund sind fest.',
+            'quantum_core': 'Quantum Core · HUD-Reaktor-Design mit statischem Schaltkreis-Hintergrund und kantigen Neon-Panels. Logo und Live-Instrumente bleiben animiert. Palette und Hintergrund sind fest.',
             'lumen_drift': 'Lumen Drift · Warmes Glas mit Pastellakzenten, schwebender Navigation, sanft atmendem Hintergrund und ruhigen Ringanzeigen. Palette und Hintergrund sind fest.',
         }
         self.theme_note.setText(tr(self.mode_notes.get(theme.mode(), self.mode_notes['dark'])))

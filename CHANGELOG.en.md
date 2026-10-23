@@ -1,5 +1,10 @@
 # Vitalux – Changes
 
+## [v0.9.6.3-unstable.13] - 2026-10-23
+- Long release notes scroll inside a bounded area in Updates. The scrollbar appears only on overflow; version selection, progress and installation controls stay outside. Selecting another version starts its notes at the top.
+- Quantum Core uses a sharp, static circuitry background. Background motion is removed; animated logos and live instruments are retained.
+- The Lumen Drift preview in Settings uses more consistent card shapes, spacing and a rounded rectangular outline.
+
 ## [v0.9.6.3-unstable.12] - 2026-10-23
 - Lumen Drift joins the gallery as the 14th design, with warm pastel glass, softly rounded cards, calm ring instruments and floating navigation below the header.
 - Lumen Drift includes matching animated circle and wordmark assets and a gently breathing backdrop. Its palette and background are fixed; turning animations off or enabling Ultra Eco stops the background motion.

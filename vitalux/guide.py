@@ -75,7 +75,7 @@ SLIDES = [
     ),
     (
         "Darstellung und Einstellungen",
-        "Vierzehn Designs stehen im Vorschau-Raster. Lumen Drift ergänzt warmes Glas mit Pastellakzenten, sanft atmendem Hintergrund und schwebender Navigation unter dem Kopfbereich. Seine Palette und sein Hintergrund sind fest. Obsidian Gold bleibt Standard.",
+        "Vierzehn Designs stehen im Vorschau-Raster. Lumen Drift ergänzt warmes Glas mit Pastellakzenten, sanft atmendem Hintergrund und schwebender Navigation unter dem Kopfbereich. Seine Palette und sein Hintergrund sind fest. Quantum Core nutzt einen statischen Hintergrund; seine Logos bleiben animiert. Obsidian Gold bleibt Standard.",
         "Bei anpassbaren Designs wählst du integrierte Hintergründe oder eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
         "Die Suche erkennt auch unvollständige Namen wie MiniH oder MiniHU und gleitet zum passenden Bereich. Nach einer Auswahl bleibt sie fünf Sekunden sichtbar und schließt weich. Erweiterte Einstellungen öffnen sich bei passenden Treffern automatisch.",
         "Unter Erweiterte Einstellungen → Wartung setzt „Standardwerte wiederherstellen“ das gesamte aktive Profil zurück. Einstellungen, eigene Farben, Layouts, importierte Bildkopien und Cache werden gelöscht. Originalbilder und das andere Updateprofil bleiben erhalten; Vitalux startet neu und öffnet die Anleitung.",
@@ -94,7 +94,7 @@ SLIDES = [
         "Im Updates-Reiter stehen laufender Stand, Stable/Unstable und dauerhaft sichtbare Changelogs zusammen. Die Versionsauswahl blättert durch die Historie des Kanals, ohne das Installationsziel zu ändern; nur die separate Installationsaktion wechselt den Kanal.",
         "Bei einem Update glüht das Vitalux-Logo in der App und im Tray. Der Updates-Reiter pulsiert; eine Tray-Nachricht nennt die Version.",
         "Nach einer geprüften Installation startet Vitalux automatisch neu. Vorübergehende Fehler bei der Neustartvorbereitung werden bis zu drei Mal automatisch versucht; danach wird ein Fehler mit Wiederholungsaktion angezeigt. Stable v0.9.6.2 besitzt noch seinen älteren manuellen Updater.",
-        "Die Prozentzahl steht mittig im Update-Ladebalken. Downloads lassen sich abbrechen und bei Fehlern erneut versuchen. Changelogs folgen deiner Sprache und bleiben offline lesbar.",
+        "Die Prozentzahl steht mittig im Update-Ladebalken. Downloads lassen sich abbrechen und bei Fehlern erneut versuchen. Changelogs folgen deiner Sprache und bleiben offline lesbar. Lange Texte haben eine eigene Scrollleiste; passt der Text, bleibt sie unsichtbar. Beim Versionswechsel beginnt der Text oben.",
         "updates",
     ),
 ]

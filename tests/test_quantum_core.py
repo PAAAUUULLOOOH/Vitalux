@@ -1,4 +1,4 @@
-"""Imported Quantum artwork, live animation controls and retired Aurora profiles."""
+"""Quantum's static background, independent logo motion and retired profiles."""
 import hashlib
 import json
 import os
@@ -74,7 +74,8 @@ with tempfile.TemporaryDirectory(prefix='vitalux-quantum-') as folder, patch.obj
             assert not any(design_capabilities.capabilities(mode).values())
             assert preferences.accent_combo.isLocked() and preferences.background_combo.isLocked()
             assert not preferences.custom_accent_button.isEnabled()
-            assert scene._wallpaper_timer.isActive()
+            assert not scene._wallpaper_timer.isActive()
+            assert window.pulse_core._timer.isActive() and window.brand_mark._timer.isActive()
             assert window.sidebar.isVisible() and window.design_shell.dock_row.isHidden()
             assert len(window.pages) == 12
             assert all(button.isVisible() for button in window.nav_buttons)
@@ -85,10 +86,10 @@ with tempfile.TemporaryDirectory(prefix='vitalux-quantum-') as folder, patch.obj
         first = scene.sharp_backdrop().toImage()
         phase = scene._phase
         wait(560)
-        assert phase != scene._phase and first != scene.sharp_backdrop().toImage()
+        assert phase == scene._phase and first == scene.sharp_backdrop().toImage()
         base = quantum_core._base_layer(scene.width(), scene.height())
         assert base is quantum_core._base_layer(scene.width(), scene.height())
-        assert quantum_core.scene_pixmap(QSize(400, 240), 0).toImage() != quantum_core.scene_pixmap(QSize(400, 240), 1).toImage()
+        assert quantum_core.scene_pixmap(QSize(400, 240)) is quantum_core.scene_pixmap(QSize(400, 240))
 
         settings.set('motion', 'off')
         window.apply_appearance()
@@ -102,7 +103,7 @@ with tempfile.TemporaryDirectory(prefix='vitalux-quantum-') as folder, patch.obj
             window.set_language(language)
             note = preferences.theme_note.text()
             assert note.startswith('Quantum Core')
-            assert ('Radarlicht' if language == 'de' else 'radar sweep') in note
+            assert ('statischem' if language == 'de' else 'static') in note
             assert window.sampler is sampler and sampler.isRunning()
 
         metric = Metric('Prozessor', 'cpu')
@@ -123,7 +124,8 @@ with tempfile.TemporaryDirectory(prefix='vitalux-quantum-') as folder, patch.obj
         settings.set('ultra_eco', False)
         window.apply_appearance()
         wait(120)
-        assert theme.mode() == 'quantum_core' and scene._wallpaper_timer.isActive()
+        assert theme.mode() == 'quantum_core' and not scene._wallpaper_timer.isActive()
+        assert window.pulse_core._timer.isActive() and window.brand_mark._timer.isActive()
         window.hide()
         phase = scene._phase
         scene._advance_backdrop()
@@ -176,4 +178,4 @@ with tempfile.TemporaryDirectory(prefix='vitalux-aurora-retirement-') as folder,
     backups = (profiles.root('config') / 'profile-backups/unstable').glob('*/settings.json')
     assert any(profiles.read(path) == before for path in backups)
 
-print('Quantum artwork, real moving/cached backdrop, fixed options, motion/Eco, live sampling, DE/EN and isolated Aurora migration PASS')
+print('Quantum static/cached backdrop, independent logo motion, fixed options, live sampling, DE/EN and isolated Aurora migration PASS')

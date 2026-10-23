@@ -1114,6 +1114,11 @@ EN_MORE.update({
 EN_MORE.update({'Warnwert überschritten': 'Warning threshold exceeded'})
 
 EN_MORE.update({
+    'Vierzehn Designs stehen im Vorschau-Raster. Lumen Drift ergänzt warmes Glas mit Pastellakzenten, sanft atmendem Hintergrund und schwebender Navigation unter dem Kopfbereich. Seine Palette und sein Hintergrund sind fest. Quantum Core nutzt einen statischen Hintergrund; seine Logos bleiben animiert. Obsidian Gold bleibt Standard.': 'Fourteen designs share the preview grid. Lumen Drift adds warm glass with pastel accents, a gently breathing backdrop and floating navigation below the header. Its palette and background are fixed. Quantum Core uses a static background; its logos remain animated. Obsidian Gold remains the default.',
+    'Die Prozentzahl steht mittig im Update-Ladebalken. Downloads lassen sich abbrechen und bei Fehlern erneut versuchen. Changelogs folgen deiner Sprache und bleiben offline lesbar. Lange Texte haben eine eigene Scrollleiste; passt der Text, bleibt sie unsichtbar. Beim Versionswechsel beginnt der Text oben.': 'The percentage is centered inside the update bar. Downloads can be cancelled and retried after errors. Release notes follow your language and remain readable offline. Long notes have their own scrollbar; when the text fits, it stays hidden. Selecting a version starts its notes at the top.',
+})
+
+EN_MORE.update({
     'Alle lokalen Diagnosen auf einmal (ohne externen Verbindungstest).': 'Run all local checks (without an external connection test).',
     'Aktuelle Sensorwerte und konfigurierbare Warnschwellen.': 'Current readings and configurable warning thresholds.',
     'Display-Verbindungen, Modi, Wayland und KScreen-Auskunft.': 'Display connections, modes, Wayland and KScreen details.',

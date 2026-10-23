@@ -36,16 +36,16 @@ Download a package from the [Unstable release](https://github.com/PAAAUUULLOOOH/
 **AppImage:**
 
 ```bash
-chmod +x Vitalux-v0.9.6.3-unstable.12-x86_64.AppImage
-./Vitalux-v0.9.6.3-unstable.12-x86_64.AppImage
+chmod +x Vitalux-v0.9.6.3-unstable.13-x86_64.AppImage
+./Vitalux-v0.9.6.3-unstable.13-x86_64.AppImage
 ```
 
 First launch offers user-account installation or **Run once**. Use `--portable` to skip integration, `--install` to add it later, or `--uninstall` to remove it while keeping preferences.
 
-**Portable ZIP:** extract the complete `Vitalux-v0.9.6.3-unstable.12-linux-x86_64.zip` into its own writable folder:
+**Portable ZIP:** extract the complete `Vitalux-v0.9.6.3-unstable.13-linux-x86_64.zip` into its own writable folder:
 
 ```bash
-cd Vitalux-v0.9.6.3-unstable.12
+cd Vitalux-v0.9.6.3-unstable.13
 bash run.sh
 ```
 
@@ -68,7 +68,7 @@ Choose a design in **Settings → Appearance**. Hover or keyboard-focus a previe
 
 Settings search predicts partial names such as MiniH and scrolls smoothly to their controls. The field closes softly after five seconds. Edit layout keeps tiles stationary and their hold/X controls visible until editing ends. Controls are silent. On/off controls use themed switches; multiple selections retain checkmarks.
 
-Lumen Drift and Quantum Core have fixed palettes and animated backgrounds; motion settings and Ultra Eco can stop their animation. Aurora Gold and Champagne Glass are removed; saved selections return to Obsidian Gold while personal customization choices are retained.
+Lumen Drift has an animated backdrop; motion settings and Ultra Eco can stop it. Quantum Core uses a sharp, static circuitry background while its logos and live instruments keep their animations. Both designs have fixed palettes and backgrounds. Aurora Gold and Champagne Glass are removed; saved selections return to Obsidian Gold while personal customization choices are retained.
 
 **Advanced settings → Maintenance → Restore defaults** is the one full reset action. Its description and confirmation explain that it removes all active-profile preferences, custom colors/layouts, imported background copies and cache, then restarts into the guide. Original source images and the other channel are preserved. Section resets remain available for individual groups.
 
@@ -76,7 +76,7 @@ See the [user guide](USER-GUIDE.md) for design restrictions, graphics, network c
 
 ## Updates and channels
 
-Everything stays in **Updates**: installed version and check status at the top, **Stable / Unstable** and their changelogs below. Release notes stay visible. A **Version** selector browses each channel’s history without changing the installation target. Clicking a channel only browses its notes; a separate action shows the target version and prepares installation. Unstable is selectable for installation only when a verified test build contains genuinely newer app changes. GitHub's **Latest** download remains Stable.
+Everything stays in **Updates**: installed version and check status at the top, **Stable / Unstable** and their changelogs below. Release notes stay visible in a bounded area; a scrollbar appears only when the text is too long. The **Version** selector browses each channel’s history from the top without changing the installation target. Clicking a channel only browses its notes; a separate action shows the target version and prepares installation. Unstable is selectable for installation only when a verified test build contains genuinely newer app changes. GitHub's **Latest** download remains Stable.
 
 The update bar shows a centered percentage for the complete preparation process. Slow downloads report progress in smaller chunks; an idle connection times out. Use **Cancel download** while downloading or **Retry download** after a failure. If the server omits its size header, verified release metadata supplies the total. Without either size, progress stays at 0 until reception completes. Verification and preparation occupy the final part of the bar.
 
@@ -85,7 +85,7 @@ After a verified update or channel switch, Vitalux finishes background work and 
 Updates check SHA-256 and preserve recovery data. For manual verification, put the matching release manifest beside your downloads and run:
 
 ```bash
-sha256sum --ignore-missing -c Vitalux-v0.9.6.3-unstable.12-SHA256SUMS.txt
+sha256sum --ignore-missing -c Vitalux-v0.9.6.3-unstable.13-SHA256SUMS.txt
 ```
 
 A matching checksum verifies consistency with that manifest, not an independent digital signature.
@@ -102,7 +102,7 @@ VITALUX_RENDERER=software bash run.sh
 For an AppImage/FUSE problem:
 
 ```bash
-./Vitalux-v0.9.6.3-unstable.12-x86_64.AppImage --appimage-extract
+./Vitalux-v0.9.6.3-unstable.13-x86_64.AppImage --appimage-extract
 VITALUX_RENDERER=software bash squashfs-root/AppRun --portable
 ```
 
