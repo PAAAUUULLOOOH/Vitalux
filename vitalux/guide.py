@@ -75,7 +75,7 @@ SLIDES = [
     ),
     (
         "Darstellung und Einstellungen",
-        "Zwölf Designs stehen im Vorschau-Raster. Farbkreis und Bildsymbol rechts auf den Kacheln zeigen verfügbare Optionen farbig und feste Optionen grau. Champagne Glass wurde entfernt; Obsidian Gold bleibt Standard.",
+        "Dreizehn Designs stehen im Vorschau-Raster. Nebula Prism ergänzt Weltraumglas mit Spektralkanten, Ringinstrumenten und einem Dock am unteren Rand. Seine Palette und sein Hintergrund sind fest. Obsidian Gold bleibt Standard.",
         "Bei anpassbaren Designs wählst du integrierte Hintergründe oder eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
         "Die Suche erkennt auch unvollständige Namen wie MiniH oder MiniHU und gleitet zum passenden Bereich. Nach einer Auswahl bleibt sie fünf Sekunden sichtbar und schließt weich. Erweiterte Einstellungen öffnen sich bei passenden Treffern automatisch.",
         "Unter Erweiterte Einstellungen → Wartung setzt „Standardwerte wiederherstellen“ das gesamte aktive Profil zurück. Einstellungen, eigene Farben, Layouts, importierte Bildkopien und Cache werden gelöscht. Originalbilder und das andere Updateprofil bleiben erhalten; Vitalux startet neu und öffnet die Anleitung.",

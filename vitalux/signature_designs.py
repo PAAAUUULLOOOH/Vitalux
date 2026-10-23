@@ -8,6 +8,7 @@ from PySide6.QtCore import QPointF, QRectF, Qt, QVariantAnimation, QEasingCurve
 from PySide6.QtGui import (QBrush, QColor, QFont, QLinearGradient, QPainter,
                            QPainterPath, QPen, QPixmap, QRadialGradient)
 from PySide6.QtWidgets import QWidget
+from . import nebula_prism
 
 COLLECTIONS = {
     'aether_glass': dict(title='Aether Glass', subtitle='OPTICAL GLASS / PLATINUM',
@@ -21,6 +22,7 @@ COLLECTIONS = {
         accent='#efc68d', secondary='#f4a86e', light='#9e7548', bloom='#4d3728',
         shadow='#101012', series=('#efc68d', '#f4a86e', '#e1d9cb', '#a8a6a2')),
 }
+COLLECTIONS['nebula_prism'] = nebula_prism.PALETTE
 KEYS = tuple(COLLECTIONS)
 
 
@@ -36,6 +38,8 @@ def color(value, alpha=255):
 
 
 def shape(rect, mode, compact=False):
+    if mode == 'nebula_prism':
+        return nebula_prism.shape(rect, compact)
     path = QPainterPath()
     if mode != 'eclipse_crystal':
         radius = 11 if compact else 22
@@ -51,6 +55,8 @@ def shape(rect, mode, compact=False):
 
 
 def scene_pixmap(size, mode):
+    if mode == 'nebula_prism':
+        return nebula_prism.scene_pixmap(size)
     pal = COLLECTIONS[mode]
     w, h = max(1, size.width()), max(1, size.height())
     pixmap = QPixmap(w, h)
@@ -130,6 +136,8 @@ def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
     from . import theme
     from .glass import draw_frosted_backdrop
     mode = theme.mode()
+    if mode == 'nebula_prism':
+        return nebula_prism.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
     pal = COLLECTIONS[mode]
     path = shape(rect,mode,compact)
     p.save()
@@ -201,6 +209,8 @@ def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
 
 
 def stylesheet(mode):
+    if mode=='nebula_prism':
+        return nebula_prism.stylesheet()
     pal=COLLECTIONS[mode]
     radius=9 if mode=='aether_glass' else 3
     return f'''
@@ -230,6 +240,8 @@ def stylesheet(mode):
 def paint_navigation(button):
     from . import theme
     from .nav_icons import paint_icon
+    if theme.mode()=='nebula_prism':
+        return nebula_prism.paint_navigation(button)
     p=QPainter(button)
     p.setRenderHint(QPainter.Antialiasing)
     rect=QRectF(button.rect()).adjusted(3,3,-3,-3)
@@ -300,6 +312,9 @@ def paint_preview(p,tile,pal):
         p.setPen(QPen(color(pal['accent'],105),.6))
         p.setBrush(color(pal['card'],alpha))
         p.drawPath(shape(rect,mode,True))
+    if mode=='nebula_prism':
+        nebula_prism.preview_contents(p,tile,pal,box,width)
+        return _preview_tail(p,tile,pal,mode,width)
     box(QRectF(5,5,width-10,9))
     p.setPen(QPen(color(pal['text'],190),1))
     p.drawLine(11,9,31,9)
@@ -330,6 +345,10 @@ def paint_preview(p,tile,pal):
         p.drawPath(path)
     box(QRectF(offset,y+28,usable*.60,17))
     box(QRectF(offset+usable*.64,y+28,usable*.36,17))
+    _preview_tail(p,tile,pal,mode,width)
+
+
+def _preview_tail(p,tile,pal,mode,width):
     p.fillRect(QRectF(0,75,width,40),color(pal['bg'],235))
     font=QFont(tile.font());font.setPixelSize(11);font.setWeight(QFont.DemiBold)
     p.setFont(font);p.setPen(color(pal['text']))
@@ -345,6 +364,7 @@ def paint_preview(p,tile,pal):
         p.setPen(QPen(color(pal['bg']),1.3))
         p.drawLine(QPointF(width-18,14),QPointF(width-16,16))
         p.drawLine(QPointF(width-16,16),QPointF(width-12,12))
+
 
 
 class Metric(QWidget):
@@ -394,6 +414,10 @@ class Metric(QWidget):
         from . import theme
         from .i18n import tr
         p=QPainter(self)
+        if theme.mode()=='nebula_prism':
+            nebula_prism.paint_metric(self,p)
+            p.end()
+            return
         p.setRenderHint(QPainter.Antialiasing)
         p.setRenderHint(QPainter.TextAntialiasing)
         pal=COLLECTIONS[theme.mode()]

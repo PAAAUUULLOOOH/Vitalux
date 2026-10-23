@@ -408,5 +408,25 @@
     "file": "assets/brand/animated/vitalux-wordmark-light.svg",
     "bytes": 6744,
     "sha256": "7567e11491aedde966d4110d37639bc5d3884f3d7096f1212f3f5cd054b517b0"
+  },
+  {
+    "file": "assets/brand/vitalux-pulse-nebula-prism.svg",
+    "bytes": 65870,
+    "sha256": "5a9ae72243f4df06206bb28c0b5192a90231dfa104c25547b48c39a25753c66a"
+  },
+  {
+    "file": "assets/brand/vitalux-wordmark-nebula-prism.svg",
+    "bytes": 6406,
+    "sha256": "8fcf5d4cb6a2f17c4df98501f61f87dc3c6b623d52c61d1ceb2b9fce2e991a4a"
+  },
+  {
+    "file": "assets/brand/animated/vitalux-pulse-nebula-prism.svg",
+    "bytes": 66688,
+    "sha256": "37d5d2f39abee9e74c8aac573d91eeeb65d95e79e15da4eb084a604d1c22dbf8"
+  },
+  {
+    "file": "assets/brand/animated/vitalux-wordmark-nebula-prism.svg",
+    "bytes": 6752,
+    "sha256": "b1ed4262d5f8b1c94976ca7cda72f732271eafb2efa7fcfade3d0a586a602692"
   }
 ]

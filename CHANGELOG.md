@@ -1,5 +1,10 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.3-unstable.10] - 2026-10-23
+- Nebula Prism ergänzt die Designauswahl mit prismatischem Weltraumglas, Spektralkanten, eigenen Ringinstrumenten und einem schwebenden Dock am unteren Rand.
+- Das Design enthält passend animierte Kreis- und Schriftlogos sowie eine feste Palette und einen festen Hintergrund.
+- Die Dock-Symbole zeigen Kategorien und verfügbare Updates beim Darüberfahren; Sprach- und Designwechsel erhalten laufende Messungen.
+
 ## [v0.9.6.3-unstable.9] - 2026-10-22
 - Dashboard-Kacheln bleiben beim Öffnen der Layoutbearbeitung ruhig; Verschiebehinweise und X bleiben sichtbar.
 - Das Diagnosezentrum zeigt die fünf letzten App-Warnungen, Updatefehler und automatischen Renderer-Wechsel.

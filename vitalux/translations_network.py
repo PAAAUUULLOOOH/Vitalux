@@ -1,5 +1,6 @@
 """English text for the native design collections and application networking."""
 EN_NETWORK={
+ 'Nebula Prism · Prismatisches Weltraumglas mit Spektralkanten, Ringinstrumenten und schwebendem Dock am unteren Rand. Palette und Hintergrund sind fest.': 'Nebula Prism · Prismatic deep-space glass with spectral edges, ring instruments and a floating dock along the bottom. Palette and background are fixed.',
  'Obsidian Gold bleibt das Standarddesign. Zwölf Vorschaukacheln wählen ein Design; Aether Glass und Eclipse Crystal besitzen eigene Materialien, Instrumente und Navigation sowie feste Paletten und Hintergründe.': 'Obsidian Gold remains the default design. Twelve preview tiles select a design; Aether Glass and Eclipse Crystal have their own materials, instruments and navigation, with fixed palettes and backgrounds.',
  'Netzwerk → Programme & Verbindungen zeigt laufende Apps, Verbindungen und erfassten Verbrauch. Mit Systemfreigabe stehen TCP-/UDP-Messung und Sitzungssperren bereit; Verbrauchswarnungen sind pro App einstellbar.': 'Network → Apps & connections shows applications, connections and recorded traffic. System authorization enables TCP/UDP accounting and session blocks; usage warnings can be set for each app.',
  'Programme & Verbindungen':'Apps & connections',

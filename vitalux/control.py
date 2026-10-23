@@ -258,6 +258,7 @@ class PreferencesPage(Page):
             'aurora_gold': 'Aurora Gold · Irisierendes Glas mit Petrol- und Violettlicht, flüssigen Goldkanten und leuchtenden Instrumenten.',
             'aether_glass': 'Aether Glass · Optisches Rauchglas, Platinkanten und Violett-/Cyanlicht mit schwebender Navigation und eigenen Instrumenten. Palette und Hintergrund sind fest.',
             'eclipse_crystal': 'Eclipse Crystal · Facettierter schwarzer Kristall, Champagnerkanten und horizontale Navigation. Palette und Hintergrund sind fest.',
+            'nebula_prism': 'Nebula Prism · Prismatisches Weltraumglas mit Spektralkanten, Ringinstrumenten und schwebendem Dock am unteren Rand. Palette und Hintergrund sind fest.',
         }
         self.theme_note.setText(tr(self.mode_notes.get(theme.mode(), self.mode_notes['dark'])))
         accent_row = QVBoxLayout()

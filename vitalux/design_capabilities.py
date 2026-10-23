@@ -2,7 +2,7 @@
 from PySide6.QtCore import Qt,QRectF,QPointF
 from PySide6.QtGui import QColor,QConicalGradient,QLinearGradient,QPainterPath,QPen
 
-FIXED=frozenset(('black_glass_gold','obsidian_gold','aurora_gold','aether_glass','eclipse_crystal','liquid_silver'))
+FIXED=frozenset(('black_glass_gold','obsidian_gold','aurora_gold','aether_glass','eclipse_crystal','liquid_silver','nebula_prism'))
 
 
 def capabilities(key):

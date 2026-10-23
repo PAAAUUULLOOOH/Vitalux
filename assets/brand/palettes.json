@@ -151,6 +151,16 @@
       "secondary": "#81adc8",
       "fixed": true,
       "pulse_base": "#718ba2"
+    },
+    "nebula-prism": {
+      "name": "Nebula Prism",
+      "accent": "#5ef0ff",
+      "top": "#f2fdff",
+      "mid": "#8fe9ff",
+      "low": "#6a4fe0",
+      "spec": "#ffffff",
+      "secondary": "#ff6ad5",
+      "fixed": true
     }
   },
   "theme_assets": {
@@ -159,7 +169,8 @@
     "aurora_gold": "aurora-gold",
     "aether_glass": "aether-glass",
     "eclipse_crystal": "eclipse-crystal",
-    "liquid_silver": "liquid-silver"
+    "liquid_silver": "liquid-silver",
+    "nebula_prism": "nebula-prism"
   },
   "custom_accent_policy": "Preserve the outlined geometry; moderately richer tint for the circle logo only.",
   "motion_seconds": {
