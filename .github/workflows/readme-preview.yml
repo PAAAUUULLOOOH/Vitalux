@@ -1,4 +1,4 @@
-name: Vitalux – README-Programmfoto
+name: Vitalux – Stable README screenshot
 
 on:
   workflow_dispatch:
@@ -12,6 +12,7 @@ concurrency:
 
 jobs:
   capture:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
