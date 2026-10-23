@@ -21,7 +21,7 @@ def _run(command, timeout=8, env=None):
     try:
         return subprocess.run(command, capture_output=True, text=True,
                               timeout=timeout, env=env, check=False)
-    except (OSError, subprocess.TimeoutExpired) as exc:
+    except (OSError, subprocess.TimeoutExpired):
         return None
 
 def check_arch():

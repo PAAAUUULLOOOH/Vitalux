@@ -153,9 +153,6 @@ def _kscreen_active_displays():
         return {}
 
 
-def _kscreen_active_modes():
-    """Legacy helper retained for callers expecting physical sizes only."""
-    return {name: output['mode'] for name, output in _kscreen_active_displays().items()}
 
 
 def _native_screen_size(screen, known_modes=None):

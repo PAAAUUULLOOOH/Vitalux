@@ -6,13 +6,12 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, os.getcwd())
 
 from PySide6.QtCore import QSize
-from PySide6.QtGui import QColor, QPixmap
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QApplication
 
 from vitalux import theme
 from vitalux.glass import AmbientScene, GlassSidebar, GlassSurface
 from vitalux.holographic import scene_pixmap
-from vitalux.widgets import ChartPanel
 
 
 def run():

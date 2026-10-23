@@ -3,7 +3,6 @@
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
 import hashlib
-import os
 import sys
 
 def files(root):

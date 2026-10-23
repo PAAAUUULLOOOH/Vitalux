@@ -83,7 +83,7 @@ def child(mode, output):
     from vitalux.window import MainWindow
     app = QApplication([])
     from vitalux import hover_hints
-    guard = hover_hints.install(app)
+    _hover_guard = hover_hints.install(app)
     theme.set_mode('obsidian_gold')
     theme.set_accent(settings.get('accent', '#4f8cff'))
     app.setStyleSheet(theme.stylesheet())
@@ -125,7 +125,8 @@ def child(mode, output):
                 overlay = win._appearance_overlay
                 # The target design must already be present in the snapshot,
                 # rather than jumping to its GPU texture at the end.
-                target = overlay.after.toImage()
+                assert not overlay.after.isNull()
+                assert overlay.before.toImage() != overlay.after.toImage()
                 if mode in renderer.QUICK_MODES and key != 'lumen_drift':
                     assert not win.centralWidget()._upload_timer.isActive()
                 QTest.qWait(100)

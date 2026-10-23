@@ -145,7 +145,7 @@ def combo_surface():
 _BLACK_GLASS_GOLD_QSS = Template(r"""
 /* Special fixed-gold material; user-selected accents are intentionally ignored. */
 #pageTitle, #heroTitle, #telemetryValue, #chipValue, #bigName { color: #ffebb5; }
-#cardTitle, #chipTitle, #metricCaption, #overviewLive, #statusTag, #focusReading { color: $ACCENT; }
+#cardTitle, #chipTitle, #metricCaption, #overviewLive, #statusTag { color: $ACCENT; }
 #pageSub, #metricDetail, #sidebarDistro, #sidebarVersion, #muted { color: #d0b984; }
 QToolTip { background: #16130f; border: 1px solid #b99147; color: #ffe7af; }
 QLineEdit, QComboBox, QSpinBox, QTextEdit, QListWidget,
@@ -165,7 +165,6 @@ QPushButton#systemUpdatesDetails:hover, QPushButton#systemUpdatesInstall:hover {
 }
 QProgressBar { background: #17130c; border: 1px solid #9a783a; }
 QProgressBar::chunk { background: $ACCENT; }
-QGroupBox#insightGroup { background: #16120c; border-color: #9a783a; }
 #primaryBtn { background: #f3cd79; border-color: #f3cd79; color: #160e03; }
 QComboBox:disabled, QPushButton:disabled { color: #877858; border-color: #51432c; background: #16120e; }
 """)
@@ -204,7 +203,6 @@ QPushButton#primaryBtn { border-radius: 2px; background: $ACCENT;
 QProgressBar { background: #081e2e; border: 1px solid #236282;
     border-radius: 2px; min-height: 12px; }
 QProgressBar::chunk { background: $ACCENT; border-radius: 1px; }
-QGroupBox#insightGroup { background: #091b2a; border: 1px solid #236282; border-radius: 2px; }
 QToolButton#customAccentRemove { border-radius: 2px; }
 QLabel#benchmarkResultRead, QLabel#benchmarkResultWrite { border-radius: 3px; }
 QScrollBar::handle:vertical { background: #236282; border-radius: 2px; }
@@ -302,24 +300,6 @@ QListWidget::item:selected { background: $ACTIVE_BG; color: $TEXT; }
 QToolButton#customAccentRemove { background: $BUTTON_BG; border: 1px solid $BORDER;
     border-radius: 8px; color: $MUTED; font-size: 19px; padding: 0px; }
 QToolButton#customAccentRemove:hover { color: $ACCENT; border-color: $ACCENT; background: $ACTIVE_BG; }
-/* Vitalux Insights: nested cards follow the active native design. */
-QGroupBox#insightGroup {
-    background: $INPUT_BG;
-    border: 1px solid $BORDER;
-    border-radius: 12px;
-    margin-top: 16px;
-    padding: 12px 10px 10px 10px;
-    color: $TEXT;
-}
-QGroupBox#insightGroup::title {
-    subcontrol-origin: margin;
-    subcontrol-position: top left;
-    left: 12px;
-    padding: 0 6px;
-    color: $TEXT;
-    font-weight: 750;
-}
-QLabel#focusReading { color: $ACCENT; font-size: 29px; font-weight: 800; }
 QCheckBox { spacing: 8px; }
 QCheckBox::indicator { width: 16px; height: 16px; }
 QCheckBox::indicator:checked { background: $ACCENT; border: 1px solid $ACCENT; border-radius: 4px; }

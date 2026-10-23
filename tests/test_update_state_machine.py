@@ -1,5 +1,5 @@
 """Channel browsing, restart latches, offline notes and promotion notices."""
-import os,sys,tempfile,time
+import os,sys,tempfile
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch

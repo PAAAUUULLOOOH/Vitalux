@@ -165,17 +165,6 @@ def paint_chart_frame(p, rect, accent):
     p.drawLine(QPointF(r.right()-32,r.bottom()), QPointF(r.right()-7,r.bottom()))
 
 
-def paint_chart_grid(p, rect, accent):
-    r = QRectF(rect)
-    p.setPen(QPen(color(accent, 30), .75))
-    for i in range(1, 13):
-        x = r.left()+r.width()*i/13
-        p.drawLine(QPointF(x,r.top()), QPointF(x,r.bottom()))
-    p.setPen(QPen(color(accent, 65), 1))
-    for x in (r.left(),r.right()):
-        for y in (r.top(),r.bottom()):
-            p.drawLine(QPointF(x-3,y), QPointF(x+3,y))
-            p.drawLine(QPointF(x,y-3), QPointF(x,y+3))
 
 
 def paint_gauge_ticks(p, rect, accent):

@@ -21,7 +21,7 @@ class Response(BytesIO):
 
 
 def run():
-    app = QCoreApplication.instance() or QCoreApplication([])
+    _app = QCoreApplication.instance() or QCoreApplication([])
     previous = settings.PATH
     with tempfile.TemporaryDirectory() as folder:
         base = Path(folder)

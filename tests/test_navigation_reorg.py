@@ -6,11 +6,10 @@ from pathlib import Path
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, os.getcwd())
 
-from PySide6.QtCore import QObject, Signal
 from PySide6.QtGui import QPixmap
 import time
 from PySide6.QtWidgets import QApplication
-from vitalux import i18n, settings, theme
+from vitalux import settings, theme
 from vitalux.window import MainWindow, Sampler
 
 
@@ -67,8 +66,8 @@ def main():
             assert pref.advanced.isAncestorOf(pref._settings_cards['render'][0])
             assert pref.advanced.isAncestorOf(pref._maintenance_card)
             assert not hasattr(gpu, 'diagnostic_shortcut')
-            assert not hasattr(gpu, 'lab_panel') or gpu.lab_panel is None
-            assert diag.lab_panel is None
+            assert not hasattr(gpu, 'lab_panel')
+            assert not hasattr(diag, 'lab_panel')
             assert pref.hud_on is not None
             assert not hasattr(pref, 'hud_top')
             assert set(diag.texts) == {key for key,_,_ in diag.SECTIONS}
@@ -96,7 +95,7 @@ def main():
             assert pref.background_performance_note.isHidden()
             diag.select_area('hardware', 'pcie')
             assert diag.tabs.tabText(diag.tabs.currentIndex()) == 'PCIe Guardian'
-            assert diag.lab_panel is None
+            assert not hasattr(diag, 'lab_panel')
             assert diag.worker is None
             print('Original sidebar, searchable settings, diagnostic tabs and GPU safe: OK')
         finally:

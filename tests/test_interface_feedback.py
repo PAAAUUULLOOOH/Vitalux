@@ -6,9 +6,8 @@ import tempfile
 
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0, os.getcwd())
-from PySide6.QtCore import QEvent, QObject, Qt
-from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication, QLineEdit, QPushButton, QSlider, QWidget
+from PySide6.QtCore import QEvent, QObject
+from PySide6.QtWidgets import QApplication, QWidget
 from vitalux import settings, theme
 from vitalux.brand import Wordmark, _pixmap, themed_icon_pixmap, wordmark_pixmap
 

@@ -9,7 +9,6 @@ from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QThread
 from vitalux import distro,profiles,settings,updater
 from vitalux.logo import load_logo
-from vitalux.pages_extra import UpdatePage
 from vitalux.update_manager import UpdateManager
 from vitalux.window import MainWindow
 

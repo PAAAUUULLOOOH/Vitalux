@@ -4,7 +4,7 @@ import ipaddress
 from PySide6.QtNetwork import QDnsLookup
 from PySide6.QtWidgets import (QAbstractItemView,QHeaderView,QHBoxLayout,QInputDialog,
     QLineEdit,QTableWidget,QTableWidgetItem,QVBoxLayout,QWidget)
-from . import settings,theme
+from . import settings
 from .i18n import tr
 from .ui_locale import QPushButton
 from .widgets import Card,label

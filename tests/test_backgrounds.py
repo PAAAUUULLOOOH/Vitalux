@@ -6,7 +6,7 @@ os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0, os.getcwd())
 
 from PySide6.QtCore import QEvent, QPoint, QSize
-from PySide6.QtGui import QColor, QHelpEvent
+from PySide6.QtGui import QHelpEvent
 from PySide6.QtWidgets import QApplication, QWidget
 
 from vitalux import backdrops, theme, settings, hover_hints

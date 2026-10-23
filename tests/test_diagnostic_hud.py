@@ -1,17 +1,14 @@
 import os,sys,tempfile
-from pathlib import Path
 sys.path.insert(0, os.getcwd())  # CI launches this script from the staged runtime.
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 _tmp=tempfile.TemporaryDirectory(prefix='vitalux-diag-hud-')
 os.environ['XDG_CONFIG_HOME']=_tmp.name+'/config'
 os.environ['XDG_STATE_HOME']=_tmp.name+'/state'
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import QObject, Signal, QTimer
-from vitalux import settings,theme,distro,eco
+from vitalux import settings,theme,distro
 from vitalux.window import MainWindow
 from vitalux.logo import load_logo
 from vitalux.diagnostic_center import DiagnosticCenter
-from vitalux.mini_hud import MiniHUD
 
 from vitalux.update_manager import UpdateManager
 
@@ -47,7 +44,7 @@ assert pref.hud_opacity.findData(50) >= 0
 assert not hasattr(pref, 'language_combo')
 assert len(cent.findChildren(__import__('vitalux.widgets',fromlist=['Card']).Card)) == 4
 assert hasattr(cent, 'recent_events')
-assert cent.lab_panel is None
+assert not hasattr(cent, 'lab_panel')
 assert not any('Erweiterte Grafikoptionen' in c.text() for c in pref.findChildren(__import__('PySide6.QtWidgets',fromlist=['QPushButton']).QPushButton))
 w.set_mini_hud_enabled(True)
 app.processEvents()

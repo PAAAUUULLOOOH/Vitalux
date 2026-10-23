@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 import sys
 import tempfile
-from unittest.mock import patch
 
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0, os.getcwd())
@@ -11,7 +10,7 @@ from PySide6.QtCore import QEvent, QPoint, QPointF, Qt
 from PySide6.QtGui import QEnterEvent, QWheelEvent
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QScrollArea, QWidget
-from vitalux import i18n, settings, theme
+from vitalux import settings, theme
 from vitalux.control import PreferencesPage
 
 

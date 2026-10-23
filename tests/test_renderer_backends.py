@@ -12,7 +12,7 @@ sys.path.insert(0, os.getcwd())
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QApplication, QLabel, QVBoxLayout
 from vitalux import renderer, settings
 from vitalux.glass import AmbientScene, create_ambient_scene
 

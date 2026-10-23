@@ -197,7 +197,7 @@ def stylesheet():
     QPushButton#primaryBtn,QPushButton#langBtn:checked {{
         background:qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 {SPECTRUM[0]},stop:.6 {SPECTRUM[2]},stop:1 {SPECTRUM[3]});
         border-radius:6px;border:1px solid {pal['accent']};color:#02040a;}}
-    QProgressBar,QProgressBar::chunk,QGroupBox#insightGroup {{border-radius:6px;}}
+    QProgressBar,QProgressBar::chunk {{border-radius:6px;}}
     QScrollBar::handle:vertical {{background:{pal['border']};border-radius:3px;}}
     '''
 
@@ -338,7 +338,7 @@ def paint_metric(metric, p):
     p.setRenderHint(QPainter.Antialiasing)
     p.setRenderHint(QPainter.TextAntialiasing)
     rect = QRectF(metric.rect()).adjusted(5, 3, -5, -3)
-    width, height = rect.width(), rect.height()
+    width = rect.width()
     font = QFont(metric.font())
 
     def text(area, value, size=12, tone=None, weight=QFont.Normal,

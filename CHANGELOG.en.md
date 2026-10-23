@@ -1,5 +1,8 @@
 # Vitalux – Changes
 
+## [v0.9.6.3-unstable.14] - 2026-10-23
+- Smaller installation packages by removing unnecessary development and test files.
+
 ## [v0.9.6.3-unstable.13] - 2026-10-23
 - Long release notes scroll inside a bounded area in Updates. The scrollbar appears only on overflow; version selection, progress and installation controls stay outside. Selecting another version starts its notes at the top.
 - Quantum Core uses a sharp, static circuitry background. Background motion is removed; animated logos and live instruments are retained.

@@ -18,7 +18,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 def child(root, archive, phase):
     sys.path.insert(0, str(root))
-    from vitalux import __version__, profiles
+    from vitalux import profiles
     profiles.initialize()
     from vitalux import settings, updater
     stable = profiles.directory('config', 'stable')/'settings.json'

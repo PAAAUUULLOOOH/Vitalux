@@ -1,6 +1,6 @@
 """One source of truth for customization controls and preview indicators."""
 from PySide6.QtCore import Qt,QRectF,QPointF
-from PySide6.QtGui import QColor,QConicalGradient,QLinearGradient,QPainterPath,QPen
+from PySide6.QtGui import QColor,QConicalGradient,QPainterPath,QPen
 
 FIXED=frozenset(('black_glass_gold','obsidian_gold','aether_glass','eclipse_crystal','liquid_silver','nebula_prism','quantum_core','lumen_drift'))
 

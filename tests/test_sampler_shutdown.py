@@ -17,7 +17,7 @@ from vitalux.window import MainWindow, Sampler
 
 
 def run():
-    app = QApplication.instance() or QApplication([])
+    _app = QApplication.instance() or QApplication([])
     sampled = Event()
     with patch('vitalux.window.sensors.collect', side_effect=lambda: sampled.set() or {}):
         worker = Sampler()

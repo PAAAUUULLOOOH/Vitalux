@@ -18,7 +18,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from PySide6.QtCore import QEvent, QObject, QPointF, QRectF, Qt, QTimer
-from PySide6.QtGui import (QBrush, QColor, QFont, QIcon, QLinearGradient,
+from PySide6.QtGui import (QBrush, QColor, QIcon, QLinearGradient,
                            QPainter, QPainterPath, QPen, QPixmap, QRadialGradient)
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import QSizePolicy, QWidget
@@ -131,8 +131,6 @@ def _themed_svg(icon):
     return _asset_bytes(filename)
 
 
-def icon_pixmap(size=96):
-    return _pixmap("vitalux-pulse.svg", size, size)
 
 
 # Presets use their authored SVG palettes; arbitrary and distribution colors

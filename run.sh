@@ -13,7 +13,7 @@ if [ -f "$HERE/DESIGN-BUILD.json" ] && [ -f "$HERE/Designs-testen.sh" ]; then
   exec bash "$HERE/Designs-testen.sh" "$@"
 fi
 if [ ! -f "$HERE/runtime/bin/python3.12" ] && [ -f "$HERE/portable-runtime/vitalux-linux-x86_64.tar.xz" ]; then
-  bash "$HERE/scripts/prepare-preview-runtime.sh" || exit $?
+  bash "$HERE/scripts/ensure-runtime.sh" || exit $?
 fi
 VERSION="$(sed -n 's/^__version__ = "\([^"]*\)".*/\1/p' "$HERE/vitalux/__init__.py" 2>/dev/null)"
 STATE_DIR="${XDG_STATE_HOME:-${HOME}/.local/state}/vitalux"

@@ -255,7 +255,7 @@ def stylesheet():
     QPushButton#primaryBtn,QPushButton#langBtn:checked {{
         background:qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 {SPECTRUM[0]},stop:.55 {SPECTRUM[1]},stop:1 {SPECTRUM[2]});
         border-radius:12px;border:1px solid {pal['accent']};color:#06071a;}}
-    QProgressBar,QProgressBar::chunk,QGroupBox#insightGroup {{border-radius:12px;}}
+    QProgressBar,QProgressBar::chunk {{border-radius:12px;}}
     QScrollBar::handle:vertical {{background:{pal['border']};border-radius:3px;}}
     '''
 
@@ -430,13 +430,12 @@ def _area_graph(p, rect, history):
 
 
 def paint_metric(metric, p):
-    from . import theme
     from .i18n import tr
     pal = PALETTE
     p.setRenderHint(QPainter.Antialiasing)
     p.setRenderHint(QPainter.TextAntialiasing)
     rect = QRectF(metric.rect()).adjusted(5, 3, -5, -3)
-    width, height = rect.width(), rect.height()
+    width = rect.width()
     font = QFont(metric.font())
 
     def text(area, value, size=12, tone=None, weight=QFont.Normal,

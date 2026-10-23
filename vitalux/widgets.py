@@ -1,8 +1,8 @@
 import math
 
 from PySide6.QtCore import QPointF, QRectF, QSize, Qt, QTimer, QVariantAnimation, QEasingCurve
-from PySide6.QtGui import QBrush, QColor, QConicalGradient, QFont, QFontMetrics, QLinearGradient, QPainter, QPainterPath, QPen, QPolygonF
-from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget, QGraphicsDropShadowEffect
+from PySide6.QtGui import QBrush, QColor, QConicalGradient, QFont, QFontMetrics, QLinearGradient, QPainter, QPainterPath, QPen
+from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget, QGraphicsDropShadowEffect
 from .ui_locale import QLabel, QPushButton, QComboBox, QCheckBox, paint_check_indicator
 
 from . import theme, motion, holographic, premium
@@ -15,7 +15,7 @@ def label(text="", name=None, align=None, wrap=False):
     l = QLabel(tr(text))
     if name:
         l.setObjectName(name)
-    if name in ('chipValue', 'telemetryValue', 'focusReading'):
+    if name in ('chipValue', 'telemetryValue'):
         font = l.font()
         font.setFamilies(['DejaVu Sans Mono', 'Noto Sans Mono', 'monospace'])
         l.setFont(font)
@@ -737,7 +737,6 @@ class NavButton(_SoftHover, QPushButton):
         self._update_version = ''
         self.icon_key = GLYPHS.get(str(text).split('    ',1)[0].strip(), 'overview')
         self._compact = False
-        self._caption_opacity = 1.0
         self._phase = 0.0
         self._init_soft_hover()
         self.setMinimumHeight(39)
@@ -772,9 +771,6 @@ class NavButton(_SoftHover, QPushButton):
         self.updateGeometry()
         self.update()
 
-    def set_caption_opacity(self, opacity):
-        self._caption_opacity = max(0.0,min(1.0,float(opacity)))
-        self.update()
 
     def set_update_version(self, version):
         self._update_version = str(version or '')
@@ -922,7 +918,6 @@ class NavButton(_SoftHover, QPushButton):
         font.setPixelSize(13)
         p.setFont(font)
         ink = QColor(color)
-        ink.setAlphaF(self._caption_opacity)
         p.setPen(ink)
         if not self._compact:
             if self.glow and self._update_version:

@@ -1,13 +1,12 @@
 """A minimal secondary native Qt window; reuses the MainWindow sensor stream."""
 from __future__ import annotations
 
-import math
 from PySide6.QtCore import Qt, Signal, QEvent
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
                                QGridLayout, QProgressBar, QFrame)
 from . import eco, settings, theme
-from .insight_engine import telemetry, number
+from .monitoring import telemetry, valid_number
 
 METRIC_OPTIONS = (
     ('cpu_usage', 'CPU', '%'), ('gpu_usage', 'GPU', '%'),
@@ -136,7 +135,6 @@ class MiniHUD(QWidget):
             c = QColor(hex_color)
             return f'rgba({c.red()}, {c.green()}, {c.blue()}, {round(255 * opacity)})'
         accent = '#4f8cff' if eco.enabled() else theme.accent()
-        light = theme.mode() == 'light' and not eco.enabled()
         # 0.9.4.7 live palette, not the old, extra-dark 0.9.4.0 test skin.
         bg = theme.SIDEBAR if not eco.enabled() else '#1d1d1d'
         cellbg = theme.CARD if not eco.enabled() else '#262626'
@@ -166,7 +164,7 @@ class MiniHUD(QWidget):
         values = telemetry(sample or {})
         for key, (field, bar, unit) in self._rows.items():
             value = values.get(key)
-            if number(value):
+            if valid_number(value):
                 digits = 0 if unit in ('%', 'MHz', 'W') else 1
                 new_text = f'{value:.{digits}f} {unit}'
             else:
@@ -174,4 +172,4 @@ class MiniHUD(QWidget):
             if field.text() != new_text:
                 field.setText(new_text)
             if bar is not None:
-                bar.setValue(max(0, min(100, round(value))) if number(value) else 0)
+                bar.setValue(max(0, min(100, round(value))) if valid_number(value) else 0)

@@ -1,11 +1,11 @@
 """Live design-shell changes, fixed controls, palette assets and small windows."""
-import json,os,sys,tempfile
+import os,sys,tempfile
 from pathlib import Path
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from PySide6.QtCore import QTimer,QCoreApplication,QEvent
 from PySide6.QtWidgets import QApplication
-from vitalux import distro,i18n,settings,theme
+from vitalux import distro,settings,theme
 from vitalux.brand import _brand_asset
 from vitalux.logo import load_logo
 from vitalux.update_manager import UpdateManager

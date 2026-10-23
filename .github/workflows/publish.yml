@@ -69,7 +69,7 @@ jobs:
             gh release download "$PREVIOUS_TAG" --pattern "Vitalux-${PREVIOUS_TAG}-linux-x86_64.zip" --dir build/downloads
           fi
           python - <<'PY'
-          import hashlib, os, pathlib, runpy
+          import hashlib, os, pathlib, sys
           root = pathlib.Path('build/downloads')
           tag = os.environ['PREVIOUS_TAG']
           archive = root/f'Vitalux-{tag}-linux-x86_64.zip'
@@ -77,7 +77,9 @@ jobs:
           expected = next(line.split()[0] for line in manifest.splitlines() if line.split()[-1].lstrip('*') == archive.name)
           with archive.open('rb') as stream:
               assert hashlib.file_digest(stream, 'sha256').hexdigest() == expected, 'Official baseline SHA-256 mismatch'
-          runpy.run_path('scripts/build-design-preview.py')['extract'](archive, pathlib.Path('build/baseline'))
+          sys.path.insert(0, 'scripts')
+          from distribution_tools import extract_release_zip
+          extract_release_zip(archive, pathlib.Path('build/baseline'))
           PY
       - name: Assemble the stable portable package
         run: |
@@ -117,7 +119,7 @@ jobs:
               print(f'::error title={log.name}::{escaped}', flush=True)
           PY
       - name: Verify source ZIP startup without system Python
-        run: python scripts/check-source-preview.py
+        run: python scripts/check-source-startup.py
       - name: Check fractional-scale settings layouts
         run: |
           set -euo pipefail
@@ -137,6 +139,9 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist verify
+          STAGED="$PWD/build/staged/Vitalux-${TAG}"
+          python scripts/finalize-package.py "$STAGED"
+          python scripts/check-distribution.py "$STAGED"
           IMAGE="$PWD/dist/Vitalux-${TAG}-x86_64.AppImage"
           bash packaging/build-appimage.sh "build/staged/Vitalux-${TAG}" "$IMAGE" "$PWD/tooling/squashfs-root/AppRun"
           (cd verify && "$IMAGE" --appimage-extract >/dev/null)
@@ -171,7 +176,7 @@ jobs:
           path: |
             build/regressions/
             build/graphics-checks/
-            build/source-preview-checks/
+            build/source-startup-checks/
             build/ui-scale-checks/
             build/network-kernel.log
           retention-days: 30

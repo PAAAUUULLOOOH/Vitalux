@@ -7,8 +7,7 @@ sys.path.insert(0, os.getcwd())
 
 from PySide6.QtWidgets import QApplication
 from vitalux import theme
-from vitalux.pages import GpuPage, CpuPage, SystemPage, GpuCard
-from vitalux.widgets import ChartPanel
+from vitalux.pages import GpuPage, SystemPage
 
 
 def gpu():

@@ -15,5 +15,3 @@ dist/
 *.log
 .DS_Store
 design-test-data/
-
-/docs/screenshots/**/results.json

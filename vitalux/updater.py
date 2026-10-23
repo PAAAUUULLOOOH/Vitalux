@@ -327,23 +327,6 @@ fi
 
 
 
-def cleanup_superseded_backups(root=None):
-    """Delete only stale update-temp backups, never the latest rollback copy.
-
-    For AppImages, the update helper atomically replaces the single
-    Vitalux.AppImage.previous with the immediately preceding version; this
-    backup must be kept until a later update or an automatic rollback.
-    ZIP updates likewise keep .backup; any abandoned .backup.old from a
-    previous interrupted update can be cleaned separately.
-    """
-    root = os.path.realpath(root or app_root())
-    old = os.path.join(root, '.backup.old')
-    if os.path.islink(old):
-        return False
-    if os.path.isdir(old) and os.path.isfile(os.path.join(old, 'metadata.json')):
-        shutil.rmtree(old)
-        return True
-    return False
 
 
 def _find_root(extracted):

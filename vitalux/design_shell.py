@@ -1,7 +1,7 @@
 """Rearrange existing accessible navigation without rebuilding running pages."""
 from PySide6.QtCore import QObject, Qt, QEvent, QTimer
 from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget, QScrollArea, QFrame
-from . import theme, i18n, __version__
+from . import theme, __version__
 from .i18n import tr
 from .widgets import label
 from .signature_designs import KEYS, COLLECTIONS, Surface

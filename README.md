@@ -36,16 +36,16 @@ Download a package from the [Unstable release](https://github.com/PAAAUUULLOOOH/
 **AppImage:**
 
 ```bash
-chmod +x Vitalux-v0.9.6.3-unstable.13-x86_64.AppImage
-./Vitalux-v0.9.6.3-unstable.13-x86_64.AppImage
+chmod +x Vitalux-v0.9.6.3-unstable.14-x86_64.AppImage
+./Vitalux-v0.9.6.3-unstable.14-x86_64.AppImage
 ```
 
 First launch offers user-account installation or **Run once**. Use `--portable` to skip integration, `--install` to add it later, or `--uninstall` to remove it while keeping preferences.
 
-**Portable ZIP:** extract the complete `Vitalux-v0.9.6.3-unstable.13-linux-x86_64.zip` into its own writable folder:
+**Portable ZIP:** extract the complete `Vitalux-v0.9.6.3-unstable.14-linux-x86_64.zip` into its own writable folder:
 
 ```bash
-cd Vitalux-v0.9.6.3-unstable.13
+cd Vitalux-v0.9.6.3-unstable.14
 bash run.sh
 ```
 
@@ -85,7 +85,7 @@ After a verified update or channel switch, Vitalux finishes background work and 
 Updates check SHA-256 and preserve recovery data. For manual verification, put the matching release manifest beside your downloads and run:
 
 ```bash
-sha256sum --ignore-missing -c Vitalux-v0.9.6.3-unstable.13-SHA256SUMS.txt
+sha256sum --ignore-missing -c Vitalux-v0.9.6.3-unstable.14-SHA256SUMS.txt
 ```
 
 A matching checksum verifies consistency with that manifest, not an independent digital signature.
@@ -102,7 +102,7 @@ VITALUX_RENDERER=software bash run.sh
 For an AppImage/FUSE problem:
 
 ```bash
-./Vitalux-v0.9.6.3-unstable.13-x86_64.AppImage --appimage-extract
+./Vitalux-v0.9.6.3-unstable.14-x86_64.AppImage --appimage-extract
 VITALUX_RENDERER=software bash squashfs-root/AppRun --portable
 ```
 
@@ -112,9 +112,11 @@ Preferences normally live in `~/.config/vitalux/`; logs in `~/.local/state/vital
 
 ## Development
 
-Use Python 3.12 in a virtual environment:
+Clone the source for development; release packages omit build and test tools. Use Python 3.12 in a virtual environment:
 
 ```bash
+git clone --branch unstable https://github.com/PAAAUUULLOOOH/Vitalux.git
+cd Vitalux
 python3.12 -m venv .venv
 .venv/bin/python -m pip install -r requirements-dev.txt
 .venv/bin/python -m vitalux

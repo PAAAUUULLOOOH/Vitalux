@@ -1,6 +1,6 @@
 """Update channels, customization indicators and network controls."""
 EN={
-'Ein Kanal-Klick zeigt nur den Changelog. Nach einem geprüften Update oder Kanalwechsel beendet Vitalux die Hintergrundaufgaben und startet automatisch neu. Testprofile entstehen automatisch; das Löschen persönlicher Einstellungen setzt nur das aktive Profil zurück und öffnet die Anleitung erneut. Stable v0.9.6.2 verwendet beim Wechsel zu Unstable noch seinen älteren Neustart-Knopf.':'Clicking a channel only shows release notes. After a verified update or channel switch, Vitalux finishes background tasks and restarts automatically. Test profiles are created automatically; deleting personal preferences resets only the active profile and reopens the guide. Stable v0.9.6.2 still uses its older restart button when switching to Unstable.',
+
 'Liquid Silver · Die Oberfläche von Obsidian Gold mit dunklem Rauchglas und satiniertem Silber. Palette und Hintergrund sind fest.':'Liquid Silver · The Obsidian Gold interface with dark smoked glass and satin silver. The palette and background are fixed.',
 'Dieser Wechsel startet automatisch neu. Stable v{version} verwendet bei späteren Updates noch „Jetzt neu starten“.':'This switch restarts automatically. Stable v{version} still uses “Restart now” for subsequent updates.',
 'Black Glass · Tiefschwarze Glasflächen mit dezenten Reflexionen und silbernen Kanten. Akzentfarben und Hintergründe sind frei anpassbar.':'Black Glass · Deep black glass with subtle reflections and silver edges. Accent colors and backgrounds are fully customizable.',
@@ -8,9 +8,9 @@ EN={
 'Versionsverlauf':'Version history',
 'Für diese Version ist noch kein Changelog verfügbar.':'No release notes are available for this version yet.',
 'Die Versionsauswahl zeigt nur Hinweise und ändert nicht das Installationsziel.':'Browsing versions only shows release notes; it does not change the installation destination.',
-'Alle zwölf Designs stehen im gleichen Vorschau-Raster. Kleine Symbole erscheinen beim Darüberfahren rechts mittig untereinander: Farbkreis für Akzentfarben, Bildsymbol für Hintergründe; verfügbare Optionen sind farbig, feste Optionen grau, ohne Schlösser.':'All twelve designs share the same preview grid. Small indicators fade in at the right center, vertically stacked: a color wheel for accents and an image symbol for backgrounds. Available options are colored; fixed options are grey, without locks.',
+
 'Im Updates-Reiter stehen laufender Stand, Stable/Unstable und dauerhaft sichtbare Changelogs zusammen. Die Versionsauswahl blättert durch die Historie des Kanals, ohne das Installationsziel zu ändern; nur die separate Installationsaktion wechselt den Kanal.':'The Updates tab groups the running version, Stable/Unstable and release notes that always remain visible. The version selector browses the channel’s history without changing the installation destination; only the separate installation action switches channels.',
-'Ein Kanal-Klick zeigt nur den Changelog. Installationen und Neustarts bleiben separate Aktionen; Testprofile entstehen automatisch und bleiben erhalten. Vitalux läuft pro Benutzer nur einmal; ein weiterer Start zeigt einen Hinweis. Zum Beenden auch das Tray-Symbol beachten.':'Clicking a channel only shows release notes. Installation and restarting remain separate actions; test profiles are created automatically and preserved. Vitalux runs once per user; a second start shows a notice. Remember to quit the tray icon as well.',
+
 'Aktiver Kanal':'Active channel',
 'Update-Kanal':'Update channel',
 'Stable und Unstable verwenden getrennte Einstellungen. Ein Kanalwechsel wird erst mit der Installation ausgeführt.':'Stable and Unstable use separate settings. A channel switch takes effect when its package is installed.',
@@ -35,14 +35,13 @@ EN={
 'Zuerst die vollständige App-Sperre aufheben.':'First remove the application-wide block.',
 'Für einzelne Verbindungen ist eine vollständige Messung mit Kernel-Socketkennung erforderlich.':'Individual connection controls require full accounting with kernel socket identities.',
 'Netzwerk → Programme & Verbindungen zeigt laufende Apps und Verbrauch. Sperren und Entsperren stehen direkt in der App-Liste; die Systemfreigabe wird bei Bedarf angefragt. Einzelne TCP-/UDP-Sockets findest du unter Erweiterte Verbindungen.':'Network → Apps & connections shows running apps and usage. Block and Unblock are directly in the app list; system authorization is requested when needed. Individual TCP/UDP sockets appear under Advanced connections.',
-'Alle zwölf Designs stehen im gleichen Vorschau-Raster. Beim Darüberfahren zeigen Farbkreis und Bildsymbol die Anpassbarkeit; graue Schlösser kennzeichnen feste Optionen. Ein/Aus-Schalter passen sich jedem Design an.':'All twelve designs use the same preview grid. Hovering reveals a color wheel and image indicator; grey locks mark fixed options. On/off switches follow each design.',
-'Unter Updates wählst du Stable oder Unstable und installierst den geprüften Zielstand. Beide Kanäle behalten getrennte Einstellungen; die Rückkehr zu einer älteren Stable-Version ist möglich.':'Choose Stable or Unstable in Updates and install the verified destination build. Both channels retain separate settings; returning to an older stable version is supported.',
-'Ein Kanal-Klick zeigt nur den Changelog. Installationen und Neustarts werden separat bestätigt; Testprofile entstehen automatisch und bleiben erhalten.':'Clicking a channel only shows its changelog. Installation and restarting are separate actions; test profiles are created automatically and preserved.',
+
+
 }
 
 EN.update({
-'Alle zwölf Designs stehen im gleichen Vorschau-Raster. Kleine Symbole erscheinen beim Darüberfahren rechts mittig untereinander: Farbkreis für Akzentfarben, Bildsymbol für Hintergründe; Schlösser kennzeichnen feste Optionen.':'All twelve designs share the same preview grid. Small indicators fade in at the right center, vertically stacked: a color wheel for accents and an image symbol for backgrounds; locks mark fixed options.',
-'Im Updates-Reiter stehen laufender Stand, Stable/Unstable und Changelogs übersichtlich zusammen. Kanal-Klicks öffnen die Hinweise direkt auf der Seite; nur die separate Installationsaktion wechselt den Kanal.':'The Updates tab groups the running version, Stable/Unstable and changelogs clearly. Channel clicks open notes inline; only the separate installation action changes the channel.',
+
+
 'Kanal ansehen':'Browse channel',
 'Ein Klick zeigt den Changelog. Ein Kanalwechsel wird separat vorbereitet und erst nach dem Neustart aktiv.':'Click a channel to read its changelog. Prepare a switch separately; it takes effect after restarting.',
 'Stable ansehen':'View Stable',
@@ -101,6 +100,6 @@ EN.update({
 'Hintergrundaufgaben werden beendet. Anschließend startet Vitalux automatisch mit der vorbereiteten Version.':'Background tasks are finishing. Vitalux will then restart automatically into the prepared version.',
 'Neustart fehlgeschlagen. Bitte unter Updates erneut versuchen.':'Restart could not be prepared. Please retry in Updates.',
 'Vitalux wird gerade neu gestartet. Bitte einen Moment warten.':'Vitalux is restarting. Please wait a moment.',
-'Alle dreizehn Designs stehen im gleichen Vorschau-Raster. Kleine Symbole erscheinen beim Darüberfahren rechts mittig untereinander: Farbkreis für Akzentfarben, Bildsymbol für Hintergründe; verfügbare Optionen sind farbig, feste Optionen grau, ohne Schlösser.':'All thirteen designs share the same preview grid. Small indicators fade in at the right center, vertically stacked: a color wheel for accents and an image symbol for backgrounds. Available options are colored; fixed options are grey, without locks.',
-'Ein Kanal-Klick zeigt nur den Changelog. Nach einem geprüften Update oder Kanalwechsel beendet Vitalux die Hintergrundaufgaben und startet automatisch neu. Testprofile entstehen automatisch; das Löschen persönlicher Einstellungen setzt nur das aktive Profil zurück und öffnet die Anleitung erneut.':'Clicking a channel only shows release notes. After a verified update or channel switch, Vitalux finishes background tasks and restarts automatically. Test profiles are created automatically; deleting personal preferences resets only the active profile and reopens the guide.',
+
+
 })

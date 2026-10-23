@@ -9,7 +9,6 @@ import platform
 import sys
 import traceback
 from datetime import datetime
-from pathlib import Path
 
 from . import __version__, profiles, logfiles
 

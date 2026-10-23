@@ -7,11 +7,11 @@ from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtWidgets import (
     QApplication, QGridLayout,
     QHBoxLayout, QProgressBar, QSpinBox,
-    QVBoxLayout, QWidget,
+    QVBoxLayout,
 )
 from .ui_locale import QCheckBox, QComboBox, QDialog, QFileDialog, QLabel, QMessageBox, QPushButton
 
-from .disk_benchmark import (BenchmarkCancelled, FioUnavailable, PROFILES, get_profile_tests,
+from .disk_benchmark import (BenchmarkCancelled, PROFILES, get_profile_tests,
                              TestSpec, detect_fio, fio_source_info, resolve_target, run_benchmark)
 from .widgets import Card, label
 from .i18n import tr

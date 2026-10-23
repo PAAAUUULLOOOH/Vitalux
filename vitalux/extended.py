@@ -6,7 +6,6 @@ import socket
 import struct
 import subprocess
 import time
-from functools import lru_cache
 
 import psutil
 

@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import patch
 from zipfile import ZipFile
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from vitalux import profiles,settings,updater
+from vitalux import profiles,updater
 SOURCE=Path(__file__).resolve().parents[1]
 
 

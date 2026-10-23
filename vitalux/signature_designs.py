@@ -5,7 +5,7 @@ Atmospheres are cached; the live instruments only repaint on a sensor sample.
 """
 import math
 from PySide6.QtCore import QPointF, QRectF, Qt, QVariantAnimation, QEasingCurve
-from PySide6.QtGui import (QBrush, QColor, QFont, QLinearGradient, QPainter,
+from PySide6.QtGui import (QColor, QFont, QLinearGradient, QPainter,
                            QPainterPath, QPen, QPixmap, QRadialGradient)
 from PySide6.QtWidgets import QWidget
 from . import nebula_prism, quantum_core, lumen_drift
@@ -250,7 +250,7 @@ def stylesheet(mode):
     QPushButton#primaryBtn,QPushButton#langBtn:checked {{
         background:qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 {pal['text']},stop:.45 {pal['accent']},stop:1 {pal['border']});
         border-radius:{radius}px;border:1px solid {pal['accent']};color:{pal['bg']};}}
-    QProgressBar,QProgressBar::chunk,QGroupBox#insightGroup {{border-radius:{radius}px;}}
+    QProgressBar,QProgressBar::chunk {{border-radius:{radius}px;}}
     QScrollBar::handle:vertical {{background:{pal['border']};border-radius:3px;}}
     '''
 

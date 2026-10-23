@@ -125,11 +125,13 @@ jobs:
           PY
       - name: Verify offline source ZIP startup
         if: steps.prepare.outputs.changed == 'true'
-        run: python scripts/check-source-preview.py
+        run: python scripts/check-source-startup.py
       - name: Build the full ZIP and AppImage
         if: steps.prepare.outputs.changed == 'true'
         run: |
           set -euo pipefail
+          python scripts/finalize-package.py "build/staged/Vitalux-${TAG}"
+          python scripts/check-distribution.py "build/staged/Vitalux-${TAG}"
           mkdir -p tooling dist
           curl -fL --retry 3 --silent --show-error https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -o tooling/appimagetool.AppImage
           chmod 755 tooling/appimagetool.AppImage

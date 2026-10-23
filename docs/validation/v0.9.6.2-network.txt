@@ -1,8 +1,0 @@
-Linux 6.12.107 disposable VM; Firefox ESR 140.16.0; normal browser sandbox configuration.
-Regression: newly forked app processes escaped the previous PID-refresh block.
-Forced PID-reuse check runs only in the isolated local VM; normal CI also checks unrelated newly launched apps.
-Fixed build results:
-VITALUX_NETWORK_IPV6_OK {"existing_tcp": true, "existing_udp": true, "new_sockets": true, "new_subprocesses": true, "bidirectional": true, "allow": true}
-VITALUX_NETWORK_FIREFOX_OK {"real_browser": true, "uncached_requests": true, "outbound_block": true, "response_receipts_block": true, "explicit_allow": true, "counts": {"probe": 33, "received": 17}}
-VITALUX_NETWORK_KERNEL_OK {"tcp_diag": true, "bpf_tcp": true, "bpf_udp": true, "existing_tcp_block": true, "existing_udp_block": true, "new_socket_block": true, "allow": true, "automatic_cleanup": true, "pid_reuse_guard": true, "helper_protocol": true, "helper_eof_cleanup": true, "connection_tcp": true, "connection_udp": true, "bidirectional_socket_block": true, "fork_tcp_block": true, "fork_udp_block": true, "all_cpu_fork_protection": true, "unrelated_app_unaffected": true, "recycled_pid_unaffected": true}
-VITALUX_TEST_EXIT_0

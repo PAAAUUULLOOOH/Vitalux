@@ -1,5 +1,8 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.3-unstable.14] - 2026-10-23
+- Kleinere Installationspakete durch Entfernen nicht benötigter Entwicklungs- und Testdateien.
+
 ## [v0.9.6.3-unstable.13] - 2026-10-23
 - Lange Changelogs scrollen in einem begrenzten Bereich im Updates-Reiter. Die Scrollleiste erscheint nur bei Überlänge; Versionsauswahl, Fortschritt und Installationsknöpfe bleiben außerhalb. Ein Versionswechsel beginnt den Text oben.
 - Quantum Core verwendet einen scharfen, statischen Schaltkreis-Hintergrund. Die Hintergrundbewegung entfällt; Logoanimationen und Live-Instrumente bleiben erhalten.

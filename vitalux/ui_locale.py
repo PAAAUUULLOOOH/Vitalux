@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (QLabel as _QLabel, QPushButton as _QPushButton,
     QCheckBox as _QCheckBox, QComboBox as _QComboBox, QDialog as _QDialog,
     QListView as _QListView, QFrame as _QFrame, QStyleFactory as _QStyleFactory,
     QListWidgetItem as _QListWidgetItem, QMessageBox as _QMessageBox,
-    QFileDialog as _QFileDialog, QSizePolicy as _QSizePolicy)
+    QFileDialog as _QFileDialog)
 from .i18n import tr
 from PySide6.QtCore import Qt, QRectF, QSize, QVariantAnimation, QEasingCurve
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen, QPalette

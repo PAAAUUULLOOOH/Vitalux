@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QHBoxLayout,QVBoxLayout,QWidget,QButtonGroup
 from . import APP_NAME, __version__, changelog, settings, theme, profiles, versions
 from .i18n import tr
 from .pages import Page
-from .ui_locale import QLabel, QPushButton, QMessageBox, QComboBox
+from .ui_locale import QLabel, QPushButton, QComboBox
 from .update_progress import UpdateProgress
 from .changelog_view import ChangelogView
 from .widgets import Card, KeyValue, label

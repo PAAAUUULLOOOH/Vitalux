@@ -3,7 +3,6 @@
 Cards preserve their preferred size except where large gaps would otherwise
 remain. The existing 14 px grid spacing and indivisible hero tile are kept.
 """
-from copy import deepcopy
 from PySide6.QtCore import Qt, QEvent, QRect, QEasingCurve, QPropertyAnimation, Signal
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (QApplication, QWidget, QToolButton, QVBoxLayout, QSizePolicy,
@@ -12,7 +11,7 @@ from PySide6.QtWidgets import (QApplication, QWidget, QToolButton, QVBoxLayout, 
 from . import settings, theme, motion
 from .i18n import tr
 from .dashboard_model import (TITLES, ORDER, DEFAULT, PITCH, GAP, normalize_order,
-                               grid_pack, move_order)
+                               grid_pack)
 
 
 class Grip(QToolButton):

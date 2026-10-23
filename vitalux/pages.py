@@ -3,11 +3,11 @@ import platform
 
 import PySide6
 from PySide6.QtCore import Qt, QPoint, QTimer, qVersion, QPropertyAnimation, QParallelAnimationGroup, QEasingCurve, QThread, Signal
-from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QVBoxLayout, QWidget, QMenu, QSizePolicy, QToolButton, QGraphicsOpacityEffect, QStackedWidget, QTabWidget
+from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QVBoxLayout, QWidget, QMenu, QToolButton, QGraphicsOpacityEffect, QStackedWidget, QTabWidget
 
-from . import theme, motion, settings
+from . import theme, motion
 from .ui_locale import QPushButton
-from .dashboard import DashboardBoard, ORDER, TITLES
+from .dashboard import DashboardBoard, TITLES
 from .benchmark_ui import BenchmarkPanel
 from .i18n import tr
 from .measurement_status import unavailable
@@ -15,8 +15,8 @@ from .sensors import drives, fmt_bytes, fmt_duration, fmt_rate, system_static
 from .monitor_extra import graphics_runtime, system_gpu_device
 from . import smart_monitor
 from .smart_ui import SmartPane
-from .widgets import (Bar, Card, ChipsGrid, GaugeBox, GaugeCard, HistoryGraph, ChartPanel, KeyValue,
-                      Meter, label, legend, SidebarToggle)
+from .widgets import (Card, ChipsGrid, GaugeBox, GaugeCard, ChartPanel, KeyValue,
+                      Meter, label, SidebarToggle)
 
 
 class Page(QWidget):
@@ -68,7 +68,7 @@ def _system_state(sample):
     real disk scan, and benchmark throughput is never assigned a fabricated
     expected speed (HDD/SSD, cache, controller and workload differ).
     """
-    from .monitor_insights import valid_number
+    from .monitoring import valid_number
 
     sample = sample or {}
     cpu = sample.get("cpu") or {}
@@ -597,7 +597,7 @@ class CpuPage(Page):
         self.gauge.set(c["usage"], f"{c['threads']} {tr('Threads')}")
         self.graph.set_series([(h["cpu"], theme.accent())])
         self.cpu_temp_graph.set_series([(h.get("cpu_temp", ()), theme.accent())])
-        from .monitor_insights import format_range
+        from .monitoring import format_range
         self.cpu_extrema.set(format_range(d.get("session_extrema") or {}, "cpu_temp", "°C", 1))
         while len(self.core_meters) < len(c["per_core"]):
             i = len(self.core_meters)
@@ -687,7 +687,7 @@ class GpuCard(Card):
                               else tr("Technische Details anzeigen"))
 
     def refresh(self, g, history=None, extrema=None, mesa=None):
-        from .monitor_insights import format_range, valid_number
+        from .monitoring import format_range, valid_number
 
         self.name.setText(g.get("name") or tr("nicht verfügbar"))
         vendor = g.get("vendor")
@@ -738,7 +738,7 @@ class GpuCard(Card):
 
 
 class GpuPage(Page):
-    def __init__(self, lab=None, open_focus=None):
+    def __init__(self):
         super().__init__("Grafik", "GPU-Auslastung, Videospeicher und Sensoren")
         self.cards = []
         self._mesa = system_static().get("mesa")
@@ -747,11 +747,6 @@ class GpuPage(Page):
             "Keine GPU-Daten gefunden. Unterstützt werden NVIDIA, AMD und Intel, "
             "soweit Linux entsprechende Sensorwerte liefert.", wrap=True))
         self.content.addWidget(self.none)
-        self.lab_panel = None
-        if lab is not None and open_focus is not None:
-            from .insight_ui import MonitoringLabPanel
-            self.lab_panel = MonitoringLabPanel(lab, open_focus)
-            self.content.addWidget(self.lab_panel)
 
     def refresh(self, d, h):
         gpus = d.get("gpus") or []
@@ -767,8 +762,6 @@ class GpuPage(Page):
                     gpus[i], history=h if i == 0 else None,
                     extrema=d.get("session_extrema") if i == 0 else None,
                     mesa=self._mesa)
-        if self.lab_panel is not None:
-            self.lab_panel.refresh(d)
 
 
 # ------------------------------------------------------------------ Speicher
@@ -844,11 +837,6 @@ class DiskPage(Page):
         self.content.addWidget(self.benchmark)
         self._tick = 0
 
-    def stop_smart(self):
-        if self._smart_worker and self._smart_worker.isRunning():
-            # The read-only scan uses finite per-drive timeouts; wait for it to
-            # finish so Qt never destroys a running QThread on app shutdown.
-            self._smart_worker.wait()
 
     def request_smart(self):
         if self._smart_worker and self._smart_worker.isRunning():
@@ -1060,7 +1048,7 @@ class SystemPage(Page):
             main.reset_session_extrema()
 
     def refresh(self, d, h):
-        from .monitor_insights import hardware_status
+        from .monitoring import hardware_status
         from . import settings
         limits = {name: settings.get(name, default) for name, default in (
             ("cpu_temp", 90), ("gpu_temp", 90),

@@ -14,7 +14,7 @@ sys.path.insert(0, str(ROOT))
 
 
 def capture(output, language, checks, warmup, design='obsidian_gold'):
-    from PySide6.QtCore import QPoint, Qt
+    from PySide6.QtCore import QPoint
     from PySide6.QtWidgets import QApplication
     from vitalux import distro, i18n, settings, theme
     from vitalux.logo import load_logo

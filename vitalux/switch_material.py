@@ -1,5 +1,5 @@
 """Quiet native toggle materials following each classic design's palette."""
-from PySide6.QtCore import Qt,QRectF
+from PySide6.QtCore import QRectF
 from PySide6.QtGui import QColor,QLinearGradient,QPen
 from . import theme
 

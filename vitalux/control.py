@@ -1,18 +1,15 @@
 """Hardware-sensor page, appearance settings and customizable dashboard controls."""
 from . import DEFAULT_THEME
-import json
 from functools import lru_cache
-from datetime import datetime
 
-from PySide6.QtCore import Qt, Signal, QSize, QTimer
+from PySide6.QtCore import Qt, Signal, QSize
 from PySide6.QtGui import QColor, QIntValidator
-from PySide6.QtWidgets import (QColorDialog, QFrame, QGridLayout, QHBoxLayout, QInputDialog, QLabel, QLineEdit, QListWidget, QSizePolicy, QSlider, QVBoxLayout, QWidget)
-from .ui_locale import QCheckBox, QComboBox, QDialog, QFileDialog, QListWidgetItem, QMessageBox, QPushButton
+from PySide6.QtWidgets import (QColorDialog, QFrame, QGridLayout, QHBoxLayout, QInputDialog, QLabel, QLineEdit, QListWidget, QSizePolicy, QVBoxLayout, QWidget)
+from .ui_locale import QCheckBox, QComboBox, QFileDialog, QListWidgetItem, QMessageBox, QPushButton
 
-from . import __version__, settings, theme, motion, backdrops, user_background, wallpaper_accents, renderer, eco, i18n, premium, design_capabilities
+from . import settings, theme, motion, backdrops, user_background, wallpaper_accents, renderer, eco, premium, design_capabilities
 from .pages import Page
-from .sensors import fmt_bytes, fmt_rate, system_static
-from .widgets import Card, KeyValue, Meter, label
+from .widgets import Card, KeyValue, label
 from .i18n import tr
 from .mini_hud import DEFAULT_KEYS
 from .settings_search import FloatingSettingsSearch, _SearchIcon
@@ -1301,40 +1298,3 @@ class PreferencesPage(Page):
         if val:
             self._set_preference('interval', int(val))
             self.window.set_interval(int(val))
-
-    def export_diagnostics(self):
-        from .diagnostics import export_report
-        filename, _ = QFileDialog.getSaveFileName(self, 'Fehlerbericht speichern',
-             f'Vitalux-Diagnose-{datetime.now():%Y%m%d-%H%M%S}.json', 'JSON (*.json)')
-        if not filename:
-            return
-        try:
-            export_report(filename, include_errors=True, sample=self.window.last_sample)
-        except OSError as exc:
-            QMessageBox.warning(self, 'Vitalux', f'Export fehlgeschlagen: {exc}')
-        else:
-            QMessageBox.information(self, 'Vitalux', 'Fehlerbericht gespeichert.')
-
-    def export(self):
-        """Export an explicit local system snapshot; never upload diagnostics."""
-        from .monitor_insights import report_data, write_report
-        if not self.window.last_sample:
-            QMessageBox.information(self, "Vitalux", tr("Warte auf die erste Messung."))
-            return
-        suggested = f"Vitalux-Bericht-{datetime.now():%Y%m%d-%H%M%S}.txt"
-        filename, selected = QFileDialog.getSaveFileName(
-            self, tr("Systembericht speichern"), suggested,
-            "Text (*.txt);;JSON (*.json)")
-        if not filename:
-            return
-        if not filename.lower().endswith((".json", ".txt")):
-            filename += ".json" if "JSON" in selected else ".txt"
-        sample = self.window.last_sample
-        report = report_data(sample, system_static(), __version__,
-                             sample.get("session_extrema"))
-        try:
-            write_report(filename, report)
-        except (OSError, ValueError) as exc:
-            QMessageBox.warning(self, "Vitalux", tr("Export fehlgeschlagen: {}").format(exc))
-        else:
-            QMessageBox.information(self, "Vitalux", tr("Systembericht gespeichert."))

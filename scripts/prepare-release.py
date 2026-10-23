@@ -33,7 +33,7 @@ def prepare(target):
     for name in ('run.sh', 'Portable-pruefen.sh', 'README.md', 'USER-GUIDE.md',
                  'CHANGELOG.md', 'CHANGELOG.en.md', 'Designs-testen.sh',
                  'Obsidian-Gold.sh', 'Quantum-Core.sh',
-                 'DESIGN-VORSCHAU.md', 'NEUSTART-ANLEITUNG.md', 'requirements-dev.txt',
+                 'DESIGN-VORSCHAU.md', 'requirements-dev.txt',
                  'LICENSE-NOTICE.md', 'THIRD-PARTY.md'):
         shutil.copy2(source/name, target/name)
     shutil.copy2(source/'bin/fio', target/'bin/fio')

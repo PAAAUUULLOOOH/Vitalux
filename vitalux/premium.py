@@ -212,7 +212,6 @@ def paint_nav(p, widget, rect, selected, hover):
 
 
 def paint_gauge(p, widget, value, text, ring_color):
-    from . import theme
     pal = palette()
     side = min(widget.width(), widget.height())
     center = QPointF(widget.width()/2, widget.height()/2)
@@ -299,7 +298,6 @@ class DesignTile(QAbstractButton):
         self.key = key
         self._keyboard_focus=False
         self.setProperty('vitaluxCapabilityHints',True)
-        from . import theme
         self.retranslate()
         self.setAccessibleName(self.text())
         self.setCheckable(True)

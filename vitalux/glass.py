@@ -276,15 +276,6 @@ class AmbientScene(_AmbientSceneCore, QWidget):
         self._paint_background()
 
 
-class EfficientRasterScene(AmbientScene):
-    """Reuse QWidget/QPainter cached backdrops and refresh optional sparkle less.
-
-    Static wallpapers remain pixel-identical. Only decorative sparkle updates
-    use 500 instead of 250 ms; sampling, charts and alerts are unchanged.
-    """
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self._wallpaper_timer.setInterval(500)
 
 
 if QOpenGLWidget is not None:
@@ -425,7 +416,6 @@ def paint_rim(p, rect, radius, *, active=False, compact=False):
                    QPointF(rect.right()-padx,rect.top()+1.2))
         return
     grad = QLinearGradient(rect.topLeft(), rect.bottomRight())
-    bright = QColor('#d8f4ff')
     grad.setColorAt(0, rgba(224, 245, 255, 119))
     a.setAlpha(184 if active else 45)
     other.setAlpha(144 if active else 42)

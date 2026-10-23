@@ -261,7 +261,7 @@ def _drm_gpus(have_nvidia):
             millivolts = _num(_read(os.path.join(hw[0], "in0_input")))
             if millivolts is not None and 100 <= millivolts <= 2500:
                 voltage = millivolts
-        from .monitor_insights import pcie_link
+        from .monitoring import pcie_link
         pcie_now, pcie_max = pcie_link(
             _read(os.path.join(dev, "current_link_speed")),
             _read(os.path.join(dev, "current_link_width")),

@@ -12,8 +12,7 @@ sys.path.insert(0, os.getcwd())
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QApplication
 from vitalux import i18n, settings, theme
-from vitalux.brand import (PulseCore, Wordmark, _brand_asset, _themed_svg,
-                           _tinted_svg, _asset_bytes)
+from vitalux.brand import (PulseCore, Wordmark, _brand_asset, _tinted_svg, _asset_bytes)
 
 ASSETS = Path(__file__).resolve().parents[1]/'assets'
 

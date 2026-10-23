@@ -12,8 +12,7 @@ os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QApplication
-from vitalux import (appearance, brand, design_capabilities, distro, i18n,
-                     profiles, quantum_core, settings, theme)
+from vitalux import (appearance, brand, design_capabilities, distro, profiles, quantum_core, settings, theme)
 from vitalux.logo import load_logo
 from vitalux.signature_designs import Metric
 from vitalux.update_manager import UpdateManager

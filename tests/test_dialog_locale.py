@@ -11,8 +11,11 @@ from vitalux.i18n import set_lang
 from vitalux.ui_locale import QMessageBox
 
 app = QApplication.instance() or QApplication([])
-prompt = ('Alle Anzeige-, Überwachungs- und Warnungseinstellungen auf '
-          'die Standardwerte zurücksetzen? Dashboard-Anordnung und Sprache bleiben erhalten.')
+prompt = ('Alle Einstellungen dieses Profils zurücksetzen und eigene Farben, Layouts, '
+          'importierte Hintergrundbildkopien und den Vitalux-Cache löschen? '
+          'Design, Sprache, Warnwerte und Grafik-Renderer werden auf Standard gesetzt. '
+          'Originalbilder und das andere Updateprofil bleiben erhalten. '
+          'Vitalux startet anschließend neu und zeigt die Anleitung.')
 
 for code, positive, negative in (('de', 'Ja', 'Nein'),
                                   ('en', 'Yes', 'No')):
@@ -39,8 +42,8 @@ for code, positive, negative in (('de', 'Ja', 'Nein'),
                                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
     assert result == QMessageBox.No, (code, result)
     assert seen['buttons'] == (positive, negative), (code, seen)
-    assert seen['message'].startswith('Reset appearance' if code == 'en'
-                                       else 'Alle Anzeige'), (code, seen)
+    assert seen['message'].startswith('Reset all preferences' if code == 'en'
+                                       else 'Alle Einstellungen'), (code, seen)
     first_run = runpy.run_path('packaging/appimage-first-run.py')
     dialog, install, portable = first_run['create_dialog']()
     assert install.text() == ('Install now' if code == 'en' else 'Jetzt installieren')

@@ -3,7 +3,6 @@
 The fake bundled interpreter simulates normal QT log output and a glibc abort.
 This uses no real GUI or system Qt runtime and does not alter user files.
 """
-from datetime import datetime
 from pathlib import Path
 import os
 import re

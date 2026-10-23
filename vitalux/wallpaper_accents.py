@@ -6,7 +6,7 @@ feedback loop with the 'Adaptive · accent color' background.
 """
 from functools import lru_cache
 
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize
 from PySide6.QtGui import QColor
 from . import backdrops, settings, theme, user_background
 

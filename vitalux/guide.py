@@ -6,7 +6,7 @@ import math
 from PySide6.QtCore import QPointF, QRectF, QSize, Qt
 from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPen, QPolygonF
 from PySide6.QtWidgets import (
-    QDialog, QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget, QMessageBox, QSizePolicy
+    QDialog, QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget, QSizePolicy
 )
 
 from . import theme

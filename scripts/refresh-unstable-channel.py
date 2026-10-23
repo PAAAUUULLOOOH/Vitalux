@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Withdraw a caught-up test offer without renumbering or rebuilding packages."""
 from pathlib import Path
-import hashlib,json,subprocess,tempfile
+import json,tempfile
 from channel_metadata import describe,git
 from publish_unstable_support import gh
 

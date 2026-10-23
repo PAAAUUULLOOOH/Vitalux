@@ -7,7 +7,7 @@ from pathlib import Path
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, os.getcwd())
 
-from PySide6.QtCore import Qt, QPoint
+from PySide6.QtCore import QPoint
 from PySide6.QtGui import QColor, QPalette
 from PySide6.QtWidgets import QApplication, QColorDialog, QInputDialog, QWidget, QFrame
 from vitalux.ui_locale import QMessageBox

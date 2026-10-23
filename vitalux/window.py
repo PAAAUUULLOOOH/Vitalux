@@ -1,5 +1,4 @@
 from collections import deque
-from pathlib import Path
 from threading import Event
 import time
 
@@ -15,13 +14,13 @@ from .pages_extra import InfoPage, UpdatePage
 from .control import SensorsPage, PreferencesPage
 from .brand import PulseCore, TrayPulse, Wordmark, app_icon, sync_installed_icon
 from .widgets import NavButton, SidebarToggle, ChartPanel, Gauge, label
-from .glass import AmbientScene, GlassSidebar, GlassSurface, create_ambient_scene
+from .glass import GlassSidebar, GlassSurface, create_ambient_scene
 from .sidebar_transition import SidebarTransition, SidebarFreeze
 from .smooth_scroll import AdaptiveScrollArea
 from .alerts import AlertMonitor, readings_from_sample
-from .tray_preview import tray_tooltip
+from .tray_tooltip import tray_tooltip
 from .wallpaper_accents import resolve_accent
-from .monitor_insights import SessionExtrema
+from .monitoring import SessionExtrema
 from .diagnostics import log_exception
 from .diagnostic_center import DiagnosticCenter
 from .diagnostic_engine import BlackboxRecorder
@@ -456,14 +455,6 @@ class MainWindow(QMainWindow):
                 self._switch_page(index)
                 return
 
-    def open_diagnostic_area(self, area='quick', section=None):
-        """Jump directly from hardware views into a diagnostic category."""
-        for index, (name, page) in enumerate(self.pages):
-            if name == 'Diagnostic Center':
-                self.nav_buttons[index].setChecked(True)
-                self._switch_page(index)
-                page.select_area(area, section)
-                return
 
     def set_interval(self, val):
         val = eco.SAMPLE_INTERVAL if eco.enabled() else max(1, min(5, int(val)))
@@ -852,11 +843,6 @@ class MainWindow(QMainWindow):
                 self._tray.showMessage(APP_NAME + ' · ' + tr('Warnung'), msg,
                                        QSystemTrayIcon.Warning, 8000)
 
-    def apply_dashboard_order(self):
-        if self.pages:
-            overview = self.pages[0][1]
-            if hasattr(overview, 'apply_layout'):
-                overview.apply_layout()
 
     def _mini_hud_closed(self):
         self._tray_hud_action.blockSignals(True)
@@ -1040,9 +1026,6 @@ class MainWindow(QMainWindow):
         from PySide6.QtWidgets import QMessageBox
         QMessageBox.information(self, APP_NAME, tr('Die KDE-Systemleiste ist momentan nicht verfügbar. Vitalux bleibt geöffnet. Um es vollständig zu beenden, deaktiviere die Tray-Funktion unter Einstellungen.'))
 
-    def _notify_diagnostic_busy(self):
-        """Use the status bar, never a tray pop-up, when diagnostics are active."""
-        self.statusBar().showMessage(tr('Diagnose läuft noch – bitte warten.'), 5000)
 
     def closeEvent(self, event):
         if not self._force_quit and settings.get('close_to_tray', True):

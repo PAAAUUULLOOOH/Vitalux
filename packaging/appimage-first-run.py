@@ -27,7 +27,7 @@ def main():
     try:
         from PySide6.QtWidgets import QApplication, QMessageBox
         i18n.set_lang(settings.get('lang') or ('de' if os.environ.get('LANG', '').lower().startswith('de') else 'en'))
-        app = QApplication.instance() or QApplication([])
+        _app = QApplication.instance() or QApplication([])
         if len(sys.argv) > 2 and sys.argv[1] == "--error":
             QMessageBox.critical(None, "Vitalux – Installation", sys.argv[2])
             return 0

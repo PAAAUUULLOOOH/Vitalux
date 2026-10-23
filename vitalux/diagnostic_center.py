@@ -6,11 +6,10 @@ from datetime import datetime
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QThread, Signal
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-                               QPlainTextEdit, QTabWidget, QScrollArea, QFileDialog, QFrame, QComboBox)
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPlainTextEdit, QTabWidget, QFileDialog, QComboBox)
 from .ui_locale import QPushButton, QCheckBox, QMessageBox
 from .widgets import Card, label
-from . import diagnostic_engine as engine, settings, theme, events
+from . import diagnostic_engine as engine, settings, events
 from .i18n import tr
 from .pages import Page
 
@@ -180,7 +179,6 @@ class DiagnosticCenter(Page):
         diagnostics_card.body.addWidget(label('Wähle eine Prüfung aus; die Ergebnisse erscheinen direkt darunter.', 'muted', wrap=True))
         diagnostics_card.body.addWidget(self.tabs)
         self.content.addWidget(diagnostics_card)
-        self.lab_panel = None  # Compatibility: no optional Insights panel
         reports_section = Card('Diagnose & Berichte')
         reports_section.body.addWidget(reports_card)
         reports_section.body.addWidget(label(
@@ -291,7 +289,7 @@ class DiagnosticCenter(Page):
     def export_system_report(self):
         """Export the existing TXT/JSON system snapshot; never upload it."""
         from . import __version__
-        from .monitor_insights import report_data, write_report
+        from .monitoring import report_data, write_report
         from .sensors import system_static
         from .ui_locale import QMessageBox
         if not self.last_sample:

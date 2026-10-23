@@ -14,7 +14,6 @@ sys.path.insert(0, str(ROOT))
 
 
 def capture(output, theme_name):
-    from PySide6.QtCore import Qt
     from PySide6.QtGui import QColor, QImage, QPainter, QPalette
     from PySide6.QtWidgets import QApplication
     from vitalux import settings, theme

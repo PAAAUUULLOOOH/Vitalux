@@ -1,9 +1,9 @@
 """Traffic attribution, missing data, warning boundaries and real worker lifetime."""
-import os,sys,tempfile,time,struct
+import os,sys,tempfile,struct
 from pathlib import Path
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from PySide6.QtCore import QTimer,QCoreApplication,QEvent,Qt
+from PySide6.QtCore import QTimer,QCoreApplication,QEvent
 from PySide6.QtWidgets import QApplication,QScrollArea
 from vitalux import settings,i18n
 from vitalux.network_kernel import application,parse_diag,packet_program,socket_program,NetworkSession
