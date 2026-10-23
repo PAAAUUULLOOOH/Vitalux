@@ -109,7 +109,7 @@ def run():
         QTest.keyClick(combo.view(), Qt.Key_Down)
         QTest.keyClick(combo.view(), Qt.Key_Return)
         assert combo.currentIndex() == 1
-        page.select_design('aurora_gold')
+        page.select_design('quantum_core')
         fixed = page.background_combo
         assert fixed.isLocked() and not fixed.isEnabled()
         fixed.showPopup()

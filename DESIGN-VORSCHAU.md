@@ -6,10 +6,10 @@ Test a design with separate local preferences:
 
 ```bash
 bash Designs-testen.sh obsidian_gold
-bash Aurora-Gold.sh
+bash Quantum-Core.sh
 ```
 
-All twelve standalone designs are available in **Settings → Appearance → Design**. **Obsidian Gold** is the default. **Black Glass** and **Black Glass Gold** are separate choices; Aurora Gold and the dark Obsidian-style Liquid Silver also have their own tiles, palettes and backgrounds.
+All thirteen standalone designs are available in **Settings → Appearance → Design**. **Obsidian Gold** is the default. **Black Glass** and **Black Glass Gold** are separate choices. **Quantum Core** adds a neon reactor HUD with an animated backdrop; **Nebula Prism** has a floating bottom dock. The dark Obsidian-style **Liquid Silver** retains its own tile, palette and background. Aurora Gold is removed.
 
 Premium palettes/backgrounds remain fixed. Grey selectors explain these restrictions directly; adjustable designs support built-in backgrounds, personal images and preset/custom accents. Personal selections remain saved when a fixed design is active. See the [user guide](USER-GUIDE.md) for the full capability list and image controls.
 

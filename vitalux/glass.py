@@ -16,7 +16,7 @@ try:
 except (ImportError, RuntimeError):
     QOpenGLWidget = None
 
-from . import theme, settings, backdrops, user_background, renderer, premium
+from . import theme, settings, backdrops, user_background, renderer, premium, motion
 
 ASSETS = Path(__file__).resolve().parent.parent / "assets"
 
@@ -62,7 +62,10 @@ class _AmbientSceneCore:
         self._composed_key = None
         style = backdrops.resolve(settings.get('background_style', 'theme_default'),
                                   theme.mode())
-        active = style in backdrops.ANIMATED_PRESETS and theme.mode() != 'holographic'
+        # Quantum Core adds a genuinely moving backdrop (radar sweep, drifting
+        # embers, scanline); it still obeys the motion profile and Eco mode.
+        active = (style in backdrops.ANIMATED_PRESETS and theme.mode() != 'holographic') or (
+            theme.mode() == 'quantum_core' and motion.enabled())
         if active and not self._wallpaper_timer.isActive():
             self._wallpaper_timer.start()
         elif not active:
@@ -173,9 +176,10 @@ class _AmbientSceneCore:
         gave three incompatible colors. Compose once and share that result.
         """
         if theme.mode() in premium.KEYS:
-            key = (theme.mode(), theme.accent(), self.size())
+            phase = self._phase if theme.mode() == 'quantum_core' else 0
+            key = (theme.mode(), theme.accent(), self.size(), round(phase, 3))
             if key != self._composed_key or self._composed_sharp.isNull():
-                self._composed_sharp = premium.scene_pixmap(self.size(), theme.mode())
+                self._composed_sharp = premium.scene_pixmap(self.size(), theme.mode(), phase)
                 tiny = self._composed_sharp.scaled(
                     max(14, self.width()//16), max(14, self.height()//16),
                     Qt.IgnoreAspectRatio, Qt.SmoothTransformation)

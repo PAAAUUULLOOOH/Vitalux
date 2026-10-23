@@ -30,7 +30,7 @@ for original, merged, color in fixtures:
                   accent_before_design_migration='#f472b6',
                   background_before_design_migration='custom_image')
     after = appearance.migrate(before)
-    assert after['theme'] == original, (original, after)
+    assert after['theme'] == ('obsidian_gold' if original == 'aurora_gold' else original), (original, after)
     assert after['accent'] == '#f472b6' and after['background_style'] == 'custom_image'
     assert all(after[key] == value for key, value in personal.items())
     assert after['appearance_before_design_restore']['background_tint'] == '#273c51'

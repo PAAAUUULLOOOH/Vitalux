@@ -8,7 +8,7 @@ from PySide6.QtCore import QPointF, QRectF, Qt, QVariantAnimation, QEasingCurve
 from PySide6.QtGui import (QBrush, QColor, QFont, QLinearGradient, QPainter,
                            QPainterPath, QPen, QPixmap, QRadialGradient)
 from PySide6.QtWidgets import QWidget
-from . import nebula_prism
+from . import nebula_prism, quantum_core
 
 COLLECTIONS = {
     'aether_glass': dict(title='Aether Glass', subtitle='OPTICAL GLASS / PLATINUM',
@@ -23,6 +23,7 @@ COLLECTIONS = {
         shadow='#101012', series=('#efc68d', '#f4a86e', '#e1d9cb', '#a8a6a2')),
 }
 COLLECTIONS['nebula_prism'] = nebula_prism.PALETTE
+COLLECTIONS['quantum_core'] = quantum_core.PALETTE
 KEYS = tuple(COLLECTIONS)
 
 
@@ -40,6 +41,8 @@ def color(value, alpha=255):
 def shape(rect, mode, compact=False):
     if mode == 'nebula_prism':
         return nebula_prism.shape(rect, compact)
+    if mode == 'quantum_core':
+        return quantum_core.shape(rect, compact)
     path = QPainterPath()
     if mode != 'eclipse_crystal':
         radius = 11 if compact else 22
@@ -54,9 +57,11 @@ def shape(rect, mode, compact=False):
     return path
 
 
-def scene_pixmap(size, mode):
+def scene_pixmap(size, mode, phase=0.0):
     if mode == 'nebula_prism':
         return nebula_prism.scene_pixmap(size)
+    if mode == 'quantum_core':
+        return quantum_core.scene_pixmap(size, phase)
     pal = COLLECTIONS[mode]
     w, h = max(1, size.width()), max(1, size.height())
     pixmap = QPixmap(w, h)
@@ -138,6 +143,8 @@ def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
     mode = theme.mode()
     if mode == 'nebula_prism':
         return nebula_prism.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
+    if mode == 'quantum_core':
+        return quantum_core.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
     pal = COLLECTIONS[mode]
     path = shape(rect,mode,compact)
     p.save()
@@ -211,6 +218,8 @@ def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
 def stylesheet(mode):
     if mode=='nebula_prism':
         return nebula_prism.stylesheet()
+    if mode=='quantum_core':
+        return quantum_core.stylesheet()
     pal=COLLECTIONS[mode]
     radius=9 if mode=='aether_glass' else 3
     return f'''
@@ -319,7 +328,7 @@ def paint_preview(p,tile,pal):
     p.setPen(QPen(color(pal['text'],190),1))
     p.drawLine(11,9,31,9)
     offset=5
-    if mode=='aether_glass':
+    if mode in ('aether_glass','quantum_core'):
         box(QRectF(5,18,18,52))
         for y in (24,33,42,51,60):
             p.setPen(QPen(color(pal['accent'],160),1.2))
@@ -416,6 +425,10 @@ class Metric(QWidget):
         p=QPainter(self)
         if theme.mode()=='nebula_prism':
             nebula_prism.paint_metric(self,p)
+            p.end()
+            return
+        if theme.mode()=='quantum_core':
+            quantum_core.paint_metric(self,p)
             p.end()
             return
         p.setRenderHint(QPainter.Antialiasing)

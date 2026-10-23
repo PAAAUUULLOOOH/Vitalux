@@ -13,9 +13,9 @@ def migrate(data):
     result = dict(data)
     if result.get('theme') == 'liquid_chrome':
         result['theme'] = 'liquid_silver'
-    if result.get('theme') == 'champagne_glass':
+    if result.get('theme') in ('champagne_glass', 'aurora_gold'):
         result['theme'] = 'obsidian_gold'
-    if result.get('background_style') == 'champagne_glass':
+    if result.get('background_style') in ('champagne_glass', 'aurora_gold'):
         result['background_style'] = 'theme_default'
     if result.get('_appearance_revision') != 1:
         return result
@@ -37,7 +37,7 @@ def migrate(data):
     if not isinstance(background, str):
         background = 'theme_default'
     # Old fixed collections were stored as Obsidian plus their native pair.
-    variants = ('obsidian_gold', 'aurora_gold', 'liquid_silver')
+    variants = ('obsidian_gold', 'liquid_silver')
     if (selected == 'obsidian_gold' and background in variants
             and accent == COLLECTIONS[background]['accent']):
         selected = background

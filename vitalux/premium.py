@@ -20,14 +20,6 @@ COLLECTIONS = {
         'secondary': '#fff0c8', 'light': '#c69b55', 'bloom': '#725435',
         'shadow': '#111726', 'series': ('#e5c17b', '#f7eed8', '#b18c56', '#9aa8b8'),
     },
-    'aurora_gold': {
-        'title': 'Aurora Gold', 'subtitle': 'IRIDESCENT GLASS / LIQUID GOLD',
-        'bg': '#070d16', 'sidebar': '#0c1421', 'card': '#122132',
-        'border': '#697079', 'track': '#26384a', 'grid': '#29394d',
-        'text': '#f8f4ef', 'muted': '#adbdce', 'accent': '#ecc784',
-        'secondary': '#a4e4e1', 'light': '#447f96', 'bloom': '#715486',
-        'shadow': '#153e4b', 'series': ('#ecc784', '#9cddd8', '#bba5e5', '#f5e9cf'),
-    },
 }
 from . import signature_designs
 COLLECTIONS.update(signature_designs.COLLECTIONS)
@@ -59,10 +51,10 @@ def rounded(rect, radius):
     return path
 
 
-def scene_pixmap(size, mode):
-    """Fixed geometry and soft light; independent of frame rate or sensors."""
+def scene_pixmap(size, mode, phase=0.0):
+    """Cached atmosphere; only Quantum Core uses the optional animation phase."""
     if mode in signature_designs.KEYS:
-        return signature_designs.scene_pixmap(size,mode)
+        return signature_designs.scene_pixmap(size,mode,phase)
     pal = palette(mode)
     w, h = max(1, size.width()), max(1, size.height())
     pixmap = QPixmap(w, h)

@@ -119,14 +119,14 @@ def child(mode, output):
             win.stack.setCurrentIndex(index)
             QTest.qWait(100)
             sampler = win.sampler
-            for key in ('black_glass_gold', 'dark', 'liquid_silver', 'aurora_gold'):
+            for key in ('black_glass_gold', 'dark', 'liquid_silver', 'nebula_prism', 'quantum_core'):
                 preferences.select_design(key)
                 assert win._appearance_overlay is not None
                 overlay = win._appearance_overlay
-                # A static design must already be present in the target
-                # snapshot, rather than jumping to its GPU texture at the end.
+                # The target design must already be present in the snapshot,
+                # rather than jumping to its GPU texture at the end.
                 target = overlay.after.toImage()
-                if mode in renderer.QUICK_MODES:
+                if mode in renderer.QUICK_MODES and key != 'quantum_core':
                     assert not win.centralWidget()._upload_timer.isActive()
                 QTest.qWait(100)
                 if key == 'liquid_silver':
@@ -135,6 +135,15 @@ def child(mode, output):
             settled(lambda: win._appearance_overlay is None)
             assert win._appearance_overlay is None
             assert win.sampler is sampler and sampler.isRunning()
+            scene = win.centralWidget()
+            assert scene._wallpaper_timer.isActive()
+            phase = scene._phase
+            background = scene.sharp_backdrop().toImage()
+            QTest.qWait(520)
+            assert scene._phase != phase
+            assert background != scene.sharp_backdrop().toImage()
+            if mode in renderer.QUICK_MODES:
+                assert not scene.grabFramebuffer().isNull()
             search = preferences.search_overlay
             search.open_search()
             settled(lambda: search.expanded and search._opacity.opacity() == 1)
@@ -154,6 +163,7 @@ def child(mode, output):
             print(json.dumps({'mode': mode, 'active': win.render_backend_active,
                   'platform': app.platformName(), 'live_sample': True,
                   'theme_transitions': True, 'liquid_silver_transitions': True,
+                  'quantum_core_animation': True,
                   'search_interruptions': True,
                   'size': [win.width(), win.height()]}), flush=True)
             result[0] = 0

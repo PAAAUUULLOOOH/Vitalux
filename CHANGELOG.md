@@ -1,5 +1,10 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.3-unstable.11] - 2026-10-23
+- Quantum Core ergänzt die Designauswahl mit kantigen Neon-Panels, eigenen Reaktor-Ringanzeigen und einem animierten Hintergrund mit Radarlicht, Partikeln und Scanlinie.
+- Quantum Core enthält passend animierte Kreis- und Schriftlogos sowie eine feste Palette und einen festen Hintergrund. Ausgeschaltete Animationen und Ultra Eco stoppen seine Hintergrundbewegung.
+- Aurora Gold wurde entfernt. Gespeicherte Auswahlen wechseln zu Obsidian Gold; eigene Farben, Bilder und andere Einstellungen bleiben erhalten.
+
 ## [v0.9.6.3-unstable.10] - 2026-10-23
 - Nebula Prism ergänzt die Designauswahl mit prismatischem Weltraumglas, Spektralkanten, eigenen Ringinstrumenten und einem schwebenden Dock am unteren Rand.
 - Das Design enthält passend animierte Kreis- und Schriftlogos sowie eine feste Palette und einen festen Hintergrund.

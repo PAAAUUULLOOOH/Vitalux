@@ -24,11 +24,11 @@ def run():
 from pathlib import Path
 from PySide6.QtWidgets import QApplication
 from vitalux.preview import prepare
-prepare('aurora_gold')
+prepare('quantum_core')
 from vitalux import settings
 from vitalux.update_manager import UpdateManager
 assert Path(settings.PATH).resolve().is_relative_to(Path('design-test-data').resolve())
-assert settings.get('theme') == 'aurora_gold'
+assert settings.get('theme') == 'quantum_core'
 assert settings.get('render_backend') == 'software'
 app = QApplication([])
 manager = UpdateManager()

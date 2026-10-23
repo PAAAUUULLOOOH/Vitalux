@@ -24,7 +24,7 @@ BASE_VERSION = '0.9.5.4'
 REPOSITORY = 'PAAAUUULLOOOH/Vitalux'
 DESIGNS = (
     ('obsidian_gold', 'Obsidian-Gold'),
-    ('aurora_gold', 'Aurora-Gold'),
+    ('quantum_core', 'Quantum-Core'),
 )
 EXCLUDE = {'__pycache__', '.git', '.venv', 'design-test-data', 'build', '.pytest_cache'}
 
@@ -79,11 +79,11 @@ def prepare(source, stage, manifest):
         if target.exists():
             shutil.rmtree(target)
         shutil.copytree(source/folder, target, ignore=ignore)
-    for name in ('Designs-testen.sh', 'Obsidian-Gold.sh', 'Aurora-Gold.sh', 'run.sh', 'DESIGN-VORSCHAU.md', 'README.md',
+    for name in ('Designs-testen.sh', 'Obsidian-Gold.sh', 'Quantum-Core.sh', 'run.sh', 'DESIGN-VORSCHAU.md', 'README.md',
                  'CHANGELOG.md', 'CHANGELOG.en.md'):
         shutil.copy2(source/name, stage/name)
     for name in ('run.sh', 'Designs-testen.sh', 'Obsidian-Gold.sh',
-                 'Aurora-Gold.sh'):
+                 'Quantum-Core.sh'):
         (stage/name).chmod(0o755)
     for name in ('Vitalux-installieren.sh', 'Vitalux-deinstallieren.sh',
                  'README-GITHUB-RELEASE.md'):
@@ -112,13 +112,13 @@ def prepare(source, stage, manifest):
         'Vitalux – experimentelle Designvorschau (Linux x86-64)\n\n'
         'Vollständig in einen eigenen Ordner entpacken.\n'
         'Dann starten: bash Designs-testen.sh\n\n'
-        'Direktstarter: Obsidian-Gold.sh, Aurora-Gold.sh.\n'
+        'Direktstarter: Obsidian-Gold.sh, Quantum-Core.sh.\n'
         'Python und Qt sind enthalten. Getrennte Einstellungen in design-test-data/.\n'
         'Anleitung: DESIGN-VORSCHAU.md. Bildschirmaufnahmen: Vorschauen/.\n')
 
 
 def check_launchers(stage, env, logs):
-    for launcher in ('run.sh', 'Obsidian-Gold.sh', 'Aurora-Gold.sh'):
+    for launcher in ('run.sh', 'Obsidian-Gold.sh', 'Quantum-Core.sh'):
         log = logs/(launcher+'.log')
         with log.open('w') as output:
             process = subprocess.Popen(['bash', str(stage/launcher)], cwd=stage, env=env,
