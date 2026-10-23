@@ -259,6 +259,7 @@ class PreferencesPage(Page):
             'eclipse_crystal': 'Eclipse Crystal · Facettierter schwarzer Kristall, Champagnerkanten und horizontale Navigation. Palette und Hintergrund sind fest.',
             'nebula_prism': 'Nebula Prism · Prismatisches Weltraumglas mit Spektralkanten, Ringinstrumenten und schwebendem Dock am unteren Rand. Palette und Hintergrund sind fest.',
             'quantum_core': 'Quantum Core · Animiertes HUD-Reaktor-Design mit rotierendem Radarlicht, schwebenden Partikeln und kantigen Neon-Panels. Palette und Hintergrund sind fest.',
+            'lumen_drift': 'Lumen Drift · Warmes Glas mit Pastellakzenten, schwebender Navigation, sanft atmendem Hintergrund und ruhigen Ringanzeigen. Palette und Hintergrund sind fest.',
         }
         self.theme_note.setText(tr(self.mode_notes.get(theme.mode(), self.mode_notes['dark'])))
         accent_row = QVBoxLayout()
@@ -383,7 +384,7 @@ class PreferencesPage(Page):
         look.body.addWidget(custom_area)
         self.refresh_background_images()
         look.body.addWidget(label(
-            'Funkeln und Quantum Core haben animierte Hintergründe. '
+            'Funkeln, Quantum Core und Lumen Drift haben animierte Hintergründe. '
             'Adaptiv folgt der ausgewählten Akzentfarbe.',
             'muted', wrap=True))
         # A presentation preference, not a global reduction of monitoring speed.
@@ -565,7 +566,7 @@ class PreferencesPage(Page):
 
         self._refresh_restore_button()
         self._search_targets = [
-            ('appearance', 'Design Dark Light Glass Black Glass Gold Holographic Minimalistisch Obsidian Aether Eclipse Crystal Liquid Silver Nebula Prism Quantum Core Platin Silber', self.design_tiles[0]),
+            ('appearance', 'Design Dark Light Glass Black Glass Gold Holographic Minimalistisch Obsidian Aether Eclipse Crystal Liquid Silver Nebula Prism Quantum Core Lumen Drift Platin Silber', self.design_tiles[0]),
             ('appearance', 'Akzentfarbe Eigene Farben Bearbeiten Löschen', self.accent_combo),
             ('appearance', 'Hintergrund Bild Hintergrundfarbe automatisch', self.background_combo),
             ('appearance', 'Animationen Bewegung Übergang', self.motion_combo),

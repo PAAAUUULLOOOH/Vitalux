@@ -781,7 +781,7 @@ class NavButton(_SoftHover, QPushButton):
         # The icon-only dock paints a badge, so it does not need an extra
         # caption row like the sidebar's update button.
         from . import theme
-        self.setMinimumHeight(46 if theme.mode() == 'nebula_prism' else 47 if self._update_version else 39)
+        self.setMinimumHeight(42 if theme.mode() == 'lumen_drift' else 46 if theme.mode() == 'nebula_prism' else 47 if self._update_version else 39)
         self.updateGeometry()
         self.update()
 

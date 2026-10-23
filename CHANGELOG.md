@@ -1,5 +1,10 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.3-unstable.12] - 2026-10-23
+- Lumen Drift ergänzt die Auswahl als 14. Design mit warmem Pastellglas, weich gerundeten Karten, ruhigen Ringanzeigen und schwebender Navigation unter dem Kopfbereich.
+- Lumen Drift enthält passend animierte Kreis- und Schriftlogos sowie einen sanft atmenden Hintergrund. Palette und Hintergrund sind fest; ausgeschaltete Animationen und Ultra Eco stoppen die Hintergrundbewegung.
+- In der Lumen-Drift-Navigation zeigen Hinweise beim Darüberfahren die Kategorien und bei verfügbaren Updates die Versionsnummer. Designwechsel erhalten laufende Messungen und persönliche Farb- und Bildauswahlen.
+
 ## [v0.9.6.3-unstable.11] - 2026-10-23
 - Quantum Core ergänzt die Designauswahl mit kantigen Neon-Panels, eigenen Reaktor-Ringanzeigen und einem animierten Hintergrund mit Radarlicht, Partikeln und Scanlinie.
 - Quantum Core enthält passend animierte Kreis- und Schriftlogos sowie eine feste Palette und einen festen Hintergrund. Ausgeschaltete Animationen und Ultra Eco stoppen seine Hintergrundbewegung.

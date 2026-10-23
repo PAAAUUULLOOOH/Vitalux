@@ -415,7 +415,7 @@ class MainWindow(QMainWindow):
             self.update_btn.set_update_version('v' + version if on else '')
             # The icon-only Nebula dock needs the label/version on hover.
             self.update_btn.setToolTip(
-                tr('Updates') + (' v' + update_version if on else '') if theme.mode() == 'nebula_prism' else '')
+                tr('Updates') + (' v' + update_version if on else '') if theme.mode() in ('nebula_prism','lumen_drift') else '')
         if hasattr(self, 'pulse_core'):
             self.pulse_core.set_update_available(animated)
         if hasattr(self, '_tray_glow'):

@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 
-DESIGNS = ('obsidian_gold', 'nebula_prism', 'quantum_core')
+DESIGNS = ('obsidian_gold', 'nebula_prism', 'quantum_core', 'lumen_drift')
 
 
 def prepare(design=None):

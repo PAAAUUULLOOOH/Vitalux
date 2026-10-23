@@ -161,6 +161,16 @@
       "spec": "#ffffff",
       "secondary": "#ffb22f",
       "fixed": true
+    },
+    "lumen-drift": {
+      "name": "Lumen Drift",
+      "accent": "#f3c98b",
+      "top": "#fff6ea",
+      "mid": "#eab0c9",
+      "low": "#c9a6ff",
+      "spec": "#ffffff",
+      "secondary": "#9fd8c9",
+      "fixed": true
     }
   },
   "theme_assets": {
@@ -170,7 +180,8 @@
     "eclipse_crystal": "eclipse-crystal",
     "liquid_silver": "liquid-silver",
     "nebula_prism": "nebula-prism",
-    "quantum_core": "quantum-core"
+    "quantum_core": "quantum-core",
+    "lumen_drift": "lumen-drift"
   },
   "custom_accent_policy": "Preserve the outlined geometry; moderately richer tint for the circle logo only.",
   "motion_seconds": {

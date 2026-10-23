@@ -75,7 +75,7 @@ SLIDES = [
     ),
     (
         "Darstellung und Einstellungen",
-        "Dreizehn Designs stehen im Vorschau-Raster. Quantum Core ergänzt ein animiertes HUD-Reaktor-Design mit Radarlicht und Neon-Panels; Palette und Hintergrund sind fest. Nebula Prism besitzt ein Dock am unteren Rand. Obsidian Gold bleibt Standard. Frühere Aurora-Gold-Auswahlen wechseln zu Obsidian Gold.",
+        "Vierzehn Designs stehen im Vorschau-Raster. Lumen Drift ergänzt warmes Glas mit Pastellakzenten, sanft atmendem Hintergrund und schwebender Navigation unter dem Kopfbereich. Seine Palette und sein Hintergrund sind fest. Obsidian Gold bleibt Standard.",
         "Bei anpassbaren Designs wählst du integrierte Hintergründe oder eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert.",
         "Die Suche erkennt auch unvollständige Namen wie MiniH oder MiniHU und gleitet zum passenden Bereich. Nach einer Auswahl bleibt sie fünf Sekunden sichtbar und schließt weich. Erweiterte Einstellungen öffnen sich bei passenden Treffern automatisch.",
         "Unter Erweiterte Einstellungen → Wartung setzt „Standardwerte wiederherstellen“ das gesamte aktive Profil zurück. Einstellungen, eigene Farben, Layouts, importierte Bildkopien und Cache werden gelöscht. Originalbilder und das andere Updateprofil bleiben erhalten; Vitalux startet neu und öffnet die Anleitung.",

@@ -16,7 +16,7 @@
 ## Features
 
 - Live CPU, GPU, memory, storage, network and sensor measurements, with charts, alerts and local history.
-- A rearrangeable dashboard, MiniHUD and thirteen coordinated designs. **Quantum Core** adds an animated neon HUD with a radar sweep and reactor-style instruments; **Nebula Prism** uses deep-space glass and a floating bottom dock. **Liquid Silver** brings satin silver to Obsidian Gold’s interface. **Obsidian Gold is the default.**
+- A rearrangeable dashboard, MiniHUD and fourteen coordinated designs, from satin silver and prismatic space to animated reactor HUDs. **Lumen Drift** adds warm pastel glass, a gently breathing backdrop and floating top navigation. **Obsidian Gold is the default.**
 - Per-app connections, usage warnings and optional, reversible TCP/UDP session blocks.
 - SMART information, drive benchmarks and local diagnostic reports.
 - German and English interfaces, guides and release notes; monitoring works offline.
@@ -36,16 +36,16 @@ Download a package from the [Unstable release](https://github.com/PAAAUUULLOOOH/
 **AppImage:**
 
 ```bash
-chmod +x Vitalux-v0.9.6.3-unstable.11-x86_64.AppImage
-./Vitalux-v0.9.6.3-unstable.11-x86_64.AppImage
+chmod +x Vitalux-v0.9.6.3-unstable.12-x86_64.AppImage
+./Vitalux-v0.9.6.3-unstable.12-x86_64.AppImage
 ```
 
 First launch offers user-account installation or **Run once**. Use `--portable` to skip integration, `--install` to add it later, or `--uninstall` to remove it while keeping preferences.
 
-**Portable ZIP:** extract the complete `Vitalux-v0.9.6.3-unstable.11-linux-x86_64.zip` into its own writable folder:
+**Portable ZIP:** extract the complete `Vitalux-v0.9.6.3-unstable.12-linux-x86_64.zip` into its own writable folder:
 
 ```bash
-cd Vitalux-v0.9.6.3-unstable.11
+cd Vitalux-v0.9.6.3-unstable.12
 bash run.sh
 ```
 
@@ -60,15 +60,15 @@ Choose a design in **Settings → Appearance**. Hover or keyboard-focus a previe
 <details>
 <summary>Preview the designs</summary>
 
-![Thirteen separate designs with Obsidian Gold selected](assets/vitalux-designs-preview.png)
+![Fourteen separate designs with Obsidian Gold selected](assets/vitalux-designs-preview.png)
 
-![Quantum Core with its neon HUD and real system measurements](assets/vitalux-quantum-core-preview.png)
+![Lumen Drift with warm pastel glass and real system measurements](assets/vitalux-lumen-drift-preview.png)
 
 </details>
 
 Settings search predicts partial names such as MiniH and scrolls smoothly to their controls. The field closes softly after five seconds. Edit layout keeps tiles stationary and their hold/X controls visible until editing ends. Controls are silent. On/off controls use themed switches; multiple selections retain checkmarks.
 
-Quantum Core has a fixed neon palette and animated reactor background; motion settings and Ultra Eco can stop its animation. Aurora Gold and Champagne Glass are removed; saved selections return to Obsidian Gold while personal customization choices are retained.
+Lumen Drift and Quantum Core have fixed palettes and animated backgrounds; motion settings and Ultra Eco can stop their animation. Aurora Gold and Champagne Glass are removed; saved selections return to Obsidian Gold while personal customization choices are retained.
 
 **Advanced settings → Maintenance → Restore defaults** is the one full reset action. Its description and confirmation explain that it removes all active-profile preferences, custom colors/layouts, imported background copies and cache, then restarts into the guide. Original source images and the other channel are preserved. Section resets remain available for individual groups.
 
@@ -85,7 +85,7 @@ After a verified update or channel switch, Vitalux finishes background work and 
 Updates check SHA-256 and preserve recovery data. For manual verification, put the matching release manifest beside your downloads and run:
 
 ```bash
-sha256sum --ignore-missing -c Vitalux-v0.9.6.3-unstable.11-SHA256SUMS.txt
+sha256sum --ignore-missing -c Vitalux-v0.9.6.3-unstable.12-SHA256SUMS.txt
 ```
 
 A matching checksum verifies consistency with that manifest, not an independent digital signature.
@@ -102,7 +102,7 @@ VITALUX_RENDERER=software bash run.sh
 For an AppImage/FUSE problem:
 
 ```bash
-./Vitalux-v0.9.6.3-unstable.11-x86_64.AppImage --appimage-extract
+./Vitalux-v0.9.6.3-unstable.12-x86_64.AppImage --appimage-extract
 VITALUX_RENDERER=software bash squashfs-root/AppRun --portable
 ```
 

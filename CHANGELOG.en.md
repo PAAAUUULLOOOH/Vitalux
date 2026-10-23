@@ -1,5 +1,10 @@
 # Vitalux – Changes
 
+## [v0.9.6.3-unstable.12] - 2026-10-23
+- Lumen Drift joins the gallery as the 14th design, with warm pastel glass, softly rounded cards, calm ring instruments and floating navigation below the header.
+- Lumen Drift includes matching animated circle and wordmark assets and a gently breathing backdrop. Its palette and background are fixed; turning animations off or enabling Ultra Eco stops the background motion.
+- Lumen Drift navigation hints identify categories on hover and show the version of an available update. Design changes preserve live measurements and personal color and image choices.
+
 ## [v0.9.6.3-unstable.11] - 2026-10-23
 - Quantum Core adds angular neon panels, distinct reactor ring instruments and an animated backdrop with a radar sweep, particles and a scanline to the design gallery.
 - Quantum Core includes matching animated circle and wordmark assets, with a fixed palette and background. Turning animations off or enabling Ultra Eco stops its background motion.

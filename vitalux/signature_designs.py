@@ -8,7 +8,7 @@ from PySide6.QtCore import QPointF, QRectF, Qt, QVariantAnimation, QEasingCurve
 from PySide6.QtGui import (QBrush, QColor, QFont, QLinearGradient, QPainter,
                            QPainterPath, QPen, QPixmap, QRadialGradient)
 from PySide6.QtWidgets import QWidget
-from . import nebula_prism, quantum_core
+from . import nebula_prism, quantum_core, lumen_drift
 
 COLLECTIONS = {
     'aether_glass': dict(title='Aether Glass', subtitle='OPTICAL GLASS / PLATINUM',
@@ -24,6 +24,7 @@ COLLECTIONS = {
 }
 COLLECTIONS['nebula_prism'] = nebula_prism.PALETTE
 COLLECTIONS['quantum_core'] = quantum_core.PALETTE
+COLLECTIONS['lumen_drift'] = lumen_drift.PALETTE
 KEYS = tuple(COLLECTIONS)
 
 
@@ -43,6 +44,8 @@ def shape(rect, mode, compact=False):
         return nebula_prism.shape(rect, compact)
     if mode == 'quantum_core':
         return quantum_core.shape(rect, compact)
+    if mode == 'lumen_drift':
+        return lumen_drift.shape(rect, compact)
     path = QPainterPath()
     if mode != 'eclipse_crystal':
         radius = 11 if compact else 22
@@ -62,6 +65,8 @@ def scene_pixmap(size, mode, phase=0.0):
         return nebula_prism.scene_pixmap(size)
     if mode == 'quantum_core':
         return quantum_core.scene_pixmap(size, phase)
+    if mode == 'lumen_drift':
+        return lumen_drift.scene_pixmap(size, phase)
     pal = COLLECTIONS[mode]
     w, h = max(1, size.width()), max(1, size.height())
     pixmap = QPixmap(w, h)
@@ -145,6 +150,8 @@ def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
         return nebula_prism.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
     if mode == 'quantum_core':
         return quantum_core.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
+    if mode == 'lumen_drift':
+        return lumen_drift.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
     pal = COLLECTIONS[mode]
     path = shape(rect,mode,compact)
     p.save()
@@ -220,6 +227,8 @@ def stylesheet(mode):
         return nebula_prism.stylesheet()
     if mode=='quantum_core':
         return quantum_core.stylesheet()
+    if mode=='lumen_drift':
+        return lumen_drift.stylesheet()
     pal=COLLECTIONS[mode]
     radius=9 if mode=='aether_glass' else 3
     return f'''
@@ -282,6 +291,10 @@ def paint_navigation(button):
         p.drawText(QRectF(rect.left()+40,rect.top(),rect.width()-47,rect.height()),
                    Qt.AlignLeft|Qt.AlignVCenter,
                    p.fontMetrics().elidedText(caption,Qt.ElideRight,max(1,round(rect.width()-47))))
+    elif theme.mode()=='lumen_drift' and button.glow:
+        p.setPen(Qt.NoPen)
+        p.setBrush(color(pal['accent']))
+        p.drawEllipse(QPointF(rect.right()-8,rect.top()+8),2.5,2.5)
     if button.hasFocus():
         p.setPen(QPen(color(pal['accent']),1,Qt.DotLine))
         p.setBrush(Qt.NoBrush)
@@ -335,6 +348,15 @@ def paint_preview(p,tile,pal):
             p.drawLine(10,y,17,y)
         offset=28
         y=18
+    elif mode=='lumen_drift':
+        nav_width=(width-24)*.72
+        nav_left=(width-nav_width)/2
+        box(QRectF(nav_left,17,nav_width,9))
+        p.setPen(QPen(color(pal['accent'],180),1.4))
+        for i in range(12):
+            x=nav_left+6+i*(nav_width-12)/11
+            p.drawPoint(QPointF(x,21.5))
+        y=31
     else:
         box(QRectF(5,17,width-10,8))
         for i in range(7):
@@ -429,6 +451,10 @@ class Metric(QWidget):
             return
         if theme.mode()=='quantum_core':
             quantum_core.paint_metric(self,p)
+            p.end()
+            return
+        if theme.mode()=='lumen_drift':
+            lumen_drift.paint_metric(self,p)
             p.end()
             return
         p.setRenderHint(QPainter.Antialiasing)
