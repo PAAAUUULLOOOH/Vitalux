@@ -12,7 +12,7 @@ from unittest.mock import patch
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from PySide6.QtCore import QEvent, QSize
-from PySide6.QtGui import QHelpEvent
+from PySide6.QtGui import QCursor, QHelpEvent
 from PySide6.QtWidgets import QApplication, QToolTip
 from vitalux import brand, design_capabilities, distro, hover_hints, i18n, lumen_drift, profiles, settings, theme
 from vitalux.logo import load_logo
@@ -97,12 +97,26 @@ with tempfile.TemporaryDirectory(prefix='vitalux-lumen-') as folder, patch.objec
                 assert button.toolTip().startswith(i18n.tr(name))
                 assert button.size() == QSize(50, 42)
             assert version in window.update_btn.toolTip()
-            button = window.update_btn
-            point = button.rect().center()
-            QApplication.sendEvent(button, QHelpEvent(QEvent.ToolTip, point, button.mapToGlobal(point)))
+        # Keep the pointer inside the offscreen platform's 800px virtual
+        # screen and test one real hover after language changes have settled.
+        # Reopening identical text during Qt's delayed hide can cancel a tip.
+        window.resize(800, 560)
+        wait(160)
+        button = window.update_btn
+        point = button.rect().center()
+        global_point = button.mapToGlobal(point)
+        QCursor.setPos(global_point)
+        wait(80)
+        event = QHelpEvent(QEvent.ToolTip, point, global_point)
+        assert not guard.eventFilter(button, event)
+        QApplication.sendEvent(button, event)
+        deadline = time.monotonic() + 1
+        while not QToolTip.isVisible() and time.monotonic() < deadline:
             wait(20)
-            assert QToolTip.isVisible() and version in QToolTip.text()
-            QToolTip.hideText()
+        assert QToolTip.isVisible() and version in QToolTip.text()
+        QToolTip.hideText()
+        QCursor.setPos(0, 0)
+        wait(360)
         manager.records.clear()
         manager.status = 'idle'
         window._sync_glow()
