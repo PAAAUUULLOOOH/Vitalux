@@ -1,7 +1,7 @@
 # Vitalux – Changes
 
 
-## [v0.9.6.3-unstable.15] - 2026-10-24
+## [v0.9.6.3-unstable.16] - 2026-10-24
 - Components show genuinely available power readings with readable numeric limits, session average/peak and a watt history. CPU package, DRAM, GPU socket and other measurement domains remain separate.
 - Additional driver sensors expose temperatures, GPU memory, fans, voltages and engine activity where supported. Missing or failed fields disappear without gaps; real zeroes remain visible.
 - Updates shows the full running app version including its Unstable test number, independently of browsing versions or preparing an installation.

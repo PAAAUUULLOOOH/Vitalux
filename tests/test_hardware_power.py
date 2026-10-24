@@ -44,11 +44,20 @@ with tempfile.TemporaryDirectory() as directory:
     assert primary_power(reader.sample(160),'cpu') is None,'Do not bridge suspend/gaps'
     original_read=__import__('vitalux.hardware_sensors',fromlist=['read']).read
     with patch('vitalux.hardware_sensors.read',side_effect=lambda p: '' if Path(p)==zone/'energy_uj' else original_read(p)):
-        assert primary_power(reader.sample(161),'cpu') is None
+        denied=reader.sample(161)
+        assert primary_power(denied,'cpu') is None
+        assert dict(next(r for r in denied if r.get('primary'))['limits'])=={'PL2':181,'PL1':125},'Readable limits survive restricted energy counters'
     put(zone/'energy_uj',5000000)
     assert primary_power(reader.sample(162),'cpu') is None,'Permission recovery needs a fresh baseline'
     put(zone/'energy_uj',7000000)
     assert primary_power(reader.sample(164),'cpu')==1
+    mmio=zone.parent/'intel-rapl-mmio:0'
+    put(mmio/'name','package-0');put(mmio/'energy_uj',1000000);put(mmio/'max_energy_range_uj',10**9)
+    reader.sample(165);put(mmio/'energy_uj',4000000)
+    with patch('vitalux.hardware_sensors.read',side_effect=lambda p: '' if Path(p)==zone/'energy_uj' else original_read(p)):
+        alternate=reader.sample(166)
+        assert primary_power(alternate,'cpu')==3
+        assert len([r for r in alternate if r.get('primary')])==1,'Do not add overlapping MSR/MMIO counters'
 
     hw=root/'class/hwmon/hwmon0'
     put(hw/'name','board');put(hw/'power1_input',0);put(hw/'power1_average',50000000)

@@ -1,7 +1,7 @@
 # Vitalux – Änderungen
 
 
-## [v0.9.6.3-unstable.15] - 2026-10-24
+## [v0.9.6.3-unstable.16] - 2026-10-24
 - Komponenten zeigen tatsächlich verfügbare Leistungsaufnahme mit auslesbaren numerischen Grenzen, Durchschnitt und Maximum seit App-Start sowie einem Wattverlauf. CPU-Package, DRAM, GPU-Socket und weitere Messbereiche bleiben getrennt.
 - Zusätzliche Treibersensoren für Temperaturen, GPU-Speicher, Lüfter, Spannungen und Engine-Auslastung werden angezeigt, soweit die Hardware sie bereitstellt. Fehlende oder ausgefallene Werte verschwinden ohne Lücken; echte Nullwerte bleiben sichtbar.
 - Updates zeigt die vollständige Version der laufenden App einschließlich Unstable-Testnummer, unabhängig von Versionsauswahl oder vorbereiteter Installation.

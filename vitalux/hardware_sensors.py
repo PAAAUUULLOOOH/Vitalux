@@ -43,7 +43,7 @@ class RaplReader:
         self.previous = {}
 
     def sample(self, now):
-        records, seen, packages = [], set(), set()
+        records, seen = [], set()
         base = self.root/'class/powercap'
         zone_pattern = re.compile(r'(?:intel|amd)-rapl(?:-mmio)?(?::\d+)*$')
         pending = sorted(base.glob('*'), key=lambda p: ('-mmio' in p.name, p.name), reverse=True)
@@ -74,9 +74,11 @@ class RaplReader:
             current=counter(path)
             maximum=counter(zone/'max_energy_range_uj')
             old = self.previous.pop(path, None)
-            if not name or current is None or maximum is None or maximum <= 0 or current > maximum:
+            if not name:
                 continue
-            self.previous[path] = (current, now, maximum)
+            readable=current is not None and maximum is not None and maximum>0 and current<=maximum
+            if readable:
+                self.previous[path] = (current, now, maximum)
             limits = []
             for item in sorted(zone.glob('constraint_*_power_limit_uw')):
                 watts = scaled(item, 1e6)
@@ -86,8 +88,10 @@ class RaplReader:
                     # The constraint name, never its numeric index, defines PL1/PL2.
                     caption = {'long_term': 'PL1', 'short_term': 'PL2'}.get(caption, caption)
                     limits.append((caption, watts))
+            if not readable and not limits:
+                continue
             watts, interval = None, None
-            if old and old[2] == maximum and 0 < now-old[1] <= 30:
+            if readable and old and old[2] == maximum and 0 < now-old[1] <= 30:
                 delta = current-old[0]
                 if delta < 0:
                     # A reset elsewhere in the range is not a counter wrap.
@@ -98,15 +102,24 @@ class RaplReader:
                     ceiling = max((v for _, v in limits if v>0), default=2000)*10
                     if 0 <= candidate <= ceiling:
                         watts = candidate
-            package = bool(re.fullmatch(r'package-\d+', name)) and name not in packages
-            if package:
-                packages.add(name)
+            package = bool(re.fullmatch(r'package-\d+', name))
             parent_name=read(zone.parent/'name')
             caption=(parent_name+' · ' if parent_name and parent_name!=name else '')+name
             records.append(dict(id=str(path), name=('RAPL MMIO · ' if '-mmio' in entry.name else 'RAPL · ')+caption, value=watts,
                 kind='powers', unit='W', component='ram' if name.lower() == 'dram' else 'cpu',
                 device=str(zone), source=str(path), limits=limits, interval=interval,
-                primary=package, scope=('CPU-Package · '+name) if package else caption))
+                primary=package, domain=name, scope=('CPU-Package · '+name) if package else caption))
+        packages={}
+        for record in records:
+            if record['primary']:
+                previous=packages.get(record['domain'])
+                if previous is None:
+                    packages[record['domain']]=record
+                elif previous['value'] is None and record['value'] is not None:
+                    previous['primary']=False
+                    packages[record['domain']]=record
+                else:
+                    record['primary']=False
         for key in set(self.previous)-seen:
             self.previous.pop(key, None)
         return records
