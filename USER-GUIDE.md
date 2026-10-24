@@ -100,7 +100,9 @@ On/off controls use themed switches throughout the interface. Multiple-selection
 
 ## Hardware sensors and measured power
 
-Overview tiles show the available component power readings. Processor, Graphics, Memory, Drives, Network and System contain the corresponding live sensors and power histories. Each power source retains its device and kernel channel: current watts, any readable numeric limit, time-weighted average over observed intervals since app start, and the highest observed watts. Histories cover approximately 60 seconds; gaps stay gaps. There is no power-limit percentage bar.
+Overview tiles show only the current measured power, for example **Power: 85 W**, for CPU, GPU, memory and the system drive where supported. The system-drive value requires an unambiguous sensor association with the mounted root device. Missing readings leave no power row; zero watts remain visible. Source details are available on hover.
+
+Each component tab has one combined history chart. Use **Measurements** to enable or disable individual readings, or select all/none, and choose a 60-second, 5-minute or 15-minute window. Available measurements include load, temperatures, clocks, fans, voltage, transfer rates, memory/storage usage and power. Each physical unit has its own scale; **Scale** chooses the unit displayed on the axis, and hovering shows the original values and units. Histories continue while visiting other tabs; missing samples remain gaps. Current power and readable limits appear with the other live values, including at the top of Graphics. Separate power histories and session average/peak blocks have been removed.
 
 CPU package and DRAM power use readable RAPL/powercap energy counters and actual elapsed time. PL1/PL2 appear only when the kernel identifies the corresponding constraints. First samples, resets, invalid intervals, suspend and unreadable counters require a new baseline. Existing Linux permissions apply; do not run the GUI as root. If openSUSE restricts RAPL access, those measurements stay hidden until the system administrator provides appropriate read access.
 

@@ -377,6 +377,7 @@ class HardwareMonitor:
                     chosen['limits'] = [('Leistungsgrenze', gpu['power_limit'])]
                 gpu['power'] = chosen['value']
                 gpu['power_name'] = chosen.get('scope') or chosen['name']
+                gpu['power_source_id'] = chosen['id']
         self.power.update(records, now, wall)
         for gpu in gpus:
             gpu['hardware'] = [r for r in records if r['component'] == 'gpu:'+gpu['id']]
@@ -396,3 +397,30 @@ def primary_power(records, component):
         return sum(r['value'] for r in packages) if all(number(r['value']) is not None for r in packages) else None
     valid = [r for r in candidates if number(r['value']) is not None]
     return valid[0]['value'] if len(valid) == 1 else None
+
+
+def block_devices(device, sysroot='/sys'):
+    """Resolve physical block paths in the sampling worker, including dm/LVM."""
+    root=Path(sysroot)/'class/block'
+    try:
+        pending=[Path(device).resolve().name]
+    except (OSError,RuntimeError):
+        return []
+    seen=set();leaves=[]
+    while pending and len(seen)<64:
+        name=pending.pop()
+        if name in seen:
+            continue
+        seen.add(name)
+        block=root/name
+        if not block.exists():
+            return []
+        try:
+            slaves=list((block/'slaves').iterdir()) if (block/'slaves').is_dir() else []
+            if slaves:
+                pending.extend(p.name for p in slaves)
+            else:
+                leaves.append(str(block.resolve()))
+        except (OSError,RuntimeError):
+            return []
+    return sorted(set(leaves)) if not pending else []

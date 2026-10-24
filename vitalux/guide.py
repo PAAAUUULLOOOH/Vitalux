@@ -70,7 +70,7 @@ SLIDES = [
         "Die Sensorseite zeigt Messwerte, die Linux tatsächlich bereitstellt.",
         "Dazu gehören je nach Gerät Temperaturen, Lüfterdrehzahlen und Spannungen.",
         "Unter Einstellungen aktivierst du Hardware-Warnungen; die schmalen Zahlenfelder stehen rechts neben der Bezeichnung.",
-        "Fehlende Sensorwerte werden ausgeblendet; echte Nullwerte bleiben sichtbar. Komponenten zeigen gemessene Watt, auslesbare Grenzen, Durchschnitt und Maximum seit App-Start sowie einen Verlauf. Überlappende Messbereiche werden nicht als PC-Gesamtverbrauch addiert.",
+        "Die Übersicht zeigt nur die aktuelle Leistung in Watt, soweit messbar. In jedem Komponenten-Reiter gibt es ein gemeinsames Diagramm: Messwerte einzeln an- und abwählen und 60 Sekunden, 5 oder 15 Minuten anzeigen. Jede Einheit hat eine eigene Skala; beim Überfahren erscheinen die Originalwerte. Aktuelle Leistung und auslesbare Grenzen stehen bei den Live-Werten. Fehlende Sensorwerte werden ausgeblendet; echte Nullwerte bleiben sichtbar. Überlappende Messbereiche werden nicht als PC-Gesamtverbrauch addiert.",
         "sensors",
     ),
     (

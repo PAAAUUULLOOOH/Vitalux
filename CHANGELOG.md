@@ -1,6 +1,12 @@
 # Vitalux – Änderungen
 
 
+## [v0.9.6.3-unstable.17] - 2026-10-24
+- Die Übersichtskacheln zeigen nur noch die aktuelle gemessene Leistung in Watt. Fehlende Werte bleiben ausgeblendet; der Verbrauch des Systemlaufwerks erscheint nur bei eindeutiger Sensorzuordnung.
+- Jeder Komponenten-Reiter bündelt die verfügbaren Messwerte in einem Diagramm mit einzeln wählbaren Kurven und eigenen Skalen je Einheit. Sensorverläufe bleiben auch beim Wechseln der Reiter erhalten.
+- Im Grafik-Reiter stehen aktuelle Leistung und Leistungsgrenze bei den Live-Werten. Separate Wattdiagramme sowie zusätzliche Durchschnitts- und Maximumblöcke entfallen.
+
+
 ## [v0.9.6.3-unstable.16] - 2026-10-24
 - Komponenten zeigen tatsächlich verfügbare Leistungsaufnahme mit auslesbaren numerischen Grenzen, Durchschnitt und Maximum seit App-Start sowie einem Wattverlauf. CPU-Package, DRAM, GPU-Socket und weitere Messbereiche bleiben getrennt.
 - Zusätzliche Treibersensoren für Temperaturen, GPU-Speicher, Lüfter, Spannungen und Engine-Auslastung werden angezeigt, soweit die Hardware sie bereitstellt. Fehlende oder ausgefallene Werte verschwinden ohne Lücken; echte Nullwerte bleiben sichtbar.

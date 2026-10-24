@@ -8,6 +8,7 @@ sys.path.insert(0, os.getcwd())
 from PySide6.QtWidgets import QApplication
 from vitalux import theme
 from vitalux.pages import GpuPage, SystemPage
+from vitalux.widgets import ChartPanel
 
 
 def gpu():
@@ -48,8 +49,9 @@ def check_gui():
     card.more_btn.click()
     app.processEvents()
     assert card.details.isVisible()
-    assert card.temperature_graph.graph.mode == "temperature"
-    assert card.clock_graph.graph.mode == "clock"
+    assert len(card.findChildren(ChartPanel))==1
+    assert card.graph.available['temp']['unit']=='°C'
+    assert card.graph.available['clock']['unit']=='MHz'
     assert not hasattr(page, "tuning")
     missing = gpu()
     missing.update(voltage=None, temp=None, power=None)

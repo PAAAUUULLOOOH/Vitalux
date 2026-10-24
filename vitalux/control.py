@@ -10,6 +10,7 @@ from .ui_locale import QCheckBox, QComboBox, QFileDialog, QListWidgetItem, QMess
 from . import settings, theme, motion, backdrops, user_background, wallpaper_accents, renderer, eco, premium, design_capabilities
 from .pages import Page
 from .widgets import Card, KeyValue, label
+from .measurement_chart import MeasurementChart
 from .i18n import tr
 from .mini_hud import DEFAULT_KEYS
 from .settings_search import FloatingSettingsSearch, _SearchIcon
@@ -31,9 +32,15 @@ class SensorsPage(Page):
             self.content.addWidget(card)
         self.message = label('', 'muted', wrap=True)
         self.content.addWidget(self.message)
+        chart=self.measurement_card=Card('Messwerte · Verlauf')
+        self.graph=MeasurementChart()
+        chart.body.addWidget(self.graph)
+        self.content.insertWidget(0,chart)
 
     def refresh(self, d, h):
         sensors = d.get('sensors', {})
+        self.graph.sync(d,'sensors',h)
+        self.measurement_card.setVisible(not self.graph.isHidden())
         count = 0
         for ident in ('temps', 'fans', 'voltages', 'powers', 'frequencies'):
             seen = set()

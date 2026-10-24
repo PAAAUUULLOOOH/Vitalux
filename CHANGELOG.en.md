@@ -1,6 +1,12 @@
 # Vitalux – Changes
 
 
+## [v0.9.6.3-unstable.17] - 2026-10-24
+- Overview tiles now show only current measured power in watts. Unavailable readings stay hidden; system-drive power requires an unambiguous sensor association.
+- Each component tab combines available measurements in one chart with individually selectable curves and separate scales per unit. Sensor histories continue while visiting other tabs.
+- Graphics shows current power and its limit with the live values. Separate watt charts and additional average/peak blocks have been removed.
+
+
 ## [v0.9.6.3-unstable.16] - 2026-10-24
 - Components show genuinely available power readings with readable numeric limits, session average/peak and a watt history. CPU package, DRAM, GPU socket and other measurement domains remain separate.
 - Additional driver sensors expose temperatures, GPU memory, fans, voltages and engine activity where supported. Missing or failed fields disappear without gaps; real zeroes remain visible.

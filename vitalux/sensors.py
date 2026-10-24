@@ -171,6 +171,7 @@ def disk_info():
             continue
         seen.add(p.device)
         result.append({"mount": p.mountpoint, "device": p.device, "fstype": p.fstype,
+                       "physical_paths": hardware_sensors.block_devices(p.device),
                        "used": u.used, "total": u.total, "percent": u.percent})
     result.sort(key=lambda d: (d["mount"] != "/", d["mount"]))
     return result

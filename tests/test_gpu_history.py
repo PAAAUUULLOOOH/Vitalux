@@ -32,13 +32,12 @@ def check_gpu_history():
     card.refresh(gpu(), h)
     assert card.graph._source[0][0] is h["gpu"], "Primary GPU history must be shared"
     assert card.graph._source[1][0] is h["vram"], "VRAM history must be shared"
-    assert len(card.h_use) == 0 and len(card.h_vram) == 0
     card.refresh(gpu(usage=72.0, vram_used=8_000_000_000), None)
-    assert list(card.h_use) == [72.0]
-    assert list(card.h_vram) == [50.0]
+    assert card.graph.histories['usage']['values'][-1]==72
+    assert card.graph.histories['vram_pct']['values'][-1]==50
     card.refresh(gpu(usage=None, vram_used=None), None)
-    assert list(card.h_use)[-1] is None
-    assert list(card.h_vram)[-1] is None
+    assert card.graph.histories['usage']['values'][-1] is None
+    assert card.graph.histories['vram_pct']['values'][-1] is None
     assert len(h["gpu"]) == 2 and len(h["vram"]) == 2
     card.close()
     app.processEvents()

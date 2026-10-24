@@ -9,6 +9,7 @@ from PySide6.QtWidgets import QApplication
 from vitalux import appearance, i18n, theme, profiles, pages_extra
 from vitalux.pages import GpuCard
 from vitalux.sensor_ui import SensorPanel
+from vitalux.widgets import HistoryGraph
 from vitalux.update_manager import UpdateManager
 
 app=QApplication.instance() or QApplication([])
@@ -36,13 +37,13 @@ panel=SensorPanel()
 record=dict(id='cpu',name='CPU Package',kind='powers',value=0,average=None,maximum=0,
             limits=[('PL1',125)],history=[(1000,0)],source='fixture')
 panel.sync([record]);block=panel.powers['cpu']
-assert not panel.isHidden() and not block.rows['Aktuell'].isHidden()
-assert block.rows['Durchschnitt seit App-Start'].isHidden()
-assert block.rows['PL1'].v.text()=='125.0 W' and block.graph.mode=='power'
-assert block.graph.sample_times==[1000]
+assert not panel.isHidden() and not block.rows['Leistung'].isHidden()
+assert set(block.rows)=={'Leistung','PL1'}
+assert block.rows['PL1'].v.text()=='125 W'
+assert not panel.findChildren(HistoryGraph),'Power rows must not create separate history plots'
 panel.sync([]);assert panel.isHidden() and block.isHidden()
-panel.sync([dict(record,value=None)]);assert block.rows['Aktuell'].isHidden()
-assert not block.rows['PL1'].isHidden() and block.graph.isHidden()
+panel.sync([dict(record,value=None)]);assert block.rows['Leistung'].isHidden()
+assert not block.rows['PL1'].isHidden()
 panel.close()
 
 for running in ('0.9.6.3-unstable.14','0.9.6.3-unstable.29','0.9.6.2'):

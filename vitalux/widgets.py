@@ -368,6 +368,15 @@ class HistoryGraph(QWidget):
         from .sensors import fmt_rate
         return fmt_rate(value)
 
+    def format_series(self,index,value):
+        return self._format(value)
+
+    def axis_scale(self,upper):
+        return 0.,upper
+
+    def series_scale(self,index,upper):
+        return 0.,upper
+
     def _x(self, index, count, rect):
         if self.sample_times and len(self.sample_times) >= count:
             timestamp = self.sample_times[-count+index]
@@ -393,7 +402,9 @@ class HistoryGraph(QWidget):
             offset = index-(count-len(values))
             name = self.series_names[number] if number < len(self.series_names) else str(number+1)
             value = values[offset] if 0 <= offset < len(values) else None
-            lines.append(f'{tr(name)}  {self._format(value)}')
+            formatted=self.format_series(number,value)
+            if formatted:
+                lines.append(f'{tr(name)}  {formatted}')
         return lines
 
     def paintEvent(self, event):
@@ -428,6 +439,7 @@ class HistoryGraph(QWidget):
         font = self.font()
         font.setPointSize(8)
         p.setFont(font)
+        axis_low,axis_high=self.axis_scale(upper)
         for fraction in (0, .25, .5, .75, 1):
             y = rect.bottom()-fraction*rect.height()
             grid = QColor(theme.GRID)
@@ -436,7 +448,7 @@ class HistoryGraph(QWidget):
             p.drawLine(QPointF(rect.left(), y), QPointF(rect.right(), y))
             p.setPen(QColor(theme.MUTED))
             p.drawText(QRectF(rect.right()+6, y-10, 58, 20), Qt.AlignLeft | Qt.AlignVCenter,
-                       self._format(upper*fraction))
+                       self._format(axis_low+(axis_high-axis_low)*fraction))
         for fraction in (.25, .5, .75):
             p.setPen(QPen(QColor(theme.GRID), .6, Qt.DotLine))
             x = rect.left()+rect.width()*fraction
@@ -450,6 +462,7 @@ class HistoryGraph(QWidget):
             p.drawText(QRectF(x-(0 if fraction == 0 else 29), rect.bottom()+6, 58, 20), align, stamp)
         any_data = False
         for number, (values, color) in enumerate(self.series):
+            low,high=self.series_scale(number,upper)
             values = list(values)[-self.maxlen:]
             runs, run = [], []
             for index, value in enumerate(values):
@@ -458,7 +471,7 @@ class HistoryGraph(QWidget):
                     run = []
                     continue
                 any_data = True
-                y = rect.bottom()-min(1, max(0, float(value)/upper))*rect.height()
+                y = rect.bottom()-min(1, max(0, (float(value)-low)/max(1e-12,high-low)))*rect.height()
                 run.append(QPointF(self._x(index, len(values), rect), y))
             if run: runs.append(run)
             style = self.series_styles[number] if number < len(self.series_styles) else Qt.SolidLine

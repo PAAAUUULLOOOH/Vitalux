@@ -26,6 +26,7 @@ from .diagnostic_center import DiagnosticCenter
 from .diagnostic_engine import BlackboxRecorder
 from .mini_hud import MiniHUD
 from .sample_clock import sampling_gap
+from .measurements import MeasurementHistory
 
 
 class Sampler(QThread):
@@ -91,6 +92,7 @@ class MainWindow(QMainWindow):
             "cpu", "ram", "gpu", "vram", "net_down", "net_up", "io_read", "io_write",
             "cpu_temp", "gpu_temp", "gpu_clock", "gpu_power", "time")}
         self._extrema = SessionExtrema()
+        self.measurement_history=MeasurementHistory()
         self._mini_hud = MiniHUD()
         self._mini_hud.hidden_by_user.connect(self._mini_hud_closed)
         self._blackbox = BlackboxRecorder()
@@ -928,6 +930,7 @@ class MainWindow(QMainWindow):
         h["net_up"].append(d["net"]["up"])
         h['io_read'].append(d['io']['read'])
         h['io_write'].append(d['io']['write'])
+        self.measurement_history.update(d,stamp,self.sampler.interval)
         # History is populated above; repaint only the selected page.
         # Switching pages immediately uses the latest sample and all history.
         if self._sidebar_motion is None:
