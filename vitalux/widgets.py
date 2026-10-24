@@ -1,6 +1,6 @@
 import math
 
-from PySide6.QtCore import QPointF, QRect, QRectF, QSize, Qt, QTimer, QVariantAnimation, QEasingCurve
+from PySide6.QtCore import QPointF, QRectF, QSize, Qt, QTimer, QVariantAnimation, QEasingCurve
 from PySide6.QtGui import QBrush, QColor, QConicalGradient, QFont, QFontMetrics, QLinearGradient, QPainter, QPainterPath, QPen
 from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget, QGraphicsDropShadowEffect
 from .ui_locale import QLabel, QPushButton, QComboBox, QCheckBox, paint_check_indicator
@@ -364,18 +364,8 @@ class HistoryGraph(QWidget):
         if self.mode == 'percent': return f'{value:.0f}%'
         if self.mode == 'temperature': return f'{value:.1f} °C'
         if self.mode == 'clock': return f'{value:.0f} MHz'
-        if self.mode == 'power': return f'{value:.1f} W'
         from .sensors import fmt_rate
         return fmt_rate(value)
-
-    def format_series(self,index,value):
-        return self._format(value)
-
-    def axis_scale(self,upper):
-        return 0.,upper
-
-    def series_scale(self,index,upper):
-        return 0.,upper
 
     def _x(self, index, count, rect):
         if self.sample_times and len(self.sample_times) >= count:
@@ -402,9 +392,7 @@ class HistoryGraph(QWidget):
             offset = index-(count-len(values))
             name = self.series_names[number] if number < len(self.series_names) else str(number+1)
             value = values[offset] if 0 <= offset < len(values) else None
-            formatted=self.format_series(number,value)
-            if formatted:
-                lines.append(f'{tr(name)}  {formatted}')
+            lines.append(f'{tr(name)}  {self._format(value)}')
         return lines
 
     def paintEvent(self, event):
@@ -439,7 +427,6 @@ class HistoryGraph(QWidget):
         font = self.font()
         font.setPointSize(8)
         p.setFont(font)
-        axis_low,axis_high=self.axis_scale(upper)
         for fraction in (0, .25, .5, .75, 1):
             y = rect.bottom()-fraction*rect.height()
             grid = QColor(theme.GRID)
@@ -448,7 +435,7 @@ class HistoryGraph(QWidget):
             p.drawLine(QPointF(rect.left(), y), QPointF(rect.right(), y))
             p.setPen(QColor(theme.MUTED))
             p.drawText(QRectF(rect.right()+6, y-10, 58, 20), Qt.AlignLeft | Qt.AlignVCenter,
-                       self._format(axis_low+(axis_high-axis_low)*fraction))
+                       self._format(upper*fraction))
         for fraction in (.25, .5, .75):
             p.setPen(QPen(QColor(theme.GRID), .6, Qt.DotLine))
             x = rect.left()+rect.width()*fraction
@@ -462,7 +449,6 @@ class HistoryGraph(QWidget):
             p.drawText(QRectF(x-(0 if fraction == 0 else 29), rect.bottom()+6, 58, 20), align, stamp)
         any_data = False
         for number, (values, color) in enumerate(self.series):
-            low,high=self.series_scale(number,upper)
             values = list(values)[-self.maxlen:]
             runs, run = [], []
             for index, value in enumerate(values):
@@ -471,7 +457,7 @@ class HistoryGraph(QWidget):
                     run = []
                     continue
                 any_data = True
-                y = rect.bottom()-min(1, max(0, (float(value)-low)/max(1e-12,high-low)))*rect.height()
+                y = rect.bottom()-min(1, max(0, float(value)/upper))*rect.height()
                 run.append(QPointF(self._x(index, len(values), rect), y))
             if run: runs.append(run)
             style = self.series_styles[number] if number < len(self.series_styles) else Qt.SolidLine
@@ -529,13 +515,10 @@ class ChartSeriesCheckBox(QCheckBox):
 
     We paint the check ourselves: Qt stylesheet backgrounds replace the native
     indicator on some Linux styles and otherwise hide the tick. This renders a
-    crisp tick and an empty unchecked square in the active Vitalux design.
-    The localized QCheckBox base keeps keyboard handling.
+    crisp tick and an empty unchecked square in the active Vitalux design. The localized QCheckBox base keeps keyboard handling.
     """
-    def __init__(self, name, color, parent=None, *, wrap=False):
+    def __init__(self, name, color, parent=None):
         super().__init__(name, parent)
-        self.wrap_text=wrap
-        policy=self.sizePolicy();policy.setHeightForWidth(wrap);self.setSizePolicy(policy)
         self.setProperty('selectionControl',True)
         self.series_color = color
         self.setMinimumHeight(24)
@@ -554,14 +537,7 @@ class ChartSeriesCheckBox(QCheckBox):
                      max(24, metrics.height()+6))
 
     def minimumSizeHint(self):
-        hint=self.sizeHint()
-        return QSize(min(150,hint.width()),hint.height()) if self.wrap_text else hint
-
-    def heightForWidth(self,width):
-        if not self.wrap_text:return self.sizeHint().height()
-        font=QFont(self.font());font.setBold(True)
-        rect=QFontMetrics(font).boundingRect(QRect(0,0,max(1,width-27),10000),Qt.TextWordWrap,self.text())
-        return max(24,rect.height()+6)
+        return self.sizeHint()
 
     def paintEvent(self, event):
         p = QPainter(self)
@@ -576,10 +552,8 @@ class ChartSeriesCheckBox(QCheckBox):
         font.setBold(True)
         p.setFont(font)
         p.setPen(QColor(self.series_color))
-        flags=Qt.AlignLeft | Qt.AlignVCenter
-        if self.wrap_text:flags |= Qt.TextWordWrap
         p.drawText(QRectF(x + side + 8, 0, max(0, self.width() - side - x - 10), self.height()),
-                   flags, self.text())
+                   Qt.AlignLeft | Qt.AlignVCenter, self.text())
         p.end()
 
 
@@ -691,8 +665,6 @@ class ChartPanel(QWidget):
                     fmt = lambda value: f"{value:.1f} °C"
                 elif self.graph.mode == "clock":
                     fmt = lambda value: f"{value:.0f} MHz"
-                elif self.graph.mode == "power":
-                    fmt = lambda value: f"{value:.1f} W"
                 else:
                     fmt = fmt_rate
                 current = list(values)[-1] if values else None
@@ -707,13 +679,6 @@ class ChartPanel(QWidget):
             self.graph.series_names.append(self.series_names[i])
             self.graph.series_styles.append((Qt.SolidLine, Qt.DashLine, Qt.DotLine)[i % 3])
         self.graph.set_series(active)
-
-
-def legend(items):
-    html = "&nbsp;&nbsp;&nbsp;".join(f"<span style='color:{c}'>●</span>&nbsp;{tr(t)}" for t, c in items)
-    l = QLabel(html)
-    l.setObjectName("muted")
-    return l
 
 
 class _SoftHover:

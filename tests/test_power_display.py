@@ -1,8 +1,7 @@
-"""Component units, zeroes, device identity, power selection and real time gaps."""
+"""Real component watts, non-overlapping sources and physical drive association."""
 from pathlib import Path
 import sys,tempfile
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from vitalux.measurements import MeasurementHistory,describe
 from vitalux.power_display import component_power,disk_power,gpu_power,power_limit
 from vitalux.hardware_sensors import block_devices
 
@@ -27,33 +26,6 @@ g=dict(id='A',name='GPU A',power=150,power_source_id='ppt',hardware=[gpu1,gpu2],
        vram_used=4*2**30,vram_total=16*2**30)
 assert gpu_power(g)['value']==150 and power_limit(gpu_power(g))==330
 assert gpu_power(dict(g,hardware=[dict(gpu1,value=0),gpu2]))['value']==0
-sample=dict(cpu=dict(usage=15,temp=50,freq=2000,per_core=[15,20],load=[.2,.1,.1]),
-            ram=dict(percent=30,total=16*2**30,used=5*2**30),gpus=[g],
-            hardware=[package,partial,ram1,ram2,gpu1,gpu2],io=dict(read=0,write=1000),
-            net=dict(down=100,up=0),disks=[dict(mount='/',percent=40)])
-description=describe(sample)
-assert description['gpu:A']['voltage']['value']==.95 and description['gpu:A']['voltage']['unit']=='V'
-assert description['gpu:A']['fan_rpm']['value']==0
-assert description['cpu']['power']['value']==85
-assert description['ram']['power']['value']==10
-assert description['disks']['read']['value']==0
-
-history=MeasurementHistory(maxlen=6)
-history.update(sample,1000)
-other=dict(g,id='B',name='GPU B',usage=5,hardware=[])
-history.update(dict(sample,gpus=[other,dict(g,usage=70,power=None,hardware=[])]),1001)
-assert list(history.groups['gpu:A']['usage']['values'])==[42,70]
-assert list(history.groups['gpu:B']['usage']['values'])==[None,5]
-assert history.groups['gpu:A']['power']['values'][-1] is None
-history.update(dict(sample,_gap_before=True,gpus=[dict(g,usage=None,fan_rpm=0)]),1010,interval=2)
-assert list(history.times)==[1000,1001,1003,1010]
-assert list(history.groups['gpu:A']['usage']['values'])==[42,70,None,None]
-assert 'usage' not in history.current['gpu:A']
-assert history.current['gpu:A']['fan_rpm']['value']==0
-assert history.groups['gpu:B']['usage']['value'] is None
-for stamp in range(1011,1020):history.update(sample,stamp)
-assert len(history.times)==6 and all(len(m['values'])==6 for group in history.groups.values() for m in group.values())
-
 with tempfile.TemporaryDirectory() as directory:
     root=Path(directory)
     controller=root/'devices/nvme/nvme0';partition=controller/'nvme0n1/nvme0n1p3'
@@ -73,4 +45,4 @@ with tempfile.TemporaryDirectory() as directory:
     (block/'dm-0').symlink_to(dm,target_is_directory=True)
     mapped=root/'dev/dm-0';mapped.touch()
     assert block_devices(str(mapped),root)==paths
-print('Physical units, selected GPU watts/limit, independent histories, gaps, zero values and safe system-drive association PASS')
+print('Selected component watts, power limits, genuine zeroes and unambiguous system-drive mapping PASS')

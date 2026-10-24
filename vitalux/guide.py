@@ -70,7 +70,7 @@ SLIDES = [
         "Die Sensorseite zeigt Messwerte, die Linux tatsächlich bereitstellt.",
         "Dazu gehören je nach Gerät Temperaturen, Lüfterdrehzahlen und Spannungen.",
         "Unter Einstellungen aktivierst du Hardware-Warnungen; die schmalen Zahlenfelder stehen rechts neben der Bezeichnung.",
-        "Die Übersicht zeigt nur die aktuelle Leistung in Watt, soweit messbar. Prozessor und Grafik nutzen dieselben sichtbaren Diagramm-Häkchen wie die Übersicht. Die Komponenten-Verläufe zeigen einzeln wählbare Messwerte über 60 Sekunden, 5 oder 15 Minuten. Jede Einheit hat eine eigene Skala; beim Überfahren erscheinen die Originalwerte. Aktuelle Leistung und auslesbare Grenzen stehen bei den Live-Werten. Fehlende Sensorwerte werden ausgeblendet; echte Nullwerte bleiben sichtbar. Überlappende Messbereiche werden nicht als PC-Gesamtverbrauch addiert.",
+        "Die Komponenten verwenden wieder getrennte Auslastungs-, Temperatur-, Takt- und Durchsatzverläufe. Mit Häkchen wählst du vorhandene Kurven aus und zeigst 60 Sekunden, 5 oder 15 Minuten an. Bei Grafik stehen aktuelle Leistung und Leistungsgrenze bei den Live-Werten. Fehlende Sensorwerte werden ausgeblendet; echte Nullwerte bleiben sichtbar. Überlappende Messbereiche werden nicht als PC-Gesamtverbrauch addiert.",
         "sensors",
     ),
     (

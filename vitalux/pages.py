@@ -1,3 +1,4 @@
+from collections import deque
 import platform
 
 import PySide6
@@ -19,8 +20,6 @@ from .widgets import (Card, ChipsGrid, GaugeBox, GaugeCard, ChartPanel, KeyValue
 from .sensor_ui import SensorPanel, optional, power_text, reflow
 from .hardware_sensors import number
 from .power_display import component_power, disk_power, gpu_power, power_limit, source_text
-from .measurement_chart import MeasurementChart
-from .measurements import gpu_scope
 
 
 class Page(QWidget):
@@ -585,7 +584,7 @@ class CpuPage(Page):
 
         self.gauge = GaugeCard("Gesamtauslastung")
         graph = Card("Verlauf")
-        self.graph = MeasurementChart(inline_selection=True)
+        self.graph = ChartPanel(['CPU'], [theme.accent()])
         graph.body.addWidget(self.graph)
         lay = QHBoxLayout()
         self.cpu_layout=lay
@@ -593,6 +592,13 @@ class CpuPage(Page):
         lay.addWidget(self.gauge, 1)
         lay.addWidget(graph, 3)
         self.content.addLayout(lay)
+
+        self.cpu_temp_card = Card("CPU-Temperatur · Verlauf")
+        self.cpu_temp_graph = ChartPanel(["Temperatur"], [theme.accent()], mode="temperature")
+        self.cpu_temp_card.body.addWidget(self.cpu_temp_graph)
+        self.content.addWidget(self.cpu_temp_card)
+        self.cpu_extrema = KeyValue("CPU-Temperatur · Min/Max seit Start")
+        self.cpu_temp_card.body.addWidget(self.cpu_extrema)
 
         self.hardware = SensorPanel(include_power=False)
         self.content.addWidget(self.hardware)
@@ -628,7 +634,11 @@ class CpuPage(Page):
         reflow(self.sensor_grid, list(self.kv.values()))
         self.kv["Last (1 / 5 / 15 Min)"].set(" / ".join(f"{x:.2f}" for x in c["load"]))
         self.gauge.set(c["usage"], f"{c['threads']} {tr('Threads')}")
-        self.graph.sync(d,'cpu',h)
+        self.graph.set_series([(h['cpu'],theme.accent())])
+        self.cpu_temp_graph.set_series([(h.get('cpu_temp',()),theme.accent())])
+        self.cpu_temp_card.setVisible(number(c.get('temp')) is not None)
+        from .monitoring import format_range
+        self.cpu_extrema.set(format_range(d.get('session_extrema') or {},'cpu_temp','°C',1))
         self.hardware.sync([r for r in d.get('hardware',[]) if r['component']=='cpu'])
         while len(self.core_meters) < len(c["per_core"]):
             i = len(self.core_meters)
@@ -688,10 +698,14 @@ class GpuCard(Card):
         self.hardware = SensorPanel(include_power=False)
         self.body.addWidget(self.hardware)
 
-        self.load_title=label('MESSWERTE · VERLAUF', "cardTitle")
+        self.load_title=label('AUSLASTUNG UND VIDEOSPEICHER · VERLAUF', "cardTitle")
         self.body.addWidget(self.load_title)
-        self.graph = MeasurementChart(inline_selection=True)
+        self.graph = ChartPanel(["Auslastung", "VRAM"], [theme.accent(), theme.secondary_accent()])
         self.body.addWidget(self.graph)
+        self.h_use=deque(maxlen=900)
+        self.h_vram=deque(maxlen=900)
+        self.h_temp=deque(maxlen=900)
+        self.h_clock=deque(maxlen=900)
 
         # Genuine detail-on-demand, not a second duplicate overview.
         self.more_btn = QPushButton("Technische Details anzeigen")
@@ -712,8 +726,19 @@ class GpuCard(Card):
             "Fehlende Werte bedeuten: Der Linux-Treiber liefert dafür momentan keine Daten.",
             "muted", wrap=True)
         detail_layout.addWidget(self.sensor_hint)
+        self.temperature_graph = ChartPanel(["GPU-Temperatur"], [theme.accent()], mode="temperature")
+        self.clock_graph = ChartPanel(["GPU-Takt"], [theme.secondary_accent()], mode="clock")
+        self.temperature_title=label("TEMPERATURVERLAUF", "cardTitle")
+        self.clock_title=label("TAKTVERLAUF", "cardTitle")
+        detail_layout.addWidget(self.temperature_title)
+        detail_layout.addWidget(self.temperature_graph)
+        detail_layout.addWidget(self.clock_title)
+        detail_layout.addWidget(self.clock_graph)
         self.body.addWidget(self.details)
         self.details.hide()
+
+        self.extrema = KeyValue("GPU-Temperatur · Min/Max seit Start")
+        self.body.addWidget(self.extrema)
 
 
     def _toggle_details(self, checked):
@@ -722,7 +747,7 @@ class GpuCard(Card):
                               else tr("Technische Details anzeigen"))
 
     def refresh(self, g, history=None, extrema=None, mesa=None):
-        from .monitoring import valid_number
+        from .monitoring import format_range, valid_number
 
         self.name.setText(g.get("name") or tr("nicht verfügbar"))
         vendor = g.get("vendor")
@@ -741,7 +766,7 @@ class GpuCard(Card):
         for field, source, unit in (
             ("GPU-Takt", "clock", "MHz"), ("Speicher-Takt", "clock_mem", "MHz"),
             ("Temperatur", "temp", "°C"), ("Hotspot", "hotspot", "°C"),
-            ("Spannung", "voltage", "mV"), ("Leistung", "power", "W"),
+            ("Spannung", "voltage", "mV"),
             ("Lüfterdrehzahl", "fan_rpm", "U/min"), ("Lüfter", "fan", "%"),
             ('VRAM-Temperatur','vram_temp','°C'), ('Speichercontroller','memory_busy','%'),
             ('Video-Engine','video_busy','%'), ('Encoder','encoder_busy','%'), ('Decoder','decoder_busy','%'),
@@ -766,8 +791,34 @@ class GpuCard(Card):
             visible=bool(value and value not in ('–','-'))
             self.kv[field].set(value if visible else '');self.kv[field].setVisible(visible)
         reflow(self.technical_grid,[self.kv[k] for k in ('PCIe aktuell','PCIe maximal','Datenquelle','Mesa')])
-        self.graph.sync(dict(gpus=[g]),gpu_scope(g),history)
+        self.extrema.set(format_range(extrema or {},'gpu_temp','°C',1))
+        self.extrema.setVisible(number(g.get('temp')) is not None and bool((extrema or {}).get('gpu_temp')))
+        self.graph.setVisible(number(g.get('usage')) is not None or pct is not None)
         self.load_title.setVisible(not self.graph.isHidden())
+        self.temperature_graph.setVisible(number(g.get('temp')) is not None)
+        self.clock_graph.setVisible(number(g.get('clock')) is not None)
+        self.temperature_title.setVisible(not self.temperature_graph.isHidden())
+        self.clock_title.setVisible(not self.clock_graph.isHidden())
+        if history is None:
+            self.h_use.append(g.get("usage"))
+            self.h_vram.append(pct)
+            self.h_temp.append(g.get("temp"))
+            self.h_clock.append(g.get("clock"))
+        if history:
+            self.graph.set_series([
+                (history.get("gpu", self.h_use), theme.accent()),
+                (history.get("vram", self.h_vram), theme.secondary_accent()),
+            ])
+            self.temperature_graph.set_series([
+                (history.get("gpu_temp", self.h_temp), theme.accent())])
+            self.clock_graph.set_series([
+                (history.get("gpu_clock", self.h_clock), theme.secondary_accent())])
+        else:
+            self.graph.set_series([(self.h_use, theme.accent()),
+                                   (self.h_vram, theme.secondary_accent())])
+            self.temperature_graph.set_series([(self.h_temp, theme.accent())])
+            self.clock_graph.set_series([(self.h_clock, theme.secondary_accent())])
+
 
 
 class GpuPage(Page):
@@ -788,11 +839,12 @@ class GpuPage(Page):
             card = GpuCard()
             self.content.insertWidget(1 + len(self.cards), card)
             self.cards.append(card)
+        recorder=getattr(self.window(),'gpu_history',None)
         for i, card in enumerate(self.cards):
             card.setVisible(i < len(gpus))
             if i < len(gpus):
                 card.refresh(
-                    gpus[i], history=h if i == 0 else None,
+                    gpus[i], history=recorder.get(gpus[i],i) if recorder is not None else h if i==0 else None,
                     extrema=d.get("session_extrema") if i == 0 else None,
                     mesa=self._mesa)
 
@@ -809,7 +861,7 @@ class MemoryPage(Page):
         self.kv['Leistung'].hide();self.kv['Leistungsgrenze'].hide()
         self.content.addLayout(_row(self.g_ram, self.g_swap, stats))
         graph = Card("Verlauf")
-        self.graph = MeasurementChart()
+        self.graph = ChartPanel(['RAM'], [theme.TEAL])
         graph.body.addWidget(self.graph)
         self.content.addWidget(graph)
         self.hardware=SensorPanel(include_power=False)
@@ -832,7 +884,7 @@ class MemoryPage(Page):
         self.kv["Verfügbar"].set(fmt_bytes(r["available"]))
         self.kv["Cache"].set(fmt_bytes(r["cached"]))
         self.kv["Puffer"].set(fmt_bytes(r["buffers"]))
-        self.graph.sync(d,'ram',h)
+        self.graph.set_series([(h['ram'],theme.TEAL)])
 
 
 # ------------------------------------------------------------------ Laufwerke
@@ -860,7 +912,7 @@ class DiskPage(Page):
         self.content.addLayout(_row(self.hw, self.parts))
         self.content.addWidget(io)
         io_graph = Card('Laufwerksaktivität')
-        self.io_graph = MeasurementChart()
+        self.io_graph = ChartPanel(['Lesen','Schreiben'], [theme.accent(),theme.secondary_accent()],mode='rate')
         io_graph.body.addWidget(self.io_graph)
         self.content.addWidget(io_graph)
         self.hardware=SensorPanel()
@@ -915,7 +967,7 @@ class DiskPage(Page):
         self.benchmark.update_volumes(d["disks"])
         self.read.set(fmt_rate(d["io"]["read"]))
         self.write.set(fmt_rate(d["io"]["write"]))
-        self.io_graph.sync(d,'disks',h)
+        self.io_graph.set_series([(h['io_read'],theme.accent()),(h['io_write'],theme.secondary_accent())])
         current = {x["mount"] for x in d["disks"]}
         for x in d["disks"]:
             m = self.part_meters.get(x["mount"])
@@ -957,7 +1009,7 @@ class NetworkPage(Page):
         self.content.addWidget(top)
 
         graph = Card("Netzwerk-Verlauf")
-        self.graph = MeasurementChart()
+        self.graph = ChartPanel(['Download','Upload'],[theme.accent(),theme.secondary_accent()],mode='rate')
         graph.body.addWidget(self.graph)
         rates = Card("Aktuelle Übertragungsraten")
         self.down = KeyValue("Download")
@@ -1000,7 +1052,7 @@ class NetworkPage(Page):
         self.mac.set(p.get('mac') or '–')
         self.down.set(fmt_rate(net["down"]))
         self.up.set(fmt_rate(net["up"]))
-        self.graph.sync(d,'network',h)
+        self.graph.set_series([(h['net_down'],theme.accent()),(h['net_up'],theme.secondary_accent())])
         for iface in net.get("interfaces", []):
             row = self.iface_rows.get(iface["name"])
             if row is None:
@@ -1090,10 +1142,6 @@ class SystemPage(Page):
         self.content.addWidget(self.status_card)
         self.hardware=SensorPanel()
         self.content.addWidget(self.hardware)
-        measurements=self.measurement_card=Card('Messwerte · Verlauf')
-        self.graph=MeasurementChart()
-        measurements.body.addWidget(self.graph)
-        self.content.addWidget(measurements)
 
     def _reset_session(self):
         main = self.window()
@@ -1103,8 +1151,6 @@ class SystemPage(Page):
     def refresh(self, d, h):
         from .monitoring import hardware_status
         self.hardware.sync([r for r in d.get('hardware',[]) if r['component']=='system'])
-        self.graph.sync(d,'system',h)
-        self.measurement_card.setVisible(not self.graph.isHidden())
         from . import settings
         limits = {name: settings.get(name, default) for name, default in (
             ("cpu_temp", 90), ("gpu_temp", 90),

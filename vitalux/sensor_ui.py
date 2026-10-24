@@ -67,8 +67,6 @@ class PowerDetails(QWidget):
             if row is None:
                 row = self.rows[title] = sensor_row(title,self)
             optional(row, value, 'W')
-            if number(value) is not None:
-                row.set(watts(value))
         for title, row in self.rows.items():
             if title not in active:
                 optional(row, None)

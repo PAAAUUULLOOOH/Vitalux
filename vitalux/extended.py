@@ -7,7 +7,6 @@ import struct
 import subprocess
 import time
 
-import psutil
 
 
 def read(path):
@@ -114,47 +113,3 @@ def net_static_details():
         primary, gateway = _default_route()
         _route_cache = (now, {'route_interface': primary, 'gateway': gateway, 'dns': _dns()})
     return dict(_route_cache[1])
-
-
-def sensor_info():
-    try:
-        temps = psutil.sensors_temperatures()
-    except Exception:
-        temps = {}
-    try:
-        fans = psutil.sensors_fans()
-    except Exception:
-        fans = {}
-    out_temp, out_fans, volts, powers, frequencies = [], [], [], [], []
-    for chip, entries in sorted(temps.items()):
-        for idx, s in enumerate(entries):
-            out_temp.append({'name': f'{chip} · {s.label or "Sensor " + str(idx + 1)}',
-                             'value': s.current, 'high': s.high, 'critical': s.critical})
-    for chip, entries in sorted(fans.items()):
-        for idx, s in enumerate(entries):
-            out_fans.append({'name': f'{chip} · {s.label or "Lüfter " + str(idx + 1)}',
-                             'value': s.current})
-    for hw in glob.glob('/sys/class/hwmon/hwmon*'):
-        chip = read(os.path.join(hw, 'name')) or os.path.basename(hw)
-        for file in glob.glob(os.path.join(hw, 'power*_average')) + glob.glob(os.path.join(hw, 'power*_input')):
-            value = num(read(file), 1_000_000)
-            if value is None or value < 0 or value > 5000:
-                continue
-            prefix = file.rsplit('_', 1)[0]
-            caption = read(prefix + '_label') or os.path.basename(prefix)
-            powers.append({'name': f'{chip} · {caption}', 'value': value})
-        for file in glob.glob(os.path.join(hw, 'freq*_input')):
-            value = num(read(file), 1_000_000)  # Linux hwmon frequency in Hz
-            if value is None or value < 0 or value > 100000:
-                continue
-            prefix = file.rsplit('_', 1)[0]
-            caption = read(prefix + '_label') or os.path.basename(prefix)
-            frequencies.append({'name': f'{chip} · {caption}', 'value': value})
-        for file in glob.glob(os.path.join(hw, 'in*_input')):
-            v = num(read(file), 1000)
-            if v is None or v < 0 or v > 30:
-                continue
-            prefix = file[:-6]
-            label = read(prefix + '_label') or os.path.basename(prefix)
-            volts.append({'name': f'{chip} · {label}', 'value': v})
-    return {'temps': out_temp, 'fans': out_fans, 'voltages': volts, 'powers': powers, 'frequencies': frequencies}

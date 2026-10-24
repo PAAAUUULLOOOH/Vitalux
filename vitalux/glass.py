@@ -16,7 +16,7 @@ try:
 except (ImportError, RuntimeError):
     QOpenGLWidget = None
 
-from . import theme, settings, backdrops, user_background, renderer, premium, motion
+from . import theme, settings, backdrops, user_background, renderer, premium
 
 ASSETS = Path(__file__).resolve().parent.parent / "assets"
 

@@ -1,6 +1,10 @@
 # Vitalux – Changes
 
 
+## [v0.9.6.3-unstable.19] - 2026-10-24
+- The component-tab chart changes have been reverted: load, temperatures, clocks and transfer rates return to their previous presentation and familiar curve selectors. Current GPU power and its limit are retained.
+
+
 ## [v0.9.6.3-unstable.18] - 2026-10-24
 - Processor and Graphics use the same visible chart checkboxes as Overview. Measurements can be toggled directly; controls wrap into further rows on narrow windows and retain the active design palette.
 

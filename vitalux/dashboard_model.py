@@ -133,12 +133,3 @@ def grid_pack(order, hidden=(), columns=12, sizes=None):
             x += widths[i]
         y += row_height
     return result
-
-
-def move_order(order, key, index):
-    """Pure insertion without duplicate keys or arbitrary pixel coordinates."""
-    source = [k for k in order if k != key]
-    if key not in order:
-        return list(order)
-    source.insert(max(0,min(len(source),int(index))),key)
-    return source

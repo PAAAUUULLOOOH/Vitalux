@@ -1,12 +1,11 @@
-"""Kernel-ABI fixtures: identity, units, zeroes, RAPL gaps/reset/wrap and sessions."""
-import math
+"""Kernel-ABI fixtures: identity, units, zeroes, RAPL gaps/reset/wrap and formats."""
 from pathlib import Path
 import struct
 import sys
 import tempfile
 from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from vitalux.hardware_sensors import (RaplReader, HardwareMonitor, PowerSessions,
+from vitalux.hardware_sensors import (RaplReader, HardwareMonitor,
     hwmon_readings, amd_metrics, nvidia_details, primary_power, number)
 
 
@@ -79,15 +78,15 @@ with tempfile.TemporaryDirectory() as directory:
     put(hw/'name','amdgpu');put(hw/'temp3_input',80000);put(hw/'temp3_label','mem')
     gpu=dict(id='gpu0',name='Test GPU',device_path=str(device),power=None,temp=None)
     other=dict(id='gpu1',name='Second GPU',device_path=str(root/'different'),power=None)
-    data=HardwareMonitor(root).sample([gpu,other],now=100,wall=1000)
+    data=HardwareMonitor(root).sample([gpu,other],now=100)
     assert gpu['power']==0 and gpu['vram_temp']==80
     assert other['power'] is None and not other['hardware']
     assert all(r['component']=='gpu:gpu0' for r in data if r.get('channel'))
     (hw/'power1_input').unlink();(hw/'power1_average').unlink()
-    data=HardwareMonitor(root).sample([dict(gpu,power=None)],now=101,wall=1001)
+    data=HardwareMonitor(root).sample([dict(gpu,power=None)],now=101)
     assert next(r for r in data if r.get('channel')=='power1')['value'] is None
     fallback=dict(gpu,power=42,power_limit=100)
-    HardwareMonitor(root).sample([fallback],now=102,wall=1002)
+    HardwareMonitor(root).sample([fallback],now=102)
     assert fallback['power']==42,'A readable limit alone must not hide genuine driver power'
     put(root/'class/thermal/thermal_zone0/temp',40000)
     put(root/'class/thermal/thermal_zone0/type','cpu_thermal')
@@ -95,26 +94,11 @@ with tempfile.TemporaryDirectory() as directory:
     assert any(r['value']==40 and r['kind']=='temps' for r in hwmon_readings(root))
 
 
-def power(value, interval=None):
-    return dict(id='one',kind='powers',value=value,interval=interval)
-tracker=PowerSessions();a=power(10);tracker.update([a],0,1000)
-assert a['average'] is None and a['maximum']==10
-b=power(30);tracker.update([b],2,1002)
-assert b['average']==20 and b['maximum']==30
-tracker.update([],3,1003)
-c=power(100);tracker.update([c],7,1007)
-assert c['average']==20,'No integration over unavailable observations'
-d=power(0);tracker.update([d],8,1008)
-assert d['average']==30 and d['maximum']==100 and d['history'][-1][1]==0
-e=power(20,4);tracker.update([e],12,1012)
-assert math.isclose(e['average'],170/7),'RAPL power is the average of its actual interval'
 assert number(float('nan')) is None and number(True) is None
 monitor=HardwareMonitor('/not-a-sysroot')
-monitor.power=tracker
+monitor.rapl.previous[Path('/energy')]=(100,1,1000)
 monitor.reset_baselines()
-assert tracker.sessions['one']['previous'] is None and tracker.sessions['one']['history'][-1][1] is None
-after=power(100);tracker.update([after],14,1014)
-assert math.isclose(after['average'],170/7),'A sampling-gap reset must retain stats without extrapolation'
+assert not monitor.rapl.previous,'Sampling gaps require a fresh RAPL baseline'
 
 v13=bytearray(b'\xff'*120);struct.pack_into('<HBB',v13,0,120,1,3)
 for offset,value in ((4,50),(6,70),(8,82),(16,40),(18,23),(20,17),(22,100),(72,0),(106,950)):
@@ -138,4 +122,4 @@ fields=nvidia_details(xml)['GPU-test']
 assert fields['encoder_busy']==0 and fields['decoder_busy'] is None and fields['power_limit']==250
 assert fields['throttle_reasons']=='sw power cap'
 assert nvidia_details('not xml')=={}
-print('Real-source sensor units, zeroes, limits, identities, RAPL reset/wrap/gaps, weighted sessions and versioned GPU formats PASS')
+print('Real-source sensor units, zeroes, limits, identities, RAPL reset/wrap/gaps, versioned GPU formats PASS')

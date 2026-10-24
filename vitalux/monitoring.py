@@ -6,6 +6,7 @@ All history is in-memory and bounded to the current application session.
 from __future__ import annotations
 
 from datetime import datetime
+from collections import deque
 import json
 import math
 
@@ -13,6 +14,46 @@ import math
 def valid_number(value):
     return (isinstance(value, (int, float)) and not isinstance(value, bool)
             and math.isfinite(value))
+
+
+class GpuHistory:
+    """The original four GPU series, recorded while their page is hidden."""
+    def __init__(self,maxlen=900):
+        self.maxlen=maxlen
+        self.samples=0
+        self.histories={}
+        self.last_seen={}
+
+    @staticmethod
+    def identity(gpu,index=0):
+        return str(gpu.get('id') or gpu.get('name') or index)
+
+    def get(self,gpu,index=0):
+        return self.histories.get(self.identity(gpu,index))
+
+    def update(self,gpus,gap=False):
+        if gap and self.samples:self._append([])
+        self._append(gpus)
+
+    def _append(self,gpus):
+        self.samples+=1
+        for series in self.histories.values():
+            for values in series.values():values.append(None)
+        for index,gpu in enumerate(gpus):
+            key=self.identity(gpu,index)
+            series=self.histories.get(key)
+            if series is None:
+                series=self.histories[key]={name:deque([None]*min(self.samples,self.maxlen),maxlen=self.maxlen)
+                                            for name in ('gpu','vram','gpu_temp','gpu_clock')}
+            used,total=gpu.get('vram_used'),gpu.get('vram_total')
+            percent=100*used/total if valid_number(used) and valid_number(total) and total>0 else None
+            readings=dict(gpu=gpu.get('usage'),vram=percent,gpu_temp=gpu.get('temp'),gpu_clock=gpu.get('clock'))
+            for name,value in readings.items():series[name][-1]=value if valid_number(value) else None
+            self.last_seen[key]=self.samples
+        for key in list(self.histories):
+            if self.samples-self.last_seen[key]>=self.maxlen:
+                del self.histories[key]
+                del self.last_seen[key]
 
 
 def telemetry(sample):

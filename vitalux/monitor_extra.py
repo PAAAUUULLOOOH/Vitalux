@@ -10,32 +10,20 @@ import math
 import os
 import shutil
 import subprocess
-import time
 
 import psutil
-from .hardware_sensors import RaplReader
 
 _PROCESS = psutil.Process(os.getpid())
-_CPU_INITIALIZED = False
-_RAPL = RaplReader()
 
 
 def app_resources():
     """This process's CPU percent (total single-core units) and resident memory."""
-    global _CPU_INITIALIZED
     try:
         cpu = _PROCESS.cpu_percent(interval=None)
         mem = _PROCESS.memory_info().rss
-        _CPU_INITIALIZED = True
         return {'cpu_percent': round(cpu, 2), 'rss_bytes': mem}
     except (psutil.Error, OSError):
         return {'cpu_percent': None, 'rss_bytes': None}
-
-
-def cpu_package_power():
-    """Compatibility entry point using the shared, validated RAPL reader."""
-    from .hardware_sensors import primary_power
-    return primary_power([r for r in _RAPL.sample(time.monotonic()) if r.get('primary')], 'cpu')
 
 
 def _kscreen_mode_size(item):

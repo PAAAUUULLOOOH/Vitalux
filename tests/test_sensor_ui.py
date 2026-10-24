@@ -34,8 +34,8 @@ for language in ('de','en'):
     card.close()
 
 panel=SensorPanel()
-record=dict(id='cpu',name='CPU Package',kind='powers',value=0,average=None,maximum=0,
-            limits=[('PL1',125)],history=[(1000,0)],source='fixture')
+record=dict(id='cpu',name='CPU Package',kind='powers',value=0,
+            limits=[('PL1',125)],source='fixture')
 panel.sync([record]);block=panel.powers['cpu']
 assert not panel.isHidden() and not block.rows['Leistung'].isHidden()
 assert set(block.rows)=={'Leistung','PL1'}

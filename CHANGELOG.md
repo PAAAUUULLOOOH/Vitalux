@@ -1,6 +1,10 @@
 # Vitalux – Änderungen
 
 
+## [v0.9.6.3-unstable.19] - 2026-10-24
+- Die Diagrammänderungen in den Komponenten-Reitern wurden zurückgenommen: Auslastung, Temperaturen, Takt und Durchsatz erscheinen wieder in der bisherigen Darstellung mit den gewohnten Auswahlfeldern. Aktuelle GPU-Leistung und Leistungsgrenze bleiben erhalten.
+
+
 ## [v0.9.6.3-unstable.18] - 2026-10-24
 - Prozessor und Grafik verwenden dieselben sichtbaren Diagramm-Häkchen wie die Übersicht. Messwerte sind direkt an- und abwählbar; die Auswahl bricht bei schmalen Fenstern in weitere Zeilen um und behält die Farben des jeweiligen Designs.
 

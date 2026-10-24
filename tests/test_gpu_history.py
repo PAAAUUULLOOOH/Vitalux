@@ -9,6 +9,7 @@ sys.path.insert(0, os.getcwd())
 from PySide6.QtWidgets import QApplication
 from vitalux import theme
 from vitalux.pages import GpuCard
+from vitalux.monitoring import GpuHistory
 
 
 def gpu(**changes):
@@ -32,13 +33,27 @@ def check_gpu_history():
     card.refresh(gpu(), h)
     assert card.graph._source[0][0] is h["gpu"], "Primary GPU history must be shared"
     assert card.graph._source[1][0] is h["vram"], "VRAM history must be shared"
+    assert len(card.h_use) == 0 and len(card.h_vram) == 0
     card.refresh(gpu(usage=72.0, vram_used=8_000_000_000), None)
-    assert card.graph.histories['usage']['values'][-1]==72
-    assert card.graph.histories['vram_pct']['values'][-1]==50
+    assert list(card.h_use) == [72.0]
+    assert list(card.h_vram) == [50.0]
     card.refresh(gpu(usage=None, vram_used=None), None)
-    assert card.graph.histories['usage']['values'][-1] is None
-    assert card.graph.histories['vram_pct']['values'][-1] is None
+    assert list(card.h_use)[-1] is None
+    assert list(card.h_vram)[-1] is None
     assert len(h["gpu"]) == 2 and len(h["vram"]) == 2
+    tracker=GpuHistory(maxlen=4)
+    first=gpu(id='A');second=gpu(id='B',usage=10)
+    tracker.update([first,second]);tracker.update([dict(second,usage=20),dict(first,usage=60)])
+    assert list(tracker.get(first)['gpu'])==[44,60],'History follows identity when GPU order changes'
+    assert list(tracker.get(second)['gpu'])==[10,20]
+    tracker.update([dict(first,usage=None)],gap=True)
+    assert list(tracker.get(first)['gpu'])==[44,60,None,None]
+    assert list(tracker.get(second)['gpu'])==[10,20,None,None]
+    assert len(tracker.get(first)['gpu_temp'])==4
+    tracker.update([dict(first,usage=0,vram_used=0,temp=0,clock=0)])
+    assert all(values[-1]==0 for values in tracker.get(first).values()),'Real zeroes are retained'
+    tracker.update([first]);assert tracker.get(second) is None,'Disconnected-device histories expire'
+    assert all(len(values)==4 for values in tracker.get(first).values())
     card.close()
     app.processEvents()
     print("GPU history sharing and missing-data behavior: PASS")

@@ -1,9 +1,8 @@
-"""Read-only Linux sensor discovery and measured power sessions (no Qt/root).
+"""Read-only Linux sensor discovery and current power readings (no Qt/root).
 
 Values retain their kernel device/channel identity. Overlapping RAPL domains,
 GPU rails and board channels are never summed into a purported PC total.
 """
-from collections import deque
 import math
 from pathlib import Path
 import re
@@ -259,67 +258,17 @@ def nvidia_details(xml):
     return result
 
 
-class PowerSessions:
-    """Time-weighted observations, peak and a 60-second history per real source."""
-    def __init__(self):
-        self.sessions = {}
-
-    def update(self, records, now, wall):
-        active = set()
-        for record in records:
-            if record['kind'] != 'powers':
-                continue
-            key = record['id']
-            state = self.sessions.setdefault(key, dict(energy=0., duration=0., maximum=None,
-                previous=None, history=deque(maxlen=120)))
-            value = number(record['value'])
-            previous = state['previous']
-            if value is not None:
-                interval = record.get('interval')
-                if interval is not None and 0 < interval <= 30:
-                    state['energy'] += value*interval
-                    state['duration'] += interval
-                elif previous and 0 < now-previous[0] <= 30:
-                    interval = now-previous[0]
-                    state['energy'] += (previous[1]+value)*.5*interval
-                    state['duration'] += interval
-                state['maximum'] = value if state['maximum'] is None else max(state['maximum'], value)
-                state['previous'] = (now, value)
-                active.add(key)
-            else:
-                state['previous'] = None
-            if previous and now-previous[0] > 30:
-                state['history'].append((wall-.001, None))
-            state['history'].append((wall, value))
-            while state['history'] and state['history'][0][0] < wall-60:
-                state['history'].popleft()
-            record.update(average=state['energy']/state['duration'] if state['duration'] else None,
-                          maximum=state['maximum'], history=list(state['history']))
-        for key, state in self.sessions.items():
-            if key not in active:
-                state['previous'] = None
-                if state['history'] and state['history'][-1][1] is not None:
-                    state['history'].append((wall, None))
-
-
 class HardwareMonitor:
     def __init__(self, sysroot='/sys'):
         self.sysroot = Path(sysroot)
         self.rapl = RaplReader(sysroot)
-        self.power = PowerSessions()
 
     def reset_baselines(self):
-        """Keep session statistics, but do not integrate across missed samples."""
+        """Start a fresh energy-counter baseline after missed samples."""
         self.rapl.previous.clear()
-        for state in self.power.sessions.values():
-            state['previous']=None
-            history=state['history']
-            if history and history[-1][1] is not None:
-                history.append((history[-1][0]+.001,None))
 
-    def sample(self, gpus, now=None, wall=None):
+    def sample(self, gpus, now=None):
         now = time.monotonic() if now is None else now
-        wall = time.time() if wall is None else wall
         records = hwmon_readings(self.sysroot, gpus) + self.rapl.sample(now)
         for gpu in gpus:
             ident = 'gpu:'+gpu['id']
@@ -378,7 +327,6 @@ class HardwareMonitor:
                 gpu['power'] = chosen['value']
                 gpu['power_name'] = chosen.get('scope') or chosen['name']
                 gpu['power_source_id'] = chosen['id']
-        self.power.update(records, now, wall)
         for gpu in gpus:
             gpu['hardware'] = [r for r in records if r['component'] == 'gpu:'+gpu['id']]
         return records

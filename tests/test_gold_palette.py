@@ -40,9 +40,7 @@ def run():
         memory = MemoryPage()
         memory.show()
         app.processEvents()
-        memory.graph.sync({'ram': {'percent': 30}},'ram')
-        gold(memory.graph.color('percent'))
-        gold(memory.graph.graph.series[0][1])
+        gold(memory.graph.toggles[0].series_color)
         for percent in (12, 80, 95):
             gold(theme.level_color(percent))
         gauge = Gauge()

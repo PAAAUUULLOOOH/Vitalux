@@ -20,13 +20,12 @@ from .smooth_scroll import AdaptiveScrollArea
 from .alerts import AlertMonitor, readings_from_sample
 from .tray_tooltip import tray_tooltip
 from .wallpaper_accents import resolve_accent
-from .monitoring import SessionExtrema
+from .monitoring import GpuHistory, SessionExtrema
 from .diagnostics import log_exception
 from .diagnostic_center import DiagnosticCenter
 from .diagnostic_engine import BlackboxRecorder
 from .mini_hud import MiniHUD
 from .sample_clock import sampling_gap
-from .measurements import MeasurementHistory
 
 
 class Sampler(QThread):
@@ -89,10 +88,10 @@ class MainWindow(QMainWindow):
         else:
             self.resize(1380, 900)
         self.hist = {k: deque(maxlen=900) for k in (
-            "cpu", "ram", "gpu", "vram", "net_down", "net_up", "io_read", "io_write",
-            "cpu_temp", "gpu_temp", "gpu_clock", "gpu_power", "time")}
+            "cpu", "ram", "gpu", "net_down", "net_up", "io_read", "io_write",
+            "cpu_temp", "time")}
         self._extrema = SessionExtrema()
-        self.measurement_history=MeasurementHistory()
+        self.gpu_history=GpuHistory()
         self._mini_hud = MiniHUD()
         self._mini_hud.hidden_by_user.connect(self._mini_hud_closed)
         self._blackbox = BlackboxRecorder()
@@ -918,19 +917,12 @@ class MainWindow(QMainWindow):
         h["cpu"].append(d["cpu"]["usage"])
         h["ram"].append(d["ram"]["percent"])
         h["gpu"].append(g.get("usage") if g else None)
-        h["vram"].append(g["vram_used"] / g["vram_total"] * 100
-                         if g and isinstance(g.get("vram_used"), (int, float))
-                         and isinstance(g.get("vram_total"), (int, float))
-                         and g["vram_total"] > 0 else None)
         h["cpu_temp"].append(d.get("cpu", {}).get("temp"))
-        h["gpu_temp"].append(g.get("temp") if g else None)
-        h["gpu_clock"].append(g.get("clock") if g else None)
-        h["gpu_power"].append(g.get("power") if g else None)
         h["net_down"].append(d["net"]["down"])
         h["net_up"].append(d["net"]["up"])
         h['io_read'].append(d['io']['read'])
         h['io_write'].append(d['io']['write'])
-        self.measurement_history.update(d,stamp,self.sampler.interval)
+        self.gpu_history.update(d['gpus'],gap=bool(d.get('_gap_before')))
         # History is populated above; repaint only the selected page.
         # Switching pages immediately uses the latest sample and all history.
         if self._sidebar_motion is None:
