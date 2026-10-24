@@ -585,7 +585,7 @@ class CpuPage(Page):
 
         self.gauge = GaugeCard("Gesamtauslastung")
         graph = Card("Verlauf")
-        self.graph = MeasurementChart()
+        self.graph = MeasurementChart(inline_selection=True)
         graph.body.addWidget(self.graph)
         lay = QHBoxLayout()
         self.cpu_layout=lay
@@ -690,7 +690,7 @@ class GpuCard(Card):
 
         self.load_title=label('MESSWERTE · VERLAUF', "cardTitle")
         self.body.addWidget(self.load_title)
-        self.graph = MeasurementChart()
+        self.graph = MeasurementChart(inline_selection=True)
         self.body.addWidget(self.graph)
 
         # Genuine detail-on-demand, not a second duplicate overview.

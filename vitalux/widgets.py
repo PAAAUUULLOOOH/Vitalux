@@ -1,6 +1,6 @@
 import math
 
-from PySide6.QtCore import QPointF, QRectF, QSize, Qt, QTimer, QVariantAnimation, QEasingCurve
+from PySide6.QtCore import QPointF, QRect, QRectF, QSize, Qt, QTimer, QVariantAnimation, QEasingCurve
 from PySide6.QtGui import QBrush, QColor, QConicalGradient, QFont, QFontMetrics, QLinearGradient, QPainter, QPainterPath, QPen
 from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget, QGraphicsDropShadowEffect
 from .ui_locale import QLabel, QPushButton, QComboBox, QCheckBox, paint_check_indicator
@@ -529,11 +529,13 @@ class ChartSeriesCheckBox(QCheckBox):
 
     We paint the check ourselves: Qt stylesheet backgrounds replace the native
     indicator on some Linux styles and otherwise hide the tick. This renders a
-    crisp tick and an empty unchecked square with identical semantics in all
-    three Vitalux themes. The localized QCheckBox base keeps keyboard handling.
+    crisp tick and an empty unchecked square in the active Vitalux design.
+    The localized QCheckBox base keeps keyboard handling.
     """
-    def __init__(self, name, color, parent=None):
+    def __init__(self, name, color, parent=None, *, wrap=False):
         super().__init__(name, parent)
+        self.wrap_text=wrap
+        policy=self.sizePolicy();policy.setHeightForWidth(wrap);self.setSizePolicy(policy)
         self.setProperty('selectionControl',True)
         self.series_color = color
         self.setMinimumHeight(24)
@@ -552,7 +554,14 @@ class ChartSeriesCheckBox(QCheckBox):
                      max(24, metrics.height()+6))
 
     def minimumSizeHint(self):
-        return self.sizeHint()
+        hint=self.sizeHint()
+        return QSize(min(150,hint.width()),hint.height()) if self.wrap_text else hint
+
+    def heightForWidth(self,width):
+        if not self.wrap_text:return self.sizeHint().height()
+        font=QFont(self.font());font.setBold(True)
+        rect=QFontMetrics(font).boundingRect(QRect(0,0,max(1,width-27),10000),Qt.TextWordWrap,self.text())
+        return max(24,rect.height()+6)
 
     def paintEvent(self, event):
         p = QPainter(self)
@@ -567,8 +576,10 @@ class ChartSeriesCheckBox(QCheckBox):
         font.setBold(True)
         p.setFont(font)
         p.setPen(QColor(self.series_color))
+        flags=Qt.AlignLeft | Qt.AlignVCenter
+        if self.wrap_text:flags |= Qt.TextWordWrap
         p.drawText(QRectF(x + side + 8, 0, max(0, self.width() - side - x - 10), self.height()),
-                   Qt.AlignLeft | Qt.AlignVCenter, self.text())
+                   flags, self.text())
         p.end()
 
 

@@ -4,13 +4,14 @@ import math
 import time
 from PySide6.QtCore import QPointF, QRectF, Qt
 from PySide6.QtGui import QColor, QIcon, QPainter, QPen, QPixmap
-from PySide6.QtWidgets import QGridLayout, QMenu, QSizePolicy, QToolButton, QToolTip, QWidget
+from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QMenu, QSizePolicy, QToolButton, QToolTip, QWidget
 from . import premium, theme
 from .hardware_sensors import number
 from .i18n import lang, tr
 from .measurements import MeasurementHistory
+from .flow_layout import FlowLayout
 from .ui_locale import QComboBox
-from .widgets import ChartPanel, HistoryGraph, label
+from .widgets import ChartPanel, ChartSeriesCheckBox, HistoryGraph, label
 
 
 def format_value(value,unit):
@@ -89,8 +90,10 @@ class SelectionMenu(QMenu):
 
 
 class MeasurementChart(ChartPanel):
-    def __init__(self):
+    def __init__(self, *, inline_selection=False):
         super().__init__([],[],mode='mixed')
+        self.inline_selection=inline_selection
+        self.checks={}
         self.available={};self.histories={};self.selected={};self.order={}
         self.history=MeasurementHistory()
         self._menu_identity=None
@@ -114,11 +117,28 @@ class MeasurementChart(ChartPanel):
         self.axis_combo.currentIndexChanged.connect(self._update)
         controls.insertWidget(2,self.axis_label)
         controls.insertWidget(3,self.axis_combo)
+        if inline_selection:
+            self.selector.hide()
+            controls.removeWidget(self.selector)
+            controls.removeWidget(self.time_range)
+            controls.removeWidget(self.axis_label)
+            controls.removeWidget(self.axis_combo)
+            while controls.count():controls.takeAt(0)
+            self.selection_controls=QWidget(self)
+            self.selection_flow=FlowLayout(self.selection_controls)
+            self.axis_controls=QWidget(self.selection_controls)
+            axis_layout=QHBoxLayout(self.axis_controls)
+            axis_layout.setContentsMargins(0,0,0,0);axis_layout.setSpacing(10)
+            axis_layout.addWidget(self.axis_label);axis_layout.addWidget(self.axis_combo)
+            controls.addWidget(self.selection_controls)
+            self.selection_flow.addWidget(self.time_range)
+            self.selection_flow.addWidget(self.axis_controls)
         self.legend=QWidget(self)
         self.legend_grid=QGridLayout(self.legend)
         self.legend_grid.setContentsMargins(0,0,0,0)
         self.legend_labels={}
         self.layout().addWidget(self.legend)
+        self.legend.setVisible(not inline_selection)
         self.hide()
 
     def color(self,key):
@@ -163,6 +183,8 @@ class MeasurementChart(ChartPanel):
         if identity==self._menu_identity:
             return
         self._menu_identity=identity
+        if self.inline_selection:
+            return self._make_checks()
         self.menu.close()
         self.menu.clear()
         for submenu in self._submenus:
@@ -188,6 +210,26 @@ class MeasurementChart(ChartPanel):
             action.toggled.connect(lambda checked,key=key:self.set_selected(key,checked))
             self.actions[key]=action
 
+    def _make_checks(self):
+        while self.selection_flow.count():self.selection_flow.takeAt(0)
+        self.selection_flow.addWidget(self.time_range)
+        for key,check in self.checks.items():check.setVisible(key in self.keys)
+        self.toggles=[]
+        for key in self.keys:
+            metric=self.available[key]
+            check=self.checks.get(key)
+            if check is None:
+                check=self.checks[key]=ChartSeriesCheckBox('',self.color(key),self.selection_controls,wrap=True)
+                check.toggled.connect(lambda checked,key=key:self.set_selected(key,checked))
+            check.setText(metric_name(metric['name']))
+            check.set_series_color(self.color(key))
+            check.setToolTip(metric.get('source',''))
+            check.blockSignals(True);check.setChecked(self.selected[key]);check.blockSignals(False)
+            check.show()
+            self.selection_flow.addWidget(check)
+            self.toggles.append(check)
+        self.selection_flow.addWidget(self.axis_controls)
+
     def set_selected(self,key,checked):
         self.selected[key]=bool(checked)
         self._update()
@@ -195,7 +237,8 @@ class MeasurementChart(ChartPanel):
     def select_all(self,checked):
         for key in self.keys:
             self.selected[key]=bool(checked)
-            action=self.actions[key];action.blockSignals(True);action.setChecked(checked);action.blockSignals(False)
+            control=self.checks[key] if self.inline_selection else self.actions[key]
+            control.blockSignals(True);control.setChecked(checked);control.blockSignals(False)
         self._update()
 
     def retheme(self):
@@ -246,6 +289,7 @@ class MeasurementChart(ChartPanel):
         for index,unit in enumerate(scales):self.axis_combo.setItemText(index,tr(unit))
         self.axis_combo.blockSignals(False)
         self.axis_combo.setVisible(len(scales)>1);self.axis_label.setVisible(len(scales)>1)
+        if self.inline_selection:self.axis_controls.setVisible(len(scales)>1)
         self.graph.axis_unit=self.axis_combo.currentData() or ''
         self.graph.scales=scales;self.graph.units=units
         self.graph.series_names=names;self.graph.series_styles=styles
@@ -255,6 +299,7 @@ class MeasurementChart(ChartPanel):
         self.scale_hint.setVisible(len(scales)>1)
         self.selector.setText(tr('Messwerte')+f' ({len(active_keys)}/{len(keys)})')
         self.axis_label.setText(tr('Skala'))
+        if self.inline_selection:return
         while self.legend_grid.count():self.legend_grid.takeAt(0)
         for key,item in self.legend_labels.items():item.setVisible(key in active_keys)
         columns=3 if self.width()>=800 else 2 if self.width()>=440 else 1

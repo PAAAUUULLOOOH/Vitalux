@@ -1,6 +1,10 @@
 # Vitalux – Changes
 
 
+## [v0.9.6.3-unstable.18] - 2026-10-24
+- Processor and Graphics use the same visible chart checkboxes as Overview. Measurements can be toggled directly; controls wrap into further rows on narrow windows and retain the active design palette.
+
+
 ## [v0.9.6.3-unstable.17] - 2026-10-24
 - Overview tiles now show only current measured power in watts. Unavailable readings stay hidden; system-drive power requires an unambiguous sensor association.
 - Each component tab combines available measurements in one chart with individually selectable curves and separate scales per unit. Sensor histories continue while visiting other tabs.

@@ -1,6 +1,10 @@
 # Vitalux – Änderungen
 
 
+## [v0.9.6.3-unstable.18] - 2026-10-24
+- Prozessor und Grafik verwenden dieselben sichtbaren Diagramm-Häkchen wie die Übersicht. Messwerte sind direkt an- und abwählbar; die Auswahl bricht bei schmalen Fenstern in weitere Zeilen um und behält die Farben des jeweiligen Designs.
+
+
 ## [v0.9.6.3-unstable.17] - 2026-10-24
 - Die Übersichtskacheln zeigen nur noch die aktuelle gemessene Leistung in Watt. Fehlende Werte bleiben ausgeblendet; der Verbrauch des Systemlaufwerks erscheint nur bei eindeutiger Sensorzuordnung.
 - Jeder Komponenten-Reiter bündelt die verfügbaren Messwerte in einem Diagramm mit einzeln wählbaren Kurven und eigenen Skalen je Einheit. Sensorverläufe bleiben auch beim Wechseln der Reiter erhalten.
