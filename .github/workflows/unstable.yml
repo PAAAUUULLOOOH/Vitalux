@@ -100,6 +100,12 @@ jobs:
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-regressions.py --output "$GITHUB_WORKSPACE/build/regressions"
+      - name: Check manufacturer image and offline reuse
+        if: steps.prepare.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p build/product-image-check
+          python scripts/check-product-image-network.py | tee build/product-image-check/result.log
       - name: Exercise real kernel and desktop paths
         if: steps.prepare.outputs.changed == 'true'
         id: native

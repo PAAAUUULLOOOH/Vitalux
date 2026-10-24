@@ -245,6 +245,9 @@ def nvidia_details(xml):
         readings = dict(power_limit=value('gpu_power_readings/enforced_power_limit', 'power_readings/enforced_power_limit', 'power_readings/power_limit'),
             vram_temp=value('temperature/memory_temp'), memory_busy=value('utilization/memory_util'),
             encoder_busy=value('utilization/encoder_util'), decoder_busy=value('utilization/decoder_util'))
+        pci_bus = gpu.findtext('pci/pci_bus_id') or gpu.get('id')
+        if pci_bus:
+            readings['pci_slot'] = pci_bus
         reasons = []
         for parent in ('clocks_event_reasons', 'clocks_throttle_reasons'):
             node = gpu.find(parent)

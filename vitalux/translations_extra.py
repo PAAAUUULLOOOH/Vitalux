@@ -1,5 +1,17 @@
 """Extra English translations for dashboard, settings, sensors and disk tests."""
 EN_MORE = {
+    'Der Prozessor zeigt alle logischen CPUs in Reihenfolge, einschließlich abgeschalteter CPUs; die Kacheln wachsen mit.': 'Processor lists every logical CPU in order, including offline CPUs; the cards expand to fit.',
+    'Grafik und System zeigen erkannte GPU- und Mainboard-Modelle mit passenden Produktbildern. Einmal heruntergeladene Bilder bleiben offline verfügbar.': 'Graphics and System show identified GPU and mainboard models with matching product pictures. Downloaded pictures remain available offline.',
+    'Produktbild nicht verfügbar': 'Product image unavailable',
+    'Produktbild wird gesucht …': 'Looking up product image…',
+    'Offline verfügbar': 'Available offline',
+    'Kartenhersteller': 'Board manufacturer',
+    'Kerne / Threads · Auslastung': 'Cores / threads · load',
+    'Alle logischen Prozessoren in CPU-Reihenfolge; abgeschaltete CPUs bleiben sichtbar.': 'All logical processors in CPU order; offline CPUs remain visible.',
+    'Kern {id}': 'Core {id}',
+    'Sockel {id}': 'Socket {id}',
+    'Revision {value}': 'Revision {value}',
+    'Offline': 'Offline',
     'CPU {value}% · Live-Telemetrie': 'CPU {value}% · Live telemetry',
     'Kreislogo und Vitalux-Schriftzug passen sich dem Design an; Außenbögen, Herzschlag und Lichtreflex laufen unabhängig.': 'The circle logo and Vitalux wordmark follow the theme; outer bands, heartbeat and reflection animate independently.',
 

@@ -14,7 +14,7 @@ import time
 import psutil
 
 from .i18n import tr
-from . import extended, monitor_extra, hardware_sensors
+from . import extended, monitor_extra, hardware_sensors, hardware_identity, cpu_topology
 
 _last = {}
 _hardware = hardware_sensors.HardwareMonitor()
@@ -130,6 +130,7 @@ def cpu_info():
         "model": _cpu_model(),
         "usage": sum(per_core) / len(per_core) if per_core else 0.0,
         "per_core": per_core,
+        "logical_cpus": cpu_topology.logical_cpus(per_core),
         "cores": psutil.cpu_count(logical=False) or 0,
         "threads": psutil.cpu_count(logical=True) or 0,
         "freq": freq.current if freq else None,
@@ -298,7 +299,13 @@ def _drm_gpus(have_nvidia):
 
 def gpu_info():
     nv = _nvidia_gpus()
-    return nv + _drm_gpus(bool(nv))
+    gpus = nv + _drm_gpus(bool(nv))
+    for gpu in gpus:
+        gpu.update(hardware_identity.gpu_identity(gpu))
+        if gpu.get('board_model'):
+            gpu['chip_name'] = gpu['name']
+            gpu['name'] = gpu['board_model']
+    return gpus
 
 
 @functools.lru_cache(maxsize=16)
@@ -440,6 +447,7 @@ def _mesa_version():
 def system_static():
     dmi = lambda n: _read(f"/sys/class/dmi/id/{n}") or "–"
     qt_ver, kf_ver = _qt_kf_versions()
+    board = hardware_identity.board_identity(dmi('board_vendor'), dmi('board_name'), dmi('board_version'))
     return {
         "kernel": platform.release(), "arch": platform.machine(), "host": platform.node(),
         "user": getpass.getuser(),
@@ -447,6 +455,7 @@ def system_static():
         "session": os.environ.get("XDG_SESSION_TYPE", "–"),
         "vendor": dmi("sys_vendor"), "product": dmi("product_name"),
         "board": f"{dmi('board_vendor')} {dmi('board_name')}".replace("– ", "").strip(),
+        "board_product": board,
         "bios": dmi("bios_version"),
         "plasma": _plasma_version(),
         "kwin": _kwin_version(),

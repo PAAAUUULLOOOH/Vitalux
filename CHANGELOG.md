@@ -1,6 +1,12 @@
 # Vitalux – Änderungen
 
 
+## [v0.9.6.3-unstable.20] - 2026-10-25
+- Die GPU-Wattanzeige auf der Übersicht ist passend zum Grafikkartennamen mittig ausgerichtet.
+- Prozessor zeigt alle vorhandenen logischen CPUs numerisch sortiert, einschließlich abgeschalteter Einträge. Die Kacheln passen ihre Spalten und Höhe an, damit auch bei vielen Kernen und Threads alle Werte erreichbar bleiben.
+- Grafik erkennt Kartenhersteller und eindeutig zuordenbare Modellvarianten über PCI-/Subsystem-Kennungen, darunter SAPPHIRE PURE RX 9070 XT. System zeigt Hersteller, Modell und verfügbare Revision des Mainboards in einer eigenen Kachel.
+- Grafik und Mainboard erhalten passende Produktbilder aus Herstellerquellen und Online-Suche. Bilder werden im Hintergrund geladen, dauerhaft lokal gespeichert und danach auch offline angezeigt. Nicht eindeutig zuordenbare oder fehlende Bilder erhalten einen neutralen Platzhalter.
+
 ## [v0.9.6.3-unstable.19] - 2026-10-24
 - Die Diagrammänderungen in den Komponenten-Reitern wurden zurückgenommen: Auslastung, Temperaturen, Takt und Durchsatz erscheinen wieder in der bisherigen Darstellung mit den gewohnten Auswahlfeldern. Aktuelle GPU-Leistung und Leistungsgrenze bleiben erhalten.
 

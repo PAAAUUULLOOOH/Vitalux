@@ -98,6 +98,16 @@ On/off controls use themed switches throughout the interface. Multiple-selection
 
 **Logs:** Vitalux keeps an active file and one previous file per log, rotating at about 5 MB (roughly 10 MB combined, allowing complete error records). This includes launcher, crash, installation, restart and local event logs. Stable and Unstable use separate directories. Crash recording and automatic version recovery remain active.
 
+## Hardware identities and product pictures
+
+**Processor** lists all present logical CPUs in numerical Linux CPU-ID order, including offline entries. Core IDs identify the underlying physical cores where Linux exposes the topology. The meter grid changes its column count with the available width and grows vertically; scroll to reach every entry on machines with many cores or threads. A missing reading remains unknown, while an offline CPU is marked **Offline**.
+
+**Graphics** separates the GPU designer from the board manufacturer. PCI device and subsystem identifiers can resolve a specific partner model, including SAPPHIRE PURE Radeon RX 9070 XT. Shared IDs and missing retail-variant information retain the available GPU description; Vitalux does not guess a partner edition. **System** has a dedicated mainboard card using readable DMI manufacturer, model and revision fields. Generic firmware placeholders do not count as an exact model.
+
+For an identified product, Vitalux looks up a real product picture in the background. It uses manufacturer product pages and online image search, accepts matching manufacturer sources, and shows a neutral placeholder when no matching image is available. The first uncached lookup needs Internet access. Online searches send the manufacturer/model terms to Bing; known manufacturer gallery pictures can be downloaded directly. Serial numbers are not included. The monitoring UI remains responsive while lookup runs. The source link below a downloaded picture opens its manufacturer page.
+
+Pictures are stored persistently in the active profile's `hardware-products` cache, separately for GPU/mainboard models and revisions. Once downloaded, a picture is loaded directly from the cache, including after app restarts and without Internet access; successful images do not expire automatically. Missing or corrupt pictures can be looked up again. A failed search can retry when the page is revisited after at least one minute. **Restore defaults** clears the active profile's cache along with its other local settings; it preserves the other channel's profile.
+
 ## Hardware sensors and measured power
 
 Overview tiles show only the current measured power, for example **Power: 85 W**, for CPU, GPU, memory and the system drive where supported. The system-drive value requires an unambiguous sensor association with the mounted root device. Missing readings leave no power row; zero watts remain visible.

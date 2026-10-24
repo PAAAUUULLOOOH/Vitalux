@@ -44,8 +44,8 @@ SLIDES = [
     (
         "CPU, GPU und Arbeitsspeicher",
         "Hier erfährst du, wie stark deine Hardware gerade beansprucht wird.",
-        "Beim Prozessor findest du Auslastung, Takt und verfügbare Temperaturen.",
-        "Der Grafik-Reiter vereint Auslastung, Videospeicher, Taktraten, Spannung und Temperatur. Technische Details und Live-Diagramme sind aufklappbar.",
+        "Der Prozessor zeigt alle logischen CPUs in Reihenfolge, einschließlich abgeschalteter CPUs; die Kacheln wachsen mit.",
+        "Grafik und System zeigen erkannte GPU- und Mainboard-Modelle mit passenden Produktbildern. Einmal heruntergeladene Bilder bleiben offline verfügbar.",
         "Gezielte Hardware- und Systemprüfungen findest du im Diagnostic Center.",
         "hardware",
     ),

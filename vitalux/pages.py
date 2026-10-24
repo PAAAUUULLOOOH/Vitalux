@@ -3,7 +3,7 @@ import platform
 
 import PySide6
 from PySide6.QtCore import Qt, QPoint, QTimer, qVersion, QPropertyAnimation, QParallelAnimationGroup, QEasingCurve, QThread, Signal
-from PySide6.QtWidgets import QBoxLayout, QGridLayout, QHBoxLayout, QVBoxLayout, QWidget, QMenu, QToolButton, QGraphicsOpacityEffect, QStackedWidget, QTabWidget
+from PySide6.QtWidgets import QBoxLayout, QGridLayout, QHBoxLayout, QVBoxLayout, QWidget, QMenu, QToolButton, QGraphicsOpacityEffect, QStackedWidget, QTabWidget, QLayout
 
 from . import theme, motion
 from .ui_locale import QPushButton
@@ -20,6 +20,7 @@ from .widgets import (Card, ChipsGrid, GaugeBox, GaugeCard, ChartPanel, KeyValue
 from .sensor_ui import SensorPanel, optional, power_text, reflow
 from .hardware_sensors import number
 from .power_display import component_power, disk_power, gpu_power, power_limit, source_text
+from .product_ui import ProductHeader
 
 
 class Page(QWidget):
@@ -308,6 +309,8 @@ class OverviewPage(Page):
                 self.power_labels[key]=[]
                 for card in (classic,face):
                     reading=label('', 'muted',wrap=True)
+                    if key == 'gpu':
+                        reading.setAlignment(Qt.AlignCenter)
                     reading.hide()
                     card.body.addWidget(reading)
                     self.power_labels[key].append(reading)
@@ -603,18 +606,35 @@ class CpuPage(Page):
         self.hardware = SensorPanel(include_power=False)
         self.content.addWidget(self.hardware)
 
-        self.cores_card = Card("Threads")
+        self.cores_card = Card("Kerne / Threads · Auslastung")
+        self.cores_card.body.addWidget(label(
+            'Alle logischen Prozessoren in CPU-Reihenfolge; abgeschaltete CPUs bleiben sichtbar.',
+            'muted', wrap=True))
         self.cores_grid = QGridLayout()
         self.cores_grid.setHorizontalSpacing(24)
         self.cores_grid.setVerticalSpacing(12)
         self.cores_card.body.addLayout(self.cores_grid)
         self.content.addWidget(self.cores_card)
         self.core_meters = []
+        self._core_columns = 0
+        self.root.setSizeConstraint(QLayout.SetMinimumSize)
+        self.cores_card.layout().setSizeConstraint(QLayout.SetMinimumSize)
 
     def resizeEvent(self,event):
         super().resizeEvent(event)
         width=self.parentWidget().width() if self.parentWidget() is not None else self.width()
         self.cpu_layout.setDirection(QBoxLayout.TopToBottom if width<850 else QBoxLayout.LeftToRight)
+        self._arrange_cores()
+
+    def _arrange_cores(self):
+        columns = max(1, min(4, (self.width() - 100) // 200))
+        if columns == self._core_columns:
+            return
+        for i, meter in enumerate(self.core_meters):
+            self.cores_grid.addWidget(meter, i // columns, i % columns)
+        self._core_columns = columns
+        self.cores_card.updateGeometry()
+        self.updateGeometry()
 
     def refresh(self, d, h):
         c = d["cpu"]
@@ -640,13 +660,33 @@ class CpuPage(Page):
         from .monitoring import format_range
         self.cpu_extrema.set(format_range(d.get('session_extrema') or {},'cpu_temp','°C',1))
         self.hardware.sync([r for r in d.get('hardware',[]) if r['component']=='cpu'])
-        while len(self.core_meters) < len(c["per_core"]):
+        entries = c.get('logical_cpus')
+        if entries is None:
+            entries = [dict(id=i, usage=v, online=True) for i, v in enumerate(c['per_core'])]
+        entries = sorted(entries, key=lambda row: row['id'])
+        count_changed = len(self.core_meters) != len(entries)
+        while len(self.core_meters) < len(entries):
             i = len(self.core_meters)
-            m = Meter(f"Thread {i}")
-            self.cores_grid.addWidget(m, i // 4, i % 4)
+            m = Meter(f"CPU {i}")
+            m.setMinimumHeight(m.minimumSizeHint().height())
             self.core_meters.append(m)
-        for m, v in zip(self.core_meters, c["per_core"]):
-            m.set(v)
+        while len(self.core_meters) > len(entries):
+            meter = self.core_meters.pop()
+            self.cores_grid.removeWidget(meter)
+            meter.hide()
+            meter.deleteLater()
+        for meter, row in zip(self.core_meters, entries):
+            core = row.get('core')
+            text = f'CPU {row["id"]}'
+            if core is not None:
+                text += ' · ' + tr('Kern {id}').format(id=core)
+            meter.name.setText(text)
+            package = row.get('package')
+            meter.setToolTip(tr('Sockel {id}').format(id=package) if package is not None else '')
+            meter.set(row.get('usage'), tr('Offline') if not row.get('online', True) else None)
+        if count_changed:
+            self._core_columns = 0
+        self._arrange_cores()
 
 
 # ------------------------------------------------------------------ Grafik (schreibgeschützt)
@@ -657,8 +697,8 @@ class GpuCard(Card):
         super().__init__()
         self.name = label("–", "bigName", wrap=True)
         self.meta = label("", "muted", wrap=True)
-        self.body.addWidget(self.name)
-        self.body.addWidget(self.meta)
+        self.product_header = ProductHeader(self.name, self.meta, 'gpu')
+        self.body.addWidget(self.product_header)
 
         gauges = QHBoxLayout()
         gauges.setSpacing(12)
@@ -666,7 +706,6 @@ class GpuCard(Card):
         self.g_vram = GaugeBox("Videospeicher")
         gauges.addWidget(self.g_use, 1)
         gauges.addWidget(self.g_vram, 1)
-        self.body.addLayout(gauges)
 
         self.body.addWidget(label("AKTUELLE GPU-WERTE", "cardTitle"))
         self.kv = {key: KeyValue(key) for key in (
@@ -697,6 +736,7 @@ class GpuCard(Card):
         self.kv['Leistung'].hide();self.kv['Leistungsgrenze'].hide()
         self.hardware = SensorPanel(include_power=False)
         self.body.addWidget(self.hardware)
+        self.body.addLayout(gauges)
 
         self.load_title=label('AUSLASTUNG UND VIDEOSPEICHER · VERLAUF', "cardTitle")
         self.body.addWidget(self.load_title)
@@ -753,8 +793,10 @@ class GpuCard(Card):
         vendor = g.get("vendor")
         driver = g.get("driver")
         self.meta.setText(" · ".join(str(x) for x in (
+            f"{tr('Kartenhersteller')}: {g['board_vendor']}" if g.get('board_vendor') else None,
             vendor, f"{tr('Treiber')} {driver}" if driver else None
         ) if x))
+        self.product_header.set_product(g.get('product'))
         reasons = g.get('unavailable') or {}
         self.g_use.set(g.get("usage"), unavailable(reasons.get('usage')) if g.get('usage') is None else '')
         self.g_use.setVisible(number(g.get('usage')) is not None)
@@ -1069,6 +1111,17 @@ class SystemPage(Page):
     def __init__(self, distro):
         super().__init__("System", "Betriebssystem, Hardware und Software")
         s = system_static()
+        product = s.get('board_product') or {}
+        self.board_card = Card('Mainboard')
+        self.board_name = label(product.get('model') or s.get('board') or '–', 'bigName', wrap=True)
+        revision = product.get('revision')
+        self.board_meta = label(' · '.join(x for x in (
+            product.get('vendor'), tr('Revision {value}').format(value=revision) if revision else '') if x),
+            'muted', wrap=True)
+        self.board_header = ProductHeader(self.board_name, self.board_meta, 'mainboard')
+        self.board_header.set_product(product)
+        self.board_card.body.addWidget(self.board_header)
+        self.content.addWidget(self.board_card)
         os_card = Card("Betriebssystem")
         self.uptime = KeyValue("Laufzeit")
         for k, v in (("Distribution", distro["name"]), ("Kernel", s["kernel"]), ("Architektur", s["arch"]),
@@ -1082,7 +1135,7 @@ class SystemPage(Page):
         hw_card = Card("Hardware")
         self.cpu_kv, self.gpu_kv = KeyValue("Prozessor"), KeyValue("Grafik")
         for k, v in (("Hersteller", s["vendor"]), ("Modell", s["product"]),
-                     ("Mainboard", s["board"] or "–"), ("BIOS", s["bios"])):
+                     ("BIOS", s["bios"])):
             kv = KeyValue(k)
             kv.set(v)
             hw_card.body.addWidget(kv)

@@ -76,7 +76,7 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
         network.shutdown();network.close()
         system=SystemPage(dict(name='Linux',short='Test',version='1',color='#4f8cff'))
         system.refresh(sample,h)
-        assert not system.findChildren(ChartPanel) and not hasattr(system,'board_card')
+        assert not system.findChildren(ChartPanel) and hasattr(system,'board_header')
         assert system.status_rows['GPU'].v.text();system.close()
         sensors=SensorsPage();sensors.refresh(sample,h)
         assert not sensors.findChildren(ChartPanel);sensors.close()

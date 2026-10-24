@@ -1,6 +1,12 @@
 # Vitalux – Changes
 
 
+## [v0.9.6.3-unstable.20] - 2026-10-25
+- Overview centers the GPU power reading to match the graphics-card name.
+- Processor lists all present logical CPUs in numerical order, including offline entries. Its meter grid adapts its columns and height so every entry remains accessible on systems with many cores or threads.
+- Graphics identifies board manufacturers and unambiguous retail models from PCI/subsystem IDs, including SAPPHIRE PURE RX 9070 XT. System shows mainboard manufacturer, model and available revision in a dedicated card.
+- Graphics and mainboard cards find matching product pictures through manufacturer sources and online search. Pictures load in the background, are stored persistently and remain available offline. Missing or ambiguous pictures use a neutral placeholder.
+
 ## [v0.9.6.3-unstable.19] - 2026-10-24
 - The component-tab chart changes have been reverted: load, temperatures, clocks and transfer rates return to their previous presentation and familiar curve selectors. Current GPU power and its limit are retained.
 
