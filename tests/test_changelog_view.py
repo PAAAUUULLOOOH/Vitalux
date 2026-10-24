@@ -70,7 +70,7 @@ with tempfile.TemporaryDirectory(prefix='vitalux-changelog-view-') as folder, pa
             QTest.qWait(80)
             assert bar.value() == 0
             bar.setValue(bar.maximum())
-        for mode in ('glass', 'obsidian_gold', 'quantum_core', 'lumen_drift'):
+        for mode in ('glass', 'obsidian_gold', 'quantum_core'):
             theme.set_mode(mode)
             app.setStyleSheet(theme.stylesheet())
             QTest.qWait(80)

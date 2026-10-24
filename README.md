@@ -11,17 +11,18 @@
 
 ![Vitalux running in English with Obsidian Gold and real system measurements](assets/vitalux-dashboard-preview.png)
 
-**Unstable preview**, based on Stable v0.9.6.2. Test downloads use the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable); [Main / Latest](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest) remains Stable.
+**Unstable preview**, based on Stable v0.9.6.2. Test downloads use the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable); [Main / Latest](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable) remains Stable.
 
 ## Features
 
 - Live CPU, GPU, memory, storage, network and sensor measurements, with charts, alerts and local history.
-- A rearrangeable dashboard, MiniHUD and fourteen coordinated designs, from satin silver and prismatic space to animated reactor HUDs. **Lumen Drift** adds warm pastel glass, a gently breathing backdrop and floating top navigation. **Obsidian Gold is the default.**
+- A rearrangeable dashboard, MiniHUD and thirteen coordinated designs, from satin silver and prismatic space to reactor HUDs. **Obsidian Gold is the default.**
 - Per-app connections, usage warnings and optional, reversible TCP/UDP session blocks.
 - SMART information, drive benchmarks and local diagnostic reports.
+- Measured component power with numeric limits, session averages/peaks and 60-second histories when Linux exposes sensors.
 - German and English interfaces, guides and release notes; monitoring works offline.
 
-Missing readings stay unavailable. Hostname lookups run only on request; update checks contact the official GitHub release service.
+Missing sensor fields are hidden; real zeroes such as stopped fans remain visible. CPU, GPU and board power describe their reported domains, never total PC wall power. Hostname lookups run only on request; update checks contact the official GitHub release service.
 
 ## Requirements
 
@@ -36,16 +37,16 @@ Download a package from the [Unstable release](https://github.com/PAAAUUULLOOOH/
 **AppImage:**
 
 ```bash
-chmod +x Vitalux-v0.9.6.3-unstable.14-x86_64.AppImage
-./Vitalux-v0.9.6.3-unstable.14-x86_64.AppImage
+chmod +x Vitalux-v0.9.6.3-unstable.15-x86_64.AppImage
+./Vitalux-v0.9.6.3-unstable.15-x86_64.AppImage
 ```
 
 First launch offers user-account installation or **Run once**. Use `--portable` to skip integration, `--install` to add it later, or `--uninstall` to remove it while keeping preferences.
 
-**Portable ZIP:** extract the complete `Vitalux-v0.9.6.3-unstable.14-linux-x86_64.zip` into its own writable folder:
+**Portable ZIP:** extract the complete `Vitalux-v0.9.6.3-unstable.15-linux-x86_64.zip` into its own writable folder:
 
 ```bash
-cd Vitalux-v0.9.6.3-unstable.14
+cd Vitalux-v0.9.6.3-unstable.15
 bash run.sh
 ```
 
@@ -60,15 +61,13 @@ Choose a design in **Settings → Appearance**. Hover or keyboard-focus a previe
 <details>
 <summary>Preview the designs</summary>
 
-![Fourteen separate designs with Obsidian Gold selected](assets/vitalux-designs-preview.png)
-
-![Lumen Drift with warm pastel glass and real system measurements](assets/vitalux-lumen-drift-preview.png)
+![Thirteen separate designs with Obsidian Gold selected](assets/vitalux-designs-preview.png)
 
 </details>
 
 Settings search predicts partial names such as MiniH and scrolls smoothly to their controls. The field closes softly after five seconds. Edit layout keeps tiles stationary and their hold/X controls visible until editing ends. Controls are silent. On/off controls use themed switches; multiple selections retain checkmarks.
 
-Lumen Drift has an animated backdrop; motion settings and Ultra Eco can stop it. Quantum Core uses a sharp, static circuitry background while its logos and live instruments keep their animations. Both designs have fixed palettes and backgrounds. Aurora Gold and Champagne Glass are removed; saved selections return to Obsidian Gold while personal customization choices are retained.
+Quantum Core uses a sharp, static circuitry background while its logos and live instruments keep their animations. Its palette and background are fixed. Lumen Drift, Aurora Gold and Champagne Glass are removed; saved selections return to Obsidian Gold while personal customization choices are retained.
 
 **Advanced settings → Maintenance → Restore defaults** is the one full reset action. Its description and confirmation explain that it removes all active-profile preferences, custom colors/layouts, imported background copies and cache, then restarts into the guide. Original source images and the other channel are preserved. Section resets remain available for individual groups.
 
@@ -76,7 +75,7 @@ See the [user guide](USER-GUIDE.md) for design restrictions, graphics, network c
 
 ## Updates and channels
 
-Everything stays in **Updates**: installed version and check status at the top, **Stable / Unstable** and their changelogs below. Release notes stay visible in a bounded area; a scrollbar appears only when the text is too long. The **Version** selector browses each channel’s history from the top without changing the installation target. Clicking a channel only browses its notes; a separate action shows the target version and prepares installation. Unstable is selectable for installation only when a verified test build contains genuinely newer app changes. GitHub's **Latest** download remains Stable.
+Everything stays in **Updates**. The installed label shows the full running version, including its Unstable test number, independently of browsing or prepared downloads: installed version and check status at the top, **Stable / Unstable** and their changelogs below. Release notes stay visible in a bounded area; a scrollbar appears only when the text is too long. The **Version** selector browses each channel’s history from the top without changing the installation target. Clicking a channel only browses its notes; a separate action shows the target version and prepares installation. Unstable is selectable for installation only when a verified test build contains genuinely newer app changes. GitHub's **Latest** download remains Stable.
 
 The update bar shows a centered percentage for the complete preparation process. Slow downloads report progress in smaller chunks; an idle connection times out. Use **Cancel download** while downloading or **Retry download** after a failure. If the server omits its size header, verified release metadata supplies the total. Without either size, progress stays at 0 until reception completes. Verification and preparation occupy the final part of the bar.
 
@@ -85,7 +84,7 @@ After a verified update or channel switch, Vitalux finishes background work and 
 Updates check SHA-256 and preserve recovery data. For manual verification, put the matching release manifest beside your downloads and run:
 
 ```bash
-sha256sum --ignore-missing -c Vitalux-v0.9.6.3-unstable.14-SHA256SUMS.txt
+sha256sum --ignore-missing -c Vitalux-v0.9.6.3-unstable.15-SHA256SUMS.txt
 ```
 
 A matching checksum verifies consistency with that manifest, not an independent digital signature.
@@ -102,11 +101,11 @@ VITALUX_RENDERER=software bash run.sh
 For an AppImage/FUSE problem:
 
 ```bash
-./Vitalux-v0.9.6.3-unstable.14-x86_64.AppImage --appimage-extract
+./Vitalux-v0.9.6.3-unstable.15-x86_64.AppImage --appimage-extract
 VITALUX_RENDERER=software bash squashfs-root/AppRun --portable
 ```
 
-The Diagnostic Center shows the five latest app events. Missing readings show a short cause when known. Logs rotate at approximately 5 MB with one backup per file; complete error records may slightly exceed that limit.
+The Diagnostic Center shows the five latest app events. Missing sensor fields are hidden, and recovered readings appear again automatically. Logs rotate at approximately 5 MB with one backup per file; complete error records may slightly exceed that limit.
 
 Preferences normally live in `~/.config/vitalux/`; logs in `~/.local/state/vitalux/`. XDG variables can change these paths. For [support](https://github.com/PAAAUUULLOOOH/Vitalux/issues), include the version, distribution, session, renderer and reproduction steps. Diagnostic exports remain local until you share them. Preview launchers use a separate profile and disable updates.
 

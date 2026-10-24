@@ -13,9 +13,9 @@ def migrate(data):
     result = dict(data)
     if result.get('theme') == 'liquid_chrome':
         result['theme'] = 'liquid_silver'
-    if result.get('theme') in ('champagne_glass', 'aurora_gold'):
+    if result.get('theme') in ('champagne_glass', 'aurora_gold', 'lumen_drift'):
         result['theme'] = 'obsidian_gold'
-    if result.get('background_style') in ('champagne_glass', 'aurora_gold'):
+    if result.get('background_style') in ('champagne_glass', 'aurora_gold', 'lumen_drift'):
         result['background_style'] = 'theme_default'
     if result.get('_appearance_revision') != 1:
         return result

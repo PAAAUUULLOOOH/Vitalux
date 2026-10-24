@@ -119,7 +119,7 @@ def child(mode, output):
             win.stack.setCurrentIndex(index)
             QTest.qWait(100)
             sampler = win.sampler
-            for key in ('black_glass_gold', 'dark', 'liquid_silver', 'nebula_prism', 'quantum_core', 'lumen_drift'):
+            for key in ('black_glass_gold', 'dark', 'liquid_silver', 'nebula_prism', 'quantum_core'):
                 preferences.select_design(key)
                 assert win._appearance_overlay is not None
                 overlay = win._appearance_overlay
@@ -127,25 +127,21 @@ def child(mode, output):
                 # rather than jumping to its GPU texture at the end.
                 assert not overlay.after.isNull()
                 assert overlay.before.toImage() != overlay.after.toImage()
-                if mode in renderer.QUICK_MODES and key != 'lumen_drift':
+                if mode in renderer.QUICK_MODES:
                     assert not win.centralWidget()._upload_timer.isActive()
                 QTest.qWait(100)
                 if key == 'liquid_silver':
                     settled(lambda: win._appearance_overlay is None)
                     assert win.grab().save(str(output/(mode+'-'+key+'.png')))
-                if key in ('quantum_core','lumen_drift'):
+                if key == 'quantum_core':
                     settled(lambda: win._appearance_overlay is None)
                     scene = win.centralWidget()
                     phase = scene._phase
                     background = scene.sharp_backdrop().toImage()
                     QTest.qWait(520)
-                    if key == 'quantum_core':
-                        assert not scene._wallpaper_timer.isActive() and scene._phase == phase
-                        assert background == scene.sharp_backdrop().toImage()
-                        assert win.pulse_core._timer.isActive() and win.brand_mark._timer.isActive()
-                    else:
-                        assert scene._wallpaper_timer.isActive() and scene._phase != phase
-                        assert background != scene.sharp_backdrop().toImage()
+                    assert not scene._wallpaper_timer.isActive() and scene._phase == phase
+                    assert background == scene.sharp_backdrop().toImage()
+                    assert win.pulse_core._timer.isActive() and win.brand_mark._timer.isActive()
             settled(lambda: win._appearance_overlay is None)
             assert win._appearance_overlay is None
             assert win.sampler is sampler and sampler.isRunning()
@@ -171,7 +167,6 @@ def child(mode, output):
                   'platform': app.platformName(), 'live_sample': True,
                   'theme_transitions': True, 'liquid_silver_transitions': True,
                   'quantum_core_static_background': True,
-                  'lumen_drift_animation': True,
                   'search_interruptions': True,
                   'size': [win.width(), win.height()]}), flush=True)
             result[0] = 0

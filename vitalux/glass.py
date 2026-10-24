@@ -64,8 +64,7 @@ class _AmbientSceneCore:
                                   theme.mode())
         # Only designs with moving backgrounds participate in this timer.
         # Quantum Core uses a cached static image; its logos stay independent.
-        active = (style in backdrops.ANIMATED_PRESETS and theme.mode() != 'holographic') or (
-            theme.mode() == 'lumen_drift' and motion.enabled())
+        active = style in backdrops.ANIMATED_PRESETS and theme.mode() != 'holographic'
         if active and not self._wallpaper_timer.isActive():
             self._wallpaper_timer.start()
         elif not active:
@@ -76,9 +75,7 @@ class _AmbientSceneCore:
     def _advance_backdrop(self):
         if not self.isVisible():
             return
-        # Lumen's .35/.22/.18 frequencies repeat together after 100 turns.
-        # Wrapping at one turn would cut its breathing and drifting light.
-        cycle = 628.318530718 if theme.mode() == 'lumen_drift' else 6.28318530718
+        cycle = 6.28318530718
         self._phase = (self._phase + .13) % cycle
         self._composed_key = None
         self._render_key = None
@@ -179,7 +176,7 @@ class _AmbientSceneCore:
         gave three incompatible colors. Compose once and share that result.
         """
         if theme.mode() in premium.KEYS:
-            phase = self._phase if theme.mode() == 'lumen_drift' else 0
+            phase = 0
             key = (theme.mode(), theme.accent(), self.size(), round(phase, 3))
             if key != self._composed_key or self._composed_sharp.isNull():
                 self._composed_sharp = premium.scene_pixmap(self.size(), theme.mode(), phase)

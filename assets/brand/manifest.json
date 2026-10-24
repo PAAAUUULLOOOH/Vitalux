@@ -428,25 +428,5 @@
     "file": "assets/brand/animated/vitalux-wordmark-quantum-core.svg",
     "bytes": 6752,
     "sha256": "6c267280451822fec39b9d05393cfbdff4029e6b3c13183e41a9fdf6da64b2a9"
-  },
-  {
-    "file": "assets/brand/vitalux-pulse-lumen-drift.svg",
-    "bytes": 65869,
-    "sha256": "166f9436bedeb1e1a76724450ea3c578053f113e6467fbde54a3356f28cc8154"
-  },
-  {
-    "file": "assets/brand/vitalux-wordmark-lumen-drift.svg",
-    "bytes": 6405,
-    "sha256": "93f2c8b6333f586b782f4b081c478fc623374a7cac79739825e90a67d6e3af9f"
-  },
-  {
-    "file": "assets/brand/animated/vitalux-pulse-lumen-drift.svg",
-    "bytes": 66687,
-    "sha256": "213c91a499e48e19baf1ac52344935af13768366919b428264310a10fcd6ecf4"
-  },
-  {
-    "file": "assets/brand/animated/vitalux-wordmark-lumen-drift.svg",
-    "bytes": 6751,
-    "sha256": "744ff7bb96847c7b6ffc6a7b01ed7227da8cdbf960cf2f2eca99c54b4b8f58cf"
   }
 ]

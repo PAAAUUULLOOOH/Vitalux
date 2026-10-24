@@ -68,24 +68,12 @@ class DesignShell(QObject):
         dock_row.addStretch(1)
         dock_row.addWidget(self.dock)
         dock_row.addStretch(1)
-        self.crown_row=QWidget()
-        crown_row=QHBoxLayout(self.crown_row)
-        crown_row.setContentsMargins(0,0,0,0)
-        self.crown=Surface()
-        self.crown_layout=QHBoxLayout(self.crown)
-        self.crown_layout.setContentsMargins(8,5,8,5)
-        self.crown_layout.setSpacing(4)
-        crown_row.addStretch(1)
-        crown_row.addWidget(self.crown)
-        crown_row.addStretch(1)
         canvas.insertWidget(0,self.header)
-        canvas.insertWidget(1,self.crown_row)
         canvas.addWidget(self.footer)
         canvas.addWidget(self.dock_row)
         self.header.hide()
         self.footer.hide()
         self.dock_row.hide()
-        self.crown_row.hide()
         self._footer_compact=None
         window.installEventFilter(self)
         for button in window.nav_buttons:button.installEventFilter(self)
@@ -115,7 +103,6 @@ class DesignShell(QObject):
             self.primary.removeWidget(button)
             self.bottom.removeWidget(button)
             self.dock_layout.removeWidget(button)
-            self.crown_layout.removeWidget(button)
             button.setProperty('vitaluxCapabilityHints',False)
             button.setMinimumWidth(0)
             button.setMaximumWidth(16777215)
@@ -148,17 +135,11 @@ class DesignShell(QObject):
                 w.brand_mark.show()
             eclipse=mode=='eclipse_crystal'
             nebula=mode=='nebula_prism'
-            lumen=mode=='lumen_drift'
             for index,button in enumerate(w.nav_buttons):
                 if nebula:
                     button.set_compact(True)
                     button.setFixedSize(54,46)
                     self.dock_layout.addWidget(button)
-                elif lumen:
-                    button.set_compact(True)
-                    button.setFixedSize(50,42)
-                    button.setProperty('vitaluxCapabilityHints',True)
-                    self.crown_layout.addWidget(button)
                 elif eclipse:
                     button.setFixedWidth(max(108,button.fontMetrics().horizontalAdvance(tr(w.pages[index][0]))+57))
                     (self.primary if index<8 else self.bottom).addWidget(button)
@@ -170,7 +151,7 @@ class DesignShell(QObject):
             w.sidebar_layout.removeWidget(w.lang_host)
             if eclipse:
                 self.bottom.addWidget(w.lang_host)
-            elif nebula or lumen:
+            elif nebula:
                 self.top.addWidget(w.lang_host)
             else:
                 w.sidebar_layout.insertWidget(self._language_index,w.lang_host)
@@ -178,8 +159,7 @@ class DesignShell(QObject):
         self.footer.setVisible(mode=='eclipse_crystal')
         self.primary_scroll.setVisible(mode=='eclipse_crystal')
         self.dock_row.setVisible(mode=='nebula_prism')
-        self.crown_row.setVisible(mode=='lumen_drift')
-        w.sidebar.setVisible(mode not in ('eclipse_crystal','nebula_prism','lumen_drift'))
+        w.sidebar.setVisible(mode not in ('eclipse_crystal','nebula_prism'))
         w.collapse_button.setVisible(not signature)
         if signature:
             w.sidebar_brand.hide()
@@ -188,8 +168,8 @@ class DesignShell(QObject):
             w.sidebar.setFixedWidth(210)
             w.sidebar_layout.setContentsMargins(12,16,12,12)
             w.nav_host.layout().setContentsMargins(0,0,0,0)
-            w._outer_layout.setContentsMargins(*( (10,0,10,10) if mode=='eclipse_crystal' else (16,2,16,12) if mode in ('nebula_prism','lumen_drift') else (12,0,12,12) ))
-            w._outer_layout.setSpacing(10 if mode in ('nebula_prism','lumen_drift') else 8)
+            w._outer_layout.setContentsMargins(*( (10,0,10,10) if mode=='eclipse_crystal' else (16,2,16,12) if mode=='nebula_prism' else (12,0,12,12) ))
+            w._outer_layout.setSpacing(10 if mode=='nebula_prism' else 8)
             self.design_name.setText(COLLECTIONS[mode]['title'].upper())
         else:
             w._outer_layout.setContentsMargins(0,0,0,0)
@@ -214,7 +194,7 @@ class DesignShell(QObject):
         if self.mode=='eclipse_crystal':
             for index,button in enumerate(w.nav_buttons):
                 button.setFixedWidth(max(108,button.fontMetrics().horizontalAdvance(tr(w.pages[index][0]))+57))
-        if self.mode in ('nebula_prism','lumen_drift'):
+        if self.mode=='nebula_prism':
             for index,button in enumerate(w.nav_buttons):
                 caption=tr(w.pages[index][0])
                 button.setAccessibleName(caption)

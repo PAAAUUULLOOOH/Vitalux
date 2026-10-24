@@ -60,8 +60,8 @@ def drm_extra(card_device):
     temps = _temp_label_data(hw)
     hotspot = next((v for k, v in temps.items() if 'junction' in k or 'hotspot' in k or 'hot spot' in k), None)
     edge = next((v for k, v in temps.items() if 'edge' in k), None)
-    if edge is None and temps:
-        edge = next(iter(temps.values()))
+    if edge is None:
+        edge = temps.get('temp1')  # Do not relabel memory/junction as edge temperature.
     raw_pwm = num(read(os.path.join(hw, 'pwm1'))) if hw else None
     raw_max = num(read(os.path.join(hw, 'pwm1_max'))) if hw else None
     fan_percent = raw_pwm / raw_max * 100 if raw_pwm is not None and raw_max else None

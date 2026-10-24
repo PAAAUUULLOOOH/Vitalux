@@ -14,9 +14,10 @@ import time
 import psutil
 
 from .i18n import tr
-from . import extended, monitor_extra
+from . import extended, monitor_extra, hardware_sensors
 
 _last = {}
+_hardware = hardware_sensors.HardwareMonitor()
 
 
 def _rate(key, value):
@@ -55,6 +56,7 @@ def _run(*cmd, timeout=2):
 
 def prime():
     _last.clear()
+    _hardware.reset_baselines()
     psutil.cpu_percent(interval=None, percpu=True)
     psutil.net_io_counters()
     psutil.disk_io_counters()
@@ -63,15 +65,19 @@ def prime():
 def collect():
     net_total = psutil.net_io_counters()
     dio = psutil.disk_io_counters()
-    sensor_data = extended.sensor_info()
+    cpu, ram, gpus = cpu_info(), ram_info(), gpu_info()
+    hardware = _hardware.sample(gpus)
+    cpu['power'] = hardware_sensors.primary_power(hardware, 'cpu')
+    ram['power'] = hardware_sensors.primary_power(hardware, 'ram')
     return {
-        "cpu": cpu_info(),
-        "ram": ram_info(),
+        "cpu": cpu,
+        "ram": ram,
         "disks": disk_info(),
-        "gpus": gpu_info(),
+        "gpus": gpus,
         "net": network_info(net_total),
         "io": {"read": _rate("dr", dio.read_bytes), "write": _rate("dw", dio.write_bytes)} if dio else {"read": 0, "write": 0},
-        "sensors": sensor_data,
+        "sensors": hardware_sensors.sensor_groups(hardware),
+        "hardware": hardware,
         "app_resources": monitor_extra.app_resources(),
         "uptime": time.time() - psutil.boot_time(),
     }
@@ -97,7 +103,7 @@ def _cpu_temp(reasons=None):
         if reasons is not None:
             reasons['temp'] = 'permission' if isinstance(exc, PermissionError) else 'unsupported' if isinstance(exc, NotImplementedError) else 'unknown'
         return None
-    for key in ("coretemp", "k10temp", "zenpower", "cpu_thermal", "acpitz"):
+    for key in ("coretemp", "k10temp", "zenpower", "cpu_thermal"):
         entries = temps.get(key)
         if not entries:
             continue
@@ -130,7 +136,7 @@ def cpu_info():
         "freq_max": freq.max if freq and freq.max else None,
         "temp": _cpu_temp(reasons),
         "unavailable": reasons,
-        "power": monitor_extra.cpu_package_power(),
+        "power": None,  # Collected once with all power domains in collect().
         "load": load,
     }
 
@@ -215,20 +221,23 @@ def _name_for_slot(slot, fallback):
 def _nvidia_gpus():
     if not shutil.which("nvidia-smi"):
         return []
-    q = "name,driver_version,utilization.gpu,memory.used,memory.total,temperature.gpu,power.draw,fan.speed,clocks.gr,clocks.mem"
+    q = "name,driver_version,utilization.gpu,memory.used,memory.total,temperature.gpu,power.draw,fan.speed,clocks.gr,clocks.mem,uuid"
     out = _run("nvidia-smi", f"--query-gpu={q}", "--format=csv,noheader,nounits")
     gpus = []
     for line in out.strip().splitlines():
         p = [x.strip() for x in line.split(",")]
         if len(p) < 10:
             continue
-        gpus.append({"vendor": "NVIDIA", "name": p[0], "driver": p[1], "usage": _num(p[2]),
+        gpus.append({"id": p[10] if len(p) > 10 else 'nvidia:'+str(len(gpus)),
+                     "vendor": "NVIDIA", "name": p[0], "driver": p[1], "usage": _num(p[2]),
                      "vram_used": _num(p[3], 1048576), "vram_total": _num(p[4], 1048576),
                      "temp": _num(p[5]), "power": _num(p[6]), "fan": _num(p[7]),
                      "clock": _num(p[8]), "clock_mem": _num(p[9]), "hotspot": None,
                      "fan_rpm": None, "voltage": None, "pcie_current": None,
                      "pcie_max": None, "sensor_source": "nvidia-smi"})
+    extra = hardware_sensors.nvidia_details(_run('nvidia-smi', '-q', '-x')) if gpus else {}
     for gpu in gpus:
+        gpu.update(extra.get(gpu['id'], {}))
         gpu['unavailable'] = {key: 'driver_no_data' for key in (
             'usage', 'vram_used', 'vram_total', 'temp', 'power', 'fan', 'clock', 'clock_mem')
             if gpu.get(key) is None}
@@ -238,7 +247,9 @@ def _nvidia_gpus():
 def _drm_gpus(have_nvidia):
     gpus = []
     vendors = {"0x1002": "AMD", "0x8086": "Intel", "0x10de": "NVIDIA"}
-    for card in sorted(glob.glob("/sys/class/drm/card[0-9]")):
+    for card in sorted(glob.glob("/sys/class/drm/card[0-9]*")):
+        if not re.fullmatch(r'card\d+', os.path.basename(card)):
+            continue
         reasons = {}
         dev = os.path.join(card, "device")
         vendor = vendors.get(_read(os.path.join(dev, "vendor")))
@@ -251,7 +262,8 @@ def _drm_gpus(have_nvidia):
         temp = power = None
         if hw:
             t = _read(os.path.join(hw[0], "temp1_input"), reasons, 'temp')
-            temp = float(t) / 1000 if t and t.isdigit() else None
+            caption=(_read(os.path.join(hw[0], 'temp1_label')) or '').lower()
+            temp = float(t) / 1000 if t and t.isdigit() and not any(k in caption for k in ('mem','junction','hotspot')) else None
             pw = _read(os.path.join(hw[0], "power1_average"), reasons, 'power') or _read(os.path.join(hw[0], "power1_input"), reasons, 'power')
             power = float(pw) / 1e6 if pw and pw.isdigit() else None
         # These read-only sysfs values are provided by the kernel; do not use
@@ -271,7 +283,8 @@ def _drm_gpus(have_nvidia):
         busy = _read(os.path.join(dev, "gpu_busy_percent"), reasons, 'usage')
         used, total = _read(os.path.join(dev, "mem_info_vram_used"), reasons, 'vram_used'), _read(os.path.join(dev, "mem_info_vram_total"), reasons, 'vram_total')
         extra = extended.drm_extra(dev)
-        gpus.append({"vendor": vendor, "name": name, "driver": extra["driver"],
+        gpus.append({"id": os.path.realpath(dev), "device_path": dev,
+                     "vendor": vendor, "name": name, "driver": extra["driver"],
                      "usage": _num(busy), "vram_used": _num(used), "vram_total": _num(total),
                      "temp": extra["edge"] if extra["edge"] is not None else temp,
                      "hotspot": extra["hotspot"], "power": power, "fan": extra["fan_percent"],

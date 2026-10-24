@@ -1,6 +1,5 @@
 """English text for the native design collections and application networking."""
 EN_NETWORK={
- 'Lumen Drift · Warmes Glas mit Pastellakzenten, schwebender Navigation, sanft atmendem Hintergrund und ruhigen Ringanzeigen. Palette und Hintergrund sind fest.': 'Lumen Drift · Warm glass with pastel accents, floating navigation, a gently breathing backdrop and calm ring instruments. The palette and background are fixed.',
  'Quantum Core · HUD-Reaktor-Design mit statischem Schaltkreis-Hintergrund und kantigen Neon-Panels. Logo und Live-Instrumente bleiben animiert. Palette und Hintergrund sind fest.': 'Quantum Core · HUD reactor design with a static circuitry background and angular neon panels. The logo and live instruments remain animated. The palette and background are fixed.',
  'Nebula Prism · Prismatisches Weltraumglas mit Spektralkanten, Ringinstrumenten und schwebendem Dock am unteren Rand. Palette und Hintergrund sind fest.': 'Nebula Prism · Prismatic deep-space glass with spectral edges, ring instruments and a floating dock along the bottom. Palette and background are fixed.',
 

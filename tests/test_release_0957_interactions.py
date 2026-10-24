@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import sys
 import tempfile
+import time
 from threading import Event
 from unittest.mock import patch
 
@@ -33,6 +34,12 @@ class SlowRead(QThread):
 
 def run():
     app = QApplication.instance() or QApplication([])
+    def settled(condition):
+        deadline=time.monotonic()+3
+        while not condition() and time.monotonic()<deadline:
+            app.processEvents()
+            time.sleep(.01)
+        assert condition(),'UI or worker completion did not settle within three seconds'
     app.setQuitOnLastWindowClosed(False)
     previous_path, previous_lang = settings.PATH, i18n.lang()
     window, workers = None, []
@@ -69,6 +76,7 @@ def run():
             before = scroll.verticalScrollBar().value()
             page.advanced.header.click()
             QTest.qWait(450)
+            settled(lambda:not page.expansion_follower.following)
             assert page.advanced.panel.width() == page.advanced.clip.width()
             assert not page.expansion_follower.following
             assert scroll.verticalScrollBar().value() > before
@@ -159,6 +167,7 @@ def run():
             slow.release.set()
             assert slow.wait(1000)
             QTest.qWait(350)
+            settled(lambda:committed==[1] and window.isHidden() and window.restart_requested)
             assert committed == [1] and window.isHidden() and window.restart_requested
             assert settings.get('theme') == DEFAULT_THEME
 

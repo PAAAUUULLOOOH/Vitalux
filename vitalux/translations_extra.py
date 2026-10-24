@@ -661,7 +661,6 @@ EN_MORE.update({
 
 # v0.9.3.70: only Sparkle remains animated; current preset counts in guide.
 EN_MORE.update({
-    "Funkeln, Quantum Core und Lumen Drift haben animierte Hintergründe. Adaptiv folgt der ausgewählten Akzentfarbe.": "Sparkle, Quantum Core and Lumen Drift have animated backgrounds. Adaptive follows your selected accent color.",
 
 
 })
@@ -1024,7 +1023,6 @@ EN_MORE.update({
 EN_MORE.update({'Warnwert überschritten': 'Warning threshold exceeded'})
 
 EN_MORE.update({
-    'Vierzehn Designs stehen im Vorschau-Raster. Lumen Drift ergänzt warmes Glas mit Pastellakzenten, sanft atmendem Hintergrund und schwebender Navigation unter dem Kopfbereich. Seine Palette und sein Hintergrund sind fest. Quantum Core nutzt einen statischen Hintergrund; seine Logos bleiben animiert. Obsidian Gold bleibt Standard.': 'Fourteen designs share the preview grid. Lumen Drift adds warm glass with pastel accents, a gently breathing backdrop and floating navigation below the header. Its palette and background are fixed. Quantum Core uses a static background; its logos remain animated. Obsidian Gold remains the default.',
     'Die Prozentzahl steht mittig im Update-Ladebalken. Downloads lassen sich abbrechen und bei Fehlern erneut versuchen. Changelogs folgen deiner Sprache und bleiben offline lesbar. Lange Texte haben eine eigene Scrollleiste; passt der Text, bleibt sie unsichtbar. Beim Versionswechsel beginnt der Text oben.': 'The percentage is centered inside the update bar. Downloads can be cancelled and retried after errors. Release notes follow your language and remain readable offline. Long notes have their own scrollbar; when the text fits, it stays hidden. Selecting a version starts its notes at the top.',
 })
 
@@ -1045,3 +1043,5 @@ EN_MORE.update({
 })
 
 EN_MORE.update({'Vitalux wird ohne Administratorrechte in deinem Benutzerordner abgelegt und ins Anwendungsmenü eingetragen. Alternativ kannst du es ohne Installation starten.': 'Vitalux will be placed in your user folder and added to the application menu without administrator permissions. You can also run it without installing.'})
+
+EN_MORE.update({'Aktuell': 'Current', 'Sensoren & Leistungsaufnahme': 'Sensors & power', 'Durchschnitt seit App-Start': 'Average since app start', 'Maximum seit App-Start': 'Peak since app start', 'Leistungsgrenze': 'Power limit', 'VRAM-Temperatur': 'VRAM temperature', 'Speichercontroller': 'Memory controller', 'Video-Engine': 'Video engine', 'Begrenzungsgründe': 'Limiting reasons', 'Begrenzungsflags (Treiber)': 'Limiting flags (driver)', 'Funkeln hat einen animierten Hintergrund. Adaptiv folgt der ausgewählten Akzentfarbe.': 'Sparkle has an animated background. Adaptive follows the selected accent color.', 'CPU-Package': 'CPU package', 'GPU-Leistung (Treiber)': 'GPU power (driver)', 'Dreizehn Designs stehen im Vorschau-Raster. Lumen Drift wurde entfernt; gespeicherte Auswahlen wechseln zu Obsidian Gold. Persönliche Farben, Bilder und andere Einstellungen bleiben erhalten. Quantum Core nutzt einen statischen Hintergrund; seine Logos bleiben animiert.': 'Thirteen designs share the preview grid. Lumen Drift has been removed; saved selections return to Obsidian Gold. Personal colors, images and other settings are preserved. Quantum Core uses a static backdrop; its logos remain animated.', 'Fehlende Sensorwerte werden ausgeblendet; echte Nullwerte bleiben sichtbar. Komponenten zeigen gemessene Watt, auslesbare Grenzen, Durchschnitt und Maximum seit App-Start sowie einen Verlauf. Überlappende Messbereiche werden nicht als PC-Gesamtverbrauch addiert.': 'Missing sensor fields are hidden; real zeroes remain visible. Components show measured watts, readable limits, session average/peak and a history. Overlapping domains are not added into total PC power.'})

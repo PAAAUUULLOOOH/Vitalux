@@ -1,5 +1,13 @@
 # Vitalux – Changes
 
+
+## [v0.9.6.3-unstable.15] - 2026-10-24
+- Components show genuinely available power readings with readable numeric limits, session average/peak and a watt history. CPU package, DRAM, GPU socket and other measurement domains remain separate.
+- Additional driver sensors expose temperatures, GPU memory, fans, voltages and engine activity where supported. Missing or failed fields disappear without gaps; real zeroes remain visible.
+- Updates shows the full running app version including its Unstable test number, independently of browsing versions or preparing an installation.
+- Lumen Drift has been completely removed. Saved design selections return to Obsidian Gold; personal colors, images and other settings are preserved.
+
+
 ## [v0.9.6.3-unstable.14] - 2026-10-23
 - Smaller installation packages by removing unnecessary development and test files.
 

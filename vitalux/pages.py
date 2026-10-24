@@ -17,6 +17,8 @@ from . import smart_monitor
 from .smart_ui import SmartPane
 from .widgets import (Card, ChipsGrid, GaugeBox, GaugeCard, ChartPanel, KeyValue,
                       Meter, label, SidebarToggle)
+from .sensor_ui import SensorPanel, optional, power_text, reflow
+from .hardware_sensors import number
 
 
 class Page(QWidget):
@@ -293,6 +295,7 @@ class OverviewPage(Page):
         from .signature_designs import Metric
         self.design_metrics={}
         self.design_metric_hosts={}
+        self.power_labels={}
         def metric_host(key,classic):
             host=QStackedWidget()
             host.addWidget(classic)
@@ -300,6 +303,12 @@ class OverviewPage(Page):
             face.layout().setContentsMargins(24,14,24,14)
             instrument=Metric(TITLES[key],key)
             face.body.addWidget(instrument)
+            self.power_labels[key]=[]
+            for card in (classic,face):
+                reading=label('', 'muted',wrap=True)
+                reading.hide()
+                card.body.addWidget(reading)
+                self.power_labels[key].append(reading)
             host.addWidget(face)
             self.design_metrics[key]=instrument
             self.design_metric_hosts[key]=host
@@ -312,6 +321,12 @@ class OverviewPage(Page):
         ):
             self.board.register(key,widget)
         self.content.addWidget(self.board)
+        self.other_power={}
+        for key,card in (('system',head),('network',net),('disks',self.disks_card)):
+            reading=label('', 'muted',wrap=True)
+            reading.hide()
+            card.body.addWidget(reading)
+            self.other_power[key]=reading
         self.layout_toggle.clicked.connect(self.toggle_editor)
         self.board.changed.connect(self._refresh_editor_actions)
         self.board.changed.connect(self._sync_distro_logo)
@@ -488,6 +503,15 @@ class OverviewPage(Page):
 
     def refresh(self, d, h):
         c, r, gpus, disks = d["cpu"], d["ram"], d["gpus"], d["disks"]
+        records=d.get('hardware') or []
+        components={'cpu':'cpu','ram':'ram','gpu':'gpu:'+str(gpus[0].get('id','')) if gpus else ''}
+        for key,widgets in self.power_labels.items():
+            text=power_text(records,components.get(key,''))
+            for widget in widgets:
+                widget.setText(text);widget.setVisible(bool(text))
+        for key,widget in self.other_power.items():
+            text=power_text(records,key)
+            widget.setText(text);widget.setVisible(bool(text))
         net = d["net"]
         primary = net.get("primary") or {}
         driver = next((g.get("driver") for g in gpus if g.get("driver")), "amdgpu / drm" if gpus and gpus[0]["vendor"] == "AMD" else "–")
@@ -553,7 +577,8 @@ class CpuPage(Page):
         top.body.addWidget(self.name)
         grid = QGridLayout()
         grid.setHorizontalSpacing(40)
-        self.kv = {k: KeyValue(k) for k in ("Kerne / Threads", "Takt", "Temperatur", "Last (1 / 5 / 15 Min)", "CPU-Package-Leistung")}
+        self.kv = {k: KeyValue(k) for k in ("Kerne / Threads", "Takt", "Temperatur", "Last (1 / 5 / 15 Min)")}
+        self.sensor_grid = grid
         for i, w in enumerate(self.kv.values()):
             grid.addWidget(w, i // 2, i % 2)
         top.body.addLayout(grid)
@@ -575,6 +600,8 @@ class CpuPage(Page):
         self.content.addWidget(self.cpu_temp_card)
         self.cpu_extrema = KeyValue("CPU-Temperatur · Min/Max seit Start")
         self.cpu_temp_card.body.addWidget(self.cpu_extrema)
+        self.hardware = SensorPanel()
+        self.content.addWidget(self.hardware)
 
         self.cores_card = Card("Threads")
         self.cores_grid = QGridLayout()
@@ -589,14 +616,17 @@ class CpuPage(Page):
         self.name.setText(c["model"])
         self.kv["Kerne / Threads"].set(f"{c['cores']} / {c['threads']}")
         fm = f" (max {c['freq_max'] / 1000:.2f})" if c["freq_max"] else ""
-        reasons = c.get('unavailable') or {}
-        self.kv["Takt"].set(f"{c['freq'] / 1000:.2f} GHz{fm}" if c["freq"] else unavailable(reasons.get('freq')))
-        self.kv["Temperatur"].set(f"{c['temp']:.0f} °C" if c["temp"] is not None else unavailable(reasons.get('temp')))
-        self.kv["CPU-Package-Leistung"].set(f"{c['power']:.1f} W" if c.get("power") is not None else tr("nicht verfügbar"))
+        optional(self.kv['Takt'], c.get('freq')/1000 if number(c.get('freq')) is not None else None, 'GHz', 2)
+        if number(c.get('freq')) is not None:
+            self.kv['Takt'].set(f"{c['freq']/1000:.2f} GHz{fm}")
+        optional(self.kv['Temperatur'], c.get('temp'), '°C', 0)
+        reflow(self.sensor_grid, list(self.kv.values()))
         self.kv["Last (1 / 5 / 15 Min)"].set(" / ".join(f"{x:.2f}" for x in c["load"]))
         self.gauge.set(c["usage"], f"{c['threads']} {tr('Threads')}")
         self.graph.set_series([(h["cpu"], theme.accent())])
         self.cpu_temp_graph.set_series([(h.get("cpu_temp", ()), theme.accent())])
+        self.cpu_temp_card.setVisible(number(c.get('temp')) is not None)
+        self.hardware.sync([r for r in d.get('hardware',[]) if r['component']=='cpu'])
         from .monitoring import format_range
         self.cpu_extrema.set(format_range(d.get("session_extrema") or {}, "cpu_temp", "°C", 1))
         while len(self.core_meters) < len(c["per_core"]):
@@ -631,9 +661,16 @@ class GpuCard(Card):
         self.kv = {key: KeyValue(key) for key in (
             "GPU-Takt", "Speicher-Takt", "Temperatur", "Hotspot",
             "Spannung", "Leistung", "Lüfterdrehzahl", "Lüfter",
+            "VRAM-Temperatur", "Speichercontroller", "Video-Engine", "Encoder", "Decoder",
+            "Begrenzungsgründe", "Begrenzungsflags (Treiber)",
             "PCIe aktuell", "PCIe maximal", "Datenquelle", "Mesa",
         )}
         live = QGridLayout()
+        self.live_grid = live
+        self.live_fields = (
+            'GPU-Takt','Speicher-Takt','Temperatur','Hotspot','VRAM-Temperatur',
+            'Spannung','Leistung','Lüfterdrehzahl','Lüfter','Speichercontroller',
+            'Video-Engine','Encoder','Decoder','Begrenzungsgründe','Begrenzungsflags (Treiber)')
         live.setHorizontalSpacing(18)
         live.setVerticalSpacing(10)
         for i, name in enumerate((
@@ -642,8 +679,15 @@ class GpuCard(Card):
         )):
             live.addWidget(self.kv[name], i // 2, i % 2)
         self.body.addLayout(live)
+        for key in self.live_fields:
+            if self.kv[key].parent() is None:
+                self.kv[key].setParent(self)
+                self.kv[key].hide()
+        self.hardware = SensorPanel()
+        self.body.addWidget(self.hardware)
 
-        self.body.addWidget(label("AUSLASTUNG UND VIDEOSPEICHER · VERLAUF", "cardTitle"))
+        self.load_title=label("AUSLASTUNG UND VIDEOSPEICHER · VERLAUF", "cardTitle")
+        self.body.addWidget(self.load_title)
         self.graph = ChartPanel(["Auslastung", "VRAM"], [theme.accent(), theme.secondary_accent()])
         self.body.addWidget(self.graph)
         self.h_use = deque(maxlen=900)
@@ -661,6 +705,7 @@ class GpuCard(Card):
         detail_layout.setContentsMargins(0, 0, 0, 0)
         detail_layout.setSpacing(12)
         technical = QGridLayout()
+        self.technical_grid=technical
         technical.setHorizontalSpacing(18)
         for i, name in enumerate(("PCIe aktuell", "PCIe maximal", "Datenquelle", "Mesa")):
             technical.addWidget(self.kv[name], i // 2, i % 2)
@@ -671,9 +716,11 @@ class GpuCard(Card):
         detail_layout.addWidget(self.sensor_hint)
         self.temperature_graph = ChartPanel(["GPU-Temperatur"], [theme.accent()], mode="temperature")
         self.clock_graph = ChartPanel(["GPU-Takt"], [theme.secondary_accent()], mode="clock")
-        detail_layout.addWidget(label("TEMPERATURVERLAUF", "cardTitle"))
+        self.temperature_title=label("TEMPERATURVERLAUF", "cardTitle")
+        detail_layout.addWidget(self.temperature_title)
         detail_layout.addWidget(self.temperature_graph)
-        detail_layout.addWidget(label("TAKTVERLAUF", "cardTitle"))
+        self.clock_title=label("TAKTVERLAUF", "cardTitle")
+        detail_layout.addWidget(self.clock_title)
         detail_layout.addWidget(self.clock_graph)
         self.body.addWidget(self.details)
         self.details.hide()
@@ -697,9 +744,13 @@ class GpuCard(Card):
         ) if x))
         reasons = g.get('unavailable') or {}
         self.g_use.set(g.get("usage"), unavailable(reasons.get('usage')) if g.get('usage') is None else '')
+        self.g_use.setVisible(number(g.get('usage')) is not None)
         used, total = g.get("vram_used"), g.get("vram_total")
         pct = used / total * 100 if valid_number(used) and valid_number(total) and total > 0 else None
         self.g_vram.set(pct, _vram_text(g) if total else unavailable(reasons.get('vram_total')))
+        self.g_vram.setVisible(pct is not None)
+        self.graph.setVisible(number(g.get('usage')) is not None or pct is not None)
+        self.load_title.setVisible(number(g.get('usage')) is not None or pct is not None)
 
         def fmt(value, unit, places=0):
             return f"{value:.{places}f} {unit}" if valid_number(value) else tr("nicht verfügbar")
@@ -708,13 +759,32 @@ class GpuCard(Card):
             ("Temperatur", "temp", "°C"), ("Hotspot", "hotspot", "°C"),
             ("Spannung", "voltage", "mV"), ("Leistung", "power", "W"),
             ("Lüfterdrehzahl", "fan_rpm", "U/min"), ("Lüfter", "fan", "%"),
+            ('VRAM-Temperatur','vram_temp','°C'), ('Speichercontroller','memory_busy','%'),
+            ('Video-Engine','video_busy','%'), ('Encoder','encoder_busy','%'), ('Decoder','decoder_busy','%'),
         ):
-            self.kv[field].set(fmt(g.get(source), unit) if valid_number(g.get(source)) else unavailable(reasons.get(source)))
+            optional(self.kv[field],g.get(source),unit,1 if unit=='W' else 0)
+        for field,source in (('Begrenzungsgründe','throttle_reasons'),('Begrenzungsflags (Treiber)','throttle_flags')):
+            text=g.get(source) or ''
+            self.kv[field].set(text);self.kv[field].setVisible(bool(text))
+        records=g.get('hardware') or []
+        self.hardware.sync([r for r in records if r['id'] not in g.get('represented_sensors',[])])
+        if any(r['kind']=='powers' and (number(r['value']) is not None or r.get('limits')) for r in records):
+            self.kv['Leistung'].hide()
+        reflow(self.live_grid,[self.kv[key] for key in self.live_fields])
         for field, source in (("PCIe aktuell", "pcie_current"), ("PCIe maximal", "pcie_max")):
-            self.kv[field].set(g.get(source) or tr("nicht verfügbar"))
-        self.kv["Datenquelle"].set(g.get("sensor_source") or tr("nicht verfügbar"))
-        self.kv["Mesa"].set(mesa or tr("nicht verfügbar"))
+            value=g.get(source)
+            visible=bool(value and value not in ('–','-'))
+            self.kv[field].set(value if visible else '');self.kv[field].setVisible(visible)
+        for field,value in (('Datenquelle',g.get('sensor_source')),('Mesa',mesa)):
+            visible=bool(value and value not in ('–','-'))
+            self.kv[field].set(value if visible else '');self.kv[field].setVisible(visible)
+        reflow(self.technical_grid,[self.kv[k] for k in ('PCIe aktuell','PCIe maximal','Datenquelle','Mesa')])
         self.extrema.set(format_range(extrema or {}, "gpu_temp", "°C", 1))
+        self.extrema.setVisible(number(g.get('temp')) is not None and bool((extrema or {}).get('gpu_temp')))
+        self.temperature_graph.setVisible(number(g.get('temp')) is not None)
+        self.clock_graph.setVisible(number(g.get('clock')) is not None)
+        self.temperature_title.setVisible(number(g.get('temp')) is not None)
+        self.clock_title.setVisible(number(g.get('clock')) is not None)
 
         if history is None:
             self.h_use.append(g.get("usage"))
@@ -778,9 +848,12 @@ class MemoryPage(Page):
         self.graph = ChartPanel(['RAM'], [theme.TEAL])
         graph.body.addWidget(self.graph)
         self.content.addWidget(graph)
+        self.hardware=SensorPanel()
+        self.content.addWidget(self.hardware)
 
     def refresh(self, d, h):
         r = d["ram"]
+        self.hardware.sync([r for r in d.get('hardware',[]) if r['component']=='ram'])
         self.g_ram.set(r["percent"], f"{fmt_bytes(r['used'])} / {fmt_bytes(r['total'])}")
         if r["swap_total"]:
             self.g_swap.set(r["swap_percent"], f"{fmt_bytes(r['swap_used'])} / {fmt_bytes(r['swap_total'])}")
@@ -822,6 +895,8 @@ class DiskPage(Page):
         self.io_graph = ChartPanel(['Lesen', 'Schreiben'], [theme.accent(), theme.secondary_accent()], mode='rate')
         io_graph.body.addWidget(self.io_graph)
         self.content.addWidget(io_graph)
+        self.hardware=SensorPanel()
+        self.content.addWidget(self.hardware)
         self.smart_card = SmartPane()
         self.smart_button = self.smart_card.button
         self.smart_status = self.smart_card.status
@@ -859,6 +934,7 @@ class DiskPage(Page):
         self.smart_card.retranslate()
 
     def refresh(self, d, h):
+        self.hardware.sync([r for r in d.get('hardware',[]) if r['component']=='disks'])
         if self._tick % 30 == 0:
             for dr in drives():
                 if dr["name"] not in self.hw_rows:
@@ -926,6 +1002,8 @@ class NetworkPage(Page):
         self.content.addWidget(rates)
         self.content.addWidget(graph)
         self.content.addWidget(self.ifaces_card)
+        self.hardware=SensorPanel()
+        self.content.addWidget(self.hardware)
         from .network_ui import NetworkWatch
         self.watcher=NetworkWatch()
         self.tabs.addTab(overview,tr('Übersicht'))
@@ -943,6 +1021,7 @@ class NetworkPage(Page):
 
     def refresh(self, d, h):
         net = d["net"]
+        self.hardware.sync([r for r in d.get('hardware',[]) if r['component']=='network'])
         p = net.get("primary") or {}
         self.primary.set(p.get("name", "–"))
         self.addr.set(p.get("ipv4") or "–")
@@ -1041,6 +1120,8 @@ class SystemPage(Page):
         self.reset_btn.clicked.connect(self._reset_session)
         self.status_card.body.addWidget(self.reset_btn)
         self.content.addWidget(self.status_card)
+        self.hardware=SensorPanel()
+        self.content.addWidget(self.hardware)
 
     def _reset_session(self):
         main = self.window()
@@ -1049,6 +1130,7 @@ class SystemPage(Page):
 
     def refresh(self, d, h):
         from .monitoring import hardware_status
+        self.hardware.sync([r for r in d.get('hardware',[]) if r['component']=='system'])
         from . import settings
         limits = {name: settings.get(name, default) for name, default in (
             ("cpu_temp", 90), ("gpu_temp", 90),

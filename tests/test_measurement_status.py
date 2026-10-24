@@ -31,10 +31,10 @@ for language,no_sensor,permission in (('de','Kein Sensor erkannt','Berechtigung 
                                       ('en','No sensor detected','Permission required')):
     i18n.set_lang(language)
     page=CpuPage();page.refresh(dict(cpu=cpu),dict(cpu=[0]))
-    assert page.kv['Temperatur'].v.text()==no_sensor
-    assert page.kv['Takt'].v.text()==permission
+    assert page.kv['Temperatur'].isHidden() and page.kv['Temperatur'].v.text()==''
+    assert page.kv['Takt'].isHidden() and page.kv['Takt'].v.text()==''
     card=GpuCard();card.refresh(gpu)
-    assert card.kv['Temperatur'].v.text()==permission
+    assert card.kv['Temperatur'].isHidden() and card.kv['Temperatur'].v.text()==''
     assert 'driver' in unavailable('driver_no_data').lower() if language=='en' else 'Treiber' in unavailable('driver_no_data')
     assert unavailable('invented reason')==unavailable()
     cpu['temp']=54;page.refresh(dict(cpu=cpu),dict(cpu=[0]))

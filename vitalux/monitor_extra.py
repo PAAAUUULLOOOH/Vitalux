@@ -5,7 +5,6 @@ privileged commands, network calls or extra dependencies are required.
 """
 from __future__ import annotations
 
-import glob
 import json
 import math
 import os
@@ -14,10 +13,11 @@ import subprocess
 import time
 
 import psutil
+from .hardware_sensors import RaplReader
 
 _PROCESS = psutil.Process(os.getpid())
 _CPU_INITIALIZED = False
-_ENERGY = {}
+_RAPL = RaplReader()
 
 
 def app_resources():
@@ -32,51 +32,10 @@ def app_resources():
         return {'cpu_percent': None, 'rss_bytes': None}
 
 
-def _read_number(path):
-    try:
-        with open(path, encoding='ascii') as f:
-            return int(f.read().strip())
-    except (OSError, ValueError):
-        return None
-
-
 def cpu_package_power():
-    """Read Intel RAPL power (W) when exposed, handling counter wrap safely.
-
-    This reports the package power only: it is not total PC wall power.
-    """
-    now = time.monotonic()
-    paths = sorted(glob.glob('/sys/class/powercap/intel-rapl:*/energy_uj'))
-    total = 0.0
-    count = 0
-    for path in paths:
-        package_name = os.path.join(os.path.dirname(path), 'name')
-        try:
-            with open(package_name, encoding='ascii') as f:
-                name = f.read().strip().lower()
-        except OSError:
-            continue
-        if 'package' not in name:  # do not double count sub-domains
-            continue
-        current = _read_number(path)
-        if current is None:
-            continue
-        previous = _ENERGY.get(path)
-        _ENERGY[path] = (current, now)
-        if previous is None or now <= previous[1]:
-            continue
-        delta = current - previous[0]
-        if delta < 0:
-            limit = _read_number(os.path.join(os.path.dirname(path), 'max_energy_range_uj'))
-            if not limit:
-                continue
-            delta += limit
-        if delta >= 0:
-            watts = delta / 1_000_000 / (now - previous[1])
-            if 0 <= watts < 2000:
-                total += watts
-                count += 1
-    return round(total, 2) if count else None
+    """Compatibility entry point using the shared, validated RAPL reader."""
+    from .hardware_sensors import primary_power
+    return primary_power([r for r in _RAPL.sample(time.monotonic()) if r.get('primary')], 'cpu')
 
 
 def _kscreen_mode_size(item):

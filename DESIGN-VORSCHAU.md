@@ -7,10 +7,9 @@ Test a design with separate local preferences:
 ```bash
 bash Designs-testen.sh obsidian_gold
 bash Quantum-Core.sh
-bash Designs-testen.sh lumen_drift
 ```
 
-All fourteen standalone designs are available in **Settings → Appearance → Design**. **Obsidian Gold** is the default. **Lumen Drift** adds warm pastel glass, a breathing backdrop and a floating top navigation capsule. **Quantum Core** has a neon reactor HUD; **Nebula Prism** has a floating bottom dock. **Black Glass**, **Black Glass Gold** and **Liquid Silver** retain their separate tiles. Aurora Gold is removed.
+All thirteen standalone designs are available in **Settings → Appearance → Design**. **Obsidian Gold** is the default. **Quantum Core** has a neon reactor HUD; **Nebula Prism** has a floating bottom dock. **Black Glass**, **Black Glass Gold** and **Liquid Silver** retain their separate tiles. Aurora Gold is removed.
 
 Premium palettes/backgrounds remain fixed. Grey selectors explain these restrictions directly; adjustable designs support built-in backgrounds, personal images and preset/custom accents. Personal selections remain saved when a fixed design is active. See the [user guide](USER-GUIDE.md) for the full capability list and image controls.
 

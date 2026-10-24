@@ -40,6 +40,7 @@ class ChangelogView(AdaptiveScrollArea):
         if height > limit:
             width = max(1, width - self.verticalScrollBar().sizeHint().width())
             height = max(1, label.heightForWidth(width))
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded if height>limit else Qt.ScrollBarAlwaysOff)
         self.setFixedHeight(min(limit, height))
         label.resize(width, height)
         if self._reset_pending:

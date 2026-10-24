@@ -111,10 +111,7 @@ class UpdatePage(Page):
 
     @staticmethod
     def _installed_name():
-        if profiles.installed()=='stable':return 'Stable · v'+__version__
-        from .versions import parse
-        base,_=parse(__version__)
-        return tr('Unstable · Teststand für v{version}').format(version='.'.join(map(str,base)))
+        return ('Stable' if profiles.installed()=='stable' else 'Unstable')+' · v'+__version__
 
     def _channel(self,channel):self.m.set_channel(channel)
 
