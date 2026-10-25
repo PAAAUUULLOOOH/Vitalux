@@ -28,7 +28,7 @@ history=dict(cpu=[20],ram=[30],cpu_temp=[50],cpu_clock=[4200],cpu_power=[88])
 for product in [cpu['product']]+[m['product'] for m in ram['modules']]:loader().results[lookup_key(product)]=None
 page=CpuPage();page.refresh(sample,history)
 assert not hasattr(page,'kv')
-assert '88.0 W' in page.graph.live_labels[3].text()
+assert len(page.graph.live_labels)==3 and all(' W' not in item.text() for item in page.graph.live_labels)
 assert '4.20 GHz' in page.graph.live_labels[2].text()
 assert ('Maximaler Takt','5.20 GHz') in page.product_header._spec_values
 assert ('Kerne / Threads','8 / 16') in page.product_header._spec_values

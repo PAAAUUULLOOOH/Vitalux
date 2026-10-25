@@ -14,7 +14,7 @@ def git(*args,root=ROOT,check=True):
 def fingerprint(ref,root=ROOT):
     paths=git('ls-tree','-r','--name-only',ref,'--','vitalux','assets','run.sh','packaging/AppRun',
               'packaging/appimage-first-run.py','packaging/appimage-integration.sh',
-              'packaging/appimage-rollback-watch.sh',root=root).stdout.decode().splitlines()
+              'packaging/appimage-rollback-watch.sh','packaging/appimage-activate.py','packaging/logging.sh',root=root).stdout.decode().splitlines()
     digest=hashlib.sha256()
     for path in paths:
         if path.startswith('assets/') and ('-preview.' in path or '-readme-' in path):continue

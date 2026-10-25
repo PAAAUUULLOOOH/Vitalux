@@ -23,10 +23,10 @@ with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',str
  with patch.object(PreferencesPage,'_refresh_restore_button',owned_refresh):
   window=MainWindow(dict(name='Test Linux',short='Test',version='1',color='#4f8cff'),QPixmap(96,96),UpdateManager())
  page=dict(window.pages)['Einstellungen'];window.show();app.processEvents()
- page._refresh_restore_button();assert page._maintenance_card.isHidden()
+ page._refresh_restore_button();assert not page._maintenance_card.isHidden() and not page.restore_button.isEnabled()
  page._set_preference('interval',5);app.processEvents();assert not page._maintenance_card.isHidden()
  assert page.restore_reveal.revealed
- page._set_preference('interval',1);app.processEvents();assert page._maintenance_card.isHidden()
+ page._set_preference('interval',1);app.processEvents();assert not page._maintenance_card.isHidden() and not page.restore_button.isEnabled()
  entered,release=Event(),Event();commits=[]
  def slow(*args,**kwargs):entered.set();release.wait(8);return None
  worker=product_ui.loader()

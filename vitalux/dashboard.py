@@ -172,15 +172,8 @@ class DashboardBoard(QWidget):
                          graph_load=(0,0,7,8),graph_net=(0,0,5,8),network=(0,0,6,6),drives=(0,0,12,5))
             if selected==list(ORDER):
                 selected=['hero','cpu','gpu','ram','graph_load','graph_net','disk','health','network','drives']
-        if theme.mode() == 'crystal_atrium':
-            from .crystal_atrium import TILE_KEYS
-            selected=[key for key in selected if key in TILE_KEYS]
-            sizes.update(hero=(0,0,12,7),cpu=(0,0,4,11),gpu=(0,0,4,11),
-                         ram=(0,0,4,11),graph_load=(0,0,6,11),
-                         network=(0,0,3,11),drives=(0,0,3,11))
-        else:
-            for key in ('cpu','gpu','ram','disk','health'):
-                native=sizes[key];sizes[key]=(*native[:3],10)
+        for key in ('cpu','gpu','ram','disk','health'):
+            native=sizes[key];sizes[key]=(*native[:3],10)
         positions=grid_pack(selected,self.hidden,self._cols(),sizes)
         return positions
 
@@ -474,8 +467,7 @@ class DashboardBoard(QWidget):
         self.tiles[state['key']]._sync_grips()
 
     def available_hidden(self):
-        from .crystal_atrium import TILE_KEYS
-        supported=TILE_KEYS if theme.mode()=='crystal_atrium' else ORDER
+        supported=ORDER
         hidden = [(key,tr(TITLES[key])) for key in supported if key in self.hidden]
         if not self.distro_logo_visible:
             hidden.append(('distro_logo', tr('Distributionslogo')))

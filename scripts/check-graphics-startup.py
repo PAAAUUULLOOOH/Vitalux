@@ -64,7 +64,7 @@ class XMaps:
                 self.lib.XFetchName(self.display, window, ctypes.byref(name))
                 title = ctypes.string_at(name).decode(errors='replace') if name else ''
                 if name: self.lib.XFree(name)
-                self.windows.append(dict(title=title, width=width.value, height=height.value))
+                self.windows.append(dict(title=title,x=x.value,y=y.value,width=width.value,height=height.value))
 
     def close(self):
         self.lib.XCloseDisplay(self.display)
@@ -116,7 +116,7 @@ def child(mode, output):
             win.stack.setCurrentIndex(index)
             QTest.qWait(100)
             sampler = win.sampler
-            for key in ('glass','light','crystal_atrium','nebula_prism','quantum_core'):
+            for key in ('glass','light','crystal_glass','nebula_prism','quantum_core'):
                 preferences.select_design(key)
                 assert win._appearance_overlay is not None
                 overlay = win._appearance_overlay
@@ -127,7 +127,7 @@ def child(mode, output):
                 if mode in renderer.QUICK_MODES:
                     assert not win.centralWidget()._upload_timer.isActive()
                 QTest.qWait(100)
-                if key == 'crystal_atrium':
+                if key == 'crystal_glass':
                     settled(lambda: win._appearance_overlay is None)
                     assert win.grab().save(str(output/(mode+'-'+key+'.png')))
                 if key == 'quantum_core':
@@ -165,6 +165,7 @@ def child(mode, output):
                   'startup_preloaded': win.last_sample is not None, 'theme_transitions': True, 'retained_design_transitions': True,
                   'quantum_core_static_background': True,
                   'search_interruptions': True,
+                  'screen_available': [app.primaryScreen().availableGeometry().x(),app.primaryScreen().availableGeometry().y(),app.primaryScreen().availableGeometry().width(),app.primaryScreen().availableGeometry().height()],
                   'size': [win.width(), win.height()]}), flush=True)
             result[0] = 0
         finally:
@@ -236,6 +237,10 @@ def main():
                 assert watcher.maps == expected_maps, f'{mode}: {watcher.windows}, expected {expected_maps}'
                 result = next(json.loads(line) for line in log.read_text().splitlines()
                               if line.startswith('{"mode"'))
+                if expected_maps:
+                    splash=watcher.windows[0];x,y,width,height=result['screen_available']
+                    assert abs(splash['x']+splash['width']/2-(x+width/2))<=1,watcher.windows
+                    assert abs(splash['y']+splash['height']/2-(y+height/2))<=1,watcher.windows
                 result['native_x11_maps'] = watcher.maps
                 results.append(result)
                 print(f'{mode}: real startup screen, preloaded telemetry, framebuffer and no preflight window PASS', flush=True)

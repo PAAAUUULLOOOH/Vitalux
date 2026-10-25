@@ -91,7 +91,7 @@ def main():
             qwait(320)
             assert pref.search.text() == 'Vulk'
             assert pref.search_overlay.expanded
-            assert pref.advanced.expanded
+            assert pref.advanced.panel.isVisible()
             assert pref.background_performance_note.isHidden()
             diag.select_area('hardware', 'pcie')
             assert diag.tabs.tabText(diag.tabs.currentIndex()) == 'PCIe Guardian'

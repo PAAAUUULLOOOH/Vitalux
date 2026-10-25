@@ -1,145 +1,19 @@
 # Vitalux – Changes
 
-## [v0.9.6.3-unstable.25] - 2026-10-25
-- The initialization window has actual rounded transparent outer corners matching its outline.
-- Crystal Atrium uses one continuous window background and smoothly blurred glass at the display resolution. Overview retains its liquid spheres and now supports moving, hiding, restoring, undoing and saving tiles with the layout editor.
-- Processor combines usage, temperature, clock speed and available power in one chart card with selectable curves, separate unit scales and time ranges. Linux load averages can also be selected; duplicate current-reading displays are removed.
-- Processor pictures are checked against the exact CPU and variant. Conflicting i3/i5/i7/i9 or model references and uncertain older CPU cache pictures are rejected.
-- Manufacturer specifications follow the selected German or English app language. Translations preserve technical identifiers, remain available offline and follow language changes in open datasheets.
-- Reset and restart wait for ongoing product-data requests and dispose the interface in order. AppImage restarts, updates and recovery share one launch owner: an intentional reset retains its version and a prepared update cannot be overwritten by competing recovery.
-- Maintenance appears only when settings can be reset and stays hidden after a full reset or an unchanged first start.
-
-## [v0.9.6.3-unstable.24] - 2026-10-25
-- Overview has a larger system header in every design, with a larger distribution logo and roomier information chips. The distribution name and information are centered; the remaining cards begin lower down.
-- Design previews fit fully inside rounded tiles and show each interface more clearly. The Crystal Atrium preview is retained; the active selection check sits above the accent and background symbols.
-- Processor, graphics card and mainboard gain available manufacturer specifications and All specifications, a scrollable dialog with a manufacturer link and offline cache. Specifications are matched to the exact model; detected system values remain available when online information is missing.
-- Component names and specifications stay centered with or without a product picture. The picture switch has a short explanation; disabling pictures retains saved images.
-- Graphics integrates utilization and video-memory readings into Current GPU values. The duplicate sensor panel and separate current-load displays are removed; history charts remain available.
-- When Stable contains all changes in the installed Unstable build, the app returns to Stable automatically after a fresh verified check. Later test releases still require a manual switch back to Unstable.
-- A startup window follows the selected design and shows real preparation stages while the interface, first measurements and existing product data are preloaded. Ultra Eco and motion-off use a static view; missing online data does not block startup.
-
-## [v0.9.6.3-unstable.23] - 2026-10-25
-- The design gallery now focuses on Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core and Light. Colors and backgrounds from retired designs remain available under their original names as presets, without transferring their effects or layouts.
-- All six designs support custom accents and backgrounds with separately saved preferences. Original colors, Original background and Reset design restore the active design without deleting imported images or other designs’ choices.
-- Design tiles share rounded corners; previews and selection checks stay inside the tile.
-- Overview captions are centered in a consistent order with compact watt readings. Long names use an ellipsis and show their complete text on hover. GPU overview cards continue to omit watts.
-- Show component pictures in Settings toggles CPU, GPU, RAM and mainboard pictures together. Without pictures, specifications use the full width; cached pictures are retained.
-
-## [v0.9.6.3-unstable.22] - 2026-10-25
-- Graphics, CPU, RAM and mainboard prefer matching cutout product pictures and fall back to photographs with backgrounds. Valid older cached pictures remain available; lookup handles CPU suffixes, model spellings, product identifiers and additional image sources.
-- Without a product picture, the image column and spacing disappear completely; the name and concise specs use the available width. Failed lookups can retry loading pictures.
-- The graphics overview tile wraps the complete card name and no longer shows watts. Its load display retains its size; the reported arrangement is reverted and extra text cannot overlap readings.
-- Crystal Atrium restores the original liquid-glass sphere composition with a static background. The previous clear-glass design is now Crystal Glass; existing selections preserve that design.
-
-## [v0.9.6.3-unstable.21] - 2026-10-25
-- Crystal Atrium joins the design gallery with clear glass surfaces, instruments, logo and wordmark, the familiar Obsidian layout and a static dark-blue/light-blue/violet background.
-- Hardware identification uses a general PCI database, additional manufacturer aliases and available driver names. Picture lookup handles internal mainboard suffixes, structured product metadata and image CDNs.
-- CPU, graphics, memory-module and mainboard headers show concise aligned specifications to the right of matching product pictures. RAM manufacturer/part numbers appear when firmware data is readable; different modules remain separate.
-- Only cutout product pictures are displayed. Missing pictures remove the entire image area, without placeholders or gaps. Persistent offline caching is retained; the visible offline caption is removed.
-- Eclipse Crystal puts CPU/GPU overview percentages and temperatures on separate, consistently aligned rows.
-- Processor retains current measured watts, removes PL1/PL2 rows and realigns its remaining readings.
-
-## [v0.9.6.3-unstable.20] - 2026-10-25
-- Overview centers the GPU power reading to match the graphics-card name.
-- Processor lists all present logical CPUs in numerical order, including offline entries. Its meter grid adapts its columns and height so every entry remains accessible on systems with many cores or threads.
-- Graphics identifies board manufacturers and unambiguous retail models from PCI/subsystem IDs, including SAPPHIRE PURE RX 9070 XT. System shows mainboard manufacturer, model and available revision in a dedicated card.
-- Graphics and mainboard cards find matching product pictures through manufacturer sources and online search. Pictures load in the background, are stored persistently and remain available offline. Missing or ambiguous pictures use a neutral placeholder.
-
-## [v0.9.6.3-unstable.19] - 2026-10-24
-- The component-tab chart changes have been reverted: load, temperatures, clocks and transfer rates return to their previous presentation and familiar curve selectors. Current GPU power and its limit are retained.
-
-
-## [v0.9.6.3-unstable.18] - 2026-10-24
-- Processor and Graphics use the same visible chart checkboxes as Overview. Measurements can be toggled directly; controls wrap into further rows on narrow windows and retain the active design palette.
-
-
-## [v0.9.6.3-unstable.17] - 2026-10-24
-- Overview tiles now show only current measured power in watts. Unavailable readings stay hidden; system-drive power requires an unambiguous sensor association.
-- Each component tab combines available measurements in one chart with individually selectable curves and separate scales per unit. Sensor histories continue while visiting other tabs.
-- Graphics shows current power and its limit with the live values. Separate watt charts and additional average/peak blocks have been removed.
-
-
-## [v0.9.6.3-unstable.16] - 2026-10-24
-- Components show genuinely available power readings with readable numeric limits, session average/peak and a watt history. CPU package, DRAM, GPU socket and other measurement domains remain separate.
-- Additional driver sensors expose temperatures, GPU memory, fans, voltages and engine activity where supported. Missing or failed fields disappear without gaps; real zeroes remain visible.
-- Updates shows the full running app version including its Unstable test number, independently of browsing versions or preparing an installation.
-- Lumen Drift has been completely removed. Saved design selections return to Obsidian Gold; personal colors, images and other settings are preserved.
-
-
-## [v0.9.6.3-unstable.14] - 2026-10-23
-- Smaller installation packages by removing unnecessary development and test files.
-
-## [v0.9.6.3-unstable.13] - 2026-10-23
-- Long release notes scroll inside a bounded area in Updates. The scrollbar appears only on overflow; version selection, progress and installation controls stay outside. Selecting another version starts its notes at the top.
-- Quantum Core uses a sharp, static circuitry background. Background motion is removed; animated logos and live instruments are retained.
-- The Lumen Drift preview in Settings uses more consistent card shapes, spacing and a rounded rectangular outline.
-
-## [v0.9.6.3-unstable.12] - 2026-10-23
-- Lumen Drift joins the gallery as the 14th design, with warm pastel glass, softly rounded cards, calm ring instruments and floating navigation below the header.
-- Lumen Drift includes matching animated circle and wordmark assets and a gently breathing backdrop. Its palette and background are fixed; turning animations off or enabling Ultra Eco stops the background motion.
-- Lumen Drift navigation hints identify categories on hover and show the version of an available update. Design changes preserve live measurements and personal color and image choices.
-
-## [v0.9.6.3-unstable.11] - 2026-10-23
-- Quantum Core adds angular neon panels, distinct reactor ring instruments and an animated backdrop with a radar sweep, particles and a scanline to the design gallery.
-- Quantum Core includes matching animated circle and wordmark assets, with a fixed palette and background. Turning animations off or enabling Ultra Eco stops its background motion.
-- Aurora Gold is removed. Saved selections return to Obsidian Gold; personal colors, images and other preferences are preserved.
-
-## [v0.9.6.3-unstable.10] - 2026-10-23
-- Nebula Prism adds prismatic deep-space glass, spectral edges, distinct ring instruments and a floating bottom dock to the design gallery.
-- The design includes matching animated circle and wordmark assets, with a fixed palette and background.
-- Dock icons show category and available-update hints on hover; language and design changes preserve live measurements.
-
-## [v0.9.6.3-unstable.9] - 2026-10-22
-- Dashboard tiles stay stationary when layout editing opens; hold-to-move captions and X controls remain visible.
-- The Diagnostic Center shows the five most recent app warnings, update failures and automatic renderer fallbacks.
-- Unavailable CPU/GPU measurements show a short cause when confirmed by the data source.
-- Settings search captions are fully translated; the renderer selector gives long names more space.
-- Local log files rotate at approximately 5 MB and retain one backup, keeping complete error records and separate channel logs.
-
-## [v0.9.6.3-unstable.8] - 2026-10-22
-- Champagne Glass is removed completely; saved selections return to Obsidian Gold. Twelve standalone designs remain.
-- Settings search recognizes partial MiniHUD names, distinguishes individual controls and scrolls smoothly to the matching section.
-- Opening layout editing gently shakes movable tiles for two seconds. Hold-to-move captions and X controls remain visible throughout editing.
-- Restore defaults under Advanced settings → Maintenance replaces the separate cache and personal reset actions. Its description and confirmation explain the complete active-profile reset, including imported image copies and cache, followed by restart and the guide. Original images and the other profile are preserved.
-- Click sounds and their settings are removed.
-- Update restart preparation automatically retries temporary failures and resumes verified saved preparations. An additional recovery button appears only after persistent failures.
-
-## [v0.9.6.3-unstable.7] - 2026-10-22
-- All thirteen designs return as separate choices, including Obsidian Gold, Black Glass, Black Glass Gold, Champagne Glass, Aurora Gold and Liquid Silver. Obsidian Gold remains the default.
-- Each premium design again uses its own coordinated palette and background. Background and accent controls return to their compact selectors; fixed options are greyed out.
-- Preferences from the combined-design builds return to the corresponding standalone designs with local backups, retaining personal images, saved colors and other settings.
-
-## [v0.9.6.3-unstable.6] - 2026-10-22
-- Leaving automatic accents from a personal wallpaper restores the previous Design colors selection. Obsidian returns to its original gold palette instead of Vitalux Blue.
-
-## [v0.9.6.3-unstable.5] - 2026-10-21
-- Design, Background and Accent colors are separate and freely combinable: use all previous backgrounds, personal images, background tint, preset accents and custom colors with any design.
-- Obsidian Gold is renamed Obsidian and keeps its original gold appearance as the default. Black Glass Gold becomes Black Glass, replacing the former Black Glass. Champagne, Aurora and Liquid Silver remain available as backgrounds and accents instead of duplicate surface tiles.
-- Existing preferences migrate with backups to their corresponding combination, retaining personal images, colors and dashboard settings.
-- The update bar shows a centered percentage. Slow downloads report progress more often; stalled connections produce an error. Downloads can be cancelled and retried after failures.
-
-## [v0.9.6.3-unstable.4] - 2026-10-21
-- Liquid Silver now uses the Obsidian Gold interface with dark smoked glass and a coordinated satin-silver palette. The former light layout is replaced.
-- Liquid Chrome is removed; saved selections move to the replacement Liquid Silver without resetting other preferences.
-- Updates explains when an older Stable build still requires a manual restart for its subsequent updates; installations initiated by current Unstable restart automatically.
-
-## [v0.9.6.3-unstable.3] - 2026-10-21
-- Liquid Chrome adds a distinct dark graphite and smoked-glass design with sculpted silver/chrome surfaces, orbital instruments and an asymmetric dashboard. It has its own fixed palette and background.
-- The existing light Liquid Silver design remains available separately; saved design choices are preserved.
-
-## [v0.9.6.3-unstable.2] - 2026-10-21
-- Liquid Silver adds light platinum, satin silver, crystal-glass panels, analog instruments and its own animated silver identity. Its coordinated palette and background are fixed.
-- Deleting personal preferences in Unstable restores actual defaults and reopens the guide. An existing Stable profile is not imported again during a reset.
-- Intentional restarts wait for an instance that is still shutting down, while genuine duplicate starts remain blocked.
-- After a verified update or channel switch is prepared, Vitalux restarts automatically once background tasks finish. The immediate/later restart buttons are removed.
-- Black Glass supports custom accent creation, editing and removal. Fixed palettes use consistently greyed-out color controls; fixed backgrounds only lock background selection.
-- A shorter, softer click sound replaces the previous tone. The default volume remains 50 percent.
-- The old placeholder test build is removed from the version selector, including cached release notes.
-
-## [v0.9.6.3-unstable.1] - 2026-10-21
-- Design tiles use smaller indicators without locks: available accent and background options are colored, while fixed options are grey.
-- Release notes always remain visible in Updates. The version selector browses previous Stable or Unstable notes without changing the installation destination or channel.
-- Vitalux allows one running instance per user and shows a notice on a second start. The protection remains active in the tray and releases automatically on exit or a crash.
+## [v0.9.6.3] - 2026-10-25
+- The design gallery focuses on Obsidian Gold, Glass, Crystal Glass, Nebula Prism, Quantum Core and Light. Colors and backgrounds of several former designs remain named presets. All six designs remember independent accent/background settings and offer their own original/reset actions.
+- Crystal Glass adds smooth glass on one static background and an editable overview. Nebula Prism adds prismatic instruments and a floating dock; Quantum Core adds angular neon panels and reactor instruments with a static factory background.
+- Overview has a larger centered system header and roomier information chips. Component captions follow one centered order, with full long names available on hover. Updated design previews fit their rounded selection tiles.
+- Additional Linux sensors expose supported component power and driver readings. Missing measurements remain unknown or hidden; real zeroes stay visible. Graphics groups utilization, video memory, current watts and power limit without a duplicate sensor card.
+- Processor lists all available logical CPUs in numeric order and adapts meter sizes. One selectable history chart combines usage, temperature and clock speed with separate unit scales.
+- CPU, graphics, memory modules and mainboard gain more precise manufacturer/model identification and optional matching product pictures with offline caching. Cutouts are preferred, with matching photographs as a fallback. CPU images must match the detected model variant.
+- CPU, graphics and mainboard views show short specifications and a scrollable manufacturer datasheet with its source link. Manufacturer text follows the German or English app language and remains available offline after successful retrieval.
+- An initialization window with actual rounded corners and centered screen placement reports real preparation stages. The interface, first measurements and cached product data are prepared before the main view opens. Disabling Ultra Eco restores the previous design.
+- Vitalux runs once per user. Verified updates and channel switches restart automatically; slow downloads support cancellation/retry and clearer progress. The full running version stays visible; long release notes scroll in a bounded area.
+- A fresh verified check that Stable contains the installed test changes automatically returns Unstable to Stable. Later test builds still require manually choosing Unstable.
+- Restore defaults resets only the active channel profile, clears its cache and reopens the guide. Advanced settings and Maintenance remain permanently visible, without collapsing. Reset/restart wait for background work; AppImage activation and recovery share one transition owner.
+- Settings search recognizes incomplete MiniHUD terms. Diagnostic Center shows the last five app events; unavailable measurements explain known causes. Click sounds and their settings are removed.
+- With no new test changes, Unstable shows “No new updates · Switching to Unstable is unavailable”. Both channels share the published Stable baseline without creating another test build.
 
 ## [v0.9.6.2] - 2026-10-21
 - Updates presents the running version, Stable/Unstable and changelogs in two clear sections; channel browsing and installation remain separate actions within the tab.

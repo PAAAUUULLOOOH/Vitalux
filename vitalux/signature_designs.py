@@ -8,7 +8,7 @@ from PySide6.QtCore import QPointF, QRectF, Qt, QVariantAnimation, QEasingCurve
 from PySide6.QtGui import (QColor, QFont, QLinearGradient, QPainter,
                            QPainterPath, QPen, QPixmap, QRadialGradient)
 from PySide6.QtWidgets import QWidget, QLabel
-from . import nebula_prism, quantum_core, crystal_atrium
+from . import nebula_prism, quantum_core, crystal_glass
 
 COLLECTIONS = {
     'eclipse_crystal': dict(title='Eclipse Crystal', subtitle='BLACK CRYSTAL / CHAMPAGNE',
@@ -19,7 +19,7 @@ COLLECTIONS = {
 }
 COLLECTIONS['nebula_prism'] = nebula_prism.PALETTE
 COLLECTIONS['quantum_core'] = quantum_core.PALETTE
-COLLECTIONS['crystal_atrium'] = crystal_atrium.PALETTE
+COLLECTIONS['crystal_glass'] = crystal_glass.PALETTE
 KEYS = tuple(COLLECTIONS)
 
 
@@ -37,7 +37,7 @@ def color(value, alpha=255):
 
 
 def shape(rect, mode, compact=False):
-    if mode == crystal_atrium.KEY:return crystal_atrium.shape(rect,compact)
+    if mode == crystal_glass.KEY:return crystal_glass.shape(rect,compact)
     if mode == 'nebula_prism':
         return nebula_prism.shape(rect, compact)
     if mode == 'quantum_core':
@@ -58,7 +58,7 @@ def shape(rect, mode, compact=False):
 
 
 def scene_pixmap(size, mode, phase=0.0):
-    if mode == crystal_atrium.KEY:return crystal_atrium.scene_pixmap(size,phase)
+    if mode == crystal_glass.KEY:return crystal_glass.scene_pixmap(size,phase)
     if mode == 'nebula_prism':
         return nebula_prism.scene_pixmap(size)
     if mode == 'quantum_core':
@@ -112,7 +112,7 @@ def scene_pixmap(size, mode, phase=0.0):
 
 def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
     from . import theme
-    if theme.mode() == crystal_atrium.KEY:return crystal_atrium.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
+    if theme.mode() == crystal_glass.KEY:return crystal_glass.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
     from . import theme
     from .glass import draw_frosted_backdrop
     mode = theme.mode()
@@ -192,7 +192,7 @@ def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
 
 
 def stylesheet(mode):
-    if mode == crystal_atrium.KEY:return crystal_atrium.stylesheet()
+    if mode == crystal_glass.KEY:return crystal_glass.stylesheet()
     if mode=='nebula_prism':
         return nebula_prism.stylesheet()
     if mode=='quantum_core':
@@ -294,86 +294,12 @@ class Surface(QWidget):
 
 
 
-def _atrium_preview(p,pal,box,width):
-    """Three liquid-glass spheres over a glass strip and a floating dock."""
-    from PySide6.QtGui import QRadialGradient,QLinearGradient
-    box(QRectF(5,5,width-10,9))
-    cell=(width-14)/3
-    for i,(a,b) in enumerate((('#7fd6ff','#2b6bff'),('#ff8bdc','#a42cff'),('#ffcb72','#ff6a3c'))):
-        x=5+i*(cell+2)
-        box(QRectF(x,17,cell,32))
-        cx,cy,r=x+cell/2,33,11.5
-        p.setPen(Qt.NoPen)
-        liquid=QLinearGradient(0,cy-r*.1,0,cy+r)
-        liquid.setColorAt(0,color(a,235));liquid.setColorAt(1,color(b,245))
-        clip=QPainterPath();clip.addEllipse(QPointF(cx,cy),r,r)
-        p.save();p.setClipPath(clip);p.fillRect(QRectF(cx-r,cy-r*.1,2*r,r*1.1),liquid);p.restore()
-        p.setBrush(Qt.NoBrush);p.setPen(QPen(color('#ffffff',150),.8));p.drawEllipse(QPointF(cx,cy),r,r)
-        glint=QRadialGradient(QPointF(cx-r*.35,cy-r*.45),r*.5)
-        glint.setColorAt(0,color('#ffffff',200));glint.setColorAt(1,color('#ffffff',0))
-        p.setPen(Qt.NoPen);p.setBrush(glint);p.drawEllipse(QPointF(cx-r*.35,cy-r*.45),r*.45,r*.3)
-    box(QRectF(5,52,(width-14)*.6,10))
-    box(QRectF(5+(width-14)*.62,52,(width-14)*.38,10))
-    dock_w=min(width-30,78)
-    box(QRectF((width-dock_w)/2,65,dock_w,8),235)
 
 
 
-def paint_preview(p,tile,pal):
-    """Represent the actual horizontal/floating navigation in design previews."""
-    mode=tile.key
-    width=tile.width()
-    def box(rect,alpha=200):
-        p.setPen(QPen(color(pal['accent'],105),.6))
-        p.setBrush(color(pal['card'],alpha))
-        p.drawPath(shape(rect,mode,True))
-    if mode=='crystal_atrium':
-        _atrium_preview(p,pal,box,width)
-        return _preview_tail(p,tile,pal,mode,width)
-    if mode=='nebula_prism':
-        nebula_prism.preview_contents(p,tile,pal,box,width)
-        return _preview_tail(p,tile,pal,mode,width)
-    box(QRectF(5,5,width-10,9))
-    p.setPen(QPen(color(pal['text'],190),1))
-    p.drawLine(11,9,31,9)
-    offset=5
-    if mode in ('quantum_core',):
-        box(QRectF(5,18,18,52))
-        for y in (24,33,42,51,60):
-            p.setPen(QPen(color(pal['accent'],160),1.2))
-            p.drawLine(10,y,17,y)
-        offset=28
-        y=18
-    else:
-        box(QRectF(5,17,width-10,8))
-        for i in range(7):
-            p.setPen(QPen(color(pal['accent'],180),1))
-            x=12+i*(width-24)/7
-            p.drawLine(QPointF(x,20),QPointF(x+5,20))
-        y=30
-    usable=width-offset-6
-    for x,w in ((offset,usable*.48),(offset+usable*.51,usable*.22),(offset+usable*.76,usable*.24)):
-        rect=QRectF(x,y,w,23)
-        box(rect)
-        path=QPainterPath(QPointF(x+4,y+18))
-        for j,f in enumerate((.2,.5,.25,.65,.35,.45)):
-            path.lineTo(x+4+(w-8)*j/5,y+20-f*15)
-        p.setBrush(Qt.NoBrush)
-        p.setPen(QPen(color(pal['accent'],220),.8))
-        p.drawPath(path)
-    box(QRectF(offset,y+28,usable*.60,17))
-    box(QRectF(offset+usable*.64,y+28,usable*.36,17))
-    _preview_tail(p,tile,pal,mode,width)
 
 
 
-def _preview_tail(p,tile,pal,mode,width):
-    p.fillRect(QRectF(0,75,width,40),color(pal['bg'],235))
-    font=QFont(tile.font());font.setPixelSize(11);font.setWeight(QFont.DemiBold)
-    p.setFont(font);p.setPen(color(pal['text']))
-    p.drawText(QRectF(7,78,width-14,27),Qt.AlignCenter,tile.text())
-    from .gallery_shape import finish
-    finish(p,tile,pal)
 
 
 

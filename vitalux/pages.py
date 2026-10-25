@@ -336,38 +336,18 @@ class OverviewPage(Page):
             self.design_metrics[key]=instrument
             self.design_metric_hosts[key]=host
             return host
-        from .crystal_atrium import AtriumTile, TILE_KEYS
-        self.atrium_tiles = {}
-        self.atrium_hosts = {}
         for key, widget in (
             ('hero',head), ('cpu',metric_host('cpu',self.g_cpu)), ('gpu',metric_host('gpu',self.g_gpu)),
             ('ram',metric_host('ram',self.g_ram)), ('disk',metric_host('disk',self.g_disk)),
             ('graph_load',c1), ('graph_net',c2),
             ('health',metric_host('health',self.g_health)), ('network',net), ('drives',self.disks_card),
         ):
-            if key in TILE_KEYS:
-                host=QStackedWidget()
-                host.setSizePolicy(QSizePolicy.Ignored,QSizePolicy.Ignored)
-                host.addWidget(widget)
-                atrium=AtriumTile(key,distro['name'],logo)
-                host.addWidget(atrium)
-                self.atrium_tiles[key]=atrium
-                self.atrium_hosts[key]=host
-                widget=host
             self.board.register(key,widget)
         for card in (head,c1,c2,net,self.disks_card):
             card.layout().setAlignment(Qt.AlignTop)
             for text in card.findChildren(QLabel):
                 if text.objectName() in ('cardTitle','chipTitle','chipValue'):text.setAlignment(Qt.AlignCenter)
         self.content.addWidget(self.board)
-        self.atrium_logo_remove=QToolButton(self.atrium_tiles['hero'])
-        self.atrium_logo_remove.setObjectName('tileRemoveHint')
-        self.atrium_logo_remove.setProperty('distroLogoRemove',True)
-        self.atrium_logo_remove.setText('×')
-        self.atrium_logo_remove.setToolTip(tr('Distributionslogo ausblenden'))
-        self.atrium_logo_remove.setFixedSize(25,25)
-        self.atrium_logo_remove.move(80,20)
-        self.atrium_logo_remove.clicked.connect(self.board.hide_distro_logo)
         self.layout_toggle.clicked.connect(self.toggle_editor)
         self.board.changed.connect(self._refresh_editor_actions)
         self.board.changed.connect(self._sync_distro_logo)
@@ -383,13 +363,8 @@ class OverviewPage(Page):
         for host in self.design_metric_hosts.values():
             host.setCurrentIndex(1 if selected else 0)
         self.root.setContentsMargins(16 if selected else 30,45,16 if selected else 30,24 if selected else 30)
-        atrium_on = theme.mode() == 'crystal_atrium'
         self.root.setStretch(0,0)
         self.root.setStretch(1,1)
-        for key,host in self.atrium_hosts.items():
-            host.setCurrentIndex(int(atrium_on))
-            self.atrium_tiles[key]._dirty=True
-            self.atrium_tiles[key].sync_timer()
         self.board.show()
         self.layout_toggle.show()
         self._sync_distro_logo()
@@ -480,10 +455,6 @@ class OverviewPage(Page):
         self.distro_logo_host.setVisible(visible)
         self.distro_balance.setVisible(visible)
         self.distro_logo_remove.setVisible(visible and self.board.editing)
-        hero=self.atrium_tiles['hero']
-        hero.logo_visible=visible
-        hero._dirty=True;hero.update()
-        self.atrium_logo_remove.setVisible(visible and self.board.editing)
 
     def _refresh_editor_actions(self):
         for key, _icon, _txt, action in self._editor_buttons:
@@ -552,7 +523,6 @@ class OverviewPage(Page):
             tile.drag.setToolTip(tr('Kachel verschieben'))
             tile.remove.setToolTip(tr('Kachel ausblenden'))
         self.distro_logo_remove.setToolTip(tr('Distributionslogo ausblenden'))
-        self.atrium_logo_remove.setToolTip(tr('Distributionslogo ausblenden'))
 
     def apply_layout(self):
         if not self.board.editing:
@@ -623,22 +593,6 @@ class OverviewPage(Page):
             name,details=captions[key]
             for info in infos:info.set(name,details,power_text(readings.get(key)) if key in self.power_labels else '')
 
-        if theme.mode() == 'crystal_atrium':
-            atrium_data={
-                'chips': [("Kernel", self.static["kernel"]), ("KDE", f"Plasma {self.static['plasma']}"),
-                          ("Mesa", self.static["mesa"]), ("Sitzung", self.static["session"]),
-                          ("Laufzeit", fmt_duration(d['uptime']))],
-                'cpu': {'value': c['usage'], 'name':captions['cpu'][0], 'detail':captions['cpu'][1], 'power':power_text(readings['cpu'])},
-                'gpu': {'value':gpu.get('usage'),'name':captions['gpu'][0],'detail':captions['gpu'][1]},
-                'ram': {'value':r['percent'],'detail':captions['ram'][1],'power':power_text(readings['ram'])},
-                'health': {'score': score, 'state': tr(state) if isinstance(state, str) else state, 'detail': detail},
-                'disks': [{'mount': x['mount'], 'percent': x['percent'],
-                           'detail': f"{fmt_bytes(x['used'])} / {fmt_bytes(x['total'])}"} for x in disks[:3]],
-                'net': {'name': primary.get('name', '–'), 'down': fmt_rate(net['down']), 'up': fmt_rate(net['up']),
-                        'total': f"↓ {fmt_bytes(net['total_down'])}   ·   ↑ {fmt_bytes(net['total_up'])}"},
-                'history': {k: h[k] for k in ('cpu', 'gpu', 'ram', 'net_down', 'net_up')},
-            }
-            for tile in self.atrium_tiles.values():tile.set_data(atrium_data)
         self.graph_load.set_series([(h["cpu"], theme.accent()), (h["gpu"], theme.secondary_accent()), (h["ram"], theme.TEAL)])
         self.graph_net.set_series([(h["net_down"], theme.accent()), (h["net_up"], theme.secondary_accent())])
         self.net_name.set(primary.get("name", "–") + (f"  ·  {primary.get('speed', 0)} Mbit/s" if primary.get("speed") else ""))
@@ -665,14 +619,11 @@ class CpuPage(Page):
         top.body.addWidget(self.product_header)
         self.content.addWidget(top)
         graph=Card('CPU-Messwerte · Verlauf')
-        self.graph=ChartPanel(['Auslastung','Temperatur','Takt','Leistung',
-                              'Last 1 Min','Last 5 Min','Last 15 Min'],
-                             [theme.accent(),theme.secondary_accent(),theme.TEAL,
-                              '#ffc46b','#b79bff','#7fd6ff','#ff8bdc'],mode='mixed',
-                             series_modes=['percent','temperature','frequency','power','load','load','load'])
-        for toggle in self.graph.toggles[4:]:toggle.setChecked(False)
+        self.graph=ChartPanel(['Auslastung','Temperatur','Takt'],
+                             [theme.accent(),theme.secondary_accent(),theme.TEAL],mode='mixed',
+                             series_modes=['percent','temperature','frequency'])
         graph.body.addWidget(self.graph)
-        graph.body.addWidget(label('Jede Messgröße hat eine eigene farbige Skala. Last zeigt den Linux-Lastdurchschnitt.','muted',wrap=True))
+        graph.body.addWidget(label('Jede Messgröße hat eine eigene farbige Skala.','muted',wrap=True))
         self.content.addWidget(graph)
 
         self.cores_card = Card("Kerne / Threads · Auslastung")
@@ -726,7 +677,7 @@ class CpuPage(Page):
             ('Kerne / Threads', f'{c["cores"]} / {c["threads"]}'),
             ('Maximaler Takt', f'{c["freq_max"]/1000:.2f} GHz' if c.get('freq_max') else ''),
             ('Architektur', platform.machine())])
-        keys=('cpu','cpu_temp','cpu_clock','cpu_power','cpu_load_1','cpu_load_5','cpu_load_15')
+        keys=('cpu','cpu_temp','cpu_clock')
         self.graph.set_series([(h.get(key,()),tone) for key,tone in zip(keys,self.graph.colors)])
         entries = c.get('logical_cpus')
         if entries is None:

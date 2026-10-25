@@ -34,7 +34,7 @@ def run():
                 QTimer.singleShot(50,verify);return
             try:
                 assert window.last_sample is not None
-                for mode in ('nebula_prism','eclipse_crystal','quantum_core','glass','crystal_atrium','obsidian_gold'):
+                for mode in ('nebula_prism','eclipse_crystal','quantum_core','glass','crystal_glass','obsidian_gold'):
                     window.pulse_core._phase=73
                     if mode=='eclipse_crystal':preferences.search.setText('timbooh')
                     else:preferences.select_design(mode)
@@ -42,7 +42,7 @@ def run():
                     assert window.sampler is sampler and sampler.isRunning()
                     assert window.pulse_core._phase>=73,'Design change reset rotation phase'
                     assert not preferences.accent_combo.isLocked() and not preferences.background_combo.isLocked()
-                    signature=mode in ('nebula_prism','eclipse_crystal','quantum_core','crystal_atrium')
+                    signature=mode in ('nebula_prism','eclipse_crystal','quantum_core','crystal_glass')
                     assert window.pages[0][1].design_metric_hosts['cpu'].currentIndex()==int(signature)
                     assert window.sidebar.isHidden()==(mode in ('eclipse_crystal','nebula_prism'))
                     assert not window.grab().isNull()

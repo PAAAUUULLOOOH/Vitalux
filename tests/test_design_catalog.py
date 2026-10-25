@@ -28,7 +28,7 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
         assert after['theme']==target and after['background_style']==old
         assert all(after[k]==v for k,v in personal.items())
         assert appearance.migrate(after)==after
-    assert catalog.migrate(dict(theme='crystal_atrium'))['theme']=='glass'
+    assert catalog.migrate(dict(theme='crystal_glass'))['theme']=='crystal_glass'
     assert 'accent' not in catalog.migrate({})
     settings.set_many(dict(personal,theme='glass',accent='#123456',background_style='prism',motion='off',_design_catalog_revision=1))
     host=Host();host.apply_appearance();page=PreferencesPage(host)

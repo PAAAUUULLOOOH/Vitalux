@@ -44,3 +44,14 @@ with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',str
    controller.worker.wait(2000);win._force_quit=True;win.close();app.processEvents()
    win.manager.shutdown();controller.splash.close()
 print('Startup worker, GUI-only construction, all-page first-sample preload, failure completion and static Eco/off display PASS')
+
+# The splash has actual rounded transparency and a compositor-managed window.
+from vitalux.startup import StartupWindow
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QApplication
+app=QApplication.instance() or QApplication([])
+splash=StartupWindow();splash.show();app.processEvents()
+image=splash.grab().toImage()
+assert image.pixelColor(0,0).alpha()==0
+assert not (splash.windowFlags() & Qt.SplashScreen)==Qt.SplashScreen
+splash.ready=True;splash.close()

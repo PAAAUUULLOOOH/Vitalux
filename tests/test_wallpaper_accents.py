@@ -78,7 +78,7 @@ def run():
             page = PreferencesPage(win)
             win.page = page
             page.show()
-            page.advanced.setExpanded(True, animate=False)
+            app.processEvents()
             app.processEvents()
             assert not page.findChildren(QTabWidget), 'Unwanted accent tabs'
             assert page.accent_combo.currentData() == wallpaper_accents.AUTO

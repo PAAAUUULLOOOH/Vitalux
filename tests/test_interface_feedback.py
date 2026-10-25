@@ -25,7 +25,7 @@ def run():
         app.processEvents()
         assert mark._timer.isActive()
         fixed_words = set()
-        for key in ('obsidian_gold','eclipse_crystal','nebula_prism','quantum_core','crystal_atrium'):
+        for key in ('obsidian_gold','eclipse_crystal','nebula_prism','quantum_core','crystal_glass'):
             theme.set_mode(key)
             mark.sync_theme()
             suffix = '-light' if theme.is_light() else ''

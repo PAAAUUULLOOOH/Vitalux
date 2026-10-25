@@ -47,7 +47,7 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
             page.search.setText(query)
             assert page.search_navigation.target is target,(language,query)
         wait(800)
-        assert page.advanced.expanded
+        assert page.advanced.panel.isVisible()
         assert page.advanced.isAncestorOf(page.restore_button)
         assert not hasattr(page,'clear_cache_btn') and not hasattr(page,'clear_preferences_btn')
         assert not hasattr(page,'sound_toggle') and not hasattr(page,'sound_volume')

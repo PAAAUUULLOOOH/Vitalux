@@ -156,7 +156,7 @@ class UpdatePage(Page):
             return tr('Unstable · Verfügbarkeit nicht bestätigt')
         if not record.get('eligible',False):
             version=record.get('stable_version') or self.m.records.get('stable',{}).get('latest','')
-            if version and record.get('same_as_stable',False):return tr('Unstable · entspricht Stable v{version}').format(version=version)
+            if version and (record.get('same_as_stable',False) or record.get('stable_contains_test',False)):return tr('Keine neuen Updates · Wechsel zu Unstable nicht möglich')
             return tr('Unstable · derzeit kein neuerer Teststand')
         from .versions import parse
         try:base='.'.join(map(str,parse(record.get('latest',''))[0]))
@@ -232,7 +232,7 @@ class UpdatePage(Page):
         switching=m.channel!=profiles.installed()
         self.install_button.setText(tr(('Zu Unstable wechseln' if m.channel=='unstable' else 'Zu Stable zurückkehren') if switching else 'Jetzt aktualisieren'))
         show_disabled=(m.channel=='unstable' and not record.get('eligible',False))
-        self.install_button.setVisible(not pending and (m.can_install or show_disabled))
+        self.install_button.setVisible(not pending and m.can_install)
         self.install_button.setEnabled(m.can_install)
         self.install_button.setStyleSheet(f'QPushButton#primaryBtn:disabled {{ background: {theme.CARD}; color: {theme.MUTED}; border: 1px solid {theme.BORDER}; }}')
         self.install_button.setToolTip(tr('Ein Wechsel ist nur mit einem geprüften, neueren Teststand möglich.') if show_disabled else '')

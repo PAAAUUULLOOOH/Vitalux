@@ -131,15 +131,16 @@
       "secondary": "#ffb22f",
       "fixed": true
     },
-    "crystal-atrium": {
-      "name": "Crystal Atrium",
-      "accent": "#7fd6ff",
-      "top": "#ffffff",
-      "mid": "#bcd2ff",
-      "low": "#7fd6ff",
+    "crystal-glass": {
+      "name": "Crystal Glass",
+      "accent": "#94dfff",
+      "top": "#e6f8ff",
+      "mid": "#98d9ff",
+      "low": "#7865b8",
       "spec": "#ffffff",
-      "secondary": "#ff7ad9",
-      "fixed": true
+      "secondary": "#baa7ff",
+      "fixed": true,
+      "glass_material": true
     }
   },
   "theme_assets": {
@@ -147,7 +148,7 @@
     "eclipse_crystal": "eclipse-crystal",
     "nebula_prism": "nebula-prism",
     "quantum_core": "quantum-core",
-    "crystal_atrium": "crystal-atrium"
+    "crystal_glass": "crystal-glass"
   },
   "custom_accent_policy": "Preserve the outlined geometry; moderately richer tint for the circle logo only.",
   "motion_seconds": {

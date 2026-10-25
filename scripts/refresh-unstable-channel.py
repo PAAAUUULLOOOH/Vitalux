@@ -16,18 +16,25 @@ def refresh():
         gh('release','download','unstable','--pattern','Vitalux-unstable-channel.json','--dir',str(folder))
         path=folder/'Vitalux-unstable-channel.json';manifest=json.loads(path.read_text())
         commit=manifest['commit'];metadata=describe(commit)
-        manifest.update(metadata,has_test_changes=False)
-        base=manifest.get('build_base_version')
-        if not base:
-            base=git('describe','--tags','--match','v[0-9]*','--abbrev=0',commit,check=False).stdout.decode().strip().removeprefix('v')
-        base=base or metadata['stable_version'];manifest['build_base_version']=base
+        baseline=metadata['stable_version']
+        stable=json.loads(gh('release','view','v'+baseline,'--json','assets').stdout)
+        names=[asset['name'] for asset in stable['assets'] if asset['name'].endswith(('-linux-x86_64.zip','-x86_64.AppImage','-SHA256SUMS.txt','-ThirdPartySources.zip'))]
+        if len(names)!=4:raise ValueError('Published Stable package set is incomplete')
+        for name in names:gh('release','download','v'+baseline,'--pattern',name,'--dir',str(folder))
+        rolling=json.loads(existing.stdout)
+        for name in names:gh('release','upload','unstable',str(folder/name),'--clobber')
+        manifest.update(metadata,has_test_changes=False,baseline_version=baseline,
+                        baseline_commit=metadata['stable_commit'],build_base_version=baseline)
         path.write_text(json.dumps(manifest,indent=2)+'\n')
         gh('release','upload','unstable',str(path),'--clobber')
-        title='Unstable — based on Stable v'+base
+        for asset in rolling['assets']:
+            if asset['name'] not in names and asset['name']!='Vitalux-unstable-channel.json':
+                gh('release','delete-asset','unstable',asset['name'],'--yes')
+        title='Unstable — same baseline as Stable v'+baseline
         notes=folder/'notes.md'
-        notes.write_text('## Deutsch\n\nDieses Testpaket basiert auf Stable v'+base+
+        notes.write_text('## Deutsch\n\nDiese Basis entspricht Stable v'+baseline+
             '. Aktuell gibt es keinen neueren Teststand. Der Wechsel zu Unstable ist deaktiviert.\n\n'+
-            '## English\n\nThis test package is based on Stable v'+base+
+            '## English\n\nThis baseline matches Stable v'+baseline+
             '. There is currently no newer test build. Switching to Unstable is disabled.\n')
         gh('release','edit','unstable','--title',title,'--prerelease','--latest=false','--notes-file',str(notes))
         print(title+'; no additional test build or release entry created.')
