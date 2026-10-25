@@ -3,6 +3,7 @@ import os,sys,tempfile
 from pathlib import Path
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QImage,QPainter,QColor
 from PySide6.QtWidgets import QApplication,QScrollArea
 from vitalux import theme
@@ -52,13 +53,15 @@ with tempfile.TemporaryDirectory() as directory:
             for width in (500,1000):
                 area.resize(width,280);area.show();app.processEvents()
                 assert widget.picture.isVisible()
-                assert widget.picture.geometry().right()<widget.details.geometry().left()
+                assert widget.picture.geometry().bottom()<widget.details.geometry().top()
+                assert abs(widget.details.geometry().center().x()-widget.rect().center().x())<=2
+                assert widget.name.alignment() & Qt.AlignHCenter
                 assert len(widget._spec_values)==3
                 assert area.horizontalScrollBar().maximum()==0
         widget._ready('fixture',None);app.processEvents()
         assert widget.picture.isHidden() and not hasattr(widget,'caption')
         assert widget.row.spacing()==0 and widget.minimumHeight()==0
-        assert widget.details.geometry().left()<10
+        assert abs(widget.details.geometry().center().x()-widget.rect().center().x())<=2
         area.close()
 page.close();memory.close()
-print('Current CPU watts without PL1/PL2, separate RAM products, image-left/specs-right geometry and no blank placeholders PASS')
+print('Current CPU watts without PL1/PL2, separate RAM products, permanently centered identity/specs and image-above geometry and no blank placeholders PASS')

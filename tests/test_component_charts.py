@@ -49,7 +49,8 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
         assert card.graph.series_names==['Auslastung','VRAM'] and len(card.graph.toggles)==2
         assert card.temperature_graph.graph.mode=='temperature' and card.clock_graph.graph.mode=='clock'
         assert card.kv['Leistung'].v.text()=='150 W' and card.kv['Leistungsgrenze'].v.text()=='330 W'
-        assert not card.hardware.powers
+        assert not hasattr(card,'hardware') and not hasattr(card,'g_use')
+        assert card.kv['Auslastung'].v.text()=='42 %' and '1.0 GB' in card.kv['Videospeicher'].v.text()
         assert card.details.isHidden() and not hasattr(card,'tuning')
         card.more_btn.click();assert not card.details.isHidden()
         assert card.kv['GPU-Takt'].v.text()=='2200 MHz' and card.kv['Spannung'].v.text()=='950 mV'

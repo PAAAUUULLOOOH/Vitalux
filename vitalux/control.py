@@ -391,6 +391,8 @@ class PreferencesPage(Page):
         self.component_images.setChecked(settings.get('component_images',True) is not False)
         self.component_images.toggled.connect(self.change_component_images)
         look.body.addWidget(self.component_images)
+        self.component_images_description=label('Zeigt verfügbare Produktbilder von Prozessor, Grafikkarte, Arbeitsspeicher und Mainboard. Die Komponenteninformationen werden immer mittig dargestellt. Bereits geladene Bilder bleiben gespeichert.','muted',wrap=True)
+        look.body.addWidget(self.component_images_description)
         self._add_section_reset(look.body, 'appearance', 'Design zurücksetzen')
         self._settings_cards['appearance'].append(look)
 

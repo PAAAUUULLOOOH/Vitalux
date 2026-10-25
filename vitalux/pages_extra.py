@@ -206,8 +206,10 @@ class UpdatePage(Page):
         else:text=tr('Noch nicht geprüft.')
         if running.get('stale'):text+=' · '+tr('Gespeicherter Stand; offline lesbar.')
         self.checked_at.setText(text)
-        self.stable_notice.setVisible(bool(m.stable_has_test_changes) and not pending)
-        self.return_stable.setVisible(bool(m.stable_has_test_changes) and not pending)
+        automatic=m.automatic_stable_return and m.status=='installing'
+        self.stable_notice.setText(tr('Stable enthält alle Teständerungen. Die App wechselt automatisch zu Stable.' if automatic else 'Deine Teständerungen sind jetzt in Stable verfügbar.'))
+        self.stable_notice.setVisible((automatic or bool(m.stable_has_test_changes)) and not pending)
+        self.return_stable.setVisible(bool(m.stable_has_test_changes) and not pending and not automatic)
         self.channel_description.setText(tr('Stabile Versionen für den täglichen Einsatz.' if m.channel=='stable'
                                            else 'Testversionen mit neuen Änderungen vor dem Stable-Release.'))
         channel_message=''

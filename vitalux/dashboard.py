@@ -167,7 +167,7 @@ class DashboardBoard(QWidget):
         sizes=dict(DEFAULT)
         selected=list(self.order if order is None else order)
         if active():
-            sizes.update(hero=(0,0,12,4),cpu=(0,0,6,8),gpu=(0,0,3,8),
+            sizes.update(hero=(0,0,12,8),cpu=(0,0,6,8),gpu=(0,0,3,8),
                          ram=(0,0,3,8),disk=(0,0,3,6),health=(0,0,3,6),
                          graph_load=(0,0,7,8),graph_net=(0,0,5,8),network=(0,0,6,6),drives=(0,0,12,5))
             if selected==list(ORDER):

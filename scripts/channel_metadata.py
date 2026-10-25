@@ -30,7 +30,8 @@ def describe(ref='HEAD',main='origin/main',root=ROOT):
     stable_commit=git('rev-parse',main,root=root).stdout.decode().strip()
     test_fingerprint=fingerprint(ref,root);stable_fingerprint=fingerprint(main,root)
     incorporates_main=git('merge-base','--is-ancestor',main,ref,root=root,check=False).returncode==0
-    return dict(stable_version=version,stable_commit=stable_commit,
+    contained=git('merge-base','--is-ancestor',ref,main,root=root,check=False).returncode==0
+    return dict(stable_contains_test=contained or test_fingerprint==stable_fingerprint,stable_version=version,stable_commit=stable_commit,
                 app_fingerprint=test_fingerprint,stable_fingerprint=stable_fingerprint,
                 same_as_stable=test_fingerprint==stable_fingerprint,
                 has_test_changes=incorporates_main and test_fingerprint!=stable_fingerprint)

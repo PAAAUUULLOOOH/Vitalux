@@ -1,5 +1,14 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.3-unstable.24] - 2026-10-25
+- Die Übersicht erhält in allen Designs einen größeren Systemkopf mit größerem Distro-Logo und geräumigeren Mini-Infokacheln. Distro-Name und Informationen sind mittig ausgerichtet; die weiteren Kacheln beginnen entsprechend tiefer.
+- Designvorschauen passen vollständig in die abgerundeten Kacheln und zeigen die jeweiligen Oberflächen übersichtlicher. Die Crystal-Atrium-Vorschau bleibt erhalten; das aktive Auswahlhäkchen sitzt oberhalb der Farb- und Hintergrundsymbole.
+- Prozessor, Grafikkarte und Mainboard erhalten verfügbare Hersteller-Spezifikationen und Alle Spezifikationen als scrollbares Fenster mit Herstellerlink und Offline-Cache. Die Angaben werden dem genauen Modell zugeordnet; erkannte Systemdaten bleiben bei fehlenden Online-Angaben verfügbar.
+- Komponentennamen und Specs bleiben mit und ohne Produktbild mittig. Der Bildschalter erhält eine kurze Erklärung; gespeicherte Bilder bleiben beim Ausschalten erhalten.
+- Grafik integriert Auslastung und Videospeicher in Aktuelle GPU-Werte. Die zusätzliche Sensoren-Kachel und die separaten aktuellen Auslastungsanzeigen entfallen; die Verlaufsdiagramme bleiben verfügbar.
+- Enthält Stable alle Änderungen des installierten Unstable-Stands, wechselt die App nach frisch bestätigter Prüfung automatisch zu Stable. Spätere neue Testversionen erfordern weiterhin einen manuellen Wechsel zu Unstable.
+- Ein Startbildschirm im gewählten Design zeigt die echten Vorbereitungsschritte, während Oberfläche, erste Messwerte und vorhandene Produktdaten vorgeladen werden. Ultra Eco und ausgeschaltete Animationen nutzen eine statische Darstellung; fehlende Online-Daten blockieren den Start nicht.
+
 ## [v0.9.6.3-unstable.23] - 2026-10-25
 - Die Designauswahl konzentriert sich auf Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core und Light. Farben und Hintergründe der entfernten Designs bleiben unter ihren ursprünglichen Namen als Vorlagen verfügbar; sie übernehmen keine fremden Effekte oder Layouts.
 - Alle sechs Designs unterstützen anpassbare Akzentfarben und Hintergründe mit getrennt gespeicherten Einstellungen. Originalfarben, Originalhintergrund und Design zurücksetzen stellen die Vorgaben des aktiven Designs wieder her, ohne eigene Bilder oder andere Designs zu löschen.

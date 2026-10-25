@@ -1,5 +1,14 @@
 # Vitalux – Changes
 
+## [v0.9.6.3-unstable.24] - 2026-10-25
+- Overview has a larger system header in every design, with a larger distribution logo and roomier information chips. The distribution name and information are centered; the remaining cards begin lower down.
+- Design previews fit fully inside rounded tiles and show each interface more clearly. The Crystal Atrium preview is retained; the active selection check sits above the accent and background symbols.
+- Processor, graphics card and mainboard gain available manufacturer specifications and All specifications, a scrollable dialog with a manufacturer link and offline cache. Specifications are matched to the exact model; detected system values remain available when online information is missing.
+- Component names and specifications stay centered with or without a product picture. The picture switch has a short explanation; disabling pictures retains saved images.
+- Graphics integrates utilization and video-memory readings into Current GPU values. The duplicate sensor panel and separate current-load displays are removed; history charts remain available.
+- When Stable contains all changes in the installed Unstable build, the app returns to Stable automatically after a fresh verified check. Later test releases still require a manual switch back to Unstable.
+- A startup window follows the selected design and shows real preparation stages while the interface, first measurements and existing product data are preloaded. Ultra Eco and motion-off use a static view; missing online data does not block startup.
+
 ## [v0.9.6.3-unstable.23] - 2026-10-25
 - The design gallery now focuses on Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core and Light. Colors and backgrounds from retired designs remain available under their original names as presets, without transferring their effects or layouts.
 - All six designs support custom accents and backgrounds with separately saved preferences. Original colors, Original background and Reset design restore the active design without deleting imported images or other designs’ choices.

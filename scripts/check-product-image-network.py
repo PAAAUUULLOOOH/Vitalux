@@ -48,7 +48,8 @@ def main():
   header._ready(header.key,result);header.resize(800,240);header.show();app.processEvents()
   if result:
    assert header.picture.isVisible() and not header.picture.pixmap.isNull()
-   assert header.picture.geometry().right()<header.details.geometry().left()
+   assert header.picture.geometry().bottom()<header.details.geometry().top()
+   assert abs(header.details.geometry().center().x()-header.rect().center().x())<=2
   else:
    assert header.picture.isHidden() and header.details.geometry().left()<5
   assert header.grab().save(str(args.output/(product['kind']+'-'+product_key(product)[:8]+'.png')))

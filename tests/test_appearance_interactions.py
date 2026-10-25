@@ -106,11 +106,11 @@ def run():
             QTest.qWait(450)
             assert cpu_scroll.verticalScrollBar().value() == 0
             overview = window.pages[0][1]
-            assert overview.distro_logo_host.width() == 48
-            assert overview.board._render_positions()['hero'][3] == 6
+            assert overview.distro_logo_host.width() == 76
+            assert overview.board._render_positions()['hero'][3] == 8
             assert not hasattr(page, 'compact_overview')
             page.reset_category('appearance')
-            assert overview.board._render_positions()['hero'][3] == 6
+            assert overview.board._render_positions()['hero'][3] == 8
 
             # The heartbeat changes locally while the authored outer angle stays fixed.
             pulse = window.pulse_core

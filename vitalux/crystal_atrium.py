@@ -505,7 +505,7 @@ class AtriumCanvas(QWidget):
         super().__init__(parent)
         self.distro_name = distro_name
         self.logo = logo
-        self.setMinimumSize(680, 850)
+        self.setMinimumSize(680, 1000)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._data = None
         self._hint_regions=[]
@@ -581,7 +581,7 @@ class AtriumCanvas(QWidget):
     def _layout(self):
         w, h = self.width(), self.height()
         m, gap = 18.0, 16.0
-        hero_h = 92.0
+        hero_h = 200.0
         spheres_h = max(365.0, (h - 2 * m - hero_h - 2 * gap) * .56)
         bottom_h = h - 2 * m - hero_h - spheres_h - 2 * gap
         hero = QRectF(m, m, w - 2 * m, hero_h)
@@ -711,34 +711,18 @@ class AtriumCanvas(QWidget):
 
     def _paint_hero(self, p, rect, data):
         data = data or {}
-        x = rect.left() + 24
         if self.logo is not None and not self.logo.isNull():
-            size = 56
-            ratio = max(1.0, self.logo.devicePixelRatio())
-            pix = self.logo.scaled(round(size * ratio), round(size * ratio), Qt.KeepAspectRatio,
-                                   Qt.SmoothTransformation)
-            pix.setDevicePixelRatio(ratio)
-            p.drawPixmap(QPointF(x, rect.center().y() - pix.height() / ratio / 2), pix)
-            x += size + 18
-        name_w = min(260,max(70,QFontMetrics(self._font(23)).horizontalAdvance(self.distro_name)+12))
-        self._wrapped_text(p, QRectF(x, rect.top() + 16, name_w, rect.height() - 24), self.distro_name,
-                           23, '#ffffff')
-        x += min(name_w, QFontMetrics(self._font(26, QFont.DemiBold)).horizontalAdvance(self.distro_name)) + 28
-        chips = data.get('chips') or []
-        for label, value in chips:
-            fm_v = QFontMetrics(self._font(13, QFont.DemiBold))
-            fm_l = QFontMetrics(self._font(9, QFont.Normal))
-            width = max(fm_v.horizontalAdvance(str(value)), fm_l.horizontalAdvance(self._tr(label))) + 28
-            width = min(width+8, 190)
-            if x + width > rect.right() - 20:
-                break
-            chip = QRectF(x, rect.center().y() - 24, width, 48)
-            glass(p, chip, 24, self._backdrop(), strength=.9, lens=False, shadow=False)
-            self._text(p, QRectF(chip.left() + 14, chip.top() + 6, width - 24, 14), self._tr(label), 9,
-                       '#c9d6ff', QFont.Normal, spacing=.6)
-            self._text(p, QRectF(chip.left() + 14, chip.top() + 22, width - 24, 20), value, 13,
-                       '#ffffff', QFont.DemiBold)
-            x += width + 10
+            ratio=max(1.,self.logo.devicePixelRatioF())
+            pix=self.logo.scaled(round(76*ratio),round(76*ratio),Qt.KeepAspectRatio,Qt.SmoothTransformation)
+            p.drawPixmap(QPointF(rect.left()+24,rect.top()+16),pix)
+        self._text(p,QRectF(rect.left()+112,rect.top()+24,rect.width()-224,44),self.distro_name,23,'#ffffff',QFont.DemiBold)
+        chips=data.get('chips') or []
+        gap=10;width=(rect.width()-48-gap*max(0,len(chips)-1))/max(1,len(chips))
+        for index,(title,value) in enumerate(chips):
+            chip=QRectF(rect.left()+24+index*(width+gap),rect.bottom()-82,width,64)
+            glass(p,chip,22,self._backdrop(),strength=.9,lens=False,shadow=False)
+            self._text(p,chip.adjusted(10,8,-10,-36),self._tr(title),9,'#c9d6ff')
+            self._text(p,chip.adjusted(10,28,-10,-10),value,13,'#ffffff',QFont.DemiBold)
 
     def _ribbon(self, p, rect, history, tone, fill_alpha=80):
         points = []

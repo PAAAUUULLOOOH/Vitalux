@@ -78,6 +78,8 @@ def check():
             page.search_home.click()
             qwait(420)
             assert floating.expanded and floating.field.isVisible()
+            deadline=time.monotonic()+2
+            while floating.field.width()<floating.DEFAULT_WIDTH and time.monotonic()<deadline:qwait(20)
             first_width = floating.width()
             assert first_width >= 145
             assert floating.field.width() >= floating.DEFAULT_WIDTH, 'The input must visually expand, not just its parent widget'

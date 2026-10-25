@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QApplication, QBoxLayout, QSizePolicy, QVBoxLayout
 
 from .product_images import lookup_key, resolve
 from . import settings
-from .ui_locale import QLabel
+from .ui_locale import QLabel, QPushButton
 
 
 class _Signals(QObject):
@@ -112,10 +112,12 @@ class ProductPicture(QWidget):
 
 
 class ProductHeader(QWidget):
-    """A product photo at left, concise specs at right; no image means no gap."""
+    """Centered product identity and specifications, with an optional image above."""
     def __init__(self,name,meta,kind):
         super().__init__()
         self.name,self.meta=name,meta
+        self.kind=kind;self._local_specs=[];self._manufacturer_specs=None;self._spec_requested=False
+        for text in (name,meta):text.setAlignment(Qt.AlignCenter);text.setTextFormat(Qt.PlainText)
         self.product={};self.key='';self._requested=False;self._result=None
         self.retry=QTimer(self);self.retry.setSingleShot(True);self.retry.setInterval(65000)
         self.retry.timeout.connect(self._retry)
@@ -125,41 +127,72 @@ class ProductHeader(QWidget):
         details.addWidget(name);details.addWidget(meta)
         self.spec_host=QWidget();self.spec_grid=QGridLayout(self.spec_host)
         self.spec_grid.setContentsMargins(0,3,0,0);self.spec_grid.setHorizontalSpacing(16);self.spec_grid.setVerticalSpacing(3)
-        self.spec_grid.setColumnStretch(1,1)
+        self.spec_grid.setColumnStretch(0,1)
         details.addWidget(self.spec_host)
         self.spec_rows=[];self._spec_values=None
-        self.row=QBoxLayout(QBoxLayout.LeftToRight,self);self.row.setContentsMargins(0,0,0,0)
-        self.row.setSpacing(20);self.row.addWidget(self.picture,0,Qt.AlignVCenter)
+        self.spec_button=QPushButton('Alle Spezifikationen',self.details)
+        self.spec_button.setObjectName('ghostBtn');self.spec_button.clicked.connect(self.show_specifications)
+        self.spec_button.setVisible(kind in ('cpu','gpu','mainboard'))
+        details.addWidget(self.spec_button,0,Qt.AlignHCenter)
+        self.row=QBoxLayout(QBoxLayout.TopToBottom,self);self.row.setContentsMargins(0,0,0,0)
+        self.row.setSpacing(20);self.row.addWidget(self.picture,0,Qt.AlignHCenter)
         self.row.addWidget(self.details,1)
         self.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Maximum)
         self._layout_image(False)
         loader().loaded.connect(self._ready)
+        from .spec_ui import loader as spec_loader
+        spec_loader().loaded.connect(self._spec_ready)
         self.set_specs([])
 
     def set_specs(self,rows):
+        from .spec_ui import brief
+        self._local_specs=[(str(key),str(value)) for key,value in rows if value not in (None,'','–')]
+        self._display_specs(brief(self._manufacturer_specs,self._local_specs,self.kind))
+
+    def _display_specs(self,rows):
+        from .i18n import tr
         self.meta.setVisible(bool(self.meta.text().strip()))
-        rows=tuple((str(key),str(value)) for key,value in rows if value not in (None,'','–'))[:4]
+        rows=tuple(rows[:4])
         if rows==self._spec_values:return
         self._spec_values=rows
         while len(self.spec_rows)<len(rows):
-            key,value=QLabel(),QLabel();key.setObjectName('muted');value.setObjectName('strong')
-            value.setWordWrap(True)
-            index=len(self.spec_rows);self.spec_grid.addWidget(key,index,0);self.spec_grid.addWidget(value,index,1)
-            self.spec_rows.append((key,value))
-        for index,(key,value) in enumerate(self.spec_rows):
-            visible=index<len(rows);key.setVisible(visible);value.setVisible(visible)
-            if visible:key.setText(rows[index][0]);value.setText(rows[index][1])
+            text=QLabel();text.setObjectName('muted');text.setAlignment(Qt.AlignCenter);text.setWordWrap(True)
+            index=len(self.spec_rows);self.spec_grid.addWidget(text,index,0)
+            self.spec_rows.append(text)
+        for index,text in enumerate(self.spec_rows):
+            text.setVisible(index<len(rows))
+            if index<len(rows):text.setText(f'{tr(rows[index][0])}: {rows[index][1]}')
         self.spec_host.setVisible(bool(rows));self.updateGeometry()
+
+    def request_specs(self):
+        if self.kind in ('cpu','gpu','mainboard') and self.key and not self._spec_requested:
+            self._spec_requested=True
+            from .spec_ui import loader as spec_loader
+            spec_loader().request(self.product)
+
+    def _spec_ready(self,key,result):
+        if key!=self.key:return
+        self._manufacturer_specs=result
+        from .spec_ui import brief
+        self._display_specs(brief(result,self._local_specs,self.kind))
+
+    def show_specifications(self):
+        if self._manufacturer_specs is None:self._spec_requested=False
+        self.request_specs()
+        from .spec_ui import SpecificationDialog
+        self._spec_dialog=SpecificationDialog(self);self._spec_dialog.setAttribute(Qt.WA_DeleteOnClose,True)
+        self._spec_dialog.open()
 
     def set_product(self,product):
         product=dict(product or {});key=lookup_key(product)
         if key==self.key and self.product:return
         self.product,self.key,self._requested,self._result=product,key,False,None
+        self._manufacturer_specs=None;self._spec_requested=False
         self.retry.stop()
         self.picture.pixmap=QPixmap();self.picture.hide();self.setMinimumHeight(0)
         self._layout_image(False)
         self.updateGeometry()
-        if self.isVisible():self._request()
+        if self.isVisible():self._request();self.request_specs()
 
     def _request(self):
         if settings.get('component_images',True) is not False and self.key and not self._requested:
@@ -173,12 +206,12 @@ class ProductHeader(QWidget):
     def showEvent(self,event):
         super().showEvent(event)
         if self.picture.pixmap.isNull():self._requested=False
-        self._request()
+        self._request();self.request_specs()
 
     def resizeEvent(self,event):
         super().resizeEvent(event)
         if not self.picture.pixmap.isNull():
-            self.picture.setFixedWidth(min(260,max(110,round(self.width()*.32))))
+            self.picture.setFixedWidth(min(280,max(110,round(self.width()*.42))))
 
     def _ready(self,key,result):
         if key!=self.key:return
@@ -193,11 +226,11 @@ class ProductHeader(QWidget):
     def _layout_image(self, available):
         available=available and settings.get('component_images',True) is not False
         self.picture.setVisible(available)
-        self.row.setDirection(QBoxLayout.LeftToRight if available else QBoxLayout.TopToBottom)
+        self.row.setDirection(QBoxLayout.TopToBottom)
         self.row.setSpacing(20 if available else 0)
-        self.row.setAlignment(self.details, Qt.AlignVCenter if available else Qt.AlignTop)
-        self.setMinimumHeight(170 if available else 0)
-        self.picture.setFixedWidth(min(260,max(110,round(self.width()*.32))) if available else 0)
+        self.row.setAlignment(self.details, Qt.AlignTop)
+        self.setMinimumHeight(0)
+        self.picture.setFixedWidth(min(280,max(110,round(self.width()*.42))) if available else 0)
         self.details.setMinimumWidth(0)
         self.details.updateGeometry()
         self.updateGeometry()
@@ -211,6 +244,7 @@ class ProductHeader(QWidget):
             self._request()
 
     def retranslate(self):
-        for row in self.spec_rows:
-            for label in row:label.retranslate()
+        from .spec_ui import brief
+        self._spec_values=None
+        self._display_specs(brief(self._manufacturer_specs,self._local_specs,self.kind))
         self.picture.update()

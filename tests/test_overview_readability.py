@@ -17,8 +17,9 @@ history={key:[10,20] for key in ('cpu','gpu','ram','net_down','net_up')}
 name='ASUS TUF GAMING Radeon RX 9060 XT OC Edition 16GB GDDR6 PCI Express Graphics Card'
 sample['gpus'][0]['name']=name
 sample['cpu']['model']='AMD Ryzen 9 9950X3D 16-Core Processor with a long identification string'
-output=Path('build/overview23');output.mkdir(parents=True,exist_ok=True)
-page=OverviewPage(dict(name='Linux',version='1'),QPixmap(96,96))
+output=Path('build/overview24');output.mkdir(parents=True,exist_ok=True)
+logo=QPixmap(192,192);logo.fill(Qt.transparent);logo.setDevicePixelRatio(2)
+page=OverviewPage(dict(name='Linux',version='1'),logo)
 cases=0
 with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Path(folder)/'settings.json')),patch.object(motion,'enabled',return_value=False),patch.object(motion,'duration',return_value=0):
  for language in ('de','en'):
@@ -32,6 +33,16 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
      page.resize(width,1800);page.show();page.refresh(data,history);app.processEvents();page.board.refresh_geometry();app.processEvents()
      picture=page.grab();assert not picture.isNull()
      assert 'gpu' not in page.power_labels
+     if design!='crystal_atrium':
+      center=page.distro_name.mapTo(page.hero_card,QPoint(page.distro_name.width()//2,0)).x()
+      assert abs(center-page.hero_card.width()/2)<=2,(design,width,center,page.hero_card.width())
+      assert page.distro_logo_host.width()==76
+      assert abs(page.distro_pic.pixmap().deviceIndependentSize().width()-76)<1
+      for chip in page.chips.chips.values():
+       assert chip.height()>=58
+       for label in chip.findChildren(__import__('PySide6.QtWidgets',fromlist=['QLabel']).QLabel):
+        if label.isVisible():assert chip.rect().contains(label.geometry()),(design,width,label.text(),label.geometry(),chip.rect())
+
      assert all(w.height()<=max(24,w.fontMetrics().height()+2) for widgets in page.power_labels.values() for w in widgets)
      assert len({card.box.gauge.height() for card in (page.g_cpu,page.g_gpu,page.g_ram,page.g_disk)})==1
      if design=='crystal_atrium':

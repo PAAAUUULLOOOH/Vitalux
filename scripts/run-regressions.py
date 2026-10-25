@@ -29,6 +29,7 @@ def main():
             env = os.environ.copy()
             env.pop('VITALUX_LOCAL_PREVIEW', None)
             env['QT_QPA_PLATFORM'] = 'offscreen'
+            env['VITALUX_SPEC_OFFLINE'] = '1'
             env['PYTHONPATH'] = str(root)
             for var, suffix in (
                     ('XDG_CONFIG_HOME', 'config'), ('XDG_STATE_HOME', 'state'),

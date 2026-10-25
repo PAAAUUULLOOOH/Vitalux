@@ -11,13 +11,14 @@ from vitalux import theme,settings,design_catalog
 from vitalux.premium import DesignTile
 from vitalux.gallery_shape import outline,selection_center
 app=QApplication.instance() or QApplication([])
-images=[];out=Path('build/gallery23');out.mkdir(parents=True,exist_ok=True)
+images=[];out=Path('build/gallery24');out.mkdir(parents=True,exist_ok=True)
 with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Path(folder)/'settings.json')):
  settings.set_many(dict(accent='design_default',motion='off'))
  for key in design_catalog.VISIBLE:
   tile=DesignTile(key);tile.resize(220,112);tile.setChecked(True);tile._hover=1
   tile.setAttribute(Qt.WA_TranslucentBackground,True);tile.show();app.processEvents()
   path=outline(tile);c=selection_center(tile)
+  assert c.y()+8<(tile.height()-48)/2
   for angle in range(0,360,15):assert path.contains(c+QPointF(math.cos(math.radians(angle))*8,math.sin(math.radians(angle))*8)),key
   pm=QPixmap(tile.size());pm.fill(Qt.transparent)
   tile.render(pm,renderFlags=QWidget.DrawChildren);image=pm.toImage()

@@ -7,7 +7,7 @@ def outline(tile):
     path=QPainterPath();path.addRoundedRect(rect,28,28)
     return path
 
-def selection_center(tile):return QPointF(tile.width()-27,26)
+def selection_center(tile):return QPointF(tile.width()-21,18)
 
 def finish(p,tile,pal):
     p.setClipping(False)

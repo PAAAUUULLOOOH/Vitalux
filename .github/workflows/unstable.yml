@@ -106,6 +106,9 @@ jobs:
           set -euo pipefail
           mkdir -p build/product-image-check
           python scripts/check-product-image-network.py --require-all-components | tee build/product-image-check/result.log
+      - name: Check manufacturer specifications and offline reuse
+        if: steps.prepare.outputs.changed == 'true'
+        run: python scripts/check-product-spec-network.py --require-all-components
       - name: Exercise real kernel and desktop paths
         if: steps.prepare.outputs.changed == 'true'
         id: native
@@ -165,7 +168,8 @@ jobs:
             build/setup/
             build/regressions/
             build/graphics-checks/
-            build/product-image-check/
+            build/product-image-check
+            build/product-spec-check/
             build/ui-scale-checks/
             build/network-kernel.log
             dist/

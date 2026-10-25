@@ -25,7 +25,7 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
   settings.set('component_images',True)
   for header in headers:
    header.sync_preference();app.processEvents()
-   assert not header.picture.isHidden() and header.row.direction()==QBoxLayout.LeftToRight
+   assert not header.picture.isHidden() and header.row.direction()==QBoxLayout.TopToBottom
   assert request.call_count==4 and path.exists()
   settings.set('component_images',False)
   for header in headers:

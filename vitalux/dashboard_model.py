@@ -11,11 +11,11 @@ ORDER = tuple(TITLES)
 # The compact system header keeps the eight info chips in one parent tile.
 # Native widths, telemetry-card sizes and the 14px visual gaps stay unchanged.
 DEFAULT = {
-    'hero': (0,0,12,6),
-    'cpu': (0,6,3,8), 'gpu': (3,6,3,8),
-    'ram': (6,6,3,8), 'disk': (9,6,3,8),
-    'graph_load': (0,14,6,11), 'graph_net': (6,14,6,11),
-    'health': (0,25,3,8), 'network': (3,25,4,8), 'drives': (7,25,5,8),
+    'hero': (0,0,12,8),
+    'cpu': (0,8,3,8), 'gpu': (3,8,3,8),
+    'ram': (6,8,3,8), 'disk': (9,8,3,8),
+    'graph_load': (0,16,6,11), 'graph_net': (6,16,6,11),
+    'health': (0,27,3,8), 'network': (3,27,4,8), 'drives': (7,27,5,8),
 }
 MINSPAN = {'hero': (6,6), 'cpu': (3,6), 'gpu': (3,6), 'ram': (3,6),
            'disk': (3,6), 'graph_load': (4,7), 'graph_net': (4,7),

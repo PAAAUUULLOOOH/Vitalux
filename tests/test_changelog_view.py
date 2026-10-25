@@ -49,7 +49,9 @@ with tempfile.TemporaryDirectory(prefix='vitalux-changelog-view-') as folder, pa
         assert view.height() < 100
 
         page.history_combo.setCurrentIndex(1)
-        QTest.qWait(80)
+        import time
+        deadline=time.monotonic()+2
+        while not view.verticalScrollBar().isVisible() and time.monotonic()<deadline:QTest.qWait(20)
         assert view.verticalScrollBar().isVisible()
         assert view.verticalScrollBar().maximum() > 0
         assert view.height() <= 350

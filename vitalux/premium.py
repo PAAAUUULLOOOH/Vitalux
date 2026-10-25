@@ -377,6 +377,9 @@ class DesignTile(QAbstractButton):
                 self._background=backdrops.render(self.size(),'original:'+self.key,pal['accent'],self.key=='light')[0]
             self._background_key = background_key
         p.drawPixmap(0, 0, self._background)
+        if self.key!='crystal_atrium':
+            from .design_preview import paint as preview
+            preview(p,self,pal);p.end();return
         if self.key in signature_designs.KEYS:
             signature_designs.paint_preview(p,self,pal)
             from .design_capabilities import paint

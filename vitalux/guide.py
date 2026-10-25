@@ -22,7 +22,7 @@ SLIDES = [
         "Dein Linux-System auf einen Blick – diese Tour erklärt die wichtigsten Bereiche.",
         "Vitalux zeigt Hardware- und Systemdaten direkt von deinem Linux-Rechner.",
         "Die Werte werden regelmäßig aktualisiert; nicht unterstützte Sensoren bleiben leer.",
-        "Mit den Schaltflächen unten gehst du Schritt für Schritt durch die Anleitung.",
+        "Beim Start bereitet Vitalux Oberfläche und erste Daten vor. Eine Animation mit Statuszeile begleitet die Initialisierung; Ultra Eco und ausgeschaltete Animationen bleiben statisch.",
         "hero",
     ),
     (
@@ -45,7 +45,7 @@ SLIDES = [
         "CPU, GPU und Arbeitsspeicher",
         "Hier erfährst du, wie stark deine Hardware gerade beansprucht wird.",
         "Der Prozessor zeigt alle logischen CPUs in Reihenfolge, einschließlich abgeschalteter CPUs; die Kacheln wachsen mit.",
-        "CPU, Grafik, RAM und Mainboard zeigen verfügbare Herstellerdaten und kurze Specs. Freigestellte Produktbilder werden bevorzugt, sonst passende Bilder mit Hintergrund verwendet. Ohne Bild nutzen die Texte die gesamte Breite.",
+        "Komponenteninformationen bleiben mit und ohne Bild mittig. Prozessor, Grafik und Mainboard bieten kurze Specs und Alle Spezifikationen: ein scrollbares Datenblatt mit Herstellerlink und Offline-Cache.",
         "Gezielte Hardware- und Systemprüfungen findest du im Diagnostic Center.",
         "hardware",
     ),
@@ -92,7 +92,7 @@ SLIDES = [
     (
         "Updates und Informationen",
         "Im Updates-Reiter stehen laufender Stand, Stable/Unstable und dauerhaft sichtbare Changelogs zusammen. Die Versionsauswahl blättert durch die Historie des Kanals, ohne das Installationsziel zu ändern; nur die separate Installationsaktion wechselt den Kanal.",
-        "Bei einem Update glüht das Vitalux-Logo in der App und im Tray. Der Updates-Reiter pulsiert; eine Tray-Nachricht nennt die Version.",
+        "Enthält Stable alle Unstable-Neuerungen, wechselt Vitalux nach bestätigter Prüfung automatisch zu Stable. Neue Testversionen erfordern anschließend wieder einen manuellen Wechsel zu Unstable.",
         "Nach einer geprüften Installation startet Vitalux automatisch neu. Vorübergehende Fehler bei der Neustartvorbereitung werden bis zu drei Mal automatisch versucht; danach wird ein Fehler mit Wiederholungsaktion angezeigt. Stable v0.9.6.2 besitzt noch seinen älteren manuellen Updater.",
         "Die Prozentzahl steht mittig im Update-Ladebalken. Downloads lassen sich abbrechen und bei Fehlern erneut versuchen. Changelogs folgen deiner Sprache und bleiben offline lesbar. Lange Texte haben eine eigene Scrollleiste; passt der Text, bleibt sie unsichtbar. Beim Versionswechsel beginnt der Text oben.",
         "updates",

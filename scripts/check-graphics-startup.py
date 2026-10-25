@@ -72,7 +72,8 @@ class XMaps:
 
 def child(mode, output):
     from vitalux import renderer, settings, theme, distro
-    settings.set_many({'render_backend': mode, 'theme': 'obsidian_gold',
+    os.environ['VITALUX_SPEC_OFFLINE']='1'
+    settings.set_many({'render_backend': mode, 'component_images':False, 'theme': 'obsidian_gold',
                        'first_start_guide_seen': True, 'close_to_tray': False})
     if renderer.prepare_start() != mode:
         raise RuntimeError(renderer.warning())
@@ -88,11 +89,7 @@ def child(mode, output):
     theme.set_accent(settings.get('accent', '#4f8cff'))
     app.setStyleSheet(theme.stylesheet())
     info = distro.info()
-    win = MainWindow(info, load_logo(info, 96), UpdateManager())
-    assert win.render_backend_active == mode, renderer.warning()
-    win.ensurePolished()
-    win.layout().activate()
-    win.show()
+    win=None
     result = [1]
 
     def capture():
@@ -165,7 +162,7 @@ def child(mode, output):
             renderer.successful_start()
             print(json.dumps({'mode': mode, 'active': win.render_backend_active,
                   'platform': app.platformName(), 'live_sample': True,
-                  'theme_transitions': True, 'retained_design_transitions': True,
+                  'startup_preloaded': win.last_sample is not None, 'theme_transitions': True, 'retained_design_transitions': True,
                   'quantum_core_static_background': True,
                   'search_interruptions': True,
                   'size': [win.width(), win.height()]}), flush=True)
@@ -173,7 +170,17 @@ def child(mode, output):
         finally:
             win.quit_from_tray()
 
-    QTimer.singleShot(3000, capture)
+    from vitalux.startup import StartupController
+    class Guard:
+        def mark_restarting(self):pass
+    def ready(window,manager):
+        nonlocal win
+        win=window
+        assert win.render_backend_active==mode,renderer.warning()
+        assert win.last_sample is not None,'Startup showed the main window before first data'
+        assert controller.splash.grab().save(str(output/(mode+'-initialization.png')))
+        QTimer.singleShot(3000,capture)
+    controller=StartupController(app,info,load_logo(info,96),Guard(),ready)
     app.exec()
     return result[0]
 
@@ -219,13 +226,13 @@ def main():
                         time.sleep(.005)
                 watcher.poll()
                 assert process.returncode == 0, log.read_text()
-                expected_maps = 0 if renderer.display_api(mode) == 'wayland' else 1
+                expected_maps = 0 if renderer.display_api(mode) == 'wayland' else 2
                 assert watcher.maps == expected_maps, f'{mode}: {watcher.windows}, expected {expected_maps}'
                 result = next(json.loads(line) for line in log.read_text().splitlines()
                               if line.startswith('{"mode"'))
                 result['native_x11_maps'] = watcher.maps
                 results.append(result)
-                print(f'{mode}: real framebuffer, live telemetry, no preflight window PASS', flush=True)
+                print(f'{mode}: real startup screen, preloaded telemetry, framebuffer and no preflight window PASS', flush=True)
             finally:
                 watcher.close()
     (output/'results.json').write_text(json.dumps(results, indent=2)+'\n')

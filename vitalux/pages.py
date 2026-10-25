@@ -190,20 +190,21 @@ class OverviewPage(Page):
         head = Card(hero=True)
         # A compact system header leaves more room for the telemetry below.
         # Keep all eight system-info chips and the original title typography.
-        head.layout().setContentsMargins(20, 7, 20, 7)
-        head.body.setSpacing(5)
+        head.layout().setContentsMargins(20, 14, 20, 14)
+        head.body.setSpacing(10)
         row = QHBoxLayout()
         row.setContentsMargins(4, 0, 4, 2)
         row.setSpacing(20)
         # The distribution logo is an independent visibility option *inside*
         # the hero tile: its name and system-information chips stay intact.
         self.distro_logo_host = QWidget(head)
-        self.distro_logo_host.setFixedSize(48, 48)
+        self.distro_logo_host.setFixedSize(76, 76)
         pic = label()
         pic.setParent(self.distro_logo_host)
-        pic.setGeometry(0, 0, 48, 48)
+        self.distro_pic=pic
+        pic.setGeometry(0, 0, 76, 76)
         pic.setAlignment(Qt.AlignCenter)
-        pic.setPixmap(logo.scaled(48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        pic.setPixmap(logo.scaled(round(76*max(1.,logo.devicePixelRatioF())), round(76*max(1.,logo.devicePixelRatioF())), Qt.KeepAspectRatio, Qt.SmoothTransformation))
         self.distro_logo_remove = QToolButton(self.distro_logo_host)
         self.distro_logo_remove.setObjectName('tileRemoveHint')
         self.distro_logo_remove.setProperty('distroLogoRemove', True)
@@ -211,14 +212,17 @@ class OverviewPage(Page):
         self.distro_logo_remove.setToolTip(tr('Distributionslogo ausblenden'))
         self.distro_logo_remove.setCursor(Qt.PointingHandCursor)
         self.distro_logo_remove.setFixedSize(25, 25)
-        self.distro_logo_remove.move(22, 1)
+        self.distro_logo_remove.move(50, 1)
         self.distro_logo_remove.raise_()
         row.addWidget(self.distro_logo_host, 0, Qt.AlignVCenter)
         from .overview_text import ElidedLabel
         distro_name = ElidedLabel(distro["name"]);distro_name.setObjectName("heroTitle")
+        self.distro_name=distro_name
         distro_name.setAlignment(Qt.AlignCenter)
         row.addWidget(distro_name, 1, Qt.AlignVCenter)
-        # The space on the right stays clear of duplicated system details.
+        self.distro_balance=QWidget();self.distro_balance.setFixedWidth(76)
+        row.addWidget(self.distro_balance)
+        # Equal side widths keep the name centered on the whole card.
         head.body.addLayout(row)
 
         # Restored 0.9.3.30 chip sizing: natural text/layout height and
@@ -228,8 +232,9 @@ class OverviewPage(Page):
         for chip in self.chips.chips.values():
             old=chip.value;chip.value=ElidedLabel(old.text());chip.value.setObjectName('chipValue')
             chip.layout().replaceWidget(old,chip.value);old.hide();old.deleteLater()
-            chip.layout().setContentsMargins(10, 6, 10, 6)
-        self.chips.grid.setVerticalSpacing(6)
+            chip.layout().setContentsMargins(14, 10, 14, 10)
+            chip.setMinimumHeight(58)
+        self.chips.grid.setVerticalSpacing(10)
         head.body.addWidget(self.chips)
         self.hero_card = head
         # Restore the ORIGINAL centered telemetry cards (v0.9.3.29).
@@ -345,6 +350,8 @@ class OverviewPage(Page):
         self.content.addWidget(self.board)
         from .crystal_atrium import AtriumCanvas
         self.atrium = AtriumCanvas(distro["name"], logo, self)
+        self.root.setStretch(0,1)
+        self.root.setStretch(1,0)
         self.atrium.hide()
         self.content.addWidget(self.atrium)
         self.layout_toggle.clicked.connect(self.toggle_editor)
@@ -363,6 +370,8 @@ class OverviewPage(Page):
             host.setCurrentIndex(1 if selected else 0)
         self.root.setContentsMargins(16 if selected else 30,45,16 if selected else 30,24 if selected else 30)
         atrium_on = theme.mode() == 'crystal_atrium'
+        self.root.setStretch(0,1 if atrium_on else 0)
+        self.root.setStretch(1,0 if atrium_on else 1)
         self.atrium._dirty=True
         self.atrium.update()
         self.board.setVisible(not atrium_on)
@@ -372,10 +381,10 @@ class OverviewPage(Page):
             self.root.setContentsMargins(10,10,10,10)
             self.layout_actions.hide()
             self.atrium.sync_timer()
-        self.distro_logo_host.setFixedSize(38 if selected else 48,38 if selected else 48)
+        self.distro_logo_host.setFixedSize(76,76)
         for chip in self.chips.chips.values():
-            chip.layout().setContentsMargins(*( (7,2,7,2) if selected else (10,6,10,6) ))
-        self.chips.grid.setVerticalSpacing(3 if selected else 6)
+            chip.layout().setContentsMargins(14,10,14,10)
+        self.chips.grid.setVerticalSpacing(10)
         self.board.refresh_geometry(animate=False)
         for panel in (self.graph_load,self.graph_net):
             panel.graph.setMinimumHeight(110 if selected else 185)
@@ -457,6 +466,7 @@ class OverviewPage(Page):
     def _sync_distro_logo(self):
         visible = self.board.distro_logo_visible
         self.distro_logo_host.setVisible(visible)
+        self.distro_balance.setVisible(visible)
         self.distro_logo_remove.setVisible(visible and self.board.editing)
 
     def _refresh_editor_actions(self):
@@ -759,16 +769,10 @@ class GpuCard(Card):
         self.product_header = ProductHeader(self.name, self.meta, 'gpu')
         self.body.addWidget(self.product_header)
 
-        gauges = QHBoxLayout()
-        gauges.setSpacing(12)
-        self.g_use = GaugeBox("Auslastung")
-        self.g_vram = GaugeBox("Videospeicher")
-        gauges.addWidget(self.g_use, 1)
-        gauges.addWidget(self.g_vram, 1)
 
         self.body.addWidget(label("AKTUELLE GPU-WERTE", "cardTitle"))
         self.kv = {key: KeyValue(key) for key in (
-            "GPU-Takt", "Speicher-Takt", "Temperatur", "Hotspot",
+            "Auslastung", "Videospeicher", "GPU-Takt", "Speicher-Takt", "Temperatur", "Hotspot",
             "Spannung", "Leistung", 'Leistungsgrenze', "Lüfterdrehzahl", "Lüfter",
             "VRAM-Temperatur", "Speichercontroller", "Video-Engine", "Encoder", "Decoder",
             "Begrenzungsgründe", "Begrenzungsflags (Treiber)",
@@ -777,7 +781,7 @@ class GpuCard(Card):
         live = QGridLayout()
         self.live_grid = live
         self.live_fields = (
-            'Leistung','Leistungsgrenze','GPU-Takt','Speicher-Takt','Temperatur','Hotspot','VRAM-Temperatur',
+            'Auslastung','Videospeicher','Leistung','Leistungsgrenze','GPU-Takt','Speicher-Takt','Temperatur','Hotspot','VRAM-Temperatur',
             'Spannung','Lüfterdrehzahl','Lüfter','Speichercontroller',
             'Video-Engine','Encoder','Decoder','Begrenzungsgründe','Begrenzungsflags (Treiber)')
         live.setHorizontalSpacing(18)
@@ -793,9 +797,6 @@ class GpuCard(Card):
                 self.kv[key].setParent(self)
                 self.kv[key].hide()
         self.kv['Leistung'].hide();self.kv['Leistungsgrenze'].hide()
-        self.hardware = SensorPanel(include_power=False)
-        self.body.addWidget(self.hardware)
-        self.body.addLayout(gauges)
 
         self.load_title=label('AUSLASTUNG UND VIDEOSPEICHER · VERLAUF', "cardTitle")
         self.body.addWidget(self.load_title)
@@ -857,12 +858,11 @@ class GpuCard(Card):
             ('GPU', vendor), ('Videospeicher', fmt_bytes(g.get('vram_total')) if g.get('vram_total') else ''),
             ('Treiber', driver)])
         reasons = g.get('unavailable') or {}
-        self.g_use.set(g.get("usage"), unavailable(reasons.get('usage')) if g.get('usage') is None else '')
-        self.g_use.setVisible(number(g.get('usage')) is not None)
+        optional(self.kv["Auslastung"],g.get("usage"),"%",0)
         used, total = g.get("vram_used"), g.get("vram_total")
         pct = used / total * 100 if valid_number(used) and valid_number(total) and total > 0 else None
-        self.g_vram.set(pct, _vram_text(g) if total else unavailable(reasons.get('vram_total')))
-        self.g_vram.setVisible(pct is not None)
+        self.kv["Videospeicher"].set(_vram_text(g) if total else "")
+        self.kv["Videospeicher"].setVisible(pct is not None)
 
         for field, source, unit in (
             ("GPU-Takt", "clock", "MHz"), ("Speicher-Takt", "clock_mem", "MHz"),
@@ -882,7 +882,6 @@ class GpuCard(Card):
         optional(self.kv['Leistungsgrenze'],power_limit(power),'W',0)
         self.kv['Leistung'].setToolTip(source_text(power))
         self.kv['Leistungsgrenze'].setToolTip(source_text(power))
-        self.hardware.sync([r for r in records if r['id'] not in g.get('represented_sensors',[])])
         reflow(self.live_grid,[self.kv[key] for key in self.live_fields])
         for field, source in (("PCIe aktuell", "pcie_current"), ("PCIe maximal", "pcie_max")):
             value=g.get(source)

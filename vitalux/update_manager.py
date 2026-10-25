@@ -78,6 +78,9 @@ class UpdateManager(QObject):
         self.checking=False;self.progress_value=0.;self.cancelling=False
         self.pending_path=None;self.pending_restart=False;self.pending={}
         self._activation_started=False;self._restart_requested=False
+        self.automatic_stable_return=False;self._auto_return_attempted=set()
+        self._auto_stable_timer=QTimer(self);self._auto_stable_timer.setSingleShot(True)
+        self._auto_stable_timer.timeout.connect(self._return_to_stable)
         self.restart_attempts=0;self._restart_retrying=False
         self._relaunch_on_exit=False
         self._shutting_down=False;self._thread=None;self._active_threads=[]
@@ -171,6 +174,31 @@ class UpdateManager(QObject):
                     and versions.parse(stable['latest'])[0]>=versions.parse(__version__)[0])
         except (ValueError,KeyError):return False
 
+    @property
+    def can_return_automatically(self):
+        if profiles.installed()!='unstable' or self._shutting_down or self.checking or self.pending_restart or self.status in ('installing','installed','preview'):return False
+        stable=self.records.get('stable',{});test=self.records.get('unstable',{})
+        if not all(record.get('ok') and not record.get('stale') for record in (stable,test)):return False
+        if not (test.get('manifest_verified') is True and test.get('stable_verified') is True and
+                test.get('has_test_changes') is False and not test.get('eligible') and
+                (test.get('same_as_stable') is True or test.get('stable_contains_test') is True)):return False
+        try:
+            return (stable['latest']==test['stable_version'] and versions.channel(stable['latest'])=='stable' and
+                    versions.channel(test['latest'])=='unstable' and
+                    versions.parse(stable['latest'])[0]>=versions.parse(__version__)[0] and
+                    versions.parse(test['latest'])>=versions.parse(__version__) and
+                    bool(stable.get('url')) and len(stable.get('sha256',''))==64)
+        except (KeyError,ValueError,TypeError):return False
+
+    def _return_to_stable(self):
+        if not self.can_return_automatically:return
+        target=(self.records['stable']['latest'],self.records['stable']['sha256'])
+        if target in self._auto_return_attempted:return
+        self._auto_return_attempted.add(target)
+        self.automatic_stable_return=True
+        self.set_channel('stable')
+        self.install()
+
     def _select_record(self):
         record=self.records.get(self.channel,{})
         self.latest=record.get('latest','');self.notes=record.get('notes','')
@@ -230,6 +258,9 @@ class UpdateManager(QObject):
         elif result.get('error'):
             for record in self.records.values():record.update(stale=True,url='',sha256='',newer=False)
         self._select_record();self.changed.emit()
+        # Only a complete fresh check may start the verified return, never cache loading.
+        if not self.error and all(isinstance(result.get(c),dict) and result[c].get('ok') for c in ('stable','unstable')) and self.can_return_automatically:
+            self._auto_stable_timer.start(0)
 
     def install(self):
         if self._shutting_down or os.environ.get('VITALUX_LOCAL_PREVIEW')=='1' or not self.can_install:return
@@ -332,7 +363,8 @@ class UpdateManager(QObject):
         self.prepare_exit()
 
     def shutdown(self):
-        self._shutting_down=True;self._timer.stop();self._restart_timer.stop()
+        self._shutting_down=True
+        self._auto_stable_timer.stop();self._timer.stop();self._restart_timer.stop()
         if isinstance(self._thread,_InstallThread) and self._thread.isRunning() and self.progress_value<80:
             self._thread.requestInterruption()
         return not any(worker.isRunning() for worker in self._active_threads)

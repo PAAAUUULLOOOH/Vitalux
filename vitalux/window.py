@@ -70,13 +70,14 @@ class Sampler(QThread):
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, distro, logo, manager):
+    def __init__(self, distro, logo, manager, *, startup_sample=None, preparing=None):
         super().__init__()
         # Never request per-pixel transparency of the native window.
         # Frosted materials are drawn inside Vitalux;
         # the entire application canvas remains fully opaque.
         self.setAutoFillBackground(True)
         self.distro, self.logo, self.manager = distro, logo, manager
+        self._startup_progress=preparing
         self.setWindowTitle(APP_NAME)
         # Accommodate KDE fractional scaling and smaller logical desktops.
         self.setMinimumSize(800, 560)
@@ -153,11 +154,23 @@ class MainWindow(QMainWindow):
         self._build(0)
         self._appearance_key = self._appearance_signature()
         self._appearance_overlay = None
-        if settings.get('mini_hud_enabled', False):
+        if settings.get('mini_hud_enabled', False) and preparing is None:
             self.set_mini_hud_enabled(True)
 
         self.sampler = Sampler(self)
         self.sampler.sample.connect(self.on_sample)
+        if startup_sample is not None:
+            self.on_sample(startup_sample)
+            for _,page in self.pages:
+                for chart in page.findChildren(ChartPanel):chart.set_timeline(self.hist['time'])
+                page.refresh(startup_sample,self.hist)
+                page.ensurePolished()
+                if page.layout():page.layout().activate()
+                if self._startup_progress:self._startup_progress()
+            from .product_ui import ProductHeader
+            for header in self.findChildren(ProductHeader):
+                header.request_specs();header._request()
+        self._startup_progress=None
         self.sampler.start()
         # SMART diagnostics are asynchronous and intentionally delayed so app
         # startup stays responsive. The overview incorporates results on the
@@ -217,20 +230,15 @@ class MainWindow(QMainWindow):
         sl.addWidget(brand)
 
         self.stack = QStackedWidget()
-        self.pages = [
-            ("Übersicht", OverviewPage(distro, logo)),
-            ("Prozessor", CpuPage()),
-            ("Grafik", GpuPage()),
-            ("Arbeitsspeicher", MemoryPage()),
-            ("Laufwerke", DiskPage()),
-            ("Netzwerk", NetworkPage()),
-            ("Sensoren", SensorsPage()),
-            ("Diagnostic Center", DiagnosticCenter()),
-            ("System", SystemPage(distro)),
-            ("Einstellungen", PreferencesPage(self)),
-            ("Updates", UpdatePage(self.manager)),
-            ("Info", InfoPage(distro)),
-        ]
+        factories=[
+            ('Übersicht',lambda:OverviewPage(distro,logo)),('Prozessor',CpuPage),('Grafik',GpuPage),
+            ('Arbeitsspeicher',MemoryPage),('Laufwerke',DiskPage),('Netzwerk',NetworkPage),
+            ('Sensoren',SensorsPage),('Diagnostic Center',DiagnosticCenter),('System',lambda:SystemPage(distro)),
+            ('Einstellungen',lambda:PreferencesPage(self)),('Updates',lambda:UpdatePage(self.manager)),('Info',lambda:InfoPage(distro))]
+        self.pages=[]
+        for title,factory in factories:
+            self.pages.append((title,factory()))
+            if self._startup_progress:self._startup_progress()
         # Keep the branding and language switch fixed, while the full glass
         # category list can scroll on shorter screens (e.g. 760px).
         nav_host = QWidget()

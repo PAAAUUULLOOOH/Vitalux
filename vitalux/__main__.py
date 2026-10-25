@@ -21,7 +21,6 @@ def main():
     from .update_manager import UpdateManager
     sys.excepthook = diagnostics.exception_hook
     diagnostics.enable_native_crash_trace()
-    from .window import MainWindow
     # Select the scene-graph backend before the first Quick window exists.
     renderer.prepare_start()
     app = QApplication(sys.argv)
@@ -56,33 +55,19 @@ def main():
     app.setWindowIcon(app_icon())
     from .brand import sync_installed_icon
     sync_installed_icon()
-    sensors.prime()
-    manager = UpdateManager()
-    app.aboutToQuit.connect(manager.finalize_exit)
-    win = MainWindow(info, logo, manager)
-    app.aboutToQuit.connect(lambda:instance.mark_restarting()
-                            if win.restart_requested or manager.pending_restart else None)
-    if os.environ.get('VITALUX_LOCAL_PREVIEW') == '1':
-        win.setWindowTitle('Vitalux · Design Preview · ' + theme.mode().replace('_', ' ').title())
-    print(f"Vitalux: Fensterplattform={app.platformName()}, "
-          f"Grafik-Backend={win.render_backend_active}, "
-          f"Fenstergröße={win.width()}x{win.height()} logisch", flush=True)
-    # Resolve the final widget/layout size before the first native map on X11.
-    win.ensurePolished()
-    win.centralWidget().ensurePolished()
-    win.layout().activate()
-    win.show()
-    # A native driver crash while initializing any GPU backend leaves a marker;
-    # next launch automatically selects the known-working CPU renderer.
-    QTimer.singleShot(4500, renderer.successful_start)
-    if renderer.warning():
-        QTimer.singleShot(0, lambda: win.statusBar().showMessage(renderer.warning(), 16000))
-    QTimer.singleShot(0, manager.check)
-    # The guide is mandatory on first launch; afterwards it stays available under Info.
-    from .guide import offer_first_start_guide
-    QTimer.singleShot(1800, lambda: offer_first_start_guide(win))
+    def ready(win,manager):
+        if os.environ.get('VITALUX_LOCAL_PREVIEW')=='1':win.setWindowTitle('Vitalux · Design Preview · '+theme.mode().replace('_',' ').title())
+        print(f"Vitalux: Fensterplattform={app.platformName()}, Grafik-Backend={win.render_backend_active}, Fenstergröße={win.width()}x{win.height()} logisch",flush=True)
+        QTimer.singleShot(4500,renderer.successful_start)
+        if renderer.warning():win.statusBar().showMessage(renderer.warning(),16000)
+        QTimer.singleShot(0,manager.check)
+        from .guide import offer_first_start_guide
+        QTimer.singleShot(1800,lambda:offer_first_start_guide(win))
+    from .startup import StartupController
+    app.startup=StartupController(app,info,logo,instance,ready)
     result = app.exec()
-    if result == 0 and win.restart_requested:
+    win=app.startup.window
+    if result == 0 and win is not None and win.restart_requested:
         renderer.successful_start()
         sys.exit(42)  # The portable launcher restarts with the new renderer.
     sys.exit(result)
