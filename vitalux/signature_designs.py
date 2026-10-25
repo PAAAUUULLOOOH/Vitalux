@@ -454,18 +454,23 @@ class Metric(QWidget):
             shown='–' if self._display_value is None else f'{self._display_value:.0f}'
         large=round(min(65,max(28,width*.16)))
         y=rect.top()+54 if self.kind in ('cpu','gpu') else rect.top()+30
-        if theme.mode()=='eclipse_crystal' and self.kind=='cpu' and width>380:
-            gauge=QRectF(rect.left()+8,y,118,118)
-            p.setPen(QPen(color(pal['track']),3))
-            p.drawArc(gauge,225*16,-270*16)
-            if self._display_value is not None:
-                p.setPen(QPen(color(pal['accent']),3.5,Qt.SolidLine,Qt.RoundCap))
-                p.drawArc(gauge,225*16,round(-270*16*max(0,min(100,self._display_value))/100))
-            text(gauge,shown,35,weight=QFont.DemiBold,align=Qt.AlignCenter)
-            graph=QRectF(rect.left()+149,y+13,width-157,max(35,rect.height()-y-56))
-        else:
-            text(QRectF(rect.left(),y,width,large+12),shown,large,weight=QFont.DemiBold)
-            graph=QRectF(rect.left(),y+large+28,width,max(30,rect.bottom()-y-large-76))
+        if theme.mode()=='eclipse_crystal' and self.kind in ('cpu','gpu'):
+            # Both component tiles use the same reading order. Reserve the
+            # temperature/detail row explicitly so a short tile cannot put it
+            # beside, behind or over the large percentage.
+            value_height=min(56,max(34,rect.height()-92))
+            value_area=QRectF(rect.left(),y,width,value_height)
+            detail_area=QRectF(rect.left(),value_area.bottom()+5,width,22)
+            graph_top=detail_area.bottom()+10
+            graph_area=QRectF(rect.left(),graph_top,width,max(0,rect.bottom()-graph_top-4))
+            self.reading_regions=(value_area,detail_area,graph_area)
+            text(value_area,shown,min(44,round(value_height*.79)),weight=QFont.DemiBold)
+            text(detail_area,tr(self.detail),11,pal['muted'])
+            self._graph(p,graph_area,pal)
+            p.end()
+            return
+        text(QRectF(rect.left(),y,width,large+12),shown,large,weight=QFont.DemiBold)
+        graph=QRectF(rect.left(),y+large+28,width,max(30,rect.bottom()-y-large-76))
         if self.kind in ('cpu','gpu'):
             self._graph(p,graph,pal)
         elif self.kind in ('ram','disk'):

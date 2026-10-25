@@ -67,6 +67,6 @@ personal=dict(theme='lumen_drift',accent='#123456',custom_background='/original/
 migrated=appearance.migrate(personal)
 assert migrated['theme']=='obsidian_gold'
 assert all(migrated[k]==v for k,v in personal.items() if k!='theme')
-assert len(theme.CHOICES)==13 and 'lumen_drift' not in dict(theme.CHOICES)
+assert len(theme.CHOICES)== 14 and 'lumen_drift' not in dict(theme.CHOICES)
 theme.set_mode('lumen_drift');assert theme.mode()=='obsidian_gold'
 print('Sensor disappearance/recovery, zero RPM, gap-free rows, numeric limits, full running version and retired-design migration PASS')

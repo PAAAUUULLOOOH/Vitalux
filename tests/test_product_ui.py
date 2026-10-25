@@ -9,7 +9,7 @@ from unittest.mock import patch
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from PySide6.QtCore import QThread
-from PySide6.QtGui import QImage
+from PySide6.QtGui import QImage,QPainter,QColor
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 from vitalux import i18n, product_ui, theme, pages
@@ -21,8 +21,9 @@ app = QApplication.instance() or QApplication([])
 product = dict(kind='gpu', vendor='SAPPHIRE', model='SAPPHIRE PURE Radeon RX 9070 XT', revision='', exact=True)
 with tempfile.TemporaryDirectory() as directory:
     path = Path(directory)/'fixture.png'
-    image = QImage(320, 160, QImage.Format_RGB32)
-    image.fill(0xffcccccc)
+    image = QImage(320, 160, QImage.Format_ARGB32)
+    image.fill(0)
+    painter=QPainter(image);painter.fillRect(12,8,image.width()-24,image.height()-16,QColor('#eeeeee'));painter.end()
     assert image.save(str(path))
     result = dict(path=str(path), vendor='SAPPHIRE', source='https://www.sapphiretech.com/product')
     calls = []
@@ -48,7 +49,7 @@ with tempfile.TemporaryDirectory() as directory:
         while one.picture.pixmap.isNull() and time.monotonic() < deadline:
             QTest.qWait(20)
         assert not one.picture.pixmap.isNull() and not two.picture.pixmap.isNull()
-        assert 'Offline verfügbar' in one.caption.text()
+        assert not hasattr(one, 'caption') and not one.picture.isHidden()
         for design, title in theme.CHOICES:
             theme.set_mode(design)
             app.setStyleSheet(theme.stylesheet())
@@ -56,12 +57,12 @@ with tempfile.TemporaryDirectory() as directory:
                 i18n.set_lang(language)
                 retranslate_widgets(one)
                 app.processEvents()
-                assert expected in one.caption.text()
+                assert not hasattr(one, 'caption')
                 assert not one.picture.pixmap.isNull()
         assert len(calls) == 1, 'Restyling/retranslation must retain the cached image'
         one.set_product(dict(product, exact=False))
         one._ready(product_key(product), result)
-        assert one.picture.pixmap.isNull(), 'Late results must not overwrite a different product'
+        assert one.picture.pixmap.isNull() and one.picture.isHidden(), 'Late results must not overwrite a different product'
         for widget in (one, two): widget.close()
     static = dict(kernel='fixture', arch='x86_64', host='host', user='user', desktop='KDE',
                   session='Wayland', vendor='ASUS', product='Desktop', board='ASUS ROG STRIX B650-A GAMING WIFI',
@@ -87,4 +88,4 @@ with tempfile.TemporaryDirectory() as directory:
     card.close()
 app._product_image_loader.shutdown()
 app._product_image_loader.pool.waitForDone(3000)
-print('Background loading, deduplication, stale-image rejection, 13 palettes, DE/EN and clean GPU/Mainboard cards PASS')
+print('Background loading, deduplication, stale-image rejection, 14 palettes, DE/EN and clean GPU/Mainboard cards PASS')

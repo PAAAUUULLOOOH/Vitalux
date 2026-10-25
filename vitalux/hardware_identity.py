@@ -1,5 +1,6 @@
 """Read-only product identities; never turn a shared GPU ID into a retail model."""
 import functools
+import gzip
 from pathlib import Path
 import re
 
@@ -56,7 +57,16 @@ def manufacturer(value):
     for needle, name in (('sapphire', 'SAPPHIRE'), ('asustek', 'ASUS'), ('asus', 'ASUS'),
                          ('micro-star', 'MSI'), ('gigabyte', 'GIGABYTE'),
                          ('asrock', 'ASRock'), ('powercolor', 'PowerColor'),
-                         ('zotac', 'ZOTAC'), ('biostar', 'BIOSTAR')):
+                         ('zotac', 'ZOTAC'), ('biostar', 'BIOSTAR'),
+                         ('dell', 'Dell'), ('hewlett', 'HP'), ('hp inc', 'HP'),
+                         ('lenovo', 'Lenovo'), ('genuineintel', 'Intel'), ('intel', 'Intel'),
+                         ('authenticamd', 'AMD'), ('advanced micro devices', 'AMD'),
+                         ('nvidia', 'NVIDIA'), ('evga', 'EVGA'), ('acer', 'Acer'),
+                         ('corsair', 'Corsair'), ('kingston', 'Kingston'), ('g.skill', 'G.Skill'),
+                         ('gskill', 'G.Skill'), ('crucial', 'Crucial'), ('micron', 'Micron'),
+                         ('samsung', 'Samsung'), ('hynix', 'SK hynix'), ('teamgroup', 'TeamGroup'),
+                         ('adata', 'ADATA'), ('patriot', 'Patriot'), ('inno3d', 'INNO3D'),
+                         ('galax', 'GALAX'), ('palit', 'Palit'), ('pny', 'PNY')):
         if needle in lower:
             return name
     return value
@@ -76,32 +86,64 @@ def pci_slot(value):
     return match.group(1) if match else ''
 
 
-@functools.lru_cache(maxsize=128)
-def _pci_names(vendor, device, subvendor, subdevice):
-    """Use the installed PCI database when it knows an additional board model."""
-    for filename in ('/usr/share/hwdata/pci.ids', '/usr/share/misc/pci.ids', '/usr/share/pci.ids'):
+def pci_sources():
+    from . import profiles
+    return (profiles.directory('cache')/'hardware-products/pci.ids',
+            Path(__file__).resolve().parents[1]/'assets/hardware/pci.ids',
+            Path('/usr/share/hwdata/pci.ids'), Path('/usr/share/misc/pci.ids'),
+            Path('/usr/share/pci.ids'), Path('/usr/share/hwdata/pci.ids.gz'))
+
+
+@functools.lru_cache(maxsize=8)
+def _pci_table(filename, stamp):
+    opener = gzip.open if str(filename).endswith('.gz') else open
+    with opener(filename, 'rt', encoding='utf-8', errors='replace') as stream:
+        text = stream.read(5*1024*1024)
+    vendors, devices, subs = {}, {}, {}
+    vendor = device = ''
+    for line in text.splitlines():
+        if not line or line.startswith('#'):continue
+        if re.match(r'^[0-9a-f]{4}\s', line):
+            vendor, name = line.split(None, 1);vendors[vendor] = name;device = ''
+        elif vendor and re.match(r'^\t[0-9a-f]{4}\s', line):
+            device, name = line.strip().split(None, 1);devices[vendor, device] = name
+        elif vendor and device and line.startswith('\t\t'):
+            parts = line.strip().split(None, 2)
+            if len(parts) == 3:subs[vendor, device, parts[0], parts[1]] = parts[2]
+    return vendors, devices, subs
+
+
+def pci_lookup(vendor, device, subvendor='', subdevice=''):
+    partner = model = chip = ''
+    for filename in pci_sources():
         try:
-            text = Path(filename).read_text(errors='replace')
-        except OSError:
+            vendors, devices, subs = _pci_table(str(filename), filename.stat().st_mtime_ns)
+        except (OSError,ValueError):
             continue
-        board_vendor = board_model = ''
-        in_vendor = in_device = False
-        for line in text.splitlines():
-            if not line or line.startswith('#'):
-                continue
-            if re.match(r'^[0-9a-f]{4}\s', line):
-                ident, name = line.split(None, 1)
-                if ident == subvendor:
-                    board_vendor = name
-                in_vendor, in_device = ident == vendor, False
-            elif in_vendor and re.match(r'^\t[0-9a-f]{4}\s', line):
-                in_device = line.strip().split(None, 1)[0] == device
-            elif in_vendor and in_device and line.startswith('\t\t'):
-                parts = line.strip().split(None, 2)
-                if len(parts) == 3 and parts[:2] == [subvendor, subdevice]:
-                    board_model = parts[2]
-        return manufacturer(board_vendor), clean(board_model)
-    return '', ''
+        partner = partner or manufacturer(vendors.get(subvendor, ''))
+        model = model or clean(subs.get((vendor, device, subvendor, subdevice), ''))
+        chip = chip or clean(devices.get((vendor, device), ''))
+    return partner, model, chip
+
+
+def _pci_names(vendor, device, subvendor, subdevice):
+    return pci_lookup(vendor, device, subvendor, subdevice)[:2]
+
+
+def model_name(value):
+    value = clean(value)
+    brackets = re.findall(r'\[([^]]+)\]', value)
+    return brackets[-1] if brackets else value
+
+
+def retail_model(value, partner):
+    value = model_name(value)
+    if re.search(r'[/|]|\bor\b', value, re.I):return ''
+    generic = {'amd','nvidia','intel','radeon','geforce','graphics','card','gpu','series',
+               'rx','rtx','gtx','gt','xt','xtx','ti','super','gre','arc','navi','polaris',
+               'vega','gddr','gb','mb','oc','g','pro','quadro','rt','a','b','vram'}
+    generic.update(re.findall(r'[a-z]+', (partner or '').lower()))
+    return value if set(re.findall(r'[a-z]+', value.lower())) - generic else ''
 
 
 def gpu_identity(gpu):
@@ -118,18 +160,24 @@ def gpu_identity(gpu):
     model = _RX9000.get((subvendor, subdevice), '') if (vendor, device) == ('1002', '7550') else ''
     # Database names containing alternatives are useful descriptions, not an
     # exact retail identity. Keep the driver name in that case.
-    if not model and db_model and not re.search(r'[/|]|\bor\b', db_model, re.I):
-        generic = {'amd', 'nvidia', 'intel', 'radeon', 'geforce', 'graphics', 'card',
-                   'gpu', 'series', 'rx', 'rtx', 'gtx', 'gt', 'xt', 'xtx', 'ti',
-                   'super', 'gre', 'arc', 'navi', 'polaris', 'vega', 'gddr', 'gb', 'mb', 'oc'}
-        generic.update(re.findall(r'[a-z]+', (partner or '').lower()))
-        retail_words = set(re.findall(r'[a-z]+', db_model.lower())) - generic
-        if retail_words and re.search(r'\b(?:RX\s*\d|RTX\s*\d|GTX\s*\d|Arc\b)', db_model, re.I):
-            model = db_model
+    if not model and db_model:model = retail_model(db_model, partner)
+    if not model:
+        for field in ('product_name', 'board_name', 'name'):
+            value = clean(gpu.get(field))
+            if partner and partner.lower() in value.lower():
+                model = retail_model(value, partner)
+                if model:break
+    chip_model = model_name(db_model) if db_model and not re.search(r'[/|]', db_model) else ''
+    reported=clean(gpu.get('name'))
+    if not chip_model and vendor and device and (not reported or '/' in reported or
+            reported.lower() in ('gpu','amd grafik','intel grafik','nvidia grafik')):
+        chip_model=model_name(pci_lookup(vendor,device)[2])
     return {'board_vendor': partner or '', 'board_model': model,
             'pci_ids': ':'.join(ids) if all(ids) else '',
+            'identified_name': model or chip_model,
             'product': {'kind': 'gpu', 'vendor': partner or '', 'model': model,
-                        'revision': '', 'exact': bool(partner and model)}}
+                        'revision': '', 'exact': bool(partner and model),
+                        'pci_ids': ':'.join(ids) if all(ids) else '', 'reported_model': gpu.get('name', '')}}
 
 
 def board_identity(vendor, model, revision=''):

@@ -1,6 +1,14 @@
 # Vitalux – Änderungen
 
 
+## [v0.9.6.3-unstable.21] - 2026-10-25
+- Crystal Atrium ergänzt die Designgalerie: Glasflächen, Instrumente, Logo und Schriftzug im gemeinsamen Glasstil, das vertraute Obsidian-Layout und ein statischer dunkelblau–hellblau–lila Hintergrund.
+- Die Hardware-Erkennung nutzt eine allgemeine PCI-Datenbank, weitere Herstellerbezeichnungen und vorhandene Treiberangaben. Die Bildsuche berücksichtigt interne Mainboard-Modellzusätze, strukturierte Produktdaten und Bild-CDNs.
+- CPU, Grafik, RAM-Module und Mainboard zeigen kurze, sauber ausgerichtete Specs rechts neben passenden Produktbildern. RAM-Hersteller und Teilenummer erscheinen, wenn die Firmwaredaten lesbar sind; unterschiedliche Module bleiben getrennt.
+- Ausschließlich freigestellte Produktbilder werden angezeigt. Fehlt ein passendes Bild, entfällt die gesamte Bildfläche ohne Platzhalter oder Leerraum. Der Offline-Cache bleibt erhalten; der sichtbare Offline-Hinweis entfällt.
+- Eclipse Crystal ordnet Prozentwerte und Temperaturen in CPU- und Grafik-Übersichtskacheln getrennt und einheitlich an.
+- Die Prozessor-Kachel zeigt weiterhin den gemessenen Wattverbrauch; PL1/PL2 sind entfernt und die übrigen Werte neu ausgerichtet.
+
 ## [v0.9.6.3-unstable.20] - 2026-10-25
 - Die GPU-Wattanzeige auf der Übersicht ist passend zum Grafikkartennamen mittig ausgerichtet.
 - Prozessor zeigt alle vorhandenen logischen CPUs numerisch sortiert, einschließlich abgeschalteter Einträge. Die Kacheln passen ihre Spalten und Höhe an, damit auch bei vielen Kernen und Threads alle Werte erreichbar bleiben.

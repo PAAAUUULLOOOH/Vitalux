@@ -61,6 +61,7 @@ def document(kind, pal, viewbox, animated):
         'aria-labelledby': 'brand-title brand-description',
         'data-vitalux-brand-version': 'v0.9.5.9',
         'data-motion': 'animated' if animated else 'static',
+        **({'data-material': 'glass'} if pal.get('glass_material') else {}),
     })
     node(root, 'title', id='brand-title').text = f"Vitalux {kind} — {pal['name']}"
     node(root, 'desc', id='brand-description').text = (
@@ -216,6 +217,20 @@ def wordmark(pal, animated=False, light=False):
 
 
 def write(path, root):
+    if root.get('data-material') == 'glass':
+        # Preserve the approved contours and animation layers, replacing their
+        # solid metal fills with translucent blue/violet glass reflections.
+        for gradient_node in root.iter():
+            ident = gradient_node.get('id', '')
+            if ident in ('outer-metal','letter-metal','lens-metal','pulse-metal'):
+                stops = list(gradient_node)
+                for index, stop in enumerate(stops):
+                    stop.set('stop-opacity', str(.40 + .50*abs(2*index/max(1,len(stops)-1)-1)))
+            if ident == 'glass':
+                stops = list(gradient_node)
+                for index, stop in enumerate(stops):
+                    stop.set('stop-color', '#cdeeff' if index < 2 else '#b6a0ff')
+                    stop.set('stop-opacity', str((.20,.08,.13,.26)[min(index,3)]))
     path.parent.mkdir(parents=True, exist_ok=True)
     ET.indent(root, space='  ')
     path.write_bytes(ET.tostring(root, encoding='utf-8', xml_declaration=True)+b'\n')

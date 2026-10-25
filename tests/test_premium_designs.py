@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import sys
 import tempfile
+import time
 
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0, os.getcwd())
@@ -29,7 +30,10 @@ def run():
             window = MainWindow(info, load_logo(info, 96), manager)
             window.resize(1380, 900)
             window.show()
-            QTest.qWait(1200)
+            deadline = time.monotonic() + 5
+            while window.last_sample is None and time.monotonic() < deadline:
+                app.processEvents()
+                time.sleep(.012)
             assert window.last_sample is not None
             sampler = window.sampler
             preferences = dict(window.pages)['Einstellungen']
@@ -54,7 +58,7 @@ def run():
             app.processEvents()
             assert window._appearance_overlay is None, 'Resize retained stale snapshots'
             assert not hasattr(preferences, 'mode')
-            assert len(preferences.design_tiles) == len(theme.CHOICES) == 13
+            assert len(preferences.design_tiles) == len(theme.CHOICES) == 14
             assert {tile.key for tile in preferences.design_tiles} == set(theme._THEMES)
             for tile in preferences.design_tiles:
                 tile.click()

@@ -9,13 +9,14 @@ from unittest.mock import patch
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from PySide6.QtCore import QBuffer, QIODevice
-from PySide6.QtGui import QImage
+from PySide6.QtGui import QImage,QPainter,QColor
 from vitalux import product_images as images, profiles
 
 buffer = QBuffer()
 buffer.open(QIODevice.WriteOnly)
-image = QImage(120, 60, QImage.Format_RGB32)
-image.fill(0xffcccccc)
+image = QImage(120, 60, QImage.Format_ARGB32)
+image.fill(0)
+painter=QPainter(image);painter.fillRect(12,8,image.width()-24,image.height()-16,QColor('#eeeeee'));painter.end()
 assert image.save(buffer, 'PNG')
 png = bytes(buffer.data())
 assert images.valid_image(png)
@@ -87,10 +88,11 @@ with tempfile.TemporaryDirectory() as directory:
             raise OSError('RSS unavailable')
         if url.startswith('https://www.bing.com/images/search?'):
             return markup.encode()
+        if url.startswith('https://html.duckduckgo.com/'):raise OSError('Search unavailable')
         assert url == photo
         return png
     fallback = images.resolve(board, images.ProductCache(Path(directory)/'image-search'), image_search)
-    assert fallback and fallback['source'] == page and len(fallback_calls) == 3
+    assert fallback and fallback['source'] == page and len(fallback_calls) == 4
     def network_down(*args): raise OSError('Offline')
     assert images.resolve(dict(board, model='PRIME Z890-P'), cache, network_down) is None
     assert images.resolve(dict(board, exact=False), cache, offline) is None

@@ -32,7 +32,7 @@ with tempfile.TemporaryDirectory(prefix='vitalux-silver-') as folder,patch.objec
         assert geometry==(win.sidebar.width(),win.pulse_core.size(),overview.board._render_positions(),overview.graph_load.graph.minimumHeight())
         assert all(host.currentIndex()==0 for host in overview.design_metric_hosts.values())
         assert win.sampler is sampler and sampler.isRunning()
-        assert len(theme.CHOICES)==13 and 'liquid_chrome' not in dict(theme.CHOICES)
+        assert len(theme.CHOICES)== 14 and 'liquid_chrome' not in dict(theme.CHOICES)
         assert 'liquid-silver.svg' in brand._brand_asset(False)
         assert b'#718ba2' in brand._themed_svg(True)
         assert not any(design_capabilities.capabilities('liquid_silver').values())

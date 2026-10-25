@@ -1,5 +1,10 @@
 """Extra English translations for dashboard, settings, sensors and disk tests."""
 EN_MORE = {
+    'CPU, Grafik, RAM und Mainboard zeigen verfügbare Herstellerdaten und kurze Specs. Passende freigestellte Produktbilder stehen links; ohne Bild bleibt kein Platzhalter.': 'CPU, graphics, RAM and mainboard show available manufacturer details and concise specs. Matching cutout pictures sit on the left; missing pictures leave no placeholder.',
+    'Maximaler Takt': 'Maximum clock',
+    'Speichertyp': 'Memory type',
+    'Kapazität': 'Capacity',
+    'Steckplatz': 'Slot',
     'Der Prozessor zeigt alle logischen CPUs in Reihenfolge, einschließlich abgeschalteter CPUs; die Kacheln wachsen mit.': 'Processor lists every logical CPU in order, including offline CPUs; the cards expand to fit.',
     'Grafik und System zeigen erkannte GPU- und Mainboard-Modelle mit passenden Produktbildern. Einmal heruntergeladene Bilder bleiben offline verfügbar.': 'Graphics and System show identified GPU and mainboard models with matching product pictures. Downloaded pictures remain available offline.',
     'Produktbild nicht verfügbar': 'Product image unavailable',

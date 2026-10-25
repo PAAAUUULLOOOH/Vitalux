@@ -14,7 +14,7 @@ import time
 import psutil
 
 from .i18n import tr
-from . import extended, monitor_extra, hardware_sensors, hardware_identity, cpu_topology
+from . import extended, monitor_extra, hardware_sensors, hardware_identity, cpu_topology, hardware_inventory
 
 _last = {}
 _hardware = hardware_sensors.HardwareMonitor()
@@ -128,6 +128,8 @@ def cpu_info():
     per_core = psutil.cpu_percent(interval=None, percpu=True)
     return {
         "model": _cpu_model(),
+        "manufacturer": hardware_inventory.cpu_product()['vendor'],
+        "product": dict(hardware_inventory.cpu_product()),
         "usage": sum(per_core) / len(per_core) if per_core else 0.0,
         "per_core": per_core,
         "logical_cpus": cpu_topology.logical_cpus(per_core),
@@ -147,6 +149,7 @@ def ram_info():
     vm = psutil.virtual_memory()
     sw = psutil.swap_memory()
     return {
+        "modules": hardware_inventory.memory_modules(),
         "total": vm.total,
         "used": vm.total - vm.available,
         "available": vm.available,
@@ -286,6 +289,7 @@ def _drm_gpus(have_nvidia):
         used, total = _read(os.path.join(dev, "mem_info_vram_used"), reasons, 'vram_used'), _read(os.path.join(dev, "mem_info_vram_total"), reasons, 'vram_total')
         extra = extended.drm_extra(dev)
         gpus.append({"id": os.path.realpath(dev), "device_path": dev,
+                     "product_name": _read(os.path.join(dev, 'product_name')) or '',
                      "vendor": vendor, "name": name, "driver": extra["driver"],
                      "usage": _num(busy), "vram_used": _num(used), "vram_total": _num(total),
                      "temp": extra["edge"] if extra["edge"] is not None else temp,
@@ -302,9 +306,9 @@ def gpu_info():
     gpus = nv + _drm_gpus(bool(nv))
     for gpu in gpus:
         gpu.update(hardware_identity.gpu_identity(gpu))
-        if gpu.get('board_model'):
+        if gpu.get('identified_name'):
             gpu['chip_name'] = gpu['name']
-            gpu['name'] = gpu['board_model']
+            gpu['name'] = gpu['identified_name']
     return gpus
 
 

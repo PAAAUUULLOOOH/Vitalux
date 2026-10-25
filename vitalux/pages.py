@@ -574,14 +574,16 @@ class CpuPage(Page):
         super().__init__("Prozessor", "Auslastung, Takt und Temperatur")
         top = Card()
         self.name = label("–", "bigName", wrap=True)
-        top.body.addWidget(self.name)
+        self.meta = label('', 'muted', wrap=True)
+        self.product_header = ProductHeader(self.name, self.meta, 'cpu')
+        top.body.addWidget(self.product_header)
         grid = QGridLayout()
         grid.setHorizontalSpacing(40)
-        self.kv = {k: KeyValue(k) for k in ('Leistung','PL1','PL2',"Kerne / Threads", "Takt", "Temperatur", "Last (1 / 5 / 15 Min)")}
+        self.kv = {k: KeyValue(k) for k in ('Leistung', "Takt", "Temperatur", "Last (1 / 5 / 15 Min)")}
         self.sensor_grid = grid
         for i, w in enumerate(self.kv.values()):
             grid.addWidget(w, i // 2, i % 2)
-        for key in ('Leistung','PL1','PL2'):self.kv[key].hide()
+        self.kv['Leistung'].hide()
         top.body.addLayout(grid)
         self.content.addWidget(top)
 
@@ -639,7 +641,12 @@ class CpuPage(Page):
     def refresh(self, d, h):
         c = d["cpu"]
         self.name.setText(c["model"])
-        self.kv["Kerne / Threads"].set(f"{c['cores']} / {c['threads']}")
+        self.meta.setText(c.get('manufacturer') or '')
+        self.product_header.set_product(c.get('product'))
+        self.product_header.set_specs([
+            ('Kerne / Threads', f'{c["cores"]} / {c["threads"]}'),
+            ('Maximaler Takt', f'{c["freq_max"]/1000:.2f} GHz' if c.get('freq_max') else ''),
+            ('Architektur', platform.machine())])
         fm = f" (max {c['freq_max'] / 1000:.2f})" if c["freq_max"] else ""
         optional(self.kv['Takt'], c.get('freq')/1000 if number(c.get('freq')) is not None else None, 'GHz', 2)
         if number(c.get('freq')) is not None:
@@ -647,9 +654,6 @@ class CpuPage(Page):
         optional(self.kv['Temperatur'], c.get('temp'), '°C', 0)
         power=component_power(d.get('hardware',[]),'cpu')
         optional(self.kv['Leistung'],(power or {}).get('value'),'W')
-        limits=dict((power or {}).get('limits',[]))
-        for title in ('PL1','PL2'):
-            optional(self.kv[title],limits.get(title),'W')
         self.kv['Leistung'].setToolTip(source_text(power))
         reflow(self.sensor_grid, list(self.kv.values()))
         self.kv["Last (1 / 5 / 15 Min)"].set(" / ".join(f"{x:.2f}" for x in c["load"]))
@@ -792,11 +796,11 @@ class GpuCard(Card):
         self.name.setText(g.get("name") or tr("nicht verfügbar"))
         vendor = g.get("vendor")
         driver = g.get("driver")
-        self.meta.setText(" · ".join(str(x) for x in (
-            f"{tr('Kartenhersteller')}: {g['board_vendor']}" if g.get('board_vendor') else None,
-            vendor, f"{tr('Treiber')} {driver}" if driver else None
-        ) if x))
+        self.meta.setText(g.get('board_vendor') or '')
         self.product_header.set_product(g.get('product'))
+        self.product_header.set_specs([
+            ('GPU', vendor), ('Videospeicher', fmt_bytes(g.get('vram_total')) if g.get('vram_total') else ''),
+            ('Treiber', driver)])
         reasons = g.get('unavailable') or {}
         self.g_use.set(g.get("usage"), unavailable(reasons.get('usage')) if g.get('usage') is None else '')
         self.g_use.setVisible(number(g.get('usage')) is not None)
@@ -895,6 +899,7 @@ class GpuPage(Page):
 class MemoryPage(Page):
     def __init__(self):
         super().__init__("Arbeitsspeicher", "RAM und Swap")
+        self.module_cards = []
         self.g_ram, self.g_swap = GaugeCard("RAM"), GaugeCard("Swap")
         stats = Card("Details")
         self.kv = {k: KeyValue(k) for k in ('Leistung','Leistungsgrenze',"Gesamt", "In Benutzung", "Verfügbar", "Cache", "Puffer")}
@@ -911,6 +916,31 @@ class MemoryPage(Page):
 
     def refresh(self, d, h):
         r = d["ram"]
+        grouped = {}
+        for module in r.get('modules', []):
+            identity = tuple(module.get(k) for k in ('vendor','model','capacity','memory_type','speed'))
+            grouped.setdefault(identity, []).append(module)
+        groups = list(grouped.values())
+        while len(self.module_cards) < len(groups):
+            card = Card()
+            name, meta = label('', 'bigName', wrap=True), label('', 'muted', wrap=True)
+            header = ProductHeader(name, meta, 'ram')
+            card.body.addWidget(header)
+            self.content.insertWidget(len(self.module_cards), card)
+            self.module_cards.append((card, header, name, meta))
+        for index, (card, header, name, meta) in enumerate(self.module_cards):
+            card.setVisible(index < len(groups))
+            if index >= len(groups):continue
+            modules = groups[index];module = modules[0]
+            name.setText(module.get('model') or tr('Arbeitsspeicher'))
+            meta.setText(module.get('vendor') or '')
+            header.set_product(module.get('product'))
+            speed = module.get('speed')
+            detail = ' · '.join(str(x) for x in (module.get('memory_type'),f'{speed} MT/s' if speed else '') if x)
+            header.set_specs([
+                ('Kapazität', f'{len(modules)} × {fmt_bytes(module.get("capacity"))}'),
+                ('Speichertyp', detail),
+                ('Steckplatz', ', '.join(m.get('slot','') for m in modules if m.get('slot')))])
         power=component_power(d.get('hardware',[]),'ram')
         optional(self.kv['Leistung'],(power or {}).get('value'),'W')
         optional(self.kv['Leistungsgrenze'],power_limit(power),'W')
@@ -1115,11 +1145,10 @@ class SystemPage(Page):
         self.board_card = Card('Mainboard')
         self.board_name = label(product.get('model') or s.get('board') or '–', 'bigName', wrap=True)
         revision = product.get('revision')
-        self.board_meta = label(' · '.join(x for x in (
-            product.get('vendor'), tr('Revision {value}').format(value=revision) if revision else '') if x),
-            'muted', wrap=True)
+        self.board_meta = label(product.get('vendor') or '', 'muted', wrap=True)
         self.board_header = ProductHeader(self.board_name, self.board_meta, 'mainboard')
         self.board_header.set_product(product)
+        self.board_header.set_specs([('Revision', revision), ('BIOS', s.get('bios'))])
         self.board_card.body.addWidget(self.board_header)
         self.content.addWidget(self.board_card)
         os_card = Card("Betriebssystem")

@@ -25,3 +25,5 @@ The files in this directory reproduce upstream notices without rewriting their l
 **AppImage runtime:** the pinned `type2-runtime` source includes its build scripts, Alpine environment and libfuse patch. Use those instructions with the included libfuse/squashfuse source versions. Vitalux's `packaging/runtime/SHA256SUMS` identifies the embedded runtime binary. To inspect or replace the application payload without FUSE, use `./Vitalux.AppImage --appimage-extract` and run `squashfs-root/AppRun --portable`.
 
 All third-party license rights, source obligations and warranty disclaimers continue to apply. Preserve these notices when redistributing those components.
+
+The complete PCI ID Database source is retained in `assets/hardware/pci.ids`, copyright Martin Mares and Albert Pool, distributed under GPL-2.0-or-later. Its provenance is in `assets/hardware/provenance.json`; the complete GPL-2.0 text is included here.

@@ -45,7 +45,7 @@ SLIDES = [
         "CPU, GPU und Arbeitsspeicher",
         "Hier erfährst du, wie stark deine Hardware gerade beansprucht wird.",
         "Der Prozessor zeigt alle logischen CPUs in Reihenfolge, einschließlich abgeschalteter CPUs; die Kacheln wachsen mit.",
-        "Grafik und System zeigen erkannte GPU- und Mainboard-Modelle mit passenden Produktbildern. Einmal heruntergeladene Bilder bleiben offline verfügbar.",
+        "CPU, Grafik, RAM und Mainboard zeigen verfügbare Herstellerdaten und kurze Specs. Passende freigestellte Produktbilder stehen links; ohne Bild bleibt kein Platzhalter.",
         "Gezielte Hardware- und Systemprüfungen findest du im Diagnostic Center.",
         "hardware",
     ),

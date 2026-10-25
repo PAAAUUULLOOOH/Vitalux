@@ -29,6 +29,8 @@ COLLECTIONS['liquid_silver'] = dict(
     track='#2a3543', grid='#2b3442', text='#edf2f7', muted='#afbdc9',
     accent='#b9ccdc', secondary='#e3edf5', light='#657f97', bloom='#34465b',
     shadow='#101b27', series=('#b9ccdc','#e3edf5','#7b95aa','#a7bbcc'))
+from . import crystal_atrium
+COLLECTIONS[crystal_atrium.KEY] = crystal_atrium.PALETTE
 KEYS = tuple(COLLECTIONS)
 
 
@@ -53,6 +55,7 @@ def rounded(rect, radius):
 
 def scene_pixmap(size, mode, phase=0.0):
     """Cached atmosphere; only Quantum Core uses the optional animation phase."""
+    if mode == crystal_atrium.KEY:return crystal_atrium.scene_pixmap(size,mode,phase)
     if mode in signature_designs.KEYS:
         return signature_designs.scene_pixmap(size,mode,phase)
     pal = palette(mode)
@@ -110,6 +113,7 @@ def scene_pixmap(size, mode, phase=0.0):
 def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
     """Position-correct frost, smoked depth, inner bevel and metallic edge."""
     from . import theme
+    if theme.mode() == crystal_atrium.KEY:return crystal_atrium.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
     if theme.mode() in signature_designs.KEYS:
         return signature_designs.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
     from .glass import draw_frosted_backdrop
@@ -181,6 +185,7 @@ def paint_edge(p, rect, radius, *, active=False, compact=False):
 
 def paint_sidebar(p, widget, rect):
     from . import theme
+    if theme.mode() == crystal_atrium.KEY:return crystal_atrium.paint_sidebar(p,widget,rect)
     if theme.mode() in signature_designs.KEYS:
         return signature_designs.paint_panel(p,widget,rect.adjusted(1,1,-1,-1),strong=True)
     from .glass import draw_frosted_backdrop
@@ -212,6 +217,8 @@ def paint_nav(p, widget, rect, selected, hover):
 
 
 def paint_gauge(p, widget, value, text, ring_color):
+    from . import theme
+    if theme.mode() == crystal_atrium.KEY:return crystal_atrium.paint_gauge(p,widget,value,text,ring_color)
     pal = palette()
     side = min(widget.width(), widget.height())
     center = QPointF(widget.width()/2, widget.height()/2)
@@ -288,7 +295,7 @@ def stylesheet(mode):
     #ghostBtn, #langBtn {{ background: {pal['sidebar']}; border-color: {pal['border']}; border-radius: 10px; }}
     QScrollBar:vertical {{ width: 7px; }}
     QScrollBar::handle:vertical {{ background: {pal['border']}; border-radius: 3px; }}
-    '''
+    ''' + (crystal_atrium.stylesheet() if mode == crystal_atrium.KEY else '')
 
 
 class DesignTile(QAbstractButton):
@@ -393,6 +400,12 @@ class DesignTile(QAbstractButton):
                     pal['accent'], self.key == 'light')[0]
             self._background_key = background_key
         p.drawPixmap(0, 0, self._background)
+        if self.key == crystal_atrium.KEY:
+            crystal_atrium.paint_preview(p,self,pal)
+            from .design_capabilities import paint
+            paint(p,self,pal,self._hover)
+            p.end()
+            return
         if self.key in signature_designs.KEYS:
             signature_designs.paint_preview(p,self,pal)
             from .design_capabilities import paint

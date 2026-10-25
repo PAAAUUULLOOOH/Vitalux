@@ -1,6 +1,14 @@
 # Vitalux – Changes
 
 
+## [v0.9.6.3-unstable.21] - 2026-10-25
+- Crystal Atrium joins the design gallery with clear glass surfaces, instruments, logo and wordmark, the familiar Obsidian layout and a static dark-blue/light-blue/violet background.
+- Hardware identification uses a general PCI database, additional manufacturer aliases and available driver names. Picture lookup handles internal mainboard suffixes, structured product metadata and image CDNs.
+- CPU, graphics, memory-module and mainboard headers show concise aligned specifications to the right of matching product pictures. RAM manufacturer/part numbers appear when firmware data is readable; different modules remain separate.
+- Only cutout product pictures are displayed. Missing pictures remove the entire image area, without placeholders or gaps. Persistent offline caching is retained; the visible offline caption is removed.
+- Eclipse Crystal puts CPU/GPU overview percentages and temperatures on separate, consistently aligned rows.
+- Processor retains current measured watts, removes PL1/PL2 rows and realigns its remaining readings.
+
 ## [v0.9.6.3-unstable.20] - 2026-10-25
 - Overview centers the GPU power reading to match the graphics-card name.
 - Processor lists all present logical CPUs in numerical order, including offline entries. Its meter grid adapts its columns and height so every entry remains accessible on systems with many cores or threads.

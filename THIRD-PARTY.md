@@ -44,3 +44,7 @@ The approved concept silhouettes were converted to vector paths locally using vt
 ## Optional network helper
 
 The Vitalux network helper and its eBPF instruction generator are original project code, using Python’s standard library and Linux kernel APIs. No BCC, LLVM, OpenSnitch or external firewall daemon is bundled. Polkit and the optional host Python interpreter are supplied by the operating system. The `Proprietary` BPF program license string declares compatibility to the kernel; it does not grant additional rights in the Vitalux source. The Linux kernel, QEMU and a disposable test root filesystem used for integration validation are test infrastructure and are not included in the application packages.
+
+## PCI identification data
+
+`assets/hardware/pci.ids` is the complete 2026.10.24 [PCI ID Database](https://github.com/pciutils/pciids) snapshot, maintained by Albert Pool, Martin Mares and contributors. Copyright in its aggregation and formatting belongs to Martin Mares and Albert Pool. It is distributed here under GPL-2.0-or-later; the complete preferred source data is included verbatim, with provenance and SHA-256 in `assets/hardware/provenance.json`. See [GPL-2.0](licenses/GPL-2.0.txt). An optional background refresh reads the same upstream project's public source file into the active profile cache.
