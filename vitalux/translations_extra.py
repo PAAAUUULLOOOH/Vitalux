@@ -1,6 +1,6 @@
 """Extra English translations for dashboard, settings, sensors and disk tests."""
 EN_MORE = {
-    'CPU, Grafik, RAM und Mainboard zeigen verfügbare Herstellerdaten und kurze Specs. Passende freigestellte Produktbilder stehen links; ohne Bild bleibt kein Platzhalter.': 'CPU, graphics, RAM and mainboard show available manufacturer details and concise specs. Matching cutout pictures sit on the left; missing pictures leave no placeholder.',
+    'CPU, Grafik, RAM und Mainboard zeigen verfügbare Herstellerdaten und kurze Specs. Freigestellte Produktbilder werden bevorzugt, sonst passende Bilder mit Hintergrund verwendet. Ohne Bild nutzen die Texte die gesamte Breite.': 'CPU, graphics, RAM and mainboard show available manufacturer details and concise specs. Cutout pictures are preferred; matching pictures with backgrounds are used otherwise. Without a picture, the text uses the full width.',
     'Maximaler Takt': 'Maximum clock',
     'Speichertyp': 'Memory type',
     'Kapazität': 'Capacity',

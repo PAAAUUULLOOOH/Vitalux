@@ -37,7 +37,8 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
         i18n.set_lang(language)
         overview=OverviewPage(dict(name='Linux',short='Test',version='1',color='#4f8cff'),QPixmap(96,96))
         app.processEvents();overview.refresh(sample,h)
-        for key,value in [('cpu',85),('gpu',150),('ram',10),('disk',3)]:
+        assert 'gpu' not in overview.power_labels
+        for key,value in [('cpu',85),('ram',10),('disk',3)]:
             assert all(w.text()==f'{word}: {value} W' for w in overview.power_labels[key])
         missing=dict(sample,hardware=[],gpus=[dict(gpu,power=None,hardware=[])])
         overview.refresh(missing,h)

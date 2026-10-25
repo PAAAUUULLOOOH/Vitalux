@@ -105,7 +105,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build/product-image-check
-          python scripts/check-product-image-network.py | tee build/product-image-check/result.log
+          python scripts/check-product-image-network.py --require-all-components | tee build/product-image-check/result.log
       - name: Exercise real kernel and desktop paths
         if: steps.prepare.outputs.changed == 'true'
         id: native
@@ -115,7 +115,7 @@ jobs:
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-graphics-checks.py --output "$GITHUB_WORKSPACE/build/graphics-checks"
-          for DESIGN in obsidian_gold aether_glass eclipse_crystal liquid_silver black_glass_gold nebula_prism quantum_core crystal_atrium; do
+          for DESIGN in obsidian_gold aether_glass eclipse_crystal liquid_silver black_glass_gold nebula_prism quantum_core crystal_atrium crystal_glass; do
             LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/capture-release-ui.py --output "$GITHUB_WORKSPACE/build/ui-scale-checks/$DESIGN" --design "$DESIGN" --scales 1,1.25,1.5,2
           done
       - name: Expose native validation failures
@@ -165,6 +165,7 @@ jobs:
             build/setup/
             build/regressions/
             build/graphics-checks/
+            build/product-image-check/
             build/ui-scale-checks/
             build/network-kernel.log
             dist/

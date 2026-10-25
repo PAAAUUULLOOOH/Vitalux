@@ -35,7 +35,7 @@ SAPPHIRE_PURE_IMAGE = ('https://media.cdn.sapphiretech.com.cn/-/media/sites/sapp
                        'product-images/11348_02_rx9070xt_pure_16ggddr6/'
                        'rx9070xt_pure_photo_c01_800x500.ashx?v=4f6b3314b44c4a42882a5f98b0404402')
 MAX_IMAGE = 10 * 1024 * 1024
-MAX_PAGE = 2 * 1024 * 1024
+MAX_PAGE = 4 * 1024 * 1024
 
 
 def product_key(product):
@@ -71,7 +71,8 @@ def allowed_url(url, hosts=()):
 def fetch(url, limit, hosts):
     if not allowed_url(url, hosts):
         raise ValueError('Unsupported product source')
-    request = Request(url, headers={'User-Agent': 'Vitalux-ProductImages/1.0',
+    request = Request(url, headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Vitalux-ProductImages/1.0',
+                                   'Accept-Language': 'en-US,en;q=0.9,de;q=0.7',
                                    'Accept': 'text/html,application/xml,image/*;q=0.9,*/*;q=0.5'})
     class ManufacturerRedirect(HTTPRedirectHandler):
         def redirect_request(self, request, fp, code, msg, headers, newurl):
@@ -108,7 +109,16 @@ def valid_image(raw):
     size = reader.size()
     if size.width() <= 0 or size.height() <= 0 or size.width() * size.height() > 16000000:
         return False
-    return not reader.read().isNull()
+    image=reader.read()
+    if image.isNull():return False
+    # A fully transparent placeholder is decodable but is not a product photo.
+    if image.hasAlphaChannel():
+        from PySide6.QtCore import Qt
+        sample=image.scaled(40,40,Qt.KeepAspectRatio,Qt.SmoothTransformation)
+        visible=sum(sample.pixelColor(x,y).alpha()>220
+                    for y in range(sample.height()) for x in range(sample.width()))
+        if visible/max(1,sample.width()*sample.height())<.025:return False
+    return True
 
 
 def _atomic_bytes(path, raw):
@@ -141,21 +151,21 @@ class ProductCache:
             raw = path.read_bytes()
             if hashlib.sha256(raw).hexdigest() != meta.get('sha256') or not valid_image(raw):
                 return None
-            if not allowed_url(meta.get('source', '')) or not cutout_image(raw):
+            if not allowed_url(meta.get('source', '')):
                 return None
-            return dict(meta, path=str(path), cached=True)
+            return dict(meta, path=str(path), cached=True, cutout=cutout_image(raw))
         except (OSError, ValueError, TypeError, AttributeError):
             return None
 
     def save(self, product, raw, source, image_url):
         key = product_key(product)
-        if not key or not cutout_image(raw):
+        if not key or not valid_image(raw):
             raise ValueError('Invalid product image')
         if not all(allowed_url(url) for url in (source, image_url)):
             raise ValueError('Unsupported manufacturer source')
         meta = {'key': key, 'source': source, 'image_url': image_url,
                 'sha256': hashlib.sha256(raw).hexdigest(), 'saved': int(time.time()),
-                'vendor': product['vendor'], 'model': product['model'], 'cutout': True}
+                'vendor': product['vendor'], 'model': product['model'], 'cutout': cutout_image(raw)}
         path = self.root / (key + '.image')
         _atomic_bytes(path, raw)
         _atomic_bytes(self.root / (key + '.json'), json.dumps(meta).encode())
@@ -189,24 +199,37 @@ def search_model(product):
         value=re.sub(r'\s*\(MS-[A-Z0-9]+\)', '', value, flags=re.I)
         value=re.sub(r'\s+(?:rev(?:ision)?\.?\s*[:.]?\s*\d+(?:\.\d+)*)$', '', value, flags=re.I)
     if product.get('kind')=='cpu':
+        value=re.sub(r'\b\d+(?:st|nd|rd|th)\s+Gen(?:eration)?\s*', '', value, flags=re.I)
         value=re.sub(r'\s+@\s*\d+(?:\.\d+)?\s*[GM]Hz\b.*$', '', value, flags=re.I)
         value=re.sub(r'\b\d+[- ]Core(?:\s+Processor)?\b', '', value, flags=re.I)
+        value=re.sub(r'\s+with\s+Radeon\b.*$', '', value, flags=re.I)
     return re.sub(r'\s+', ' ', re.sub(r'\((?:R|TM)\)|[®™]', '', value, flags=re.I)).strip()
 
 
+def search_query(product):
+    model=search_model(product)
+    vendor=manufacturer(product.get('vendor'))
+    return model if model.casefold().startswith(vendor.casefold()+' ') else f'{vendor} {model}'.strip()
+
+
 def matches_product(product, title):
-    def words(value):return set(re.findall(r'[a-z]+|\d+',str(value).casefold()))
+    def words(value):
+        value=re.sub(r'\bwi[\W_]*fi\b','wifi',str(value).casefold())
+        return set(re.findall(r'[a-z]+|\d+',value))
     ignored=words(manufacturer(product.get('vendor'))) | {'amd','radeon','nvidia','geforce','graphics','card','gpu','processor','cpu'}
     required=words(search_model(product))-ignored
     actual=words(title)
     if not required or not required<=actual:return False
-    if re.search(r'\b(?:vs\.?|versus|comparison)\b',str(title),re.I):return False
+    if re.search(r'\b(?:vs\.?|versus|comparison|unveils|announces|roundup)\b',str(title),re.I):return False
     if product['kind'] in ('mainboard','ram','cpu'):
-        def codes(value):
-            return {re.sub(r'[^a-z0-9]','',word.lower()) for word in
-                    re.findall(r'\b[a-z]+[a-z0-9-]*\d[a-z0-9-]*\b',str(value),re.I)}
-        expected=codes(search_model(product))
-        if expected and not expected<=codes(title):return False
+        # Retail pages separate model codes differently from firmware: i7-13700K
+        # / i7 13700K, B650-A / B650 A. Preserve full suffix boundaries so B650
+        # never matches B650M and a different RAM part is not selected.
+        codes=re.findall(r'\b[a-z]+[a-z0-9-]*\d[a-z0-9-]*\b',search_model(product),re.I)
+        for code in codes:
+            pieces=re.findall(r'[a-z]+|\d+',code.casefold())
+            pattern=r'(?<![a-z0-9])'+r'[\W_]*'.join(map(re.escape,pieces))+r'(?![a-z0-9])'
+            if not re.search(pattern,str(title).casefold()):return False
     if product['kind']=='gpu':
         for variant in ('xt','xtx','super','ti','gre'):
             if (variant in required)!=(variant in actual):return False
@@ -217,12 +240,14 @@ class ProductPage(HTMLParser):
     def __init__(self):
         super().__init__()
         self.titles,self.images,self.gallery,self.named_images=[],[],[],[]
-        self.in_title=False;self.json_script=False;self.json_data=[]
+        self.product_images=[]
+        self.in_title=False;self.in_heading=False;self.heading=[];self.json_script=False;self.json_data=[]
 
     def handle_starttag(self, tag, attrs):
         attrs=dict(attrs)
         if tag=='title':self.in_title=True
-        if tag=='script' and attrs.get('type','').lower()=='application/ld+json':
+        if tag=='h1':self.in_heading=True;self.heading=[]
+        if tag=='script' and (attrs.get('type') or '').lower()=='application/ld+json':
             self.json_script=True;self.json_data=[]
         if tag=='meta':
             field=(attrs.get('property') or attrs.get('name') or '').lower()
@@ -230,11 +255,20 @@ class ProductPage(HTMLParser):
                 self.images.append(attrs.get('content',''))
             elif field in ('og:title','twitter:title'):self.titles.append(attrs.get('content',''))
         if tag=='img':
-            src=attrs.get('src') or attrs.get('data-src') or ''
-            self.gallery.append((src,attrs.get('alt','')))
+            alt=attrs.get('alt','')
+            for key in ('data-src','data-original','data-lazy-src','src'):
+                if attrs.get(key):
+                    self.gallery.append((attrs[key],alt))
+                    role=(attrs.get('class') or '')+' '+(attrs.get('id') or '')
+                    if re.search(r'product|gallery|goods|pdp',role,re.I):self.product_images.append(attrs[key])
+            for key in ('data-srcset','srcset'):
+                for entry in reversed((attrs.get(key) or '').split(',')):
+                    if entry.strip():self.gallery.append((entry.strip().split()[0],alt))
 
     def handle_endtag(self, tag):
         if tag=='title':self.in_title=False
+        if tag=='h1' and self.in_heading:
+            self.in_heading=False;self.titles.append(''.join(self.heading))
         if tag=='script' and self.json_script:
             self.json_script=False
             try:self._product(json.loads(''.join(self.json_data)))
@@ -247,17 +281,20 @@ class ProductPage(HTMLParser):
         elif isinstance(data,dict):
             types=data.get('@type',[])
             if isinstance(types,str):types=[types]
-            if 'Product' in types:
-                name=str(data.get('name',''))
+            if not isinstance(types,list):types=[]
+            if any(str(value).rstrip('/').rsplit('/',1)[-1]=='Product' for value in types):
+                name=' '.join(str(data.get(key,'')) for key in ('name','sku','mpn'))
                 images=data.get('image',[])
                 if not isinstance(images,list):images=[images]
                 for image in images:
                     if isinstance(image,dict):image=image.get('contentUrl') or image.get('url') or ''
                     if isinstance(image,str):self.named_images.append((name,image))
             if '@graph' in data:self._product(data['@graph'],depth+1)
+            if 'mainEntity' in data:self._product(data['mainEntity'],depth+1)
 
     def handle_data(self, data):
         if self.in_title:self.titles.append(data)
+        if self.in_heading:self.heading.append(data)
         if self.json_script:self.json_data.append(data)
 
 
@@ -277,20 +314,23 @@ class SearchPage(HTMLParser):
             self.results.append((self.link,''.join(self.title)));self.in_link=False
 
 
-def search_pages(product, download=fetch):
-    query=f'{manufacturer(product["vendor"])} {search_model(product)}'
+def search_pages(product, download=fetch, provider='auto'):
+    query=search_query(product)
     candidates=[]
     try:
-        url='https://www.bing.com/search?'+urlencode({'format':'rss','q':query})
-        document=ET.fromstring(download(url,MAX_PAGE,('bing.com',)))
-        candidates=[(item.findtext('link') or '',item.findtext('title') or '') for item in document.findall('.//item')]
+        if provider!='duckduckgo':
+            url='https://www.bing.com/search?'+urlencode({'format':'rss','q':query})
+            document=ET.fromstring(download(url,MAX_PAGE,('bing.com',)))
+            candidates=[(item.findtext('link') or '',item.findtext('title') or '') for item in document.findall('.//item')]
     except (OSError,ValueError,ET.ParseError):pass
-    result=[link for link,title in candidates if allowed_url(link) and matches_product(product,title)]
+    result=[link for link,title in candidates if allowed_url(link) and
+            (matches_product(product,title) or matches_product(product,unquote(urlsplit(link).path+' '+urlsplit(link).query)))]
     if not result:
         try:
             url='https://html.duckduckgo.com/html/?'+urlencode({'q':query})
             page=SearchPage();page.feed(download(url,MAX_PAGE,('duckduckgo.com',)).decode('utf-8','replace'))
-            result=[link for link,title in page.results if allowed_url(link) and matches_product(product,title)]
+            result=[link for link,title in page.results if allowed_url(link) and
+                    (matches_product(product,title) or matches_product(product,unquote(urlsplit(link).path+' '+urlsplit(link).query)))]
         except (OSError,ValueError):pass
     return sorted(dict.fromkeys(result),key=lambda url:0 if allowed_url(url,domains(product)) and domains(product) else 1)[:4]
 
@@ -306,9 +346,11 @@ class ImageSearch(HTMLParser):
             except ValueError:pass
 
 
-def search_images(product, download=fetch):
-    query=f'{manufacturer(product["vendor"])} {search_model(product)} product transparent png'
-    url='https://www.bing.com/images/search?'+urlencode({'q':query,'qft':'+filterui:photo-transparent'})
+def search_images(product, download=fetch, transparent=True):
+    query=search_query(product)+' product'+(' transparent png' if transparent else '')
+    params={'q':query,'count':12}
+    if transparent:params['qft']='+filterui:photo-transparent'
+    url='https://www.bing.com/images/search?'+urlencode(params)
     page=ImageSearch();page.feed(download(url,MAX_PAGE,('bing.com',)).decode('utf-8','replace'))
     result=[]
     for item in page.results[:60]:
@@ -343,7 +385,26 @@ def lookup_key(product):
     return ''
 
 
-def resolve(product, cache=None, download=fetch, cancelled=None):
+def manufacturer_pages(product):
+    """Public model-based manufacturer routes; every response is still matched."""
+    vendor=manufacturer(product.get('vendor')).lower()
+    model=search_model(product)
+    if product['kind']=='mainboard' and vendor=='msi':
+        slug=re.sub(r'[^a-z0-9]+','-',model.lower()).strip('-')
+        return ['https://www.msi.com/Motherboard/'+slug]
+    if product['kind']=='ram' and vendor=='kingston':
+        return ['https://www.kingston.com/en/memory/search?'+urlencode({'partid':model}),
+                'https://www.kingston.com/en/memory/search/discontinuedmodels?'+urlencode({'partid':model})]
+    if product['kind']=='cpu' and vendor=='amd':
+        match=re.search(r'\bRyzen\s+(\d)\s+(\d{4}[a-z0-9]*)\b',model,re.I)
+        if match:
+            tier,code=match.groups();series=code[0]+'000'
+            return [f'https://www.amd.com/en/products/processors/desktops/ryzen/{series}-series/amd-ryzen-{tier}-{code.lower()}.html']
+    return []
+
+
+def resolve(product, cache=None, download=fetch, cancelled=None, on_preview=None):
+    """Prefer a cutout, retain a verified background alternative and offline cache."""
     cache=cache or ProductCache()
     saved=cache.load(product)
     if saved:return saved
@@ -351,40 +412,80 @@ def resolve(product, cache=None, download=fetch, cancelled=None):
     if not product_key(product):
         if lookup_key(product):refresh_pci(cache,download)
         return None
-    deadline=time.monotonic()+35
+    deadline=time.monotonic()+40
     original_download=download
+    fallback=None
+    visited=set()
+    report=dict(kind=product['kind'],model=search_model(product),events=[])
+    def note(stage, **details):
+        if len(report['events'])<50:report['events'].append(dict(stage=stage,**details))
+    def finish(result):
+        report['result']='cutout' if result and result.get('cutout') else 'background' if result else 'missing'
+        try:_atomic_bytes(cache.root/(product_key(product)+'.lookup.json'),json.dumps(report,ensure_ascii=False).encode())
+        except OSError:pass
+        return result
     def download(url,limit,hosts=()):
         if time.monotonic()>=deadline or (cancelled is not None and cancelled.is_set()):
             raise TimeoutError('Product lookup finished')
-        return original_download(url,limit,hosts)
+        try:return original_download(url,limit,hosts)
+        except (OSError,ValueError) as exc:
+            note('download_failed',host=urlsplit(url).hostname,error=type(exc).__name__)
+            raise
     def image_result(source,image):
-        if not allowed_url(image):return None
-        if re.search(r'(?:^|[/_.-])(?:logo|icon|banner|box|packaging)(?:[/_.-]|$)',urlsplit(image).path,re.I):return None
+        nonlocal fallback
+        if not allowed_url(image) or image in visited:return None
+        visited.add(image)
+        if re.search(r'(?:^|[/_.-])(?:logo|icon|banner)(?:[/_.-]|$)',urlsplit(image).path,re.I):return None
         try:
             raw=download(image,MAX_IMAGE,())
-            if cutout_image(raw):return cache.save(product,raw,source,image)
+            if not valid_image(raw):note('invalid_image',host=urlsplit(image).hostname);return None
+            if cutout_image(raw):
+                note('cutout',host=urlsplit(image).hostname)
+                return cache.save(product,raw,source,image)
+            if fallback is None:
+                fallback=cache.save(product,raw,source,image)
+                note('background_alternative',host=urlsplit(image).hostname)
+                if on_preview:on_preview(fallback)
         except (OSError,ValueError):pass
         return None
-    # The same known source is revalidated: an opaque old photo must never be
-    # displayed merely because it was cached by an earlier Vitalux version.
     if product['kind']=='gpu' and re.sub(r'[^a-z0-9]','',product['model'].lower())=='sapphirepureradeonrx9070xt':
         saved=image_result(SAPPHIRE_PURE_PAGE,SAPPHIRE_PURE_IMAGE)
-        if saved:return saved
+        if saved:return finish(saved)
+    def page_results(pages):
+        for source in pages:
+            try:
+                page=ProductPage();page.feed(download(source,MAX_PAGE,()).decode('utf-8','replace'))
+                matches=any(matches_product(product,title) for title in page.titles)
+                images=[url for name,url in page.named_images if matches_product(product,name)]
+                if matches:images+=page.images+page.product_images
+                images+=[url for url,alt in page.gallery if matches_product(product,alt) or
+                         (matches and matches_product(product,unquote(url)))]
+                note('product_page',host=urlsplit(source).hostname,matched=matches,candidates=len(images))
+                for image in list(dict.fromkeys(images))[:5]:
+                    result=image_result(source,urljoin(source,image))
+                    if result:return result
+            except (OSError,ValueError):continue
+        return None
+    saved=page_results(manufacturer_pages(product))
+    if saved:return finish(saved)
     try:pages=search_pages(product,download)
     except (OSError,ValueError):pages=[]
-    for source in pages:
-        try:
-            page=ProductPage();page.feed(download(source,MAX_PAGE,()).decode('utf-8','replace'))
-            if not any(matches_product(product,title) for title in page.titles):continue
-            images=[url for name,url in page.named_images if matches_product(product,name)]
-            images+=page.images+[url for url,alt in page.gallery if matches_product(product,alt) or matches_product(product,unquote(url))]
-            for image in list(dict.fromkeys(images))[:6]:
-                saved=image_result(source,urljoin(source,image))
-                if saved:return saved
-        except (OSError,ValueError):continue
+    saved=page_results(pages)
+    if saved:return finish(saved)
     try:
         for source,image in search_images(product,download):
             saved=image_result(source,image)
-            if saved:return saved
+            if saved:return finish(saved)
     except (OSError,ValueError):pass
-    return None
+    if pages:
+        try:
+            saved=page_results([url for url in search_pages(product,download,'duckduckgo') if url not in pages])
+            if saved:return finish(saved)
+        except (OSError,ValueError):pass
+    # Transparent search filters often hide the only valid photograph.
+    try:
+        for source,image in search_images(product,download,transparent=False):
+            saved=image_result(source,image)
+            if saved:return finish(saved)
+    except (OSError,ValueError):pass
+    return finish(fallback)

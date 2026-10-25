@@ -162,16 +162,30 @@ class DashboardBoard(QWidget):
 
     def _render_positions(self,order=None):
         from .signature_designs import active
+        from PySide6.QtGui import QFont,QFontMetrics
+        from PySide6.QtCore import QRect
+        sizes=dict(DEFAULT)
+        selected=list(self.order if order is None else order)
         if active():
-            sizes=dict(DEFAULT)
             sizes.update(hero=(0,0,12,4),cpu=(0,0,6,8),gpu=(0,0,3,8),
                          ram=(0,0,3,8),disk=(0,0,3,6),health=(0,0,3,6),
                          graph_load=(0,0,7,8),graph_net=(0,0,5,8),network=(0,0,6,6),drives=(0,0,12,5))
-            selected=list(self.order if order is None else order)
             if selected==list(ORDER):
                 selected=['hero','cpu','gpu','ram','graph_load','graph_net','disk','health','network','drives']
-            return grid_pack(selected,self.hidden,self._cols(),sizes)
-        return grid_pack(self.order if order is None else order,self.hidden,self._cols())
+        positions=grid_pack(selected,self.hidden,self._cols(),sizes)
+        tile=self.tiles.get('gpu')
+        host=tile.content if tile is not None and hasattr(tile,'content') else None
+        if host is not None and hasattr(host,'full_caption') and 'gpu' in positions:
+            text=host.full_caption()
+            width=max(30,self._frame(positions['gpu']).width()-58)
+            font=QFont(self.font())
+            if active():font.setPixelSize(11)
+            metrics=QFontMetrics(font)
+            height=metrics.boundingRect(QRect(0,0,width,10000),Qt.TextWordWrap,text).height()
+            extra=max(0,height-metrics.height())
+            native=sizes['gpu'];sizes['gpu']=(*native[:3],native[3]+(extra+PITCH-1)//PITCH)
+            positions=grid_pack(selected,self.hidden,self._cols(),sizes)
+        return positions
 
     def _frame(self,rect):
         x,y,w,h=rect

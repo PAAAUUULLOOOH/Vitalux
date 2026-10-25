@@ -200,14 +200,24 @@
     "sha256": "878371e787605c0854879df639f4135262b830282e8b4131f6979548c1f346b4"
   },
   {
+    "file": "assets/brand/vitalux-pulse-crystal-glass.svg",
+    "bytes": 66368,
+    "sha256": "571ff1a00713f3f401ad67bebe2537cdae2af1244c3c0c3b4cebcf5b5421d2b6"
+  },
+  {
+    "file": "assets/brand/vitalux-wordmark-crystal-glass.svg",
+    "bytes": 6622,
+    "sha256": "91e984a6ad243e51be386e09fc277b00d94677e20f0d65f73fd9849c9982d008"
+  },
+  {
     "file": "assets/brand/vitalux-pulse-crystal-atrium.svg",
-    "bytes": 66369,
-    "sha256": "cbb70495c19ee217a25caa50087f98d80f31d6f46ab36beed9058def2f09fdee"
+    "bytes": 65872,
+    "sha256": "ad1934277a44bcf4a88bc51138a317933e43e5d729d2f31db4186dafd7f917a3"
   },
   {
     "file": "assets/brand/vitalux-wordmark-crystal-atrium.svg",
-    "bytes": 6623,
-    "sha256": "4900d19fc59106666d9d4907d0179abfabd11f04de2e6d7cf95c8bbcf1db1eb4"
+    "bytes": 6408,
+    "sha256": "da96d57ef1e4b7deefcdb671d3c6a4a68151747c9b9e62beeae1911556b9d40b"
   },
   {
     "file": "assets/vitalux-pulse.svg",
@@ -425,14 +435,24 @@
     "sha256": "6c267280451822fec39b9d05393cfbdff4029e6b3c13183e41a9fdf6da64b2a9"
   },
   {
+    "file": "assets/brand/animated/vitalux-pulse-crystal-glass.svg",
+    "bytes": 67186,
+    "sha256": "1811c2e917ab80aae92c6c60c1c507631bc417ba0da3ae500edaee52f58fac50"
+  },
+  {
+    "file": "assets/brand/animated/vitalux-wordmark-crystal-glass.svg",
+    "bytes": 6968,
+    "sha256": "e1adb0333a0689471a2066440d4d2e1063faa7fb2e70680afdad582ea096ee8e"
+  },
+  {
     "file": "assets/brand/animated/vitalux-pulse-crystal-atrium.svg",
-    "bytes": 67187,
-    "sha256": "a70689e82742ed6b3195347bccdb5244650bf3b1f10f176c868e3a8bbd35c550"
+    "bytes": 66690,
+    "sha256": "b885c995263ae01a6474fac105e285594e3e12f1cc21306fa12b7333176156e8"
   },
   {
     "file": "assets/brand/animated/vitalux-wordmark-crystal-atrium.svg",
-    "bytes": 6969,
-    "sha256": "16149b960d8f25a3430d8407377ece03463a171364ed578ee885ebf1d7ab447c"
+    "bytes": 6754,
+    "sha256": "78d0d20beb20ffe32edd98ba8572ea3aaf0de2fbe3a8896510fbd86ce841a697"
   },
   {
     "file": "assets/brand/animated/vitalux-pulse.svg",

@@ -2,7 +2,7 @@
 from threading import Event
 import time
 
-from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal, Qt, QRectF, QSize
+from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal, Qt, QRectF, QSize, QTimer
 from PySide6.QtGui import QPainter, QPixmap
 from PySide6.QtWidgets import QApplication, QBoxLayout, QSizePolicy, QVBoxLayout, QGridLayout, QWidget
 
@@ -12,6 +12,7 @@ from .ui_locale import QLabel
 
 class _Signals(QObject):
     done = Signal(str, object)
+    preview = Signal(str, object)
 
 
 class _ImageTask(QRunnable):
@@ -21,11 +22,16 @@ class _ImageTask(QRunnable):
         self.cancelled = cancelled
 
     def run(self):
+        preview=[None]
+        def show_preview(result):
+            preview[0]=result
+            if not self.cancelled.is_set():self.signals.preview.emit(self.key,result)
         try:
-            result = resolve(self.product, cancelled=self.cancelled)
+            result = resolve(self.product, cancelled=self.cancelled,
+                             on_preview=show_preview)
         except Exception:
             # Image lookup is optional and must never disrupt monitoring.
-            result = None
+            result = preview[0]
         if not self.cancelled.is_set():
             self.signals.done.emit(self.key, result)
 
@@ -39,6 +45,7 @@ class ImageLoader(QObject):
         self.pool.setMaxThreadCount(2)
         self.signals = _Signals(self)
         self.signals.done.connect(self._ready)
+        self.signals.preview.connect(self._preview)
         self.results = {}
         self.pending = set()
         self.failed_at = {}
@@ -67,6 +74,12 @@ class ImageLoader(QObject):
         self.results[key] = result
         if result is None:
             self.failed_at[key] = time.monotonic()
+        else:self.failed_at.pop(key,None)
+        self.loaded.emit(key, result)
+
+    def _preview(self, key, result):
+        self.results[key] = result
+        self.failed_at.pop(key,None)
         self.loaded.emit(key, result)
 
 
@@ -97,11 +110,13 @@ class ProductPicture(QWidget):
 
 
 class ProductHeader(QWidget):
-    """A cutout at left, compact aligned specs at right; no image means no gap."""
+    """A product photo at left, concise specs at right; no image means no gap."""
     def __init__(self,name,meta,kind):
         super().__init__()
         self.name,self.meta=name,meta
         self.product={};self.key='';self._requested=False;self._result=None
+        self.retry=QTimer(self);self.retry.setSingleShot(True);self.retry.setInterval(65000)
+        self.retry.timeout.connect(self._retry)
         self.picture=ProductPicture();self.picture.hide()
         self.details=QWidget()
         details=QVBoxLayout(self.details);details.setContentsMargins(0,0,0,0);details.setSpacing(5)
@@ -113,7 +128,9 @@ class ProductHeader(QWidget):
         self.spec_rows=[];self._spec_values=None
         self.row=QBoxLayout(QBoxLayout.LeftToRight,self);self.row.setContentsMargins(0,0,0,0)
         self.row.setSpacing(20);self.row.addWidget(self.picture,0,Qt.AlignVCenter)
-        self.row.addWidget(self.details,1,Qt.AlignVCenter)
+        self.row.addWidget(self.details,1)
+        self.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Maximum)
+        self._layout_image(False)
         loader().loaded.connect(self._ready)
         self.set_specs([])
 
@@ -136,13 +153,20 @@ class ProductHeader(QWidget):
         product=dict(product or {});key=lookup_key(product)
         if key==self.key and self.product:return
         self.product,self.key,self._requested,self._result=product,key,False,None
+        self.retry.stop()
         self.picture.pixmap=QPixmap();self.picture.hide();self.setMinimumHeight(0)
+        self._layout_image(False)
         self.updateGeometry()
         if self.isVisible():self._request()
 
     def _request(self):
         if self.key and not self._requested:
             self._requested=True;loader().request(self.product)
+
+    def _retry(self):
+        if self.isVisible():
+            self._requested=False
+            self._request()
 
     def showEvent(self,event):
         super().showEvent(event)
@@ -151,16 +175,29 @@ class ProductHeader(QWidget):
 
     def resizeEvent(self,event):
         super().resizeEvent(event)
-        self.picture.setFixedWidth(min(260,max(110,round(self.width()*.32))))
+        if not self.picture.pixmap.isNull():
+            self.picture.setFixedWidth(min(260,max(110,round(self.width()*.32))))
 
     def _ready(self,key,result):
         if key!=self.key:return
         self.picture.pixmap=QPixmap(result['path']) if result else QPixmap()
         self._result=result
         available=not self.picture.pixmap.isNull()
-        self.picture.setVisible(available)
-        self.setMinimumHeight(170 if available else 0)
+        self._layout_image(available)
+        if available:self.retry.stop()
+        elif self.key:self.retry.start()
         self.picture.update();self.updateGeometry()
+
+    def _layout_image(self, available):
+        self.picture.setVisible(available)
+        self.row.setDirection(QBoxLayout.LeftToRight if available else QBoxLayout.TopToBottom)
+        self.row.setSpacing(20 if available else 0)
+        self.row.setAlignment(self.details, Qt.AlignVCenter if available else Qt.AlignTop)
+        self.setMinimumHeight(170 if available else 0)
+        self.picture.setFixedWidth(min(260,max(110,round(self.width()*.32))) if available else 0)
+        self.details.setMinimumWidth(0)
+        self.details.updateGeometry()
+        self.updateGeometry()
 
     def retranslate(self):
         for row in self.spec_rows:

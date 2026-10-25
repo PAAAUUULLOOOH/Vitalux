@@ -28,6 +28,8 @@ for product in [cpu['product']]+[m['product'] for m in ram['modules']]:loader().
 page=CpuPage();page.refresh(sample,history)
 assert not {'PL1','PL2','Kerne / Threads'} & set(page.kv)
 assert page.kv['Leistung'].v.text()=='88 W'
+assert page.kv['Takt'].v.text()=='4.20 GHz'
+assert ('Maximaler Takt','5.20 GHz') in page.product_header._spec_values
 assert ('Kerne / Threads','8 / 16') in page.product_header._spec_values
 assert page.product_header.picture.isHidden()
 memory=MemoryPage();memory.refresh(sample,history)
@@ -45,7 +47,7 @@ with tempfile.TemporaryDirectory() as directory:
         widget.set_specs([('Kapazität','16 GB'),('Speichertyp','DDR5-6000'),('Steckplatz','DIMM_A1')])
         widget.key='fixture';widget._ready('fixture',dict(path=str(path)))
         area=QScrollArea();area.setWidgetResizable(True);area.setWidget(widget)
-        for design in ('obsidian_gold','crystal_atrium','eclipse_crystal','light'):
+        for design, _ in theme.CHOICES:
             theme.set_mode(design);app.setStyleSheet(theme.stylesheet())
             for width in (500,1000):
                 area.resize(width,280);area.show();app.processEvents()
@@ -55,6 +57,7 @@ with tempfile.TemporaryDirectory() as directory:
                 assert area.horizontalScrollBar().maximum()==0
         widget._ready('fixture',None);app.processEvents()
         assert widget.picture.isHidden() and not hasattr(widget,'caption')
+        assert widget.row.spacing()==0 and widget.minimumHeight()==0
         assert widget.details.geometry().left()<10
         area.close()
 page.close();memory.close()

@@ -1,5 +1,10 @@
 # Vitalux – Changes
 
+## [v0.9.6.3-unstable.22] - 2026-10-25
+- Graphics, CPU, RAM and mainboard prefer matching cutout product pictures and fall back to photographs with backgrounds. Valid older cached pictures remain available; lookup handles CPU suffixes, model spellings, product identifiers and additional image sources.
+- Without a product picture, the image column and spacing disappear completely; the name and concise specs use the available width. Failed lookups can retry loading pictures.
+- The graphics overview tile wraps the complete card name and no longer shows watts. Its load display retains its size; the reported arrangement is reverted and extra text cannot overlap readings.
+- Crystal Atrium restores the original liquid-glass sphere composition with a static background. The previous clear-glass design is now Crystal Glass; existing selections preserve that design.
 
 ## [v0.9.6.3-unstable.21] - 2026-10-25
 - Crystal Atrium joins the design gallery with clear glass surfaces, instruments, logo and wordmark, the familiar Obsidian layout and a static dark-blue/light-blue/violet background.

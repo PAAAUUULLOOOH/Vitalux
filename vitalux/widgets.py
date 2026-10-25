@@ -271,33 +271,20 @@ class Gauge(QWidget):
 
 
 class GaugeCaption(QLabel):
-    """A bounded, two-line telemetry caption (never scales its ring)."""
+    """Full wrapped model names; caption height never rescales the instrument."""
     def __init__(self):
         super().__init__('')
         self.original_text = ''
         self.setObjectName('muted')
-        self.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        self.setWordWrap(False)
-        # One caption line (same height as the other three original cards).
-        # Horizontal size hints from a long GPU name must not shrink its ring.
-        self.setWordWrap(False)
+        self.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+        self.setWordWrap(True)
         self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)
 
     def set_caption(self, content):
         self.original_text = tr(str(content))
+        self.setText(self.original_text)
         self.setToolTip(self.original_text)
-        self._elide()
-
-    def _elide(self):
-        from PySide6.QtGui import QFontMetrics
-        fm = QFontMetrics(self.font())
-        available = max(45, self.width() - 8)
-        first_line = self.original_text.split('\n', 1)[0]
-        self.setText(fm.elidedText(first_line, Qt.ElideRight, available))
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self._elide()
+        self.updateGeometry()
 
 
 class GaugeBox(QWidget):

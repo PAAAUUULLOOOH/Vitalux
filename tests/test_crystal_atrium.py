@@ -1,44 +1,43 @@
-"""Static Crystal Atrium on the shared dashboard, and tidy Eclipse CPU/GPU rows."""
-import os,sys
+"""Archived Atrium composition, static stage, renamed Glass and independent selection."""
+import json,os,sys,tempfile
 from pathlib import Path
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from PySide6.QtCore import QSize
-from PySide6.QtGui import QPalette
-from PySide6.QtWidgets import QApplication,QLabel
-from vitalux import brand,crystal_atrium,premium,theme
+from PySide6.QtWidgets import QApplication
+from vitalux import brand,crystal_atrium,crystal_glass,premium,settings,theme
 from vitalux.design_capabilities import capabilities
-from vitalux.signature_designs import Metric
-from vitalux.widgets import Gauge,Card,label
-from vitalux.product_ui import ProductHeader
+from vitalux.widgets import Card,label
 
 app=QApplication.instance() or QApplication([])
-assert len(theme.CHOICES)==14 and dict(theme.CHOICES)['crystal_atrium']=='Crystal Atrium'
-assert not capabilities('crystal_atrium')['background']
-one=crystal_atrium.scene_pixmap(QSize(500,320),phase=0).toImage()
-two=crystal_atrium.scene_pixmap(QSize(500,320),phase=500).toImage()
-assert one==two and one.pixelColor(10,10)!=one.pixelColor(450,290)
-theme.set_mode('crystal_atrium');app.setStyleSheet(theme.stylesheet())
-assert brand._brand_asset(True)=='brand/vitalux-pulse-crystal-atrium.svg'
+assert len(theme.CHOICES)==15
+assert dict(theme.CHOICES)['crystal_atrium']=='Crystal Atrium'
+assert dict(theme.CHOICES)['crystal_glass']=='Crystal Glass'
+for module in (crystal_atrium,crystal_glass):
+ assert not capabilities(module.KEY)['background']
+ one=(module.scene_pixmap(QSize(500,320),phase=0)).toImage()
+ two=(module.scene_pixmap(QSize(500,320),phase=500)).toImage()
+ assert one==two and one.pixelColor(10,10)!=one.pixelColor(450,290)
+ theme.set_mode(module.KEY);app.setStyleSheet(theme.stylesheet())
+ tile=premium.DesignTile(module.KEY);tile.show();app.processEvents();assert not tile.grab().isNull();tile.close()
+ card=Card(module.PALETTE['title']);card.body.addWidget(label('Material'));card.resize(480,250);card.show();app.processEvents();assert not card.grab().isNull();card.close()
+assert brand._brand_asset(True)=='brand/vitalux-pulse-crystal-glass.svg'
 for kind in ('pulse','wordmark'):
-    svg=(Path('assets/brand')/f'vitalux-{kind}-crystal-atrium.svg').read_text()
-    assert 'data-material="glass"' in svg and 'stop-opacity=' in svg
-tile=premium.DesignTile('crystal_atrium');tile.show();app.processEvents();assert not tile.grab().isNull()
-card=Card('Crystal Atrium');card.body.addWidget(label('Crystal Atrium'));card.resize(480,250);card.show();app.processEvents();assert not card.grab().isNull()
-assert card.findChild(QLabel,'cardTitle').palette().color(QPalette.WindowText).name()==crystal_atrium.PALETTE['accent']
-gauge=Gauge();gauge.set(38);gauge.show();app.processEvents();assert not gauge.grab().isNull()
-assert not hasattr(crystal_atrium,'AtriumCanvas')
-theme.set_mode('eclipse_crystal');app.setStyleSheet(theme.stylesheet())
-for kind in ('cpu','gpu'):
-    metric=Metric('Prozessor' if kind=='cpu' else 'Grafik',kind)
-    metric.set(38,'52 °C',extra='Model fixture',history=[10,20,38])
-    for width,height in ((200,190),(440,230),(600,300)):
-        metric.resize(width,height);metric.show();app.processEvents();metric.grab()
-        value,detail,graph=metric.reading_regions
-        assert value.bottom()<detail.top() and detail.bottom()<graph.top()
-        assert detail.bottom()<=metric.height()
-    metric.close()
-header=ProductHeader(label('CPU'),label(''),'cpu');header.set_specs([('Kerne / Threads','8 / 16')]);header.show();app.processEvents()
-assert header.picture.isHidden() and header.minimumSizeHint().height()<170 and not hasattr(header,'caption')
-header.close();tile.close();card.close();gauge.close()
-print('Crystal Atrium static gradient, original dashboard material, glass branding/gallery and separated Eclipse readings PASS')
+ svg=(Path('assets/brand')/f'vitalux-{kind}-crystal-glass.svg').read_text()
+ assert 'data-material="glass"' in svg
+assert hasattr(crystal_atrium,'AtriumCanvas') and not hasattr(crystal_glass,'AtriumCanvas')
+canvas=crystal_atrium.AtriumCanvas('Test distribution',None);canvas.resize(1000,850)
+canvas.set_data(dict(cpu=dict(value=25,line1='4.2 GHz',line2='CPU'),gpu=dict(value=40,line1='ASUS TUF GAMING Radeon RX 9060 XT OC Edition with a long full model name',line2='16 GB'),ram=dict(value=35,line1='11 / 32 GB',line2='')))
+theme.set_mode('crystal_atrium');app.setStyleSheet(theme.stylesheet());canvas.show();app.processEvents();assert not canvas.grab().isNull()
+assert len(canvas._sphere_geo)==3
+# Stage pixels are independent of sphere motion/data refresh.
+first=crystal_atrium.stage_pixmap(600,400,0).toImage();second=crystal_atrium.stage_pixmap(600,400,100).toImage();assert first==second
+canvas.close();assert not canvas._timer.isActive()
+previous=settings.PATH
+with tempfile.TemporaryDirectory() as directory:
+ settings.PATH=str(Path(directory)/'settings.json');Path(settings.PATH).write_text(json.dumps(dict(theme='crystal_atrium',accent='#123456')))
+ assert settings.migrate_crystal_designs() and settings.get('theme')=='crystal_glass'
+ assert settings.get('accent')=='#123456'
+ settings.set('theme','crystal_atrium');assert settings.migrate_crystal_designs() and settings.get('theme')=='crystal_atrium'
+settings.PATH=previous
+print('Original archived liquid-glass Atrium, static background, Crystal Glass preservation and selected-design migration PASS')

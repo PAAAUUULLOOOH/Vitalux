@@ -229,10 +229,13 @@ class OverviewPage(Page):
         head.body.addWidget(self.chips)
         self.hero_card = head
         # Restore the ORIGINAL centered telemetry cards (v0.9.3.29).
-        # Only the GPU description gets a constrained/elided label so that
-        # its unusually long name cannot squeeze the GPU ring.
+        # Wrap the full GPU model; keep all four load instruments the same size.
         self.g_cpu, self.g_gpu = GaugeCard("Prozessor"), GaugeCard("Grafik", compact_caption=True)
         self.g_ram, self.g_disk = GaugeCard("Arbeitsspeicher"), GaugeCard("System-Laufwerk")
+        for card in (self.g_cpu,self.g_gpu,self.g_ram,self.g_disk):
+            card.box.gauge.setFixedHeight(180)
+            card.box.layout().setAlignment(Qt.AlignTop)
+            card.body.setAlignment(Qt.AlignTop)
         self.g_health = GaugeCard("Systemzustand", gauge_semantic='score')
         c1, c2 = Card("Auslastung"), Card("Netzwerk-Verlauf")
         self.graph_load = ChartPanel(['CPU', 'GPU', 'RAM'], [theme.accent(), theme.secondary_accent(), theme.TEAL])
@@ -305,7 +308,7 @@ class OverviewPage(Page):
             face.layout().setContentsMargins(24,14,24,14)
             instrument=Metric(TITLES[key],key)
             face.body.addWidget(instrument)
-            if key in ('cpu','gpu','ram','disk'):
+            if key in ('cpu','ram','disk'):
                 self.power_labels[key]=[]
                 for card in (classic,face):
                     reading=label('', 'muted',wrap=True)
@@ -315,6 +318,8 @@ class OverviewPage(Page):
                     card.body.addWidget(reading)
                     self.power_labels[key].append(reading)
             host.addWidget(face)
+            if key=='gpu':
+                host.full_caption=lambda: self.g_gpu.box.sub.original_text
             self.design_metrics[key]=instrument
             self.design_metric_hosts[key]=host
             return host
@@ -326,6 +331,10 @@ class OverviewPage(Page):
         ):
             self.board.register(key,widget)
         self.content.addWidget(self.board)
+        from .crystal_atrium import AtriumCanvas
+        self.atrium = AtriumCanvas(distro["name"], logo, self)
+        self.atrium.hide()
+        self.content.addWidget(self.atrium)
         self.layout_toggle.clicked.connect(self.toggle_editor)
         self.board.changed.connect(self._refresh_editor_actions)
         self.board.changed.connect(self._sync_distro_logo)
@@ -341,6 +350,14 @@ class OverviewPage(Page):
         for host in self.design_metric_hosts.values():
             host.setCurrentIndex(1 if selected else 0)
         self.root.setContentsMargins(16 if selected else 30,45,16 if selected else 30,24 if selected else 30)
+        atrium_on = theme.mode() == 'crystal_atrium'
+        self.board.setVisible(not atrium_on)
+        self.atrium.setVisible(atrium_on)
+        self.layout_toggle.setVisible(not atrium_on)
+        if atrium_on:
+            self.root.setContentsMargins(10,10,10,10)
+            self.layout_actions.hide()
+            self.atrium.sync_timer()
         self.distro_logo_host.setFixedSize(38 if selected else 48,38 if selected else 48)
         for chip in self.chips.chips.values():
             chip.layout().setContentsMargins(*( (7,2,7,2) if selected else (10,6,10,6) ))
@@ -528,8 +545,6 @@ class OverviewPage(Page):
         if gpus:
             g = gpus[0]
             vt = _vram_text(g)
-            # The full name remains available in a tooltip, while the compact
-            # two-line caption is elided within its reserved height.
             self.g_gpu.set(g["usage"], g["name"] + (f"\nVRAM {vt}" if vt else ""))
             self.g_gpu.box.sub.setToolTip(g["name"] + (f"\nVRAM {vt}" if vt else ""))
         else:
@@ -554,6 +569,24 @@ class OverviewPage(Page):
             f"{fmt_bytes(root['used'])} / {fmt_bytes(root['total'])}" if root else tr('Keine Laufwerksdaten verfügbar'))
         self.design_metrics['health'].set(score,f'{state} · {detail}')
 
+        if theme.mode() == 'crystal_atrium':
+            self.atrium.set_data({
+                'chips': [("Kernel", self.static["kernel"]), ("KDE", f"Plasma {self.static['plasma']}"),
+                          ("Mesa", self.static["mesa"]), ("Sitzung", self.static["session"]),
+                          ("Laufzeit", fmt_duration(d['uptime']))],
+                'cpu': {'value': c['usage'], 'line1': _temp_freq(c), 'line2': c.get('model', '')},
+                'gpu': ({'value': gpus[0]['usage'], 'line1': gpus[0]['name'],
+                         'line2': (f"VRAM {_vram_text(gpus[0])}" if _vram_text(gpus[0]) else
+                                   (f"{gpus[0]['temp']:.0f} °C" if gpus[0].get('temp') is not None else ''))}
+                        if gpus else {'value': None, 'line1': tr('Keine GPU-Daten verfügbar'), 'line2': ''}),
+                'ram': {'value': r['percent'], 'line1': f"{fmt_bytes(r['used'])} / {fmt_bytes(r['total'])}", 'line2': ''},
+                'health': {'score': score, 'state': tr(state) if isinstance(state, str) else state, 'detail': detail},
+                'disks': [{'mount': x['mount'], 'percent': x['percent'],
+                           'detail': f"{fmt_bytes(x['used'])} / {fmt_bytes(x['total'])}"} for x in disks[:3]],
+                'net': {'name': primary.get('name', '–'), 'down': fmt_rate(net['down']), 'up': fmt_rate(net['up']),
+                        'total': f"↓ {fmt_bytes(net['total_down'])}   ·   ↑ {fmt_bytes(net['total_up'])}"},
+                'history': {k: h[k] for k in ('cpu', 'gpu', 'ram', 'net_down', 'net_up')},
+            })
         self.graph_load.set_series([(h["cpu"], theme.accent()), (h["gpu"], theme.secondary_accent()), (h["ram"], theme.TEAL)])
         self.graph_net.set_series([(h["net_down"], theme.accent()), (h["net_up"], theme.secondary_accent())])
         self.net_name.set(primary.get("name", "–") + (f"  ·  {primary.get('speed', 0)} Mbit/s" if primary.get("speed") else ""))
@@ -647,10 +680,7 @@ class CpuPage(Page):
             ('Kerne / Threads', f'{c["cores"]} / {c["threads"]}'),
             ('Maximaler Takt', f'{c["freq_max"]/1000:.2f} GHz' if c.get('freq_max') else ''),
             ('Architektur', platform.machine())])
-        fm = f" (max {c['freq_max'] / 1000:.2f})" if c["freq_max"] else ""
         optional(self.kv['Takt'], c.get('freq')/1000 if number(c.get('freq')) is not None else None, 'GHz', 2)
-        if number(c.get('freq')) is not None:
-            self.kv['Takt'].set(f"{c['freq']/1000:.2f} GHz{fm}")
         optional(self.kv['Temperatur'], c.get('temp'), '°C', 0)
         power=component_power(d.get('hardware',[]),'cpu')
         optional(self.kv['Leistung'],(power or {}).get('value'),'W')

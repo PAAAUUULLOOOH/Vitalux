@@ -40,6 +40,7 @@ def main():
     lang = settings.get("lang") or ("de" if os.environ.get("LANG", "").lower().startswith("de") else "en")
     i18n.set_lang(lang)
     info = distro.info()
+    settings.migrate_crystal_designs()
     requested_theme = settings.get('theme', DEFAULT_THEME)
     theme.set_mode('minimal' if eco.enabled() else requested_theme)
     if not eco.enabled() and requested_theme != theme.mode():

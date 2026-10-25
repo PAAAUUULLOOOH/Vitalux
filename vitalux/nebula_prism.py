@@ -434,7 +434,7 @@ def paint_metric(metric, p):
     pal = PALETTE
     p.setRenderHint(QPainter.Antialiasing)
     p.setRenderHint(QPainter.TextAntialiasing)
-    rect = QRectF(metric.rect()).adjusted(5, 3, -5, -3)
+    rect = QRectF(metric.drawing_rect()).adjusted(5, 3, -5, -3)
     width = rect.width()
     font = QFont(metric.font())
 
@@ -461,8 +461,8 @@ def paint_metric(metric, p):
         level = '#ffc46b'
     elif kind == 'health' and value is not None and value < 50:
         level = '#ff6a7d'
-    top = rect.top() + (46 if kind in ('cpu', 'gpu') else 26)
-    if kind in ('cpu', 'gpu'):
+    top = rect.top() + (46 if kind == 'cpu' else 26)
+    if kind == 'cpu':
         text(QRectF(rect.left(), rect.top() + 22, width, 20), metric.extra, 11, pal['muted'])
     bottom = rect.bottom() - 26
     available = max(40.0, bottom - top)

@@ -88,4 +88,4 @@ with tempfile.TemporaryDirectory() as directory:
     card.close()
 app._product_image_loader.shutdown()
 app._product_image_loader.pool.waitForDone(3000)
-print('Background loading, deduplication, stale-image rejection, 14 palettes, DE/EN and clean GPU/Mainboard cards PASS')
+print('Background loading, deduplication, stale-image rejection, 15 palettes, DE/EN and clean GPU/Mainboard cards PASS')

@@ -57,7 +57,7 @@ with tempfile.TemporaryDirectory(prefix='vitalux-quantum-') as folder, patch.obj
         sampler = window.sampler
         preferences = dict(window.pages)['Einstellungen']
         scene = window.centralWidget()
-        assert len(preferences.design_tiles) == len(theme.CHOICES) == 14
+        assert len(preferences.design_tiles) == len(theme.CHOICES) == 15
         assert 'aurora_gold' not in dict(theme.CHOICES)
         for mode in ('quantum_core', 'nebula_prism', 'quantum_core', 'liquid_silver', 'quantum_core'):
             preferences.select_design(mode)

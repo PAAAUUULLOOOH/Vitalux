@@ -14,7 +14,7 @@ Use **Edit layout** on Overview to arrange cards. Tiles stay stationary when edi
 
 ## Designs and backgrounds
 
-**Obsidian Gold is the default** for new profiles and restored appearance defaults; saved designs are retained. Choose one of fourteen preview tiles under **Settings → Appearance → Design**. The transition preserves your page, scroll position and running measurements. Logos, sidebar text and symbols share the effective palette.
+**Obsidian Gold is the default** for new profiles and restored appearance defaults; saved designs are retained. Choose one of fifteen preview tiles under **Settings → Appearance → Design**. The transition preserves your page, scroll position and running measurements. Logos, sidebar text and symbols share the effective palette.
 
 Obsidian Gold, Black Glass Gold, **Aether Glass**, **Eclipse Crystal**, **Liquid Silver**, **Nebula Prism** and **Quantum Core** use fixed palettes and backgrounds. Their grey **Fixed design palette** and **Fixed background** fields cannot be opened. Aether Glass combines platinum and violet/cyan optical glass with floating navigation. Eclipse Crystal uses faceted black crystal, champagne edges, top category navigation and a bottom bar for System, Settings, Updates, About and language. Its top navigation scrolls on narrow windows. Holographic also has a fixed HUD background. Personal accent and background selections remain saved for compatible themes.
 
@@ -56,7 +56,7 @@ CPU rendering is the stable default. Experimental OpenGL, X11/OpenGL, Wayland/Op
 
 MiniHUD reuses the main sensor stream and offers three layouts and adjustable opacity. Your desktop compositor determines its placement relative to fullscreen applications.
 
-Crystal Atrium keeps Obsidian’s dashboard and sidebar arrangement while replacing its materials with clear, reflected glass. The blue/light-blue/violet background is static; the glass logo and wordmark follow the normal independent motion settings. Its design tile uses the same gallery sizing and controls as the other designs. Eclipse Crystal places CPU/GPU percentages and temperatures on separate aligned rows.
+Crystal Atrium restores the original liquid-glass composition: three live CPU/GPU/RAM spheres, ribbon histories, network and system/drive panels. Its colorful background and refracted stage stay static; liquid motion follows the normal motion/Ultra Eco settings. Crystal Glass is the previous clear-glass Obsidian layout, with its static blue/light-blue/violet background. Both have the same gallery tile sizing and controls as the other designs. Existing Crystal Atrium selections from Unstable.21 migrate to Crystal Glass, preserving the selected design.
 
 ## Reset settings
 
@@ -108,9 +108,9 @@ On/off controls use themed switches throughout the interface. Multiple-selection
 
 **Memory** adds manufacturer, part number and short module specifications when readable SMBIOS memory-device records are available. An installed `dmidecode` can provide the same data without changing system permissions. Firmware may leave fields blank, and access to its tables is restricted on some machines. In those cases the ordinary memory measurements remain available. Different module products remain separate; Vitalux does not infer a retail kit from its capacity or substitute a memory-chip vendor for a reported module brand.
 
-CPU, GPU, memory-module and mainboard headers place a matching product picture on the left and a few aligned specification rows on the right. Only real cutout images with a transparent surround are accepted. An opaque old picture is rechecked rather than displayed with a white rectangle. If a matching cutout is unavailable, the image area disappears completely: no placeholder, status caption or empty image column. White hardware is never made transparent by a blanket color replacement.
+CPU, GPU, memory-module and mainboard headers place a matching product picture on the left and a few aligned specification rows on the right. Real cutout images are preferred. When no matching cutout is found, a matching photograph with its original background is accepted instead, including valid pictures cached by older versions. Without any matching picture, the image column and its spacing disappear: the name and specs start at the left and use the available width. White hardware is never made transparent by blanket color replacement.
 
-Pictures are looked up in background workers using manufacturer/product pages, structured image metadata, public image CDNs and online search. Initial uncached searches send manufacturer/model terms to Bing or DuckDuckGo; serial numbers are not included. Matching transparent pictures are cached persistently in the active profile and load again after restart without Internet access. Successful cutouts have no automatic expiry. The offline-cache status is not shown below the picture. Failed searches can retry when the page is revisited after at least a minute. **Restore defaults** clears the active profile's cache, preserving the other channel.
+Pictures are looked up in background workers using manufacturer model routes, product pages, headings, SKU/MPN metadata, image galleries/CDNs and online search. CPU generation/clock suffixes and internal mainboard codes are normalized without dropping model variants. Initial uncached searches send manufacturer/model terms to Bing or DuckDuckGo; serial numbers are not included. A valid background alternative can appear immediately while the worker continues looking for a cutout. Accepted pictures are cached persistently in the active profile and load again after restart without Internet access. There is no visible offline-cache status. Visible failed searches can retry after at least a minute; revisiting the page also permits retry. Bounded lookup diagnostics are kept alongside the profile's hardware-product cache. **Restore defaults** clears the active profile's cache, preserving the other channel.
 
 ## Hardware sensors and measured power
 
@@ -127,3 +127,5 @@ AMDGPU uses DRM/hwmon and explicitly supported gpu_metrics revisions. GPU edge, 
 Board/VRM, fan, voltage, RAM/DRAM, storage, network and other device readings appear only where their drivers expose real sensors. RAM, SSD and PSU watt measurements are not universally available. CPU package, CPU subdomains, GPU socket and individual rails can overlap: Vitalux keeps them separate and does not add CPU plus GPU into a PC-total estimate.
 
 A disappearing sensor immediately loses its current field; remaining fields reflow without empty slots. Genuine zeroes such as 0 RPM or 0 W stay visible. Recovered readings resume without bridging unavailable intervals. The full running app version in Updates remains unchanged while browsing versions or downloading an update; it changes after the new app starts.
+
+The graphics overview tile shows the complete GPU name with line wrapping and has no watt caption. Its load display keeps the same size as the other overview instruments; long names add text space instead of shrinking the meter. Current GPU power and power limit remain in the Graphics page.

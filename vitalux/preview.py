@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 
-DESIGNS = ('obsidian_gold', 'nebula_prism', 'quantum_core', 'crystal_atrium')
+DESIGNS = ('obsidian_gold', 'nebula_prism', 'quantum_core', 'crystal_atrium','crystal_glass')
 
 
 def prepare(design=None):
@@ -27,7 +27,8 @@ def prepare(design=None):
     if design is not None:
         if design not in DESIGNS:
             raise ValueError('Unknown Vitalux preview design')
-        changes.update(theme=design, background_style='theme_default', ultra_eco=False)
+        changes.update(theme=design, background_style='theme_default', ultra_eco=False,
+                       _crystal_design_revision=2)
     if changes and not settings.set_many(changes):
         raise RuntimeError('Unable to save local preview preferences')
 

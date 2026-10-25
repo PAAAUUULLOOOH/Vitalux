@@ -7,8 +7,8 @@ import math
 from PySide6.QtCore import QPointF, QRectF, Qt, QVariantAnimation, QEasingCurve
 from PySide6.QtGui import (QColor, QFont, QLinearGradient, QPainter,
                            QPainterPath, QPen, QPixmap, QRadialGradient)
-from PySide6.QtWidgets import QWidget
-from . import nebula_prism, quantum_core
+from PySide6.QtWidgets import QWidget, QLabel
+from . import nebula_prism, quantum_core, crystal_atrium
 
 COLLECTIONS = {
     'aether_glass': dict(title='Aether Glass', subtitle='OPTICAL GLASS / PLATINUM',
@@ -24,6 +24,7 @@ COLLECTIONS = {
 }
 COLLECTIONS['nebula_prism'] = nebula_prism.PALETTE
 COLLECTIONS['quantum_core'] = quantum_core.PALETTE
+COLLECTIONS['crystal_atrium'] = crystal_atrium.PALETTE
 KEYS = tuple(COLLECTIONS)
 
 
@@ -39,6 +40,7 @@ def color(value, alpha=255):
 
 
 def shape(rect, mode, compact=False):
+    if mode == crystal_atrium.KEY:return crystal_atrium.shape(rect,compact)
     if mode == 'nebula_prism':
         return nebula_prism.shape(rect, compact)
     if mode == 'quantum_core':
@@ -58,6 +60,7 @@ def shape(rect, mode, compact=False):
 
 
 def scene_pixmap(size, mode, phase=0.0):
+    if mode == crystal_atrium.KEY:return crystal_atrium.scene_pixmap(size,phase)
     if mode == 'nebula_prism':
         return nebula_prism.scene_pixmap(size)
     if mode == 'quantum_core':
@@ -139,6 +142,8 @@ def scene_pixmap(size, mode, phase=0.0):
 
 def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
     from . import theme
+    if theme.mode() == crystal_atrium.KEY:return crystal_atrium.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
+    from . import theme
     from .glass import draw_frosted_backdrop
     mode = theme.mode()
     if mode == 'nebula_prism':
@@ -216,6 +221,7 @@ def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
 
 
 def stylesheet(mode):
+    if mode == crystal_atrium.KEY:return crystal_atrium.stylesheet()
     if mode=='nebula_prism':
         return nebula_prism.stylesheet()
     if mode=='quantum_core':
@@ -313,6 +319,30 @@ class Surface(QWidget):
         p.end()
 
 
+def _atrium_preview(p,pal,box,width):
+    """Three liquid-glass spheres over a glass strip and a floating dock."""
+    from PySide6.QtGui import QRadialGradient,QLinearGradient
+    box(QRectF(5,5,width-10,9))
+    cell=(width-14)/3
+    for i,(a,b) in enumerate((('#7fd6ff','#2b6bff'),('#ff8bdc','#a42cff'),('#ffcb72','#ff6a3c'))):
+        x=5+i*(cell+2)
+        box(QRectF(x,17,cell,32))
+        cx,cy,r=x+cell/2,33,11.5
+        p.setPen(Qt.NoPen)
+        liquid=QLinearGradient(0,cy-r*.1,0,cy+r)
+        liquid.setColorAt(0,color(a,235));liquid.setColorAt(1,color(b,245))
+        clip=QPainterPath();clip.addEllipse(QPointF(cx,cy),r,r)
+        p.save();p.setClipPath(clip);p.fillRect(QRectF(cx-r,cy-r*.1,2*r,r*1.1),liquid);p.restore()
+        p.setBrush(Qt.NoBrush);p.setPen(QPen(color('#ffffff',150),.8));p.drawEllipse(QPointF(cx,cy),r,r)
+        glint=QRadialGradient(QPointF(cx-r*.35,cy-r*.45),r*.5)
+        glint.setColorAt(0,color('#ffffff',200));glint.setColorAt(1,color('#ffffff',0))
+        p.setPen(Qt.NoPen);p.setBrush(glint);p.drawEllipse(QPointF(cx-r*.35,cy-r*.45),r*.45,r*.3)
+    box(QRectF(5,52,(width-14)*.6,10))
+    box(QRectF(5+(width-14)*.62,52,(width-14)*.38,10))
+    dock_w=min(width-30,78)
+    box(QRectF((width-dock_w)/2,65,dock_w,8),235)
+
+
 def paint_preview(p,tile,pal):
     """Represent the actual horizontal/floating navigation in design previews."""
     mode=tile.key
@@ -321,6 +351,9 @@ def paint_preview(p,tile,pal):
         p.setPen(QPen(color(pal['accent'],105),.6))
         p.setBrush(color(pal['card'],alpha))
         p.drawPath(shape(rect,mode,True))
+    if mode=='crystal_atrium':
+        _atrium_preview(p,pal,box,width)
+        return _preview_tail(p,tile,pal,mode,width)
     if mode=='nebula_prism':
         nebula_prism.preview_contents(p,tile,pal,box,width)
         return _preview_tail(p,tile,pal,mode,width)
@@ -385,6 +418,12 @@ class Metric(QWidget):
         self.value=None
         self.detail=''
         self.extra=''
+        self.model_caption=QLabel(self)
+        self.model_caption.setObjectName('muted')
+        font=self.font();font.setPixelSize(11);self.model_caption.setFont(font)
+        self.model_caption.setWordWrap(True)
+        self.model_caption.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+        self.model_caption.hide()
         self.history=[]
         self._display_value=None
         self._value_animation=QVariantAnimation(self)
@@ -414,16 +453,37 @@ class Metric(QWidget):
         else:self._display_value=value
         self.detail=detail
         self.extra=extra
+        self.model_caption.setText(extra if self.kind == "gpu" else "")
+        self._place_caption()
         self.history=list(history)[-120:]
         self.setAccessibleName(self.title)
         self.setAccessibleDescription(f'{value if value is not None else "–"} · {detail} · {extra}')
         self.setToolTip(f'{extra}\n{detail}'.strip())
         self.update()
 
+    def _place_caption(self):
+        visible=self.kind=='gpu' and bool(self.extra)
+        self.model_caption.setVisible(visible)
+        height=max(18,self.model_caption.heightForWidth(max(20,self.width()-10))) if visible else 0
+        self.model_caption.setGeometry(5,self.height()-height,self.width()-10,height)
+        self.caption_height=height
+
+    def resizeEvent(self,event):
+        super().resizeEvent(event)
+        self._place_caption()
+
+    def drawing_rect(self):
+        from PySide6.QtCore import QRect
+        # The model gets its own wrapped footer, outside the unchanged meter.
+        height=max(1,self.height()-(getattr(self,'caption_height',0)+4 if self.kind=='gpu' else 0))
+        return QRect(0,0,self.width(),height)
+
     def paintEvent(self,event):
         from . import theme
         from .i18n import tr
         p=QPainter(self)
+        if theme.mode() == crystal_atrium.KEY:
+            crystal_atrium.paint_metric(self,p);p.end();return
         if theme.mode()=='nebula_prism':
             nebula_prism.paint_metric(self,p)
             p.end()
@@ -435,7 +495,7 @@ class Metric(QWidget):
         p.setRenderHint(QPainter.Antialiasing)
         p.setRenderHint(QPainter.TextAntialiasing)
         pal=COLLECTIONS[theme.mode()]
-        rect=QRectF(self.rect()).adjusted(5,3,-5,-3)
+        rect=QRectF(self.drawing_rect()).adjusted(5,3,-5,-3)
         width=rect.width()
         font=QFont(self.font())
         def text(area,value,size=12,tone=None,weight=QFont.Normal,align=Qt.AlignLeft|Qt.AlignVCenter):
@@ -447,30 +507,25 @@ class Metric(QWidget):
             p.drawText(area,align,value)
         title_h=24
         text(QRectF(rect.left(),rect.top(),width,title_h),tr(self.title).upper(),11,weight=QFont.DemiBold)
-        if self.kind in ('cpu','gpu'):
+        if self.kind == 'cpu':
             text(QRectF(rect.left(),rect.top()+27,width,22),self.extra,11,pal['muted'])
         shown='–' if self._display_value is None else f'{self._display_value:.0f} %'
         if self.kind=='health':
             shown='–' if self._display_value is None else f'{self._display_value:.0f}'
         large=round(min(65,max(28,width*.16)))
-        y=rect.top()+54 if self.kind in ('cpu','gpu') else rect.top()+30
-        if theme.mode()=='eclipse_crystal' and self.kind in ('cpu','gpu'):
-            # Both component tiles use the same reading order. Reserve the
-            # temperature/detail row explicitly so a short tile cannot put it
-            # beside, behind or over the large percentage.
-            value_height=min(56,max(34,rect.height()-92))
-            value_area=QRectF(rect.left(),y,width,value_height)
-            detail_area=QRectF(rect.left(),value_area.bottom()+5,width,22)
-            graph_top=detail_area.bottom()+10
-            graph_area=QRectF(rect.left(),graph_top,width,max(0,rect.bottom()-graph_top-4))
-            self.reading_regions=(value_area,detail_area,graph_area)
-            text(value_area,shown,min(44,round(value_height*.79)),weight=QFont.DemiBold)
-            text(detail_area,tr(self.detail),11,pal['muted'])
-            self._graph(p,graph_area,pal)
-            p.end()
-            return
-        text(QRectF(rect.left(),y,width,large+12),shown,large,weight=QFont.DemiBold)
-        graph=QRectF(rect.left(),y+large+28,width,max(30,rect.bottom()-y-large-76))
+        y=rect.top()+54 if self.kind == 'cpu' else rect.top()+30
+        if theme.mode()=='eclipse_crystal' and self.kind=='cpu' and width>380:
+            gauge=QRectF(rect.left()+8,y,118,118)
+            p.setPen(QPen(color(pal['track']),3))
+            p.drawArc(gauge,225*16,-270*16)
+            if self._display_value is not None:
+                p.setPen(QPen(color(pal['accent']),3.5,Qt.SolidLine,Qt.RoundCap))
+                p.drawArc(gauge,225*16,round(-270*16*max(0,min(100,self._display_value))/100))
+            text(gauge,shown,35,weight=QFont.DemiBold,align=Qt.AlignCenter)
+            graph=QRectF(rect.left()+149,y+13,width-157,max(35,rect.height()-y-56))
+        else:
+            text(QRectF(rect.left(),y,width,large+12),shown,large,weight=QFont.DemiBold)
+            graph=QRectF(rect.left(),y+large+28,width,max(30,rect.bottom()-y-large-76))
         if self.kind in ('cpu','gpu'):
             self._graph(p,graph,pal)
         elif self.kind in ('ram','disk'):

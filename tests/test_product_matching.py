@@ -50,9 +50,8 @@ with tempfile.TemporaryDirectory() as directory:
     assert saved and Path(saved['path']).read_bytes()==png and calls==[calls[0],source,photo]
     def offline(*args):raise AssertionError('A cached cutout accessed the Internet')
     assert images.resolve(product,images.ProductCache(directory),offline)['cached']
-    try:cache.save(product,opaque_png,source,photo)
-    except ValueError:pass
-    else:raise AssertionError('Opaque product picture accepted')
+    opaque=cache.save(product,opaque_png,source,photo)
+    assert opaque and not opaque['cutout'] and cache.load(product)['cached']
     assert not images.allowed_url('https://127.0.0.1/private')
     assert not images.allowed_url('https://localhost/private')
 with tempfile.TemporaryDirectory() as directory:
