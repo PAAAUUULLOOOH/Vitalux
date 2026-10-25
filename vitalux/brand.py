@@ -140,24 +140,20 @@ ACCENT_VARIANTS = {pal['accent']: key for key, pal in _PALETTES['variants'].item
 
 
 def _selected_variant():
-    from . import theme
-    if theme.mode() in theme.FIXED_MODES:
-        return _PALETTES['theme_assets'][theme.mode()]
-    chosen = theme.source_accent()
-    if theme.mode() == "holographic" and str(chosen).lower() == "#4f8cff":
-        return "cyan"
-    return ACCENT_VARIANTS.get(str(chosen).lower())
+    from . import theme,settings
+    if theme.mode() in _PALETTES['theme_assets']:
+        return _PALETTES['theme_assets'][theme.mode()] if settings.get('accent','design_default')=='design_default' else None
+    return ACCENT_VARIANTS.get(str(theme.source_accent()).lower())
 
 
 def _brand_asset(icon):
     from . import theme
-    variant = _selected_variant()
-    if icon:
-        return f"brand/vitalux-pulse-{variant}.svg" if variant else "vitalux-pulse.svg"
+    variant=_PALETTES['theme_assets'].get(theme.mode()) or _selected_variant()
+    if icon:return f"brand/vitalux-pulse-{variant}.svg" if variant else 'vitalux-pulse.svg'
     if variant:
-        suffix = "-light" if theme.is_light() else ""
+        suffix='-light' if theme.is_light() else ''
         return f"brand/vitalux-wordmark-{variant}{suffix}.svg"
-    return "vitalux-wordmark-light.svg" if theme.mode() == "light" else "vitalux-wordmark.svg"
+    return 'vitalux-wordmark-light.svg' if theme.is_light() else 'vitalux-wordmark.svg'
 
 
 def themed_icon_pixmap(size=152):

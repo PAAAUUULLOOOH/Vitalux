@@ -65,8 +65,8 @@ for running in ('0.9.6.3-unstable.14','0.9.6.3-unstable.29','0.9.6.2'):
 personal=dict(theme='lumen_drift',accent='#123456',custom_background='/original/photo.png',
               custom_colors=['#654321'],dashboard_layout={'cpu':1},_appearance_revision=2)
 migrated=appearance.migrate(personal)
-assert migrated['theme']=='obsidian_gold'
-assert all(migrated[k]==v for k,v in personal.items() if k!='theme')
-assert len(theme.CHOICES)== 15 and 'lumen_drift' not in dict(theme.CHOICES)
+assert migrated['theme']=='obsidian_gold' and migrated['accent']=='design_default'
+assert all(migrated[k]==v for k,v in personal.items() if k not in ('theme','accent'))
+assert len(theme.CHOICES)== 6 and 'lumen_drift' not in dict(theme.CHOICES)
 theme.set_mode('lumen_drift');assert theme.mode()=='obsidian_gold'
 print('Sensor disappearance/recovery, zero RPM, gap-free rows, numeric limits, full running version and retired-design migration PASS')

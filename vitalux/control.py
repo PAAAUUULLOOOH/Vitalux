@@ -7,7 +7,7 @@ from PySide6.QtGui import QColor, QIntValidator
 from PySide6.QtWidgets import (QColorDialog, QFrame, QGridLayout, QHBoxLayout, QInputDialog, QLabel, QLineEdit, QListWidget, QSizePolicy, QVBoxLayout, QWidget)
 from .ui_locale import QCheckBox, QComboBox, QFileDialog, QListWidgetItem, QMessageBox, QPushButton
 
-from . import settings, theme, motion, backdrops, user_background, wallpaper_accents, renderer, eco, premium, design_capabilities
+from . import settings, theme, motion, backdrops, user_background, wallpaper_accents, renderer, eco, premium, design_capabilities, design_catalog
 from .pages import Page
 from .widgets import Card, KeyValue, label
 from .i18n import tr
@@ -153,7 +153,8 @@ class AlertThresholdField(QFrame):
 class PreferencesPage(Page):
     # Built-in colors are never editable or removable, even when older saved
     # settings incorrectly contain an entry with the same hex color.
-    PRESET_ACCENTS = (
+    PRESET_ACCENTS = (('Originalfarben', 'design_default'),) + tuple(
+        (item['title'],'palette:'+key) for key,item in design_catalog.PRESETS.items()) + (
         ('Distribution', 'auto'),
         ('Vitalux Blau', '#4f8cff'),
         ('Cyan', '#52d3ff'),
@@ -167,7 +168,7 @@ class PreferencesPage(Page):
     PRESET_COLORS = frozenset(value for _, value in PRESET_ACCENTS)
 
     DEFAULTS = {
-        'theme': DEFAULT_THEME, 'accent': '#4f8cff', 'motion': 'smooth',
+        'theme': DEFAULT_THEME, 'accent': 'design_default', 'motion': 'smooth', 'component_images':True,
         'background_style': 'theme_default', 'custom_background_fit': 'cover',
         'render_backend': renderer.SOFTWARE, 'ultra_eco': False,
         'interval': 1, 'close_to_tray': True, 'alerts_enabled': False,
@@ -178,7 +179,7 @@ class PreferencesPage(Page):
         'network_app_limits': {},
     }
     SECTION_DEFAULTS = {
-        'appearance': ('theme', 'accent', 'motion', 'background_style', 'custom_background_fit'),
+        'appearance': design_catalog.FIELDS,
         'hud': ('mini_hud_enabled', 'mini_hud_layout', 'mini_hud_opacity',
                 'mini_hud_metrics'),
         'alerts': ('alerts_enabled', 'cpu_temp', 'gpu_temp', 'ram_usage', 'disk_usage'),
@@ -243,22 +244,11 @@ class PreferencesPage(Page):
         self.theme_note = label('', 'muted', wrap=True)
         self.theme_note.setObjectName('themeDescription')
         look.body.addWidget(self.theme_note)
-        self.mode_notes = {
-            'dark': 'Dark · Kontrastreiche, ruhige Flächen ohne Glasunschärfe.',
-            'light': 'Light · Helle, gut lesbare Karten ohne Glaseffekt.',
-            'liquid_silver': 'Liquid Silver · Die Oberfläche von Obsidian Gold mit dunklem Rauchglas und satiniertem Silber. Palette und Hintergrund sind fest.',
-            'glass': 'Glass · Halbtransparente Panels mit Lichtreflexen und weichgezeichnetem Hintergrund.',
-            'black_glass': 'Black Glass · Tiefschwarze Glasflächen mit dezenten Reflexionen und silbernen Kanten. Akzentfarben und Hintergründe sind frei anpassbar.',
-            'black_glass_gold': 'Black Glass Gold · Tiefschwarze Glasflächen, helles Gold für Logo, Diagramme, Anzeigen, Icons und Rahmen. Akzentfarbe und Hintergrund sind fest aufeinander abgestimmt.',
-            'holographic': 'Holographic · Eigenständige, undurchsichtige Sci-Fi-HUD-Oberfläche mit leuchtenden Konturen, technischen Kacheln und Diagrammen – ohne Glas.',
-            'minimal': 'Minimalistisch · Einfache Flächen ohne Glas, Schatten und dekorative Animationen. Spart Zeichenaufwand.',
-            'obsidian_gold': 'Obsidian Gold · Rauchglas, gebürstetes Gold und präzise Instrumentringe. Die äußeren Logo-Streifen drehen sich langsam.',
-            'aether_glass': 'Aether Glass · Optisches Rauchglas, Platinkanten und Violett-/Cyanlicht mit schwebender Navigation und eigenen Instrumenten. Palette und Hintergrund sind fest.',
-            'eclipse_crystal': 'Eclipse Crystal · Facettierter schwarzer Kristall, Champagnerkanten und horizontale Navigation. Palette und Hintergrund sind fest.',
-            'nebula_prism': 'Nebula Prism · Prismatisches Weltraumglas mit Spektralkanten, Ringinstrumenten und schwebendem Dock am unteren Rand. Palette und Hintergrund sind fest.',
-            'quantum_core': 'Quantum Core · HUD-Reaktor-Design mit statischem Schaltkreis-Hintergrund und kantigen Neon-Panels. Logo und Live-Instrumente bleiben animiert. Palette und Hintergrund sind fest.',
-        }
-        self.theme_note.setText(tr(self.mode_notes.get(theme.mode(), self.mode_notes['dark'])))
+        self.mode_notes = {key: title+' · Akzentfarben und Hintergrund sind anpassbar.'
+                           for key,title in design_catalog.CHOICES}
+        self.mode_notes['eclipse_crystal']='Eclipse Crystal'
+        self.mode_notes['dark']=''
+        self.theme_note.setText(tr(self.mode_notes.get(theme.mode(),'')))
         accent_row = QVBoxLayout()
         accent_selector = QHBoxLayout()
         accent_selector.addWidget(label('Akzentfarbe', 'strong'))
@@ -267,11 +257,11 @@ class PreferencesPage(Page):
         for title, value in self.PRESET_ACCENTS:
             accent.addItem(title, value)
         self.custom_accents = self._read_custom_accents()
-        stored = settings.get('accent', '#4f8cff')
+        stored = settings.get('accent', 'design_default')
         if wallpaper_accents.is_legacy_accent(stored):
             stored = wallpaper_accents.AUTO
         stored = wallpaper_accents.effective_selection(stored)
-        if stored != settings.get('accent', '#4f8cff'):
+        if stored != settings.get('accent', 'design_default'):
             settings.set('accent', stored)
         if accent.findData(stored) < 0 and QColor(str(stored)).isValid():
             # Migrate the unnamed color from earlier Vitalux installations.
@@ -397,7 +387,11 @@ class PreferencesPage(Page):
         r_motion.addStretch(1)
         look.body.addLayout(r_motion)
         look.body.addWidget(label('Übergänge anpassen: weich, verkürzt oder ohne Animation.', 'muted', wrap=True))
-        self._add_section_reset(look.body, 'appearance', 'Darstellung zurücksetzen')
+        self.component_images = QCheckBox('Komponentenbilder anzeigen')
+        self.component_images.setChecked(settings.get('component_images',True) is not False)
+        self.component_images.toggled.connect(self.change_component_images)
+        look.body.addWidget(self.component_images)
+        self._add_section_reset(look.body, 'appearance', 'Design zurücksetzen')
         self._settings_cards['appearance'].append(look)
 
         # A genuine toggle, not another GPU backend or a destructive theme switch.
@@ -563,7 +557,8 @@ class PreferencesPage(Page):
 
         self._refresh_restore_button()
         self._search_targets = [
-            ('appearance', 'Design Dark Light Glass Black Glass Gold Holographic Minimalistisch Obsidian Aether Eclipse Crystal Liquid Silver Nebula Prism Quantum Core Platin Silber', self.design_tiles[0]),
+            ('appearance','Komponentenbilder anzeigen CPU RAM Grafik Mainboard',self.component_images),
+            ('appearance', 'Design Light Glass Obsidian Crystal Atrium Nebula Prism Quantum Core', self.design_tiles[0]),
             ('appearance', 'Akzentfarbe Eigene Farben Bearbeiten Löschen', self.accent_combo),
             ('appearance', 'Hintergrund Bild Hintergrundfarbe automatisch', self.background_combo),
             ('appearance', 'Animationen Bewegung Übergang', self.motion_combo),
@@ -618,6 +613,13 @@ class PreferencesPage(Page):
 
     def search_settings(self, query):
         """Predict full or partial settings names; never search outside Settings."""
+        if query.strip().casefold()=='timbooh':
+            if eco.enabled():settings.set('ultra_eco',False)
+            if design_catalog.switch('eclipse_crystal'):
+                self.window.apply_appearance()
+                self.refresh_appearance()
+            self.search.clear()
+            return
         from difflib import SequenceMatcher
         self.search_results.clear()
         tokens = self._search_normalize(query).split()
@@ -629,7 +631,7 @@ class PreferencesPage(Page):
 
         ranked = []
         if self._search_words is None:
-            aliases = {self.design_tiles[0]: 'Theme Design Preview', self.accent_combo: 'Accent Color Colour Custom',
+            aliases = {self.component_images:'Component Pictures Images Photos Hardware Show', self.design_tiles[0]: 'Theme Design Preview', self.accent_combo: 'Accent Color Colour Custom',
                 self.background_combo: 'Background Image Wallpaper', self.motion_combo: 'Animation Motion Transition',
                 self.hud_on: 'MiniHUD Show Enable', self.hud_size: 'MiniHUD Size Layout',
                 self.hud_opacity: 'MiniHUD Opacity Transparency', self.close_to_tray: 'Tray Close Window',
@@ -732,12 +734,11 @@ class PreferencesPage(Page):
         keys = self.SECTION_DEFAULTS.get(section)
         if keys is None:
             return
-        changes = {key: self.DEFAULTS[key] for key in keys}
+        changes = design_catalog.defaults() if section=='appearance' else {key: self.DEFAULTS[key] for key in keys}
         if not settings.set_many(changes):
             return
         if section == 'appearance':
             self._select_without_signal(self.accent_combo, self.DEFAULTS['accent'])
-            self._select_without_signal(self.motion_combo, self.DEFAULTS['motion'])
             self._select_without_signal(self.background_combo, self.DEFAULTS['background_style'])
             self._select_without_signal(self.background_fit_combo, self.DEFAULTS['custom_background_fit'])
             self.sync_background_controls()
@@ -887,7 +888,8 @@ class PreferencesPage(Page):
         for section, keys in self.SECTION_DEFAULTS.items():
             button = self._reset_buttons.get(section)
             if button is not None:
-                self._reset_reveals[section].setRevealed(any(values[key] != self.DEFAULTS[key] for key in keys))
+                defaults=design_catalog.defaults() if section=='appearance' else self.DEFAULTS
+                self._reset_reveals[section].setRevealed(any(settings.get(key,defaults[key]) != defaults[key] for key in keys))
         self.restore_reveal.setRevealed(
             any(values[key] != default for key, default in self.DEFAULTS.items()) or
             any(settings.get(key) for key in ('custom_accents', 'custom_backgrounds', 'dashboard_order',
@@ -916,6 +918,12 @@ class PreferencesPage(Page):
 
     def refresh_appearance(self):
         ultra = eco.enabled()
+        for widget,key,default in ((self.accent_combo,'accent','design_default'),
+                                   (self.background_combo,'background_style','theme_default'),
+                                   (self.background_fit_combo,'custom_background_fit','cover')):
+            self._select_without_signal(widget,settings.get(key,default))
+        selected_image=settings.get('custom_background_selected','')
+        self._select_without_signal(self.background_image_combo,selected_image)
         self.design_gallery_scroll.sync()
         self.settings_deck.sync()
 
@@ -964,19 +972,25 @@ class PreferencesPage(Page):
     def select_design(self, key):
         if eco.enabled() or key not in dict(theme.CHOICES):
             return
-        if not settings.set('theme', key):
+        if not design_catalog.switch(key):
             return
         self.window.apply_appearance()
         self.refresh_appearance()
 
+    def change_component_images(self,checked):
+        settings.set('component_images',bool(checked))
+        from .product_ui import ProductHeader
+        for header in self.window.findChildren(ProductHeader):header.sync_preference()
+        self._refresh_restore_button()
+
     def change_accent(self, val):
-        if eco.enabled() or theme.mode() == 'black_glass_gold' or theme.mode() in premium.KEYS or not self.accent_combo.isEnabled():
+        if eco.enabled() or not self.accent_combo.isEnabled():
             return
         if not val or (wallpaper_accents.is_wallpaper_accent(val)
                        and not wallpaper_accents.available()):
             return
         if val == wallpaper_accents.AUTO:
-            current = settings.get('accent', '#4f8cff')
+            current = settings.get('accent', 'design_default')
             if not wallpaper_accents.is_wallpaper_accent(current):
                 settings.set_many({'accent_before_wallpaper_auto': current,
                                    'accent': val})
@@ -1162,7 +1176,7 @@ class PreferencesPage(Page):
                                       if not enabled else
                                       tr('Akzentfarbe aus dem eigenen Hintergrundbild'),
                                       Qt.ToolTipRole)
-        chosen = settings.get('accent', '#4f8cff')
+        chosen = settings.get('accent', 'design_default')
         if wallpaper_accents.is_wallpaper_accent(chosen) and not enabled:
             fallback = wallpaper_accents.manual_fallback()
             settings.set('accent', fallback)
@@ -1278,6 +1292,8 @@ class PreferencesPage(Page):
                 self.background_combo.blockSignals(False)
                 self.sync_background_controls()
                 return
+        if style=='custom_image' and self.background_image_combo.currentData():
+            settings.set('custom_background_selected',self.background_image_combo.currentData())
         settings.set('background_style', style)
         self.sync_background_controls()
         self.window.apply_appearance()

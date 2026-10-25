@@ -29,16 +29,16 @@ def run():
             settings.set('theme', 'glass')
             theme.set_mode('glass')
             theme.set_accent('#4f8cff')
-            assert len(backdrops.PRESETS) == 14
-            assert backdrops.resolve('legacy', 'glass') == 'glass'
-            assert backdrops.resolve('theme_default', 'light') == 'light'
+            assert len(backdrops.PRESETS) == 24
+            assert backdrops.resolve('legacy', 'glass') == 'original:glass'
+            assert backdrops.resolve('theme_default', 'light') == 'original:light'
             assert backdrops.ANIMATED_PRESETS == frozenset(('animated_sparkle',))
             for removed in ('pastel_rainbow', 'animated_rainbow',
                             'animated_fade', 'animated_light',
                             'animated_aurora', 'animated_waves',
                             'animated_mist', 'pearl', 'ice'):
                 assert removed not in backdrops.KEYS
-                assert backdrops.resolve(removed, 'glass') == 'glass'
+                assert backdrops.resolve(removed, 'glass') == 'original:glass'
             assert 'adaptive' in backdrops.KEYS
             assert not {'aurora', 'obsidian', 'nebula', 'arctic'} & set(backdrops.KEYS)
 
@@ -89,9 +89,9 @@ def run():
             assert pixel.red() + pixel.green() + pixel.blue() < 420
 
             settings.set('background_style', 'adaptive')
-            theme.set_accent('#4f8cff')
+            settings.set('accent','#4f8cff');theme.set_accent('#4f8cff')
             blue = scene.sharp_backdrop().toImage()
-            theme.set_accent('#ef4444')
+            settings.set('accent','#ef4444');theme.set_accent('#ef4444')
             red = scene.sharp_backdrop().toImage()
             assert blue != red
 

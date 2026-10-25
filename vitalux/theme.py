@@ -1,28 +1,33 @@
 """Vitalux themes with a shared, user-selectable accent palette."""
-from . import DEFAULT_THEME
 from string import Template
+from . import DEFAULT_THEME
 from PySide6.QtGui import QColor
 from .premium import COLLECTIONS, KEYS as PREMIUM_MODES
 
 WARN, CRIT, VIOLET, TEAL, CYAN = "#f5b84d", "#f26464", "#a78bfa", "#2dd4bf", "#52d3ff"
-_THEMES = {
-    "dark": {"bg":"#090f1a", "sidebar":"#0d1725", "card":"#162235", "border":"#2c4157", "track":"#26344a", "grid":"#26384d", "text":"#f0f6ff", "muted":"#adbed0"},
-    "light":{"bg":"#f3f7fc", "sidebar":"#e9eff7", "card":"#ffffff", "border":"#c6d4e3", "track":"#dbe5ef", "grid":"#e2eaf3", "text":"#192c42", "muted":"#60728a"},
-    "glass":{"bg":"#090f1b", "sidebar":"#101b2c", "card":"#18283c", "border":"#47718e", "track":"#27394f", "grid":"#2b405a", "text":"#f1f7ff", "muted":"#b3c5da"},
-    "black_glass":{"bg":"#050506", "sidebar":"#0b0c0f", "card":"#141518", "border":"#454950", "track":"#25262b", "grid":"#303239", "text":"#f3f3f6", "muted":"#b9b9bf"},
-    "black_glass_gold":{"bg":"#050504", "sidebar":"#100e0b", "card":"#16130f", "border":"#9a783a", "track":"#3d3120", "grid":"#574326", "text":"#fbe8b8", "muted":"#d0b984"},
-    "holographic":{"bg":"#030b13", "sidebar":"#071421", "card":"#091826", "border":"#236282", "track":"#163144", "grid":"#1b4154", "text":"#e9faff", "muted":"#9cbdd1"},
-    # Flat and opaque: the cheapest render path, with no atmospheric textures.
-    "minimal":{"bg":"#111315", "sidebar":"#191b1d", "card":"#222528", "border":"#35393d", "track":"#373c41", "grid":"#32363a", "text":"#ecedef", "muted":"#b3b6ba"},
-}
-_THEMES.update({key: {name: pal[name] for name in (
-    'bg', 'sidebar', 'card', 'border', 'track', 'grid', 'text', 'muted')}
-    for key, pal in COLLECTIONS.items()})
-CHOICES = (('dark', 'Dark'), ('light', 'Light'), ('glass', 'Glass'),
-           ('black_glass', 'Black Glass'), ('black_glass_gold', 'Black Glass Gold'),
-           ('holographic', 'Holographic'), ('minimal', 'Minimalistisch')) + tuple(
-               (key, pal['title']) for key, pal in COLLECTIONS.items())
-FIXED_MODES = (*PREMIUM_MODES, 'black_glass_gold')
+from . import design_catalog
+_THEMES = {key: {name: design_catalog.factory(key)[name] for name in
+    ('bg','sidebar','card','border','track','grid','text','muted')}
+    for key in design_catalog.AVAILABLE}
+CHOICES = design_catalog.CHOICES
+FIXED_MODES = ('minimal',)
+
+
+def palette_for(key):
+    from . import settings
+    base=design_catalog.factory(key)
+    if key!=mode() or key=='minimal':return base
+    selected=settings.get('accent','design_default')
+    if selected=='design_default':return base
+    chosen=design_catalog.accent_preset(selected)
+    primary=accent()
+    secondary=chosen['palette']['secondary'] if chosen else QColor(primary).lighter(135).name()
+    base.update(accent=primary,secondary=secondary,
+                light=blend('#ffffff',primary,.65),border=blend(primary,base['border'],.55),
+                bloom=blend(primary,base['bg'],.4),
+                series=tuple(chosen['palette'].get('series',(primary,secondary,TEAL,VIOLET)))
+                       if chosen else (primary,secondary,TEAL,VIOLET))
+    return base
 
 
 def background_locked():
@@ -39,8 +44,9 @@ BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED = (_THEMES[_mode][key] for k
 
 def set_mode(value):
     global _mode, BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED
-    value = 'liquid_silver' if value == 'liquid_chrome' else DEFAULT_THEME if value == 'champagne_glass' else value
-    _mode = "dark" if value == "amoled" else value if value in _THEMES else DEFAULT_THEME
+    value = 'liquid_silver' if value == 'liquid_chrome' else value
+    value = design_catalog.RETIRED.get(value, value)
+    _mode = value if value in _THEMES else DEFAULT_THEME
     a = _THEMES[_mode]
     BG, SIDEBAR, CARD, BORDER, TRACK, GRID, TEXT, MUTED = (a[x] for x in ("bg", "sidebar", "card", "border", "track", "grid", "text", "muted"))
 
@@ -75,11 +81,10 @@ def _luminance(c):
 
 def accent():
     """Keep user-selected hues readable against white/dark backgrounds."""
-    if _mode in PREMIUM_MODES:
-        return COLLECTIONS[_mode]['accent']
-    if _mode == "black_glass_gold":
-        return "#f3cd79"  # The gold theme ignores user and wallpaper accents.
-    c = QColor("#52d3ff" if _mode == "holographic" and _accent == "#4f8cff" else _accent)
+    from . import settings
+    selected=settings.get('accent','design_default')
+    original=design_catalog.factory(_mode)['accent']
+    c = QColor(original if selected=='design_default' else _accent)
     if _mode == 'light':
         for _ in range(12):
             if (1.05 / (_luminance(c) + .05)) >= 4.0:
@@ -100,10 +105,11 @@ def accent_qcolor(alpha=255):
 
 
 def secondary_accent():
-    if _mode in PREMIUM_MODES:
-        return COLLECTIONS[_mode]['secondary']
-    if _mode == "black_glass_gold":
-        return "#ffe4a2"
+    from . import settings
+    selected=settings.get('accent','design_default')
+    if selected=='design_default':return design_catalog.factory(_mode)['secondary']
+    chosen=design_catalog.accent_preset(selected)
+    if chosen:return chosen['palette']['secondary']
     c = QColor(accent())
     h, s, v, _ = c.getHsv()
     if h < 0:
@@ -114,8 +120,6 @@ def secondary_accent():
 def level_color(pct):
     # Black Glass Gold does not inherit the default yellow/red load palette.
     # Warnings remain semantically distinguishable via their own labels.
-    if _mode == "black_glass_gold":
-        return "#bb8c45" if pct >= 90 else "#dfb963" if pct >= 75 else accent()
     return CRIT if pct >= 90 else WARN if pct >= 75 else accent()
 
 
@@ -129,84 +133,12 @@ def blend(foreground, background, strength):
 def combo_surface():
     if _mode in PREMIUM_MODES:
         return CARD
-    if _mode == "black_glass_gold":
-        return CARD
-    if _mode == "holographic":
-        return CARD
     if _mode == "glass":
         return blend(BORDER, CARD, .17)
-    if _mode == "black_glass":
-        return blend(CARD, SIDEBAR, .72)
     if _mode == "light":
         return blend(CARD, SIDEBAR, .82)
     return CARD if _mode == "minimal" else blend(CARD, SIDEBAR, .78)
 
-
-_BLACK_GLASS_GOLD_QSS = Template(r"""
-/* Special fixed-gold material; user-selected accents are intentionally ignored. */
-#pageTitle, #heroTitle, #telemetryValue, #chipValue, #bigName { color: #ffebb5; }
-#cardTitle, #chipTitle, #metricCaption, #overviewLive, #statusTag { color: $ACCENT; }
-#pageSub, #metricDetail, #sidebarDistro, #sidebarVersion, #muted { color: #d0b984; }
-QToolTip { background: #16130f; border: 1px solid #b99147; color: #ffe7af; }
-QLineEdit, QComboBox, QSpinBox, QTextEdit, QListWidget,
-QFrame#alertThresholdField { background: #17130e; color: #fbe8b8; border: 1px solid #9a783a; }
-QComboBox::drop-down { background: #211a10; border-left: 1px solid #9a783a; }
-QComboBox::drop-down:hover { background: #382913; }
-QComboBox QAbstractItemView { background: #16120d; color: #ffe6a9; border: 1px solid #b99147;
-    selection-background-color: #403019; selection-color: #fff0c9; }
-QComboBox QAbstractItemView::item:selected { background: #403019; color: #fff0c9; }
-QPushButton#ghostBtn, QPushButton#langBtn, QToolButton#layoutAction,
-QPushButton#systemUpdatesDetails, QPushButton#systemUpdatesInstall {
-    background: #211a11; color: #fbe8b8; border: 1px solid #8c703e;
-}
-QPushButton#ghostBtn:hover, QPushButton#langBtn:hover, QToolButton#layoutAction:hover,
-QPushButton#systemUpdatesDetails:hover, QPushButton#systemUpdatesInstall:hover {
-    border-color: $ACCENT; background: #382c17; color: #ffefb8;
-}
-QProgressBar { background: #17130c; border: 1px solid #9a783a; }
-QProgressBar::chunk { background: $ACCENT; }
-#primaryBtn { background: #f3cd79; border-color: #f3cd79; color: #160e03; }
-QComboBox:disabled, QPushButton:disabled { color: #877858; border-color: #51432c; background: #16120e; }
-""")
-
-_HOLOGRAPHIC_QSS = Template(r"""
-/* Entirely opaque, angular native HUD controls: no backdrop-filter or glass. */
-QWidget { selection-background-color: $ACCENT; }
-QToolTip { background: #081827; border: 1px solid $ACCENT; color: #e9faff; }
-#cardTitle { color: $ACCENT; font-size: 11px; font-weight: 800; letter-spacing: 1.4px; }
-#pageTitle { color: #e9faff; }
-#chipTitle, #metricCaption, #systemUpdatesStatus { color: #9cbdd1; }
-#telemetryValue, #chipValue { color: #eefeff; }
-QLineEdit, QComboBox, QSpinBox, QTextEdit, QListWidget,
-QFrame#alertThresholdField {
-    background: #071b2a; color: #e9faff; border: 1px solid #236282;
-    border-radius: 2px; padding: 8px 11px;
-}
-QComboBox { padding-right: 24px; }
-QComboBox::drop-down { background: #0a2638; border: none; border-left: 1px solid #236282;
-    border-radius: 0px; width: 21px; }
-QComboBox QAbstractItemView { background: #061725; border: 1px solid $ACCENT;
-    selection-background-color: #12384d; color: #e9faff; }
-QComboBox QAbstractItemView::item:selected { background: #12384d; color: #ffffff; }
-QPushButton#ghostBtn, QPushButton#langBtn, QToolButton#layoutAction,
-QPushButton#systemUpdatesDetails, QPushButton#systemUpdatesInstall {
-    background: #0a2436; border: 1px solid #236282; border-radius: 2px;
-    color: #d9f9ff;
-}
-QPushButton#ghostBtn:hover, QPushButton#langBtn:hover, QToolButton#layoutAction:hover,
-QPushButton#systemUpdatesDetails:hover, QPushButton#systemUpdatesInstall:hover {
-    background: #113a4f; border: 1px solid $ACCENT; color: #ffffff;
-}
-QPushButton#langBtn:checked { background: #104155; border-color: $ACCENT; color: $ACCENT; }
-QPushButton#primaryBtn { border-radius: 2px; background: $ACCENT;
-    color: #041521; border: 1px solid $ACCENT; }
-QProgressBar { background: #081e2e; border: 1px solid #236282;
-    border-radius: 2px; min-height: 12px; }
-QProgressBar::chunk { background: $ACCENT; border-radius: 1px; }
-QToolButton#customAccentRemove { border-radius: 2px; }
-QLabel#benchmarkResultRead, QLabel#benchmarkResultWrite { border-radius: 3px; }
-QScrollBar::handle:vertical { background: #236282; border-radius: 2px; }
-""")
 
 _QSS = Template(r"""
 QWidget { background: transparent; color: $TEXT; font-family: "Inter", "Noto Sans", "Cantarell", "DejaVu Sans", sans-serif; font-size: 13px; }
@@ -392,8 +324,6 @@ def stylesheet():
     if _mode in PREMIUM_MODES:
         from .premium import stylesheet as premium_stylesheet
         return qss + premium_stylesheet(_mode) + disabled_controls(light)
-    if _mode == "black_glass_gold":
-        return qss + _BLACK_GLASS_GOLD_QSS.substitute(ACCENT=base) + disabled_controls(light)
     if eco.enabled():
         # Intentionally primitive Qt widgets: no rounded cards, light effects,
         # shadow treatments or decorative surfaces. All selectors are native.
@@ -406,4 +336,4 @@ def stylesheet():
             border-radius: 0px; }
         QPushButton:hover, QToolButton:hover { background-color: #222528; }
         """
-    return qss + (_HOLOGRAPHIC_QSS.substitute(ACCENT=base) if _mode == "holographic" else "") + disabled_controls(light)
+    return qss + disabled_controls(light)

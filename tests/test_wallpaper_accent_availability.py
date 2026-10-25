@@ -59,9 +59,9 @@ def run():
             (folder / 'bg.png').unlink()
             page.refresh_background_images()
             assert not item.isEnabled() and settings.get('accent') == '#f472b6'
-            page.select_design('black_glass_gold')
+            page.select_design('obsidian_gold')
             app.processEvents()
-            assert page.accent_combo.isLocked()
+            assert not page.accent_combo.isLocked()
             page.select_design('glass')
             app.processEvents()
             assert page.accent_combo.isEnabled()

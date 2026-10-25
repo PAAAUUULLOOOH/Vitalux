@@ -28,6 +28,7 @@ def color(value, alpha=255):
     return c
 
 
+
 def shape(rect, compact=False):
     """A chamfered (cut-corner) HUD plate instead of a rounded rectangle."""
     path = QPainterPath()
@@ -44,6 +45,7 @@ def shape(rect, compact=False):
     path.lineTo(x0, y0 + cut)
     path.closeSubpath()
     return path
+
 
 
 # ---------------------------------------------------------------- atmosphere
@@ -125,7 +127,7 @@ def scene_pixmap(size):
 # -------------------------------------------------------------------- panels
 def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
     from .glass import draw_frosted_backdrop
-    pal = PALETTE
+    pal = palette()
     path = shape(rect, compact)
     p.save()
     p.setClipPath(path)
@@ -153,9 +155,9 @@ def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
             y += 5
     p.restore()
     edge = QLinearGradient(rect.topLeft(), rect.bottomRight())
-    edge.setColorAt(0, color(SPECTRUM[0], 225 if active else 150))
-    edge.setColorAt(.5, color(SPECTRUM[2], 185 if active else 108))
-    edge.setColorAt(1, color(SPECTRUM[3], 205 if active else 128))
+    edge.setColorAt(0, color(palette()['series'][0], 225 if active else 150))
+    edge.setColorAt(.5, color(palette()['series'][2], 185 if active else 108))
+    edge.setColorAt(1, color(palette()['series'][3], 205 if active else 128))
     if active:
         p.setOpacity(.32)
         p.setPen(QPen(QBrush(edge), 5))
@@ -175,9 +177,10 @@ def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
             p.drawLine(QPointF(cx, cy), QPointF(cx, cy + bl * dy))
 
 
+
 # --------------------------------------------------------------- stylesheets
 def stylesheet():
-    pal = PALETTE
+    pal = palette()
     return f'''
     #heroTitle {{font-size:20px;font-weight:650;color:{pal['text']};}}
     #pageTitle {{font-size:30px;font-weight:750;}}
@@ -195,11 +198,12 @@ def stylesheet():
     QPushButton#ghostBtn:hover,QPushButton#langBtn:hover,QToolButton#layoutAction:hover {{
         border-color:{pal['accent']};background:{pal['track']};}}
     QPushButton#primaryBtn,QPushButton#langBtn:checked {{
-        background:qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 {SPECTRUM[0]},stop:.6 {SPECTRUM[2]},stop:1 {SPECTRUM[3]});
+        background:qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 {palette()['series'][0]},stop:.6 {palette()['series'][2]},stop:1 {palette()['series'][3]});
         border-radius:6px;border:1px solid {pal['accent']};color:#02040a;}}
     QProgressBar,QProgressBar::chunk {{border-radius:6px;}}
     QScrollBar::handle:vertical {{background:{pal['border']};border-radius:3px;}}
     '''
+
 
 
 # --------------------------------------------------------------- instruments
@@ -217,8 +221,9 @@ def _smooth(points):
     return path
 
 
+
 def _ring(p, box, value, *, level_tone=None):
-    pal = PALETTE
+    pal = palette()
     cx, cy = box.center().x(), box.center().y()
     outer = box.width() / 2
     thick = max(5.0, outer * .17)
@@ -229,7 +234,7 @@ def _ring(p, box, value, *, level_tone=None):
         long_ = i % 5 == 0
         r1, r2 = outer - (4 if long_ else 2.2), outer
         lit = value is not None and i / 40 <= fraction + .0001
-        p.setPen(QPen(color(SPECTRUM[min(3, int(3 * i / 40))] if lit else pal['grid'],
+        p.setPen(QPen(color(palette()['series'][min(3, int(3 * i / 40))] if lit else pal['grid'],
                             205 if lit else 150), 1.2 if long_ else .8))
         p.drawLine(QPointF(cx + math.cos(a) * r1, cy - math.sin(a) * r1),
                    QPointF(cx + math.cos(a) * r2, cy - math.sin(a) * r2))
@@ -239,15 +244,15 @@ def _ring(p, box, value, *, level_tone=None):
     if value is None:
         return
     gradient = QConicalGradient(arc.center(), 225)
-    gradient.setColorAt(1, color(level_tone or SPECTRUM[0]))
-    gradient.setColorAt(.8, color(level_tone or SPECTRUM[1]))
-    gradient.setColorAt(.5, color(level_tone or SPECTRUM[2]))
-    gradient.setColorAt(.25, color(level_tone or SPECTRUM[3]))
-    gradient.setColorAt(0, color(level_tone or SPECTRUM[0]))
+    gradient.setColorAt(1, color(level_tone or palette()['series'][0]))
+    gradient.setColorAt(.8, color(level_tone or palette()['series'][1]))
+    gradient.setColorAt(.5, color(level_tone or palette()['series'][2]))
+    gradient.setColorAt(.25, color(level_tone or palette()['series'][3]))
+    gradient.setColorAt(0, color(level_tone or palette()['series'][0]))
     span = round(-270 * 16 * fraction)
     for width, alpha in ((thick * 2.1, 36), (thick * 1.45, 64)):
         glow = QConicalGradient(arc.center(), 225)
-        for stop, tone in ((1, SPECTRUM[0]), (.8, SPECTRUM[1]), (.5, SPECTRUM[2]), (.25, SPECTRUM[3]), (0, SPECTRUM[0])):
+        for stop, tone in ((1, palette()['series'][0]), (.8, palette()['series'][1]), (.5, palette()['series'][2]), (.25, palette()['series'][3]), (0, palette()['series'][0])):
             glow.setColorAt(stop, color(level_tone or tone, alpha))
         p.setPen(QPen(QBrush(glow), width, Qt.SolidLine, Qt.RoundCap))
         p.drawArc(arc, 225 * 16, span)
@@ -259,8 +264,8 @@ def _ring(p, box, value, *, level_tone=None):
         tip = QPointF(arc.center().x() + math.cos(a) * r, arc.center().y() - math.sin(a) * r)
         halo = QRadialGradient(tip, thick * 1.15)
         halo.setColorAt(0, color('#ffffff', 230))
-        halo.setColorAt(.35, color(level_tone or SPECTRUM[3], 120))
-        halo.setColorAt(1, color(level_tone or SPECTRUM[3], 0))
+        halo.setColorAt(.35, color(level_tone or palette()['series'][3], 120))
+        halo.setColorAt(1, color(level_tone or palette()['series'][3], 0))
         p.setPen(Qt.NoPen)
         p.setBrush(halo)
         p.drawEllipse(tip, thick * 1.15, thick * 1.15)
@@ -268,8 +273,9 @@ def _ring(p, box, value, *, level_tone=None):
         p.drawEllipse(tip, thick * .26, thick * .26)
 
 
+
 def _area_graph(p, rect, history):
-    pal = PALETTE
+    pal = palette()
     if rect.width() < 12 or rect.height() < 12:
         return
     p.setBrush(Qt.NoBrush)
@@ -290,8 +296,8 @@ def _area_graph(p, rect, history):
     if run:
         runs.append(run)
     line = QLinearGradient(rect.left(), 0, rect.right(), 0)
-    line.setColorAt(0, color(SPECTRUM[2]))
-    line.setColorAt(.6, color(SPECTRUM[0]))
+    line.setColorAt(0, color(palette()['series'][2]))
+    line.setColorAt(.6, color(palette()['series'][0]))
     line.setColorAt(1, color('#eafcff'))
     for points in runs:
         if len(points) == 1:
@@ -306,11 +312,11 @@ def _area_graph(p, rect, history):
         area.closeSubpath()
         fill = QLinearGradient(0, rect.top(), 0, rect.bottom())
         fill.setColorAt(0, color(pal['accent'], 96))
-        fill.setColorAt(.6, color(SPECTRUM[2], 28))
-        fill.setColorAt(1, color(SPECTRUM[2], 0))
+        fill.setColorAt(.6, color(palette()['series'][2], 28))
+        fill.setColorAt(1, color(palette()['series'][2], 0))
         p.fillPath(area, fill)
         # Chromatic-aberration ghost strokes either side of the true line.
-        for dx, tone, a in ((-.7, SPECTRUM[0], 70), (.7, SPECTRUM[2], 70)):
+        for dx, tone, a in ((-.7, palette()['series'][0], 70), (.7, palette()['series'][2], 70)):
             ghost = curve.translated(dx, 0)
             p.setPen(QPen(color(tone, a), 1.0, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
             p.drawPath(ghost)
@@ -332,9 +338,10 @@ def _area_graph(p, rect, history):
         p.drawEllipse(tip, 9, 9)
 
 
+
 def paint_metric(metric, p):
     from .i18n import tr
-    pal = PALETTE
+    pal = palette()
     p.setRenderHint(QPainter.Antialiasing)
     p.setRenderHint(QPainter.TextAntialiasing)
     rect = QRectF(metric.drawing_rect()).adjusted(5, 3, -5, -3)
@@ -349,9 +356,9 @@ def paint_metric(metric, p):
         p.setFont(font)
         shown = p.fontMetrics().elidedText(str(value), Qt.ElideRight, max(1, round(area.width())))
         if aberration:
-            p.setPen(color(SPECTRUM[0], 150))
+            p.setPen(color(palette()['series'][0], 150))
             p.drawText(area.translated(-1, 0), align, shown)
-            p.setPen(color(SPECTRUM[2], 150))
+            p.setPen(color(palette()['series'][2], 150))
             p.drawText(area.translated(1, 0), align, shown)
         p.setPen(color(tone or pal['text']))
         p.drawText(area, align, shown)
@@ -412,3 +419,9 @@ def paint_metric(metric, p):
             text(QRectF(left, top, rect.right() - left, available), tr(metric.detail), 15,
                  pal['text'], QFont.Medium, Qt.AlignLeft | Qt.AlignVCenter)
     text(QRectF(rect.left(), rect.bottom() - 24, width, 24), tr(metric.detail), 11, pal['muted'])
+
+
+
+def palette():
+    from . import theme
+    return theme.palette_for(KEY)

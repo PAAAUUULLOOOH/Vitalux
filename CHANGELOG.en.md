@@ -1,5 +1,12 @@
 # Vitalux – Changes
 
+## [v0.9.6.3-unstable.23] - 2026-10-25
+- The design gallery now focuses on Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core and Light. Colors and backgrounds from retired designs remain available under their original names as presets, without transferring their effects or layouts.
+- All six designs support custom accents and backgrounds with separately saved preferences. Original colors, Original background and Reset design restore the active design without deleting imported images or other designs’ choices.
+- Design tiles share rounded corners; previews and selection checks stay inside the tile.
+- Overview captions are centered in a consistent order with compact watt readings. Long names use an ellipsis and show their complete text on hover. GPU overview cards continue to omit watts.
+- Show component pictures in Settings toggles CPU, GPU, RAM and mainboard pictures together. Without pictures, specifications use the full width; cached pictures are retained.
+
 ## [v0.9.6.3-unstable.22] - 2026-10-25
 - Graphics, CPU, RAM and mainboard prefer matching cutout product pictures and fall back to photographs with backgrounds. Valid older cached pictures remain available; lookup handles CPU suffixes, model spellings, product identifiers and additional image sources.
 - Without a product picture, the image column and spacing disappear completely; the name and concise specs use the available width. Failed lookups can retry loading pictures.

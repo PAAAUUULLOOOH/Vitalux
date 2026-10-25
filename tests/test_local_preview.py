@@ -13,6 +13,7 @@ def run():
         directory = Path(directory)
         shutil.copytree(root/'vitalux', directory/'vitalux',
                         ignore=shutil.ignore_patterns('__pycache__'))
+        shutil.copytree(root/'assets',directory/'assets')
         real_config = directory/'existing-config'
         (real_config/'vitalux').mkdir(parents=True)
         original = real_config/'vitalux/settings.json'

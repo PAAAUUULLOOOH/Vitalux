@@ -32,8 +32,8 @@ def run():
         for language in ('de','en'):
             i18n.set_lang(language);tile.retranslate()
             assert ('anpassbar' if language=='de' else 'adjustable') in tile.toolTip()
-        assert not capabilities('obsidian_gold')['accent'] and not capabilities('holographic')['background']
-        assert capabilities('black_glass')['accent'] and capabilities('black_glass')['custom_accent']
+        assert capabilities('obsidian_gold')['accent'] and capabilities('quantum_core')['background']
+        assert capabilities('glass')['accent'] and capabilities('glass')['custom_accent']
         for design in (key for key,_ in theme.CHOICES):
             theme.set_mode(design);box=QCheckBox('Toggle');box.resize(box.sizeHint());box.show();app.processEvents()
             QTest.mouseClick(box,Qt.LeftButton,pos=QPoint(36,box.height()//2))

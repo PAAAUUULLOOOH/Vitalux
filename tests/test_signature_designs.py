@@ -31,28 +31,19 @@ def run():
         def verify():
             try:
                 assert window.last_sample is not None
-                for mode in ('aether_glass','eclipse_crystal','aether_glass','glass','eclipse_crystal','obsidian_gold'):
+                for mode in ('nebula_prism','eclipse_crystal','quantum_core','glass','crystal_atrium','obsidian_gold'):
                     window.pulse_core._phase=73
-                    preferences.select_design(mode)
+                    if mode=='eclipse_crystal':preferences.search.setText('timbooh')
+                    else:preferences.select_design(mode)
                     app.processEvents()
                     assert window.sampler is sampler and sampler.isRunning()
                     assert window.pulse_core._phase>=73,'Design change reset rotation phase'
-                    if mode in ('aether_glass','eclipse_crystal'):
-                        assert preferences.accent_combo.isLocked()
-                        assert preferences.background_combo.isLocked()
-                        assert not preferences.accent_combo.isEnabled()
-                        preferences.accent_combo.showPopup()
-                        assert not preferences.accent_combo.view().isVisible()
-                        assert _brand_asset(False)==f"brand/vitalux-wordmark-{mode.replace('_','-')}.svg"
-                        assert window.pulse_core.parentWidget() is window.design_shell.brand
-                        assert window.pages[0][1].design_metric_hosts['cpu'].currentIndex()==1
-                        assert window.sidebar.isHidden()==(mode=='eclipse_crystal')
-                    else:
-                        assert window.pulse_core.parentWidget() is window.sidebar_brand
-                        assert window.pages[0][1].design_metric_hosts['cpu'].currentIndex()==0
-                        assert not window.sidebar.isHidden()
-                    assert settings.get('accent')=='#f472b6'
-                preferences.select_design('eclipse_crystal')
+                    assert not preferences.accent_combo.isLocked() and not preferences.background_combo.isLocked()
+                    signature=mode in ('nebula_prism','eclipse_crystal','quantum_core','crystal_atrium')
+                    assert window.pages[0][1].design_metric_hosts['cpu'].currentIndex()==int(signature)
+                    assert window.sidebar.isHidden()==(mode in ('eclipse_crystal','nebula_prism'))
+                    assert not window.grab().isNull()
+                preferences.search.setText('timbooh')
                 window.resize(800,560);app.processEvents()
                 assert window.width()==800 and window.height()==560
                 assert window.design_shell.primary_scroll.horizontalScrollBar().maximum()>0

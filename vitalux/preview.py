@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 
-DESIGNS = ('obsidian_gold', 'nebula_prism', 'quantum_core', 'crystal_atrium','crystal_glass')
+from .design_catalog import VISIBLE as DESIGNS
 
 
 def prepare(design=None):

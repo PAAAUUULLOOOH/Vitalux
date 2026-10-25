@@ -14,21 +14,17 @@ Use **Edit layout** on Overview to arrange cards. Tiles stay stationary when edi
 
 ## Designs and backgrounds
 
-**Obsidian Gold is the default** for new profiles and restored appearance defaults; saved designs are retained. Choose one of fifteen preview tiles under **Settings → Appearance → Design**. The transition preserves your page, scroll position and running measurements. Logos, sidebar text and symbols share the effective palette.
+Choose one of six rounded preview tiles under **Settings → Appearance → Design**: **Obsidian Gold**, **Glass**, **Crystal Atrium**, **Nebula Prism**, **Quantum Core** and **Light**. Obsidian Gold is the default for new profiles. Design changes retain your page, scroll position and running measurements. The selected check stays inside the tile's upper-right edge.
 
-Obsidian Gold, Black Glass Gold, **Aether Glass**, **Eclipse Crystal**, **Liquid Silver**, **Nebula Prism** and **Quantum Core** use fixed palettes and backgrounds. Their grey **Fixed design palette** and **Fixed background** fields cannot be opened. Aether Glass combines platinum and violet/cyan optical glass with floating navigation. Eclipse Crystal uses faceted black crystal, champagne edges, top category navigation and a bottom bar for System, Settings, Updates, About and language. Its top navigation scrolls on narrow windows. Holographic also has a fixed HUD background. Personal accent and background selections remain saved for compatible themes.
+Every retained design supports preset/custom accents and backgrounds. Choose a retired design's original name in either selector to reuse only its colors or background. It does not restore the retired design's layout, materials or effects. Crystal Glass is available this way while Glass remains a complete design.
 
-Nebula Prism uses prismatic deep-space glass, cyan/magenta spectral edges, its own ring instruments and matching animated logos. Its centered bottom dock opens all existing categories; hover identifies each icon, and the Updates icon includes the available version in its hint. Language controls stay in the header. Palette and background are fixed. Switching away restores the previous navigation layout and keeps sampling and saved customization choices.
+**Original colors** restores factory accents; **Original background** restores exactly the active design's factory backdrop without changing its accent. Choices are remembered separately for each design. **Reset design** restores only the current design's color/background choices; saved colors, imported images, other designs, motion and dashboard layouts remain intact. Own images still support Fill, Fit, Stretch, Center and Tile. The Sparkle background is animated; archived design backgrounds are static.
 
-Quantum Core uses angular neon panels, cyan/magenta/orange instruments, matching animated logos and a static circuitry background. There is no moving radar light, particle drift or scanline; its background stays sharp and cached at the actual window size. Logo and instrument animations remain independent and follow the motion settings. Category navigation stays in the sidebar; palette and background are fixed.
+Crystal Atrium keeps the original three live glass spheres. Nebula Prism retains its floating dock and prism instruments. Quantum Core retains its sidebar, angular panels and reactor instruments. Original Atrium and Quantum backgrounds stay static while logos and instruments follow **Animations**. **Ultra Eco** temporarily uses a plain skin, CPU rendering and a ten-second sample interval. Disabling it restores the last design and its saved appearance.
 
-Lumen Drift has been removed. Saved selections return to Obsidian Gold; personal colors, original images, layouts and other settings are preserved.
+Overview headings, names and values are centered. Component cards follow the same order: heading, load display, available name, details and supported watts. GPU overview omits watts; Graphics retains current watts and the limit. Long names are shortened with an ellipsis; hover over shortened text to read the full name. The load display keeps the same size when power measurements appear or disappear.
 
-Liquid Silver uses the same layout, smoked-glass panels and instrument geometry as Obsidian Gold, with a coordinated satin-silver palette. Its circle and wordmark retain continuous animations. Palette and background are fixed. The previous light Liquid Silver and Liquid Chrome are removed; saved Liquid Chrome selections migrate to the replacement without discarding accent, image or layout preferences.
-
-The accent selector has a compact glass color swatch. Overview uses a compact system header by default, keeping system details visible while leaving more room for charts. Theme previews gently enlarge on hover without moving surrounding tiles. The sculpted uppercase **VITALUX** wordmark has coordinated metal and smoked-glass facets with a moving reflection. Slimmer outer logo bands rotate slowly around a clear heartbeat impulse on a darker base line. Rotation, heartbeat and lettering reflections repeat continuously and keep their phase when the theme changes. Each gold collection has its own coordinated logo and wordmark; preset and custom accent colors remain supported, with a modestly richer finish on the circle for custom colors. **Animations** provides smooth, reduced and off profiles. **Ultra Eco** uses a simple skin, CPU rendering and a ten-second sampling interval. Turning it off automatically returns to the last selected design with its saved appearance settings, including after restarting while Ultra Eco was active.
-
-Profiles from the combined appearance builds return to standalone designs with a local backup. Matching Liquid Silver combinations select that design again. Retired Aurora Gold and Champagne Glass selections return to Obsidian Gold. The previous combined selection is retained in migration metadata; personal images, saved custom colors and unrelated preferences remain intact. Stable and Unstable profiles stay separate.
+Toggle **Show component pictures** under Appearance to show or hide CPU, GPU, RAM and mainboard pictures together. With pictures off, text uses the full width, no new searches start and cached images remain available for later use. Without a matching picture the header also uses its full width.
 
 ## Apps and network connections
 
@@ -56,7 +52,7 @@ CPU rendering is the stable default. Experimental OpenGL, X11/OpenGL, Wayland/Op
 
 MiniHUD reuses the main sensor stream and offers three layouts and adjustable opacity. Your desktop compositor determines its placement relative to fullscreen applications.
 
-Crystal Atrium restores the original liquid-glass composition: three live CPU/GPU/RAM spheres, ribbon histories, network and system/drive panels. Its colorful background and refracted stage stay static; liquid motion follows the normal motion/Ultra Eco settings. Crystal Glass is the previous clear-glass Obsidian layout, with its static blue/light-blue/violet background. Both have the same gallery tile sizing and controls as the other designs. Existing Crystal Atrium selections from Unstable.21 migrate to Crystal Glass, preserving the selected design.
+Crystal Atrium retains the original liquid-glass composition with three live CPU/GPU/RAM spheres and a static factory stage. The former Crystal Glass appearance remains available as colors and a static background preset for the retained designs; its complete design has been replaced by Glass.
 
 ## Reset settings
 
@@ -68,7 +64,7 @@ An active benchmark, diagnostic or update prevents the reset until it finishes. 
 
 ## Language and updates
 
-Use **DE / EN** in the navigation area (bottom bar in Eclipse Crystal). Labels, the native guide, update notes and offline changelog follow the selected language without interrupting monitoring.
+Use **DE / EN** in the navigation area. Labels, the native guide, update notes and offline changelog follow the selected language without interrupting monitoring.
 
 Vitalux checks the official release at startup and about every six hours. Read the current-language notes in **Updates**, then choose **Update now**. The full archive/AppImage and checksum must be available. AppImage replacement is atomic; a ZIP installation keeps its previous version for rollback. Personal data and settings are retained. Updates check free space before staging files and report interrupted downloads; a failed download does not replace the installed application. A centered percentage shows total preparation progress: downloading uses 0–80%, followed by verification and staging up to 100%. Slow connections report smaller received chunks. An idle socket times out after 15 seconds, subject to DNS and connection setup. When the server omits its size header, the official asset size or verified test manifest supplies the total. Progress stays at 0 until reception finishes only if neither source provides a size. **Cancel download** stops a transfer without activating the destination; a blocked read can take until its timeout to finish. **Retry download** starts a fresh verified transfer after a failure. Cancellation is unavailable once verification/preparation begins.
 
@@ -94,8 +90,6 @@ When your test changes reach Stable, Vitalux offers a notice and lets you view t
 
 Channel changelogs are cached for offline reading with their check time. Offline or failed checks are reported explicitly; cached information alone cannot authorize an installation.
 
-On/off controls use themed switches throughout the interface. Multiple-selection controls retain checkmarks. Design previews form the same multi-row grid in every design; hover or keyboard focus softly reveals a small color wheel for accents and an image indicator for backgrounds, stacked at the right edge and vertically centered on the tile. Available options use colored symbols; unavailable options use grey symbols, without lock overlays. Black Glass supports both preset and custom accent colors, including editing and removing saved custom colors. Fixed-palette designs disable and consistently grey out the custom-color buttons. Background support is independent: Holographic allows accents but retains its fixed background. Ultra Eco can temporarily restrict customization. Controls no longer produce click sounds.
-
 **Recent events:** the Diagnostic Center shows the latest five app warnings, update failures and automatic renderer fallbacks. Entries remain local and follow DE/EN. Repeated identical events are grouped briefly; the optional Blackbox remains separate. Known causes of missing CPU/GPU readings appear as short labels; unknown causes remain unavailable.
 
 **Logs:** Vitalux keeps an active file and one previous file per log, rotating at about 5 MB (roughly 10 MB combined, allowing complete error records). This includes launcher, crash, installation, restart and local event logs. Stable and Unstable use separate directories. Crash recording and automatic version recovery remain active.
@@ -114,7 +108,7 @@ Pictures are looked up in background workers using manufacturer model routes, pr
 
 ## Hardware sensors and measured power
 
-Overview tiles show only the current measured power, for example **Power: 85 W**, for CPU, GPU, memory and the system drive where supported. The system-drive value requires an unambiguous sensor association with the mounted root device. Missing readings leave no power row; zero watts remain visible.
+Overview tiles show only the current measured power, for example **Power: 85 W**, for CPU, memory and the system drive where supported. GPU watts appear on Graphics. The system-drive value requires an unambiguous sensor association with the mounted root device. Missing readings leave no power row; zero watts remain visible.
 
 Processor has separate load and temperature histories. Graphics shows load and video-memory usage together; **Technical details** contains the separate temperature and clock histories. Memory shows RAM usage, while Drives and Network show their original transfer-rate charts. Use each chart's visible checkboxes to choose its existing curves and select a 60-second, 5-minute or 15-minute window. Each chart retains its own physical unit. Sensor and System pages list their live readings without the added combined chart.
 

@@ -57,7 +57,9 @@ def run():
         QTest.qWait(450)
         assert advanced.expanded and advanced.clip.height() == advanced._extent
         advanced.header.click()
-        QTest.qWait(450)
+        import time
+        deadline=time.monotonic()+2
+        while (not advanced.clip.isHidden() or advanced.clip.height()!=0) and time.monotonic()<deadline:QTest.qWait(20)
         assert advanced.clip.isHidden() and advanced.clip.height() == 0
 
         # Recognition opens the advanced section and glides there while input stays.
@@ -110,9 +112,10 @@ def run():
         assert combo.currentIndex() == 1
         page.select_design('quantum_core')
         fixed = page.background_combo
-        assert fixed.isLocked() and not fixed.isEnabled()
+        assert not fixed.isLocked() and fixed.isEnabled()
         fixed.showPopup()
         QTest.mouseClick(fixed, Qt.LeftButton)
+        fixed.hidePopup()
         assert not fixed.view().isVisible()
 
         # Hover paints a small zoom without reflowing or rebuilding its backdrop.

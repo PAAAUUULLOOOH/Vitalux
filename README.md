@@ -16,12 +16,12 @@
 ## Features
 
 - Live CPU, GPU, memory, storage, network and sensor measurements, with charts, alerts and local history.
-- A rearrangeable dashboard, MiniHUD and fifteen coordinated designs, from satin silver and prismatic space to reactor HUDs. **Obsidian Gold is the default.**
+- A rearrangeable dashboard, MiniHUD and six customizable designs, from smoked glass and live spheres to prismatic space and reactor HUDs. **Obsidian Gold is the default.**
 - Per-app connections, usage warnings and optional, reversible TCP/UDP session blocks.
 - SMART information, drive benchmarks and local diagnostic reports.
 - Measured component power where supported, with current GPU watts and a readable power limit alongside the live values.
 - Complete CPU/thread meters and broader hardware identification, with concise CPU, GPU, memory-module and mainboard specifications beside matching product pictures. Cutouts are preferred; matching photos with backgrounds are used when needed. Pictures remain available offline.
-- **Crystal Atrium:** the original liquid-glass dashboard with three live spheres and a static background. **Crystal Glass** preserves the clear-glass Obsidian layout and static blue-to-violet backdrop.
+- **Crystal Atrium:** the original liquid-glass dashboard with three live spheres and a static background. The former **Crystal Glass** background and colors remain available as presets for the retained designs.
 - German and English interfaces, guides and release notes; monitoring works offline.
 
 Missing sensor fields are hidden; real zeroes such as stopped fans remain visible. CPU, GPU and board power describe their reported domains, never total PC wall power. Hostname lookups run only on request; update checks contact the official GitHub release service.
@@ -58,24 +58,15 @@ Keep the runtime, libraries, assets and launcher together. **Code → Download Z
 
 ## Appearance and controls
 
-Choose a design in **Settings → Appearance**. Hover or keyboard-focus a preview to reveal two small symbols, stacked at its right edge: a color wheel for accents and an image symbol for backgrounds. Colored symbols indicate available options; grey symbols indicate fixed options, without locks. Saved accents and images remain available in compatible designs. Black Glass supports custom colors; fixed palettes use consistently greyed-out color buttons. Liquid Silver uses a fixed silver palette and dark background, with the same interface as Obsidian Gold.
+Choose **Obsidian Gold**, **Glass**, **Crystal Atrium**, **Nebula Prism**, **Quantum Core** or **Light** in **Settings → Appearance**. Each design supports preset or custom accent colors and independently selectable backgrounds. The original names of retired designs identify their saved background and color presets; these presets do not change the selected design's layout or effects.
 
-<details>
-<summary>Preview the designs</summary>
+**Original colors** and **Original background** restore the active design's factory choices. Customization is remembered separately for each design; **Reset design** resets only its colors and background, keeping imported pictures, saved colors and other designs intact. Rounded preview tiles clip their artwork and keep the selected check inside the upper-right corner.
 
-![Thirteen separate designs with Obsidian Gold selected](assets/vitalux-designs-preview.png)
+Overview captions are centered in a consistent order below equally sized load displays. Long names are shortened; hover over a shortened caption to read its complete text. GPU overview cards omit watts; current GPU power and its limit remain on Graphics. **Show component pictures** in Appearance controls CPU, GPU, RAM and mainboard photos globally. Turning it off removes the picture column and stops new lookups while keeping cached pictures.
 
-</details>
+**Ultra Eco** temporarily uses a plain skin, CPU rendering and a ten-second sample interval. Turning it off restores the last design and its saved appearance. Quantum Core and Crystal Atrium retain static factory backgrounds; logo and instrument motion follow the animation setting.
 
-Settings search predicts partial names such as MiniH and scrolls smoothly to their controls. The field closes softly after five seconds. Edit layout keeps tiles stationary and their hold/X controls visible until editing ends. Controls are silent. On/off controls use themed switches; multiple selections retain checkmarks.
 
-Quantum Core uses a sharp, static circuitry background while its logos and live instruments keep their animations. Its palette and background are fixed. Lumen Drift, Aurora Gold and Champagne Glass are removed; saved selections return to Obsidian Gold while personal customization choices are retained.
-
-**Advanced settings → Maintenance → Restore defaults** is the one full reset action. Its description and confirmation explain that it removes all active-profile preferences, custom colors/layouts, imported background copies and cache, then restarts into the guide. Original source images and the other channel are preserved. Section resets remain available for individual groups.
-
-Ultra Eco temporarily uses a plain appearance. Turning it off automatically restores the last selected design and its saved appearance settings.
-
-See the [user guide](USER-GUIDE.md) for design restrictions, graphics, network controls and detailed help, or open **About → Guide** inside Vitalux.
 
 ## Updates and channels
 

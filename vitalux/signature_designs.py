@@ -11,11 +11,6 @@ from PySide6.QtWidgets import QWidget, QLabel
 from . import nebula_prism, quantum_core, crystal_atrium
 
 COLLECTIONS = {
-    'aether_glass': dict(title='Aether Glass', subtitle='OPTICAL GLASS / PLATINUM',
-        bg='#080b19', sidebar='#11172c', card='#161b35', border='#777fae',
-        track='#282d4b', grid='#2b3150', text='#f2f0ff', muted='#bbc0db',
-        accent='#b7a6ff', secondary='#6cddf7', light='#5251a9', bloom='#316aa4',
-        shadow='#10132d', series=('#b7a6ff', '#6cddf7', '#ece8ff', '#a6b9ce')),
     'eclipse_crystal': dict(title='Eclipse Crystal', subtitle='BLACK CRYSTAL / CHAMPAGNE',
         bg='#08090b', sidebar='#101113', card='#151617', border='#89785e',
         track='#302d27', grid='#35312c', text='#fff3df', muted='#c3b8a7',
@@ -33,10 +28,12 @@ def active():
     return theme.mode() in KEYS
 
 
+
 def color(value, alpha=255):
     c = QColor(value)
     c.setAlpha(max(0, min(255, round(alpha))))
     return c
+
 
 
 def shape(rect, mode, compact=False):
@@ -59,6 +56,7 @@ def shape(rect, mode, compact=False):
     return path
 
 
+
 def scene_pixmap(size, mode, phase=0.0):
     if mode == crystal_atrium.KEY:return crystal_atrium.scene_pixmap(size,phase)
     if mode == 'nebula_prism':
@@ -76,62 +74,34 @@ def scene_pixmap(size, mode, phase=0.0):
     for t, c in ((0,pal['shadow']),(.45,pal['bg']),(1,pal['sidebar'])):
         base.setColorAt(t, color(c))
     p.fillRect(rect, base)
-    if mode == 'aether_glass':
-        for offset in (0,.09):
-            ribbon=QPainterPath(QPointF(w*(.76+offset),-h*.1))
-            ribbon.cubicTo(w*.64,h*.30,w*.08,h*.28,w*.17,h*.68)
-            ribbon.cubicTo(w*.27,h*.95,w*.87,h*.76,w*1.1,h*.95)
-            ribbon.lineTo(w*1.1,h)
-            ribbon.cubicTo(w*.86,h*.84,w*.24,h*1.04,w*.11,h*.72)
-            ribbon.cubicTo(w*.03,h*.28,w*.57,h*.30,w*(.70+offset),-h*.1)
-            ribbon.closeSubpath()
-            glass=QLinearGradient(0,0,w,h)
-            for t,tone,a in ((0,pal['accent'],5),(.22,pal['secondary'],50),(.42,pal['accent'],12),
-                             (.61,pal['accent'],80),(.84,pal['secondary'],25),(1,pal['accent'],7)):
-                glass.setColorAt(t,color(tone,a))
-            p.fillPath(ribbon,glass)
-        for i in range(4):
-            ribbon = QPainterPath(QPointF(w*(.72+i*.08), -h*.15))
-            ribbon.cubicTo(w*.63,h*.40,w*.10,h*.18,w*.17,h*.70)
-            ribbon.cubicTo(w*.19,h*.93,w*.81,h*.75,w*1.1,h*(.85+i*.08))
-            gleam = QLinearGradient(0, 0, w, h)
-            for t, tone, a in ((0,pal['accent'],10),(.25,pal['secondary'],140),
-                               (.5,pal['light'],25),(.75,pal['accent'],160),(1,pal['secondary'],0)):
-                gleam.setColorAt(t, color(tone,a))
-            for width, opacity in ((100,.08),(38,.16),(12,.22),(2.2,.8)):
-                p.setOpacity(opacity)
-                p.setPen(QPen(gleam,width,Qt.SolidLine,Qt.RoundCap))
-                p.drawPath(ribbon)
-        p.setOpacity(1)
-    else:
-        center = QPointF(w*.60, h*.13)
-        radius = w*.33
-        glow = QRadialGradient(center, radius*1.12)
-        for t, tone, a in ((0,pal['light'],0),(.86,pal['light'],0),(.91,pal['accent'],48),
-                           (.94,pal['secondary'],110),(.97,pal['light'],25),(1,pal['light'],0)):
-            glow.setColorAt(t, color(tone,a))
-        p.fillRect(rect, glow)
-        lens = QRadialGradient(center-QPointF(radius*.5,radius*.5), radius*1.7)
-        lens.setColorAt(0,color('#28231d'))
-        lens.setColorAt(.5,color('#111113'))
-        lens.setColorAt(1,color('#070809'))
-        p.setBrush(lens)
-        p.setPen(QPen(color(pal['accent'],100),.9))
-        p.drawEllipse(center,radius*.91,radius*.91)
-        # Authored facets are stable, without random noise or an animation loop.
-        for i in range(14):
-            x = w*((i*37 % 101)/100)
-            y = h*((i*29 % 89)/100)
-            facet = QPainterPath(QPointF(x,y))
-            facet.lineTo(x+w*.18,y+h*.13)
-            facet.lineTo(x+w*.05,y+h*.24)
-            facet.closeSubpath()
-            g = QLinearGradient(x,y,x+w*.17,y+h*.2)
-            g.setColorAt(0,color(pal['accent'],12 if i%3 == 0 else 4))
-            g.setColorAt(1,color(pal['accent'],0))
-            p.fillPath(facet,g)
-            p.setPen(QPen(color(pal['accent'],8),.5))
-            p.drawPath(facet)
+    center = QPointF(w*.60, h*.13)
+    radius = w*.33
+    glow = QRadialGradient(center, radius*1.12)
+    for t, tone, a in ((0,pal['light'],0),(.86,pal['light'],0),(.91,pal['accent'],48),
+                       (.94,pal['secondary'],110),(.97,pal['light'],25),(1,pal['light'],0)):
+        glow.setColorAt(t, color(tone,a))
+    p.fillRect(rect, glow)
+    lens = QRadialGradient(center-QPointF(radius*.5,radius*.5), radius*1.7)
+    lens.setColorAt(0,color('#28231d'))
+    lens.setColorAt(.5,color('#111113'))
+    lens.setColorAt(1,color('#070809'))
+    p.setBrush(lens)
+    p.setPen(QPen(color(pal['accent'],100),.9))
+    p.drawEllipse(center,radius*.91,radius*.91)
+    # Authored facets are stable, without random noise or an animation loop.
+    for i in range(14):
+        x = w*((i*37 % 101)/100)
+        y = h*((i*29 % 89)/100)
+        facet = QPainterPath(QPointF(x,y))
+        facet.lineTo(x+w*.18,y+h*.13)
+        facet.lineTo(x+w*.05,y+h*.24)
+        facet.closeSubpath()
+        g = QLinearGradient(x,y,x+w*.17,y+h*.2)
+        g.setColorAt(0,color(pal['accent'],12 if i%3 == 0 else 4))
+        g.setColorAt(1,color(pal['accent'],0))
+        p.fillPath(facet,g)
+        p.setPen(QPen(color(pal['accent'],8),.5))
+        p.drawPath(facet)
     shade = QLinearGradient(0,0,0,h)
     shade.setColorAt(0,QColor(0,0,0,0))
     shade.setColorAt(1,QColor(0,0,0,90))
@@ -150,19 +120,19 @@ def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
         return nebula_prism.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
     if mode == 'quantum_core':
         return quantum_core.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
-    pal = COLLECTIONS[mode]
+    pal = palette(mode)
     path = shape(rect,mode,compact)
     p.save()
     p.setClipPath(path)
     p.fillPath(path,color(pal['card']))
     draw_frosted_backdrop(p,widget,rect,.62)
     wash = QLinearGradient(rect.topLeft(),rect.bottomRight())
-    wash.setColorAt(0,color(pal['card'],182 if mode=='aether_glass' else 217))
+    wash.setColorAt(0,color(pal['card'],217))
     wash.setColorAt(.4,color(pal['bg'],208))
     wash.setColorAt(1,color(pal['card'],225))
     p.fillPath(path,wash)
     light = QLinearGradient(rect.topLeft(),rect.bottomLeft())
-    light.setColorAt(0,color(pal['text'],24 if mode=='aether_glass' else 12))
+    light.setColorAt(0,color(pal['text'],12))
     light.setColorAt(.13,color(pal['text'],3))
     light.setColorAt(1,color(pal['text'],0))
     p.fillPath(path,light)
@@ -220,14 +190,15 @@ def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
     p.drawPath(shape(rect.adjusted(2,2,-2,-2),mode,compact))
 
 
+
 def stylesheet(mode):
     if mode == crystal_atrium.KEY:return crystal_atrium.stylesheet()
     if mode=='nebula_prism':
         return nebula_prism.stylesheet()
     if mode=='quantum_core':
         return quantum_core.stylesheet()
-    pal=COLLECTIONS[mode]
-    radius=9 if mode=='aether_glass' else 3
+    pal=palette(mode)
+    radius=3
     return f'''
     #heroTitle {{font-size:20px;font-weight:650;color:{pal['text']};}}
     #pageTitle {{font-size:30px;font-weight:750;}}
@@ -252,6 +223,7 @@ def stylesheet(mode):
     '''
 
 
+
 def paint_navigation(button):
     from . import theme
     from .nav_icons import paint_icon
@@ -261,7 +233,7 @@ def paint_navigation(button):
     p.setRenderHint(QPainter.Antialiasing)
     rect=QRectF(button.rect()).adjusted(3,3,-3,-3)
     selected=button.isChecked()
-    pal=COLLECTIONS[theme.mode()]
+    pal=palette(theme.mode())
     if selected:
         paint_panel(p,button,rect,compact=True,active=True)
         if theme.mode()=='eclipse_crystal':
@@ -295,9 +267,10 @@ def paint_navigation(button):
     p.end()
 
 
+
 def paint_toggle(p,rect,checked,progress):
     from . import theme
-    pal=COLLECTIONS[theme.mode()]
+    pal=palette(theme.mode())
     p.setPen(QPen(color(pal['accent'] if checked else pal['border']),.8))
     p.setBrush(color(pal['track']))
     p.drawPath(shape(rect,theme.mode(),True))
@@ -309,6 +282,7 @@ def paint_toggle(p,rect,checked,progress):
     p.drawPath(shape(thumb,theme.mode(),True))
 
 
+
 class Surface(QWidget):
     def paintEvent(self,event):
         if not active():
@@ -317,6 +291,7 @@ class Surface(QWidget):
         p.setRenderHint(QPainter.Antialiasing)
         paint_panel(p,self,QRectF(self.rect()).adjusted(1,1,-1,-1),compact=True)
         p.end()
+
 
 
 def _atrium_preview(p,pal,box,width):
@@ -343,6 +318,7 @@ def _atrium_preview(p,pal,box,width):
     box(QRectF((width-dock_w)/2,65,dock_w,8),235)
 
 
+
 def paint_preview(p,tile,pal):
     """Represent the actual horizontal/floating navigation in design previews."""
     mode=tile.key
@@ -361,7 +337,7 @@ def paint_preview(p,tile,pal):
     p.setPen(QPen(color(pal['text'],190),1))
     p.drawLine(11,9,31,9)
     offset=5
-    if mode in ('aether_glass','quantum_core'):
+    if mode in ('quantum_core',):
         box(QRectF(5,18,18,52))
         for y in (24,33,42,51,60):
             p.setPen(QPen(color(pal['accent'],160),1.2))
@@ -390,23 +366,14 @@ def paint_preview(p,tile,pal):
     _preview_tail(p,tile,pal,mode,width)
 
 
+
 def _preview_tail(p,tile,pal,mode,width):
     p.fillRect(QRectF(0,75,width,40),color(pal['bg'],235))
     font=QFont(tile.font());font.setPixelSize(11);font.setWeight(QFont.DemiBold)
     p.setFont(font);p.setPen(color(pal['text']))
     p.drawText(QRectF(7,78,width-14,27),Qt.AlignCenter,tile.text())
-    p.setClipping(False)
-    p.setBrush(Qt.NoBrush)
-    selected=tile.isChecked() or tile.hasFocus()
-    p.setPen(QPen(color(pal['accent'],245 if selected else round(75+100*tile._hover)),2 if selected else 1))
-    outline=QRectF(tile.rect()).adjusted(2,2,-2,-2)
-    p.drawPath(shape(outline,mode,True))
-    if tile.isChecked():
-        p.setPen(Qt.NoPen);p.setBrush(color(pal['accent']))
-        p.drawEllipse(QPointF(width-15,14),7,7)
-        p.setPen(QPen(color(pal['bg']),1.3))
-        p.drawLine(QPointF(width-18,14),QPointF(width-16,16))
-        p.drawLine(QPointF(width-16,16),QPointF(width-12,12))
+    from .gallery_shape import finish
+    finish(p,tile,pal)
 
 
 
@@ -418,18 +385,13 @@ class Metric(QWidget):
         self.value=None
         self.detail=''
         self.extra=''
-        self.model_caption=QLabel(self)
-        self.model_caption.setObjectName('muted')
-        font=self.font();font.setPixelSize(11);self.model_caption.setFont(font)
-        self.model_caption.setWordWrap(True)
-        self.model_caption.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
-        self.model_caption.hide()
         self.history=[]
         self._display_value=None
         self._value_animation=QVariantAnimation(self)
         self._value_animation.setEasingCurve(QEasingCurve.OutCubic)
         self._value_animation.valueChanged.connect(self._value_frame)
-        self.setMinimumSize(110,100)
+        self.setMinimumWidth(110)
+        self.setFixedHeight(180)
 
     def _value_frame(self,value):
         self._display_value=float(value)
@@ -453,102 +415,40 @@ class Metric(QWidget):
         else:self._display_value=value
         self.detail=detail
         self.extra=extra
-        self.model_caption.setText(extra if self.kind == "gpu" else "")
-        self._place_caption()
         self.history=list(history)[-120:]
         self.setAccessibleName(self.title)
         self.setAccessibleDescription(f'{value if value is not None else "–"} · {detail} · {extra}')
         self.setToolTip(f'{extra}\n{detail}'.strip())
         self.update()
 
-    def _place_caption(self):
-        visible=self.kind=='gpu' and bool(self.extra)
-        self.model_caption.setVisible(visible)
-        height=max(18,self.model_caption.heightForWidth(max(20,self.width()-10))) if visible else 0
-        self.model_caption.setGeometry(5,self.height()-height,self.width()-10,height)
-        self.caption_height=height
-
-    def resizeEvent(self,event):
-        super().resizeEvent(event)
-        self._place_caption()
-
     def drawing_rect(self):
-        from PySide6.QtCore import QRect
-        # The model gets its own wrapped footer, outside the unchanged meter.
-        height=max(1,self.height()-(getattr(self,'caption_height',0)+4 if self.kind=='gpu' else 0))
-        return QRect(0,0,self.width(),height)
+        return self.rect()
 
     def paintEvent(self,event):
-        from . import theme
-        from .i18n import tr
-        p=QPainter(self)
-        if theme.mode() == crystal_atrium.KEY:
-            crystal_atrium.paint_metric(self,p);p.end();return
-        if theme.mode()=='nebula_prism':
-            nebula_prism.paint_metric(self,p)
-            p.end()
-            return
-        if theme.mode()=='quantum_core':
-            quantum_core.paint_metric(self,p)
-            p.end()
-            return
-        p.setRenderHint(QPainter.Antialiasing)
-        p.setRenderHint(QPainter.TextAntialiasing)
-        pal=COLLECTIONS[theme.mode()]
-        rect=QRectF(self.drawing_rect()).adjusted(5,3,-5,-3)
-        width=rect.width()
-        font=QFont(self.font())
-        def text(area,value,size=12,tone=None,weight=QFont.Normal,align=Qt.AlignLeft|Qt.AlignVCenter):
-            font.setPixelSize(size)
-            font.setWeight(weight)
-            p.setFont(font)
-            p.setPen(color(tone or pal['text']))
-            value=p.fontMetrics().elidedText(str(value),Qt.ElideRight,max(1,round(area.width())))
-            p.drawText(area,align,value)
-        title_h=24
-        text(QRectF(rect.left(),rect.top(),width,title_h),tr(self.title).upper(),11,weight=QFont.DemiBold)
-        if self.kind == 'cpu':
-            text(QRectF(rect.left(),rect.top()+27,width,22),self.extra,11,pal['muted'])
-        shown='–' if self._display_value is None else f'{self._display_value:.0f} %'
-        if self.kind=='health':
-            shown='–' if self._display_value is None else f'{self._display_value:.0f}'
-        large=round(min(65,max(28,width*.16)))
-        y=rect.top()+54 if self.kind == 'cpu' else rect.top()+30
-        if theme.mode()=='eclipse_crystal' and self.kind=='cpu' and width>380:
-            gauge=QRectF(rect.left()+8,y,118,118)
-            p.setPen(QPen(color(pal['track']),3))
-            p.drawArc(gauge,225*16,-270*16)
+        from . import theme,premium
+        p=QPainter(self);p.setRenderHint(QPainter.Antialiasing)
+        pal=palette(theme.mode())
+        side=min(156.0,self.width()-12.0)
+        box=QRectF((self.width()-side)/2,3,side,side)
+        shown='–' if self._display_value is None else (
+            f'{self._display_value:.0f}' if self.kind=='health' else f'{self._display_value:.0f}%')
+        if theme.mode() in ('nebula_prism','quantum_core'):
+            renderer=nebula_prism if theme.mode()=='nebula_prism' else quantum_core
+            renderer._ring(p,box,self._display_value)
+            font=QFont(self.font());font.setPixelSize(round(side*.23));font.setWeight(QFont.DemiBold)
+            p.setFont(font);p.setPen(color(pal['text']));p.drawText(box,Qt.AlignCenter,shown)
+        else:
+            # Faceted crystal uses the same centered instrument diameter.
+            centre=box.center();ring=box.adjusted(9,9,-9,-9)
+            p.setPen(QPen(color(pal['track']),3));p.setBrush(Qt.NoBrush)
+            p.drawArc(ring,225*16,-270*16)
             if self._display_value is not None:
                 p.setPen(QPen(color(pal['accent']),3.5,Qt.SolidLine,Qt.RoundCap))
-                p.drawArc(gauge,225*16,round(-270*16*max(0,min(100,self._display_value))/100))
-            text(gauge,shown,35,weight=QFont.DemiBold,align=Qt.AlignCenter)
-            graph=QRectF(rect.left()+149,y+13,width-157,max(35,rect.height()-y-56))
-        else:
-            text(QRectF(rect.left(),y,width,large+12),shown,large,weight=QFont.DemiBold)
-            graph=QRectF(rect.left(),y+large+28,width,max(30,rect.bottom()-y-large-76))
+                p.drawArc(ring,225*16,round(-270*16*max(0,min(100,self._display_value))/100))
+            font=QFont(self.font());font.setPixelSize(round(side*.23));font.setWeight(QFont.DemiBold)
+            p.setFont(font);p.setPen(color(pal['text']));p.drawText(box,Qt.AlignCenter,shown)
         if self.kind in ('cpu','gpu'):
-            self._graph(p,graph,pal)
-        elif self.kind in ('ram','disk'):
-            track=QRectF(rect.left(),y+large+27,width,28 if self.kind=='ram' else 9)
-            segments=16 if self.kind=='ram' else 30
-            for i in range(segments):
-                box=QRectF(track.left()+i*track.width()/segments,track.top(),track.width()/segments-3,track.height())
-                fraction=0 if self._display_value is None else max(0,min(1,self._display_value*segments/100-i))
-                lit=fraction>0
-                fill=QLinearGradient(box.topLeft(),box.bottomRight())
-                fill.setColorAt(0,color(pal['text'] if lit else pal['track'],235 if lit else 110))
-                fill.setColorAt(1,color(pal['accent'] if lit else pal['bg']))
-                p.setBrush(fill)
-                p.setPen(QPen(color(pal['accent'] if lit else pal['border'],140 if lit else 60),.7))
-                if lit and fraction<1:
-                    p.save()
-                    p.setClipRect(QRectF(box.left(),box.top(),box.width()*fraction,box.height()))
-                    p.drawPath(shape(box,theme.mode(),True))
-                    p.restore()
-                    p.setBrush(Qt.NoBrush)
-                    p.setPen(QPen(color(pal['border'],60),.7))
-                p.drawPath(shape(box,theme.mode(),True))
-        text(QRectF(rect.left(),rect.bottom()-30,width,30),tr(self.detail),11,pal['muted'])
+            self._graph(p,QRectF((self.width()-side)/2,164,side,13),pal)
         p.end()
 
     def _graph(self,p,rect,pal):
@@ -580,3 +480,9 @@ class Metric(QWidget):
             if len(points)==1:
                 p.setBrush(color(pal['accent']))
                 p.drawEllipse(points[0],2,2)
+
+
+
+def palette(mode):
+    from . import theme
+    return theme.palette_for(mode)

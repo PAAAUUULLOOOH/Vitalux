@@ -15,6 +15,7 @@ from .sensors import drives, fmt_bytes, fmt_duration, fmt_rate, system_static
 from .monitor_extra import graphics_runtime, system_gpu_device
 from . import smart_monitor
 from .smart_ui import SmartPane
+from PySide6.QtWidgets import QLabel, QSizePolicy
 from .widgets import (Card, ChipsGrid, GaugeBox, GaugeCard, ChartPanel, KeyValue,
                       Meter, label, SidebarToggle)
 from .sensor_ui import SensorPanel, optional, power_text, reflow
@@ -213,8 +214,9 @@ class OverviewPage(Page):
         self.distro_logo_remove.move(22, 1)
         self.distro_logo_remove.raise_()
         row.addWidget(self.distro_logo_host, 0, Qt.AlignVCenter)
-        distro_name = label(distro["name"], "heroTitle", wrap=True)
-        distro_name.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        from .overview_text import ElidedLabel
+        distro_name = ElidedLabel(distro["name"]);distro_name.setObjectName("heroTitle")
+        distro_name.setAlignment(Qt.AlignCenter)
         row.addWidget(distro_name, 1, Qt.AlignVCenter)
         # The space on the right stays clear of duplicated system details.
         head.body.addLayout(row)
@@ -224,6 +226,8 @@ class OverviewPage(Page):
         # Uptime stays in the last small tile; the OS updater is gone.
         self.chips = ChipsGrid(["Kernel", "KDE", "Mesa", "Distributionsversion", "Sitzung", "Architektur", "Treiber", "Laufzeit"], columns=4)
         for chip in self.chips.chips.values():
+            old=chip.value;chip.value=ElidedLabel(old.text());chip.value.setObjectName('chipValue')
+            chip.layout().replaceWidget(old,chip.value);old.hide();old.deleteLater()
             chip.layout().setContentsMargins(10, 6, 10, 6)
         self.chips.grid.setVerticalSpacing(6)
         head.body.addWidget(self.chips)
@@ -237,6 +241,7 @@ class OverviewPage(Page):
             card.box.layout().setAlignment(Qt.AlignTop)
             card.body.setAlignment(Qt.AlignTop)
         self.g_health = GaugeCard("Systemzustand", gauge_semantic='score')
+        self.g_health.box.gauge.setFixedHeight(180)
         c1, c2 = Card("Auslastung"), Card("Netzwerk-Verlauf")
         self.graph_load = ChartPanel(['CPU', 'GPU', 'RAM'], [theme.accent(), theme.secondary_accent(), theme.TEAL])
         self.graph_net = ChartPanel(['Download', 'Upload'], [theme.accent(), theme.secondary_accent()], mode='rate')
@@ -244,9 +249,10 @@ class OverviewPage(Page):
         c2.body.addWidget(self.graph_net)
 
         net = Card("Netzwerk")
-        self.net_name = KeyValue("Aktive Schnittstelle")
-        self.net_down, self.net_up = KeyValue("Download"), KeyValue("Upload")
-        self.net_total = KeyValue("Daten gesamt")
+        from .overview_text import OverviewValue
+        self.net_name = OverviewValue("Aktive Schnittstelle")
+        self.net_down, self.net_up = OverviewValue("Download"), OverviewValue("Upload")
+        self.net_total = OverviewValue("Daten gesamt")
         net.body.addWidget(self.net_name)
         net.body.addWidget(self.net_down)
         net.body.addWidget(self.net_up)
@@ -300,26 +306,28 @@ class OverviewPage(Page):
         from .signature_designs import Metric
         self.design_metrics={}
         self.design_metric_hosts={}
+        from .overview_text import OverviewInfo
         self.power_labels={}
+        self.overview_info={}
         def metric_host(key,classic):
             host=QStackedWidget()
             host.addWidget(classic)
-            face=Card()
-            face.layout().setContentsMargins(24,14,24,14)
+            classic.box.sub.hide()
+            classic.box.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Maximum)
+            face=Card(TITLES[key])
+            face.layout().setContentsMargins(20,16,20,18)
             instrument=Metric(TITLES[key],key)
             face.body.addWidget(instrument)
-            if key in ('cpu','ram','disk'):
-                self.power_labels[key]=[]
-                for card in (classic,face):
-                    reading=label('', 'muted',wrap=True)
-                    if key == 'gpu':
-                        reading.setAlignment(Qt.AlignCenter)
-                    reading.hide()
-                    card.body.addWidget(reading)
-                    self.power_labels[key].append(reading)
+            self.overview_info[key]=[]
+            for card in (classic,face):
+                card.layout().setAlignment(Qt.AlignTop)
+                card.body.setAlignment(Qt.AlignTop)
+                for heading in card.findChildren(QLabel):
+                    if heading.objectName()=='cardTitle':heading.setAlignment(Qt.AlignCenter)
+                info=OverviewInfo();card.body.addWidget(info)
+                self.overview_info[key].append(info)
+                if key in ('cpu','ram','disk'):self.power_labels.setdefault(key,[]).append(info.power)
             host.addWidget(face)
-            if key=='gpu':
-                host.full_caption=lambda: self.g_gpu.box.sub.original_text
             self.design_metrics[key]=instrument
             self.design_metric_hosts[key]=host
             return host
@@ -330,6 +338,10 @@ class OverviewPage(Page):
             ('health',metric_host('health',self.g_health)), ('network',net), ('drives',self.disks_card),
         ):
             self.board.register(key,widget)
+        for card in (head,c1,c2,net,self.disks_card):
+            card.layout().setAlignment(Qt.AlignTop)
+            for text in card.findChildren(QLabel):
+                if text.objectName() in ('cardTitle','chipTitle','chipValue'):text.setAlignment(Qt.AlignCenter)
         self.content.addWidget(self.board)
         from .crystal_atrium import AtriumCanvas
         self.atrium = AtriumCanvas(distro["name"], logo, self)
@@ -351,6 +363,8 @@ class OverviewPage(Page):
             host.setCurrentIndex(1 if selected else 0)
         self.root.setContentsMargins(16 if selected else 30,45,16 if selected else 30,24 if selected else 30)
         atrium_on = theme.mode() == 'crystal_atrium'
+        self.atrium._dirty=True
+        self.atrium.update()
         self.board.setVisible(not atrium_on)
         self.atrium.setVisible(atrium_on)
         self.layout_toggle.setVisible(not atrium_on)
@@ -569,17 +583,27 @@ class OverviewPage(Page):
             f"{fmt_bytes(root['used'])} / {fmt_bytes(root['total'])}" if root else tr('Keine Laufwerksdaten verfügbar'))
         self.design_metrics['health'].set(score,f'{state} · {detail}')
 
+        captions={
+            'cpu':(c.get('model',''),_temp_freq(c)),
+            'gpu':(gpu.get('name',''),(' · '.join(x for x in (
+                f"{gpu['temp']:.0f} °C" if gpu.get('temp') is not None else '',
+                f"VRAM {_vram_text(gpu)}" if _vram_text(gpu) else '') if x)) if gpu else tr('Keine GPU-Daten verfügbar')),
+            'ram':('',f"{fmt_bytes(r['used'])} / {fmt_bytes(r['total'])}"),
+            'disk':('',f"{fmt_bytes(root['used'])} / {fmt_bytes(root['total'])}" if root else tr('Keine Laufwerksdaten verfügbar')),
+            'health':(tr(state),detail),
+        }
+        for key,infos in self.overview_info.items():
+            name,details=captions[key]
+            for info in infos:info.set(name,details,power_text(readings.get(key)) if key in self.power_labels else '')
+
         if theme.mode() == 'crystal_atrium':
             self.atrium.set_data({
                 'chips': [("Kernel", self.static["kernel"]), ("KDE", f"Plasma {self.static['plasma']}"),
                           ("Mesa", self.static["mesa"]), ("Sitzung", self.static["session"]),
                           ("Laufzeit", fmt_duration(d['uptime']))],
-                'cpu': {'value': c['usage'], 'line1': _temp_freq(c), 'line2': c.get('model', '')},
-                'gpu': ({'value': gpus[0]['usage'], 'line1': gpus[0]['name'],
-                         'line2': (f"VRAM {_vram_text(gpus[0])}" if _vram_text(gpus[0]) else
-                                   (f"{gpus[0]['temp']:.0f} °C" if gpus[0].get('temp') is not None else ''))}
-                        if gpus else {'value': None, 'line1': tr('Keine GPU-Daten verfügbar'), 'line2': ''}),
-                'ram': {'value': r['percent'], 'line1': f"{fmt_bytes(r['used'])} / {fmt_bytes(r['total'])}", 'line2': ''},
+                'cpu': {'value': c['usage'], 'name':captions['cpu'][0], 'detail':captions['cpu'][1], 'power':power_text(readings['cpu'])},
+                'gpu': {'value':gpu.get('usage'),'name':captions['gpu'][0],'detail':captions['gpu'][1]},
+                'ram': {'value':r['percent'],'detail':captions['ram'][1],'power':power_text(readings['ram'])},
                 'health': {'score': score, 'state': tr(state) if isinstance(state, str) else state, 'detail': detail},
                 'disks': [{'mount': x['mount'], 'percent': x['percent'],
                            'detail': f"{fmt_bytes(x['used'])} / {fmt_bytes(x['total'])}"} for x in disks[:3]],
@@ -596,7 +620,8 @@ class OverviewPage(Page):
         for x in disks[:6]:
             m = self.disk_meters.get(x["mount"])
             if m is None:
-                m = self.disk_meters[x["mount"]] = Meter(x["mount"])
+                from .overview_text import OverviewMeter
+                m = self.disk_meters[x["mount"]] = OverviewMeter(x["mount"])
                 self.disks_card.body.addWidget(m)
             m.set(x["percent"], f"{fmt_bytes(x['used'])} / {fmt_bytes(x['total'])}")
 

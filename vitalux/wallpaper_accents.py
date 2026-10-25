@@ -33,7 +33,8 @@ def available():
 def manual_fallback():
     """Restore the previous accent if the custom wallpaper is deselected."""
     previous = settings.get('accent_before_wallpaper_auto', '#4f8cff')
-    return previous if previous == 'auto' or QColor(str(previous)).isValid() else '#4f8cff'
+    from . import design_catalog
+    return previous if previous in ('auto','design_default') or design_catalog.accent_preset(previous) or QColor(str(previous)).isValid() else 'design_default'
 
 
 def effective_selection(stored):
@@ -131,6 +132,10 @@ def _sample(style, filename, fit, stamp, theme_mode):
 
 def resolve_accent(stored, distro_color='#4f8cff'):
     stored = effective_selection(stored)
+    from . import design_catalog
+    if stored=='design_default':return design_catalog.factory(theme.mode())['accent']
+    named=design_catalog.accent_preset(stored)
+    if named:return named['palette']['accent']
     if stored == 'auto':
         return distro_color
     if is_wallpaper_accent(stored):

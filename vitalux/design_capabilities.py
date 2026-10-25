@@ -2,12 +2,12 @@
 from PySide6.QtCore import Qt,QRectF,QPointF
 from PySide6.QtGui import QColor,QConicalGradient,QPainterPath,QPen
 
-FIXED=frozenset(('black_glass_gold','obsidian_gold','aether_glass','eclipse_crystal','liquid_silver','nebula_prism','quantum_core','crystal_atrium','crystal_glass'))
+FIXED=frozenset(('minimal',))
 
 
 def capabilities(key):
     return dict(accent=key not in FIXED,custom_accent=key not in FIXED,
-                background=key not in FIXED and key!='holographic')
+                background=key not in FIXED)
 
 
 def description(key):

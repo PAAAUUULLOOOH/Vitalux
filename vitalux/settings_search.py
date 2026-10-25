@@ -115,7 +115,7 @@ class FloatingSettingsSearch(QWidget):
         line = QColor(theme.BORDER)
         text = QColor(theme.TEXT)
         accent = QColor(theme.accent())
-        alpha = 187 if theme.mode() in ('glass', 'black_glass', 'black_glass_gold', 'holographic') else 242
+        alpha = 187 if theme.mode() in ('glass',) else 242
         bg = f'rgba({card.red()}, {card.green()}, {card.blue()}, {alpha})'
         outline = f'rgba({line.red()}, {line.green()}, {line.blue()}, 190)'
         foreground = text.name()

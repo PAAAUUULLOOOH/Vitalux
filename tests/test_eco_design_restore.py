@@ -37,6 +37,7 @@ with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',str
         for mode,_ in theme.CHOICES:
             pref.select_design(mode);app.processEvents()
             assert theme.mode()==mode
+            remembered=settings.get_many(personal)
             pref.eco_toggle.click();app.processEvents()
             assert eco.enabled() and theme.mode()=='minimal' and settings.get('theme')==mode
             assert window.sampler.interval==10
@@ -44,8 +45,8 @@ with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',str
             assert not eco.enabled() and theme.mode()==mode and window.design_shell.mode==mode
             assert window.sampler.interval==2
             assert [page for _,page in window.pages]==pages,'Eco must retain the running pages'
-            assert all(settings.get(key)==value for key,value in personal.items()),mode
-        pref.select_design('nebula_prism');pref.eco_toggle.click();app.processEvents()
+            assert all(settings.get(key)==value for key,value in remembered.items()),mode
+        pref.select_design('nebula_prism');remembered=settings.get_many(personal);pref.eco_toggle.click();app.processEvents()
         assert settings.get('theme')=='nebula_prism' and eco.enabled()
     finally:
         close(window)
@@ -55,7 +56,7 @@ with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',str
         pref.eco_toggle.click();app.processEvents()
         assert theme.mode()=='nebula_prism' and window.design_shell.mode=='nebula_prism'
         assert window.design_shell.dock_row.isVisible() and window.sidebar.isHidden()
-        assert all(settings.get(key)==value for key,value in personal.items())
+        assert all(settings.get(key)==value for key,value in remembered.items())
     finally:
         close(window)
 print('Actual Ultra Eco switches restore all 13 designs, personal settings and the saved design after window recreation PASS')

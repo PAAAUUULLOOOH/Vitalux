@@ -30,7 +30,7 @@ SLIDES = [
         "Der kompakte Systemkopf lässt auf der Startseite mehr Platz für Messwerte und Diagramme.",
         "Du siehst unter anderem Prozessor, Grafik, RAM, Systemlaufwerk und den Systemzustand.",
         "Diagramme zeigen, wie sich die Auslastung im Zeitverlauf verändert.",
-        "Im Bearbeitungsmodus bleiben „Zum Verschieben halten“ und das X sichtbar. Halten und ziehen, um Kacheln zu verschieben.",
+        "Übersichtskacheln zeigen mittige Texte in gleicher Reihenfolge. Lange Namen werden gekürzt; beim Darüberfahren erscheint der volle Name. Im Bearbeitungsmodus bleiben Verschieben und das X sichtbar.",
         "overview",
     ),
     (
@@ -75,8 +75,8 @@ SLIDES = [
     ),
     (
         "Darstellung und Einstellungen",
-        "Dreizehn Designs stehen im Vorschau-Raster. Lumen Drift wurde entfernt; gespeicherte Auswahlen wechseln zu Obsidian Gold. Persönliche Farben, Bilder und andere Einstellungen bleiben erhalten. Quantum Core nutzt einen statischen Hintergrund; seine Logos bleiben animiert.",
-        "Bei anpassbaren Designs wählst du integrierte Hintergründe oder eigene Bilder mit Füllen, Einpassen, Strecken, Zentrieren oder Kacheln. Nur Funkeln ist animiert. Beim Ausschalten von Ultra Eco kehrt automatisch das zuletzt ausgewählte Design mit seinen gespeicherten Einstellungen zurück.",
+        "Sechs Designs stehen zur Auswahl: Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core und Light. Alle unterstützen eigene Akzentfarben und Hintergründe.",
+        "Originalfarben und Originalhintergrund stellen die Vorgaben des aktiven Designs wieder her. Farben und Hintergründe früherer Designs bleiben als Vorlagen erhalten. Design zurücksetzen betrifft nur das aktuelle Design. Komponentenbilder anzeigen schaltet die Bilder gemeinsam um und behält den Cache.",
         "Die Suche erkennt auch unvollständige Namen wie MiniH oder MiniHU und gleitet zum passenden Bereich. Nach einer Auswahl bleibt sie fünf Sekunden sichtbar und schließt weich. Erweiterte Einstellungen öffnen sich bei passenden Treffern automatisch.",
         "Unter Erweiterte Einstellungen → Wartung setzt „Standardwerte wiederherstellen“ das gesamte aktive Profil zurück. Einstellungen, eigene Farben, Layouts, importierte Bildkopien und Cache werden gelöscht. Originalbilder und das andere Updateprofil bleiben erhalten; Vitalux startet neu und öffnet die Anleitung.",
         "settings",

@@ -45,13 +45,10 @@ def get(key, default=None):
 
 
 def migrate_crystal_designs():
-    """Keep the selected .21 glass design when the original Atrium returns."""
-    if get('_crystal_design_revision') == 2:
-        return True
-    changes={'_crystal_design_revision':2}
-    if get('theme') == 'crystal_atrium':
-        changes['theme']='crystal_glass'
-    return set_many(changes)
+    from . import design_catalog
+    before=_load();after=design_catalog.migrate(before)
+    changes={key:value for key,value in after.items() if before.get(key)!=value}
+    return set_many(changes) if changes else True
 
 
 def get_many(defaults):

@@ -77,7 +77,7 @@ class QPushButton(_QPushButton):
             color.setAlpha(round((155 if self.isDown() else 70)*self._edge_amount))
             painter.setPen(QPen(color, 1.1))
             painter.setBrush(Qt.NoBrush)
-            radius = 2 if theme.mode() == 'holographic' else 10
+            radius = 10
             painter.drawRoundedRect(rect, radius, radius)
             painter.end()
     def setText(self, text):
@@ -97,8 +97,7 @@ def paint_check_indicator(painter, bounds, checked, hovered=False, focused=False
     area = QRectF(bounds)
     stroke = QColor(theme.accent() if checked else theme.MUTED if hovered else theme.BORDER)
     background = QColor(theme.CARD)
-    background.setAlpha(38 if theme.mode() in ('glass', 'black_glass') else
-                        24 if theme.mode() == 'dark' else 110)
+    background.setAlpha(38 if theme.mode()=='glass' else 110)
     painter.setPen(QPen(stroke, 1.45 if checked else 1.2))
     painter.setBrush(background)
     painter.drawRoundedRect(area, 3.3, 3.3)

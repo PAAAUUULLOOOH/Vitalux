@@ -740,6 +740,8 @@ class MainWindow(QMainWindow):
 
     def apply_appearance(self):
         """Restyle in-place; keep selected page, benchmark worker and scroll intact."""
+        from . import design_catalog
+        design_catalog.remember()
         next_key = self._appearance_signature()
         before = None
         if (self.isVisible() and not self.isMinimized() and motion.duration(300)
@@ -778,7 +780,7 @@ class MainWindow(QMainWindow):
         for card in self.findChildren(GlassSurface):
             fx = card.graphicsEffect()
             if isinstance(fx, QGraphicsDropShadowEffect):
-                fx.setEnabled(not minimal and theme.mode() != "holographic" and not self._is_scrolling_card(card))
+                fx.setEnabled(not minimal and not self._is_scrolling_card(card))
         for gauge in self.findChildren(Gauge):
             if minimal:
                 gauge._animate.stop()

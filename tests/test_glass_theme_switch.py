@@ -35,12 +35,12 @@ def run():
             assert not scene.sharp_backdrop().isNull(), f"{mode}: background image missing"
             assert not scene.soft_backdrop().isNull(), f"{mode}: blur image missing"
             assert not scene.grab().isNull(), f"{mode}: failed to paint"
-            assert scene._asset_mode == mode, f"Wrong cache: {scene._asset_mode} vs {mode}"
+            assert scene._render_key[0]=='original:'+mode
 
     for sequence in (
         ("glass", "minimal", "glass"),
-        ("black_glass", "minimal", "black_glass"),
-        ("glass", "minimal", "black_glass", "minimal", "glass"),
+        ("obsidian_gold", "minimal", "obsidian_gold"),
+        ("glass", "minimal", "obsidian_gold", "minimal", "glass"),
         ("glass", "minimal", "glass", "minimal", "glass"),
     ):
         for mode in sequence:

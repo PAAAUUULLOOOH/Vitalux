@@ -1,6 +1,6 @@
 """Low-overhead, locally rendered Vitalux background presets (no external images).
 
-Every preset is a native Qt gradient. The scene and its blurred sampling image
+Factory snapshots and native gradients share the scene and its blurred sampling image
 share a single cache, keeping glass panels in sync with the backdrop.
 """
 from math import sin, cos
@@ -10,39 +10,26 @@ from PySide6.QtGui import QColor, QBrush, QLinearGradient, QPainter, QPainterPat
 DEFAULT_THEMES = ('dark', 'light', 'glass', 'black_glass', 'minimal')
 # The five original wallpaper/theme pairs are preserved unchanged.
 # The original themes and supported static designs remain available.
-PRESETS = (
-    ('theme_default', 'Automatisch (Design)'),
-    ('dark', 'Dark'),
-    ('light', 'Light'),
-    ('glass', 'Glass'),
-    ('black_glass', 'Black Glass'),
-    ('minimal', 'Minimalistisch'),
-    ('daybreak', 'Hell · Morgenlicht'),
-    ('prism', 'Regenbogen · Prisma'),
-    ('deep_ocean', 'Dunkel · Tiefsee'),
-    ('midnight', 'Dunkel · Mitternacht'),
-    ('velvet', 'Dunkel · Samt'),
-    ('graphite', 'Dunkel · Graphit'),
-    ('animated_sparkle', 'Animiert · Funkeln'),
-    ('adaptive', 'Adaptiv · Akzentfarbe'),
-)
-KEYS = tuple(key for key, _title in PRESETS)
+from pathlib import Path
+from . import design_catalog
+PRESETS = (('theme_default','Originalhintergrund'),) + tuple(
+    (key,item['title']) for key,item in design_catalog.PRESETS.items()) + (
+    ('daybreak','Hell · Morgenlicht'),('prism','Regenbogen · Prisma'),
+    ('deep_ocean','Dunkel · Tiefsee'),('midnight','Dunkel · Mitternacht'),
+    ('velvet','Dunkel · Samt'),('graphite','Dunkel · Graphit'),
+    ('animated_sparkle','Animiert · Funkeln'),('adaptive','Adaptiv · Akzentfarbe'))
+KEYS = tuple(key for key,_ in PRESETS)
 ANIMATED_PRESETS = frozenset(('animated_sparkle',))
 LIGHT_PRESETS = frozenset(('light', 'daybreak'))
 RAINBOW_PRESETS = frozenset(('prism',))
 
 
 def resolve(style, theme_mode):
-    """Discontinued wallpaper selections fall back to the original theme."""
     from . import eco
-    if eco.enabled():
-        return 'minimal'  # No file decode, gradient, blur or animation.
-    from . import theme
-    if theme_mode in theme.PREMIUM_MODES:
-        return theme_mode
-    if theme_mode == 'black_glass_gold':
-        return 'black_glass'
-    return style if style == 'custom_image' else (theme_mode if style not in KEYS or style == 'theme_default' else style)
+    if eco.enabled():return 'minimal'
+    if style=='custom_image':return style
+    if style=='theme_default' or style not in KEYS:return 'original:'+theme_mode
+    return style
 
 
 # Colors within each collection share similar saturation and luminance.
@@ -100,7 +87,7 @@ def _colors(style, accent, light):
 def material_tint(style, base, accent, amount=.16):
     """Glass material accent, kept close to the selected UI theme for contrast."""
     original = QColor(base)
-    if style in DEFAULT_THEMES or style not in KEYS:
+    if style in design_catalog.PRESETS or style.startswith('original:') or style not in KEYS:
         return original
     source = _colors(style, accent, False)[1]
     return QColor(
@@ -134,7 +121,7 @@ def paint_sparkles(p, width, height, phase):
         p.drawEllipse(QPointF(x, y), radius, radius)
 
 
-def render(size, style='glass', accent='#4f8cff', light=False, phase=0.0):
+def _render_native(size, style='glass', accent='#4f8cff', light=False, phase=0.0):
     """Return sharp/soft QPixmaps for the same geometric gradient layout."""
     width, height = int(size.width()), int(size.height())
     if width < 1 or height < 1:
@@ -247,3 +234,43 @@ def render(size, style='glass', accent='#4f8cff', light=False, phase=0.0):
                          Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
     soft = small.scaled(width, height, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
     return sharp, soft
+
+
+_IMAGE_CACHE = {}
+
+def render(size, style='original:glass', accent='#4f8cff', light=False, phase=0.0):
+    """Only backgrounds are selected here; never activate another design."""
+    if style.startswith('original:'):
+        key=style.split(':',1)[1]
+        from . import premium
+        if key in premium.KEYS:
+            sharp=premium.scene_pixmap(size,key)
+        elif key=='glass':
+            sharp=_cover(size,design_catalog.ROOT/'assets/glass-atmosphere.jpg')
+            painter=QPainter(sharp);wash=QLinearGradient(0,0,sharp.width(),sharp.height())
+            wash.setColorAt(0,QColor(4,9,19,30));wash.setColorAt(1,QColor(5,9,25,23))
+            painter.fillRect(sharp.rect(),wash);painter.end()
+        else:
+            return _render_native(size,'light' if key=='light' else 'minimal',accent,light,0)
+        return sharp,_soften(sharp,size)
+    if style in design_catalog.PRESETS:
+        path=design_catalog.ROOT/'assets'/design_catalog.PRESETS[style]['background']
+        sharp=_cover(size,path)
+        return sharp,_soften(sharp,size)
+    return _render_native(size,style,accent,light,phase)
+
+
+def _cover(size,path):
+    key=str(path)
+    source=_IMAGE_CACHE.get(key)
+    if source is None:
+        source=QPixmap(key);_IMAGE_CACHE[key]=source
+    if source.isNull():
+        result=QPixmap(size);result.fill(QColor('#101520'));return result
+    scaled=source.scaled(size,Qt.KeepAspectRatioByExpanding,Qt.SmoothTransformation)
+    return scaled.copy(max(0,(scaled.width()-size.width())//2),max(0,(scaled.height()-size.height())//2),size.width(),size.height())
+
+
+def _soften(sharp,size):
+    tiny=sharp.scaled(max(12,size.width()//14),max(12,size.height()//14),Qt.IgnoreAspectRatio,Qt.SmoothTransformation)
+    return tiny.scaled(size,Qt.IgnoreAspectRatio,Qt.SmoothTransformation)

@@ -125,7 +125,7 @@ jobs:
           set -euo pipefail
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
-          for DESIGN in obsidian_gold aether_glass eclipse_crystal; do
+          for DESIGN in obsidian_gold glass light crystal_atrium nebula_prism quantum_core eclipse_crystal minimal; do
             LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/capture-release-ui.py --output "$GITHUB_WORKSPACE/build/ui-scale-checks/$DESIGN" --design "$DESIGN" --scales 1,1.25,1.5,2
           done
       - name: Prepare AppImage tooling

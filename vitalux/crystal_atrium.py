@@ -61,11 +61,13 @@ def color(value, alpha=255):
     return c
 
 
+
 def _mix(c1, c2, t):
     a, b = QColor(c1), QColor(c2)
     return QColor(round(a.red() + (b.red() - a.red()) * t),
                   round(a.green() + (b.green() - a.green()) * t),
                   round(a.blue() + (b.blue() - a.blue()) * t))
+
 
 
 def _rr(rect, radius):
@@ -75,9 +77,11 @@ def _rr(rect, radius):
     return path
 
 
+
 def shape(rect, compact=False):
     radius = min(rect.width(), rect.height()) * .32 if compact else 26.0
     return _rr(rect, radius)
+
 
 
 # ---------------------------------------------------------------------- stage
@@ -174,6 +178,7 @@ def _soft_shadow(p, rect, radius, strength=1.0):
                        color('#02030c', alpha))
 
 
+
 def glass(p, rect, radius, draw_backdrop, *, strength=1.0, tint=None,
           active=False, lens=True, shadow=True):
     """One pane of physically-motivated glass."""
@@ -223,7 +228,7 @@ def glass(p, rect, radius, draw_backdrop, *, strength=1.0, tint=None,
     p.setBrush(Qt.NoBrush)
     if active:
         p.setOpacity(.5)
-        p.setPen(QPen(color(PALETTE['accent'], 190), 4.5))
+        p.setPen(QPen(color(palette()['accent'], 190), 4.5))
         p.drawPath(path)
         p.setOpacity(1)
     # A hint of chromatic dispersion: red/blue ghosts either side of the rim.
@@ -247,6 +252,7 @@ def glass(p, rect, radius, draw_backdrop, *, strength=1.0, tint=None,
                    QPointF(rect.right() - edge, rect.top() + 1.7))
 
 
+
 def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
     from .glass import draw_frosted_backdrop
     if compact:
@@ -260,8 +266,9 @@ def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
           strength=1.15 if strong else 1.0, active=active, lens=False)
 
 
+
 def stylesheet():
-    pal = PALETTE
+    pal = palette()
     return f'''
     #heroTitle {{font-size:22px;font-weight:620;color:{pal['text']};}}
     #pageTitle {{font-size:32px;font-weight:660;}}
@@ -286,11 +293,13 @@ def stylesheet():
     '''
 
 
+
 def paint_metric(metric, p):
     """The board (and with it these tiles) is hidden while Crystal Atrium is
     active; this only keeps a stray paint request safe and legible."""
-    p.setPen(color(PALETTE['text']))
+    p.setPen(color(palette()['text']))
     p.drawText(metric.rect(), Qt.AlignCenter, str(metric.detail or '–'))
+
 
 
 # -------------------------------------------------------------------- sphere
@@ -394,6 +403,7 @@ def draw_sphere(p, centre, radius, fraction, col_a, col_b, t, seed, blur, scale)
     p.drawEllipse(centre, R, R)
 
 
+
 def draw_sphere_glints(p, centre, radius, col_a):
     """Specular highlights and the opposite-side caustic, drawn *over* the
     value text so the glass is clearly in front of everything inside it."""
@@ -436,6 +446,7 @@ def draw_sphere_glints(p, centre, radius, col_a):
     p.drawEllipse(centre, R, R)
 
 
+
 def draw_tube(p, rect, fraction, col_a, col_b, t, seed):
     """A horizontal glass capsule filled with liquid (drive usage)."""
     radius = rect.height() / 2
@@ -474,9 +485,11 @@ def draw_tube(p, rect, fraction, col_a, col_b, t, seed):
     p.drawPath(path)
 
 
+
 # ------------------------------------------------------------------- canvas
 def _fmt_pct(value):
     return '–' if value is None else f'{value:.0f}'
+
 
 
 class AtriumCanvas(QWidget):
@@ -495,6 +508,7 @@ class AtriumCanvas(QWidget):
         self.setMinimumSize(680, 850)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._data = None
+        self._hint_regions=[]
         self._static = QPixmap()
         self._blur = QPixmap()
         self._dirty = True
@@ -506,6 +520,9 @@ class AtriumCanvas(QWidget):
         self._timer = QTimer(self)
         self._timer.setInterval(66)
         self._timer.timeout.connect(self._tick)
+        from .overview_text import OverviewInfo
+        self.captions={key:OverviewInfo(self) for key,*_ in self.SPHERES}
+        for caption in self.captions.values():caption.setAttribute(Qt.WA_TranslucentBackground,True)
 
     def sizeHint(self):
         from PySide6.QtCore import QSize
@@ -599,9 +616,12 @@ class AtriumCanvas(QWidget):
         return font
 
     def _text(self, p, rect, value, size, tone, weight=QFont.Normal,
-              align=Qt.AlignLeft | Qt.AlignVCenter, spacing=0.0):
+              align=Qt.AlignCenter, spacing=0.0):
         p.setFont(self._font(size, weight, spacing))
         shown = QFontMetrics(p.font()).elidedText(str(value), Qt.ElideRight, max(1, int(rect.width())))
+        if shown!=str(value):
+            self._hint_regions.append((QRectF(rect),str(value)))
+            self.setProperty('vitaluxFullNameHint',True)
         p.setPen(color('#02061a', 150))
         p.drawText(rect.translated(0, 1.2), align, shown)
         p.setPen(color(tone))
@@ -614,10 +634,20 @@ class AtriumCanvas(QWidget):
 
     def _rebuild(self):
         from . import motion
+        self._hint_regions=[];self.setProperty('vitaluxFullNameHint',False)
         w, h = max(1, self.width()), max(1, self.height())
         dpr = self.devicePixelRatioF()
         t = (time.monotonic() - self._t0) * .12
-        stage = stage_pixmap(w, h, 0.0)
+        from . import settings,backdrops,theme,user_background
+        style=settings.get('background_style','theme_default')
+        if style=='theme_default':stage=stage_pixmap(w,h,0.0)
+        elif style=='custom_image':
+            stage=user_background.draw(self.size(),settings.get('custom_background_selected',''),settings.get('custom_background_fit','cover'))
+        else:
+            scene=self.parentWidget()
+            while scene is not None and not hasattr(scene,'_phase'):scene=scene.parentWidget()
+            phase=getattr(scene,'_phase',0)
+            stage=backdrops.render(self.size(),backdrops.resolve(style,KEY),theme.accent(),phase=phase)[0]
         self._blur = stage.scaled(max(8, w // 6), max(8, h // 6), Qt.IgnoreAspectRatio,
                                   Qt.SmoothTransformation)
         pm = QPixmap(max(1, round(w * dpr)), max(1, round(h * dpr)))
@@ -649,18 +679,20 @@ class AtriumCanvas(QWidget):
         self._paint_hero(p, hero, data)
         for i, (key, title, col_a, col_b) in enumerate(self.SPHERES):
             area = spheres[i]
+            if settings.get('accent','design_default')!='design_default':
+                colors=palette()['series'];col_a=colors[i%len(colors)];col_b=palette()['secondary']
             glass(p, area, 30, backdrop, tint=col_a)
             info = (data or {}).get(key) or {}
             self._text(p, QRectF(area.left() + 24, area.top() + 16, area.width() - 48, 20),
-                       self._tr(title).upper(), 11, _mix(col_a, '#ffffff', .5).name(), QFont.DemiBold, spacing=2.0)
+                       self._tr(title).upper(), 11, _mix(col_a, '#ffffff', .5).name(), QFont.DemiBold, align=Qt.AlignCenter, spacing=2.0)
             radius = max(48.0, min(area.width() * .30, (area.height() - 185) / 2))
             centre = QPointF(area.center().x(), area.top() + 36 + radius + 14)
             self._sphere_geo[key] = QRectF(centre.x() - radius - 8, centre.y() - radius - 8,
                                            radius * 2 + 16, radius * 2.45)
-            caption = QRectF(area.left() + 20, centre.y() + radius + 12, area.width() - 40, area.bottom() - 38 - (centre.y() + radius + 12))
-            self._wrapped_text(p, caption, info.get('line1', ''), 12, '#f5f8ff')
-            self._text(p, QRectF(area.left() + 20, area.bottom() - 42, area.width() - 40, 18),
-                       info.get('line2', ''), 11, PALETTE['muted'], QFont.Normal, Qt.AlignHCenter | Qt.AlignVCenter)
+            caption=self.captions[key]
+            caption.set(info.get('name',''),info.get('detail',''),info.get('power',''))
+            top=round(centre.y()+radius+16)
+            caption.setGeometry(round(area.left()+20),top,round(area.width()-40),max(1,round(area.bottom()-top-16)))
             self._sphere_meta[key] = (centre, radius, col_a, col_b, i)
         glass(p, graph, 28, backdrop)
         self._paint_graph(p, graph, data)
@@ -688,7 +720,7 @@ class AtriumCanvas(QWidget):
             pix.setDevicePixelRatio(ratio)
             p.drawPixmap(QPointF(x, rect.center().y() - pix.height() / ratio / 2), pix)
             x += size + 18
-        name_w = 330
+        name_w = min(260,max(70,QFontMetrics(self._font(23)).horizontalAdvance(self.distro_name)+12))
         self._wrapped_text(p, QRectF(x, rect.top() + 16, name_w, rect.height() - 24), self.distro_name,
                            23, '#ffffff')
         x += min(name_w, QFontMetrics(self._font(26, QFont.DemiBold)).horizontalAdvance(self.distro_name)) + 28
@@ -766,7 +798,7 @@ class AtriumCanvas(QWidget):
         data = data or {}
         hist = data.get('history') or {}
         self._text(p, QRectF(rect.left() + 24, rect.top() + 16, 200, 20), self._tr('Auslastung').upper(), 11,
-                   PALETTE['accent'], QFont.DemiBold, spacing=2.0)
+                   palette()['accent'], QFont.DemiBold, spacing=2.0)
         compact = rect.width() < 420
         legend_y = rect.top() + (36 if compact else 16)
         lx = rect.right() - 24
@@ -783,20 +815,20 @@ class AtriumCanvas(QWidget):
             y = area.top() + area.height() * i / 4
             p.setPen(QPen(color('#ffffff', 26), .7, Qt.DotLine))
             p.drawLine(QPointF(area.left(), y), QPointF(area.right(), y))
-            self._text(p, QRectF(area.right() + 8, y - 8, 40, 16), f'{100 - 25 * i}%', 9, PALETTE['muted'])
+            self._text(p, QRectF(area.right() + 8, y - 8, 40, 16), f'{100 - 25 * i}%', 9, palette()['muted'])
         for key, tone in (('ram', '#ffcb72'), ('gpu', '#ff8bdc'), ('cpu', '#7fd6ff')):
             self._ribbon(p, area, hist.get(key) or [], tone, 70 if key == 'cpu' else 38)
-        self._text(p, QRectF(area.left(), area.bottom() + 6, 60, 16), '−1m', 9, PALETTE['muted'])
+        self._text(p, QRectF(area.left(), area.bottom() + 6, 60, 16), '−1m', 9, palette()['muted'])
         self._text(p, QRectF(area.right() - 60, area.bottom() + 6, 60, 16), self._tr('Jetzt'), 9,
-                   PALETTE['muted'], QFont.Normal, Qt.AlignRight | Qt.AlignVCenter)
+                   palette()['muted'], QFont.Normal, Qt.AlignRight | Qt.AlignVCenter)
 
     def _paint_network(self, p, rect, data):
         net = (data or {}).get('net') or {}
         hist = (data or {}).get('history') or {}
         self._text(p, QRectF(rect.left() + 24, rect.top() + 16, rect.width() - 48, 20),
-                   self._tr('Netzwerk').upper(), 11, PALETTE['accent'], QFont.DemiBold, spacing=2.0)
+                   self._tr('Netzwerk').upper(), 11, palette()['accent'], QFont.DemiBold, spacing=2.0)
         self._text(p, QRectF(rect.left() + 24, rect.top() + 36, rect.width() - 48, 18), net.get('name', '–'), 10,
-                   PALETTE['muted'])
+                   palette()['muted'])
         compact = rect.width() < 240
         half = (rect.width() - 48) / (1 if compact else 2)
         for i, (label, key, tone) in enumerate((('Download', 'down', '#7fd6ff'), ('Upload', 'up', '#ff8bdc'))):
@@ -812,15 +844,15 @@ class AtriumCanvas(QWidget):
             scaled = [None if v is None else (v / peak * 100 if peak > 0 else 0) for v in series]
             self._ribbon(p, spark, scaled, tone, 56)
         self._text(p, QRectF(rect.left() + 24, rect.bottom() - 40, rect.width() - 48, 18), net.get('total', ''), 10,
-                   PALETTE['muted'])
+                   palette()['muted'])
 
     def _paint_drives(self, p, rect, data):
         data = data or {}
         self._text(p, QRectF(rect.left() + 24, rect.top() + 16, rect.width() - 48, 20),
-                   self._tr('Systemzustand').upper(), 11, PALETTE['accent'], QFont.DemiBold, spacing=2.0)
+                   self._tr('Systemzustand').upper(), 11, palette()['accent'], QFont.DemiBold, spacing=2.0)
         health = data.get('health') or {}
         score = health.get('score')
-        ring = QRectF(rect.left() + 24, rect.top() + 42, 62, 62)
+        ring = QRectF(rect.center().x()-31, rect.top() + 42, 62, 62)
         p.setBrush(Qt.NoBrush)
         p.setPen(QPen(color('#ffffff', 30), 6, Qt.SolidLine, Qt.RoundCap))
         p.drawArc(ring.adjusted(5, 5, -5, -5), 225 * 16, -270 * 16)
@@ -835,25 +867,32 @@ class AtriumCanvas(QWidget):
             p.setPen(QPen(QBrush(arc), 5.5, Qt.SolidLine, Qt.RoundCap))
             p.drawArc(ring.adjusted(5, 5, -5, -5), 225 * 16, round(-270 * 16 * max(0, min(100, score)) / 100))
         self._text(p, ring, _fmt_pct(score), 19, '#ffffff', QFont.DemiBold, Qt.AlignCenter)
-        self._text(p, QRectF(ring.right() + 14, ring.top() + 4, rect.right() - ring.right() - 34, 22),
+        self._text(p, QRectF(rect.left()+24,ring.bottom()+6,rect.width()-48,20),
                    health.get('state', ''), 13, '#ffffff', QFont.DemiBold)
-        self._text(p, QRectF(ring.right() + 14, ring.top() + 28, rect.right() - ring.right() - 34, 30),
-                   health.get('detail', ''), 10, PALETTE['muted'])
-        y = ring.bottom() + 14
+        self._text(p, QRectF(rect.left()+24,ring.bottom()+29,rect.width()-48,18),
+                   health.get('detail', ''), 10, palette()['muted'])
+        y = ring.bottom() + 58
         tones = (('#7fd6ff', '#2b6bff'), ('#ffcb72', '#ff6a3c'), ('#ff8bdc', '#a42cff'))
         for i, disk in enumerate((data.get('disks') or [])[:3]):
             if y + 40 > rect.bottom() - 14:
                 break
             col_a, col_b = tones[i % 3]
-            self._text(p, QRectF(rect.left() + 24, y, rect.width() - 110, 16), disk['mount'], 11, '#ffffff',
-                       QFont.DemiBold)
-            self._text(p, QRectF(rect.right() - 90, y, 66, 16), f"{disk['percent']:.0f}%", 11, col_a,
-                       QFont.DemiBold, Qt.AlignRight | Qt.AlignVCenter)
+            self._text(p,QRectF(rect.left()+24,y,rect.width()-48,16),f"{disk['mount']} · {disk['percent']:.0f}%",11,col_a,QFont.DemiBold)
             draw_tube(p, QRectF(rect.left() + 24, y + 19, rect.width() - 48, 15), disk['percent'] / 100,
                       col_a, col_b, 0.0, i)
             self._text(p, QRectF(rect.left() + 24, y + 35, rect.width() - 48, 14), disk['detail'], 9,
-                       PALETTE['muted'])
+                       palette()['muted'])
             y += 56
+
+    def event(self,event):
+        from PySide6.QtCore import QEvent
+        if event.type()==QEvent.ToolTip:
+            from PySide6.QtWidgets import QToolTip
+            text=next((text for rect,text in getattr(self,'_hint_regions',()) if rect.contains(event.pos())),None)
+            if text:QToolTip.showText(event.globalPos(),text,self)
+            else:QToolTip.hideText()
+            event.accept();return True
+        return super().event(event)
 
     def paintEvent(self, event):
         if self._dirty or self._static.isNull():
@@ -895,3 +934,9 @@ class AtriumCanvas(QWidget):
                                       unit_w + 6, text_rect.height()), Qt.AlignLeft | Qt.AlignVCenter, unit)
             draw_sphere_glints(p, centre, radius, col_a)
         p.end()
+
+
+
+def palette():
+    from . import theme
+    return theme.palette_for(KEY)

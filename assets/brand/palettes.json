@@ -101,26 +101,6 @@
       "secondary": "#e5c17b",
       "fixed": true
     },
-    "black-glass-gold": {
-      "name": "Black Glass Gold",
-      "accent": "#f3cd79",
-      "top": "#ffe7ac",
-      "mid": "#e4b959",
-      "low": "#a87a31",
-      "spec": "#ffedc1",
-      "secondary": "#f3cd79",
-      "fixed": true
-    },
-    "aether-glass": {
-      "name": "Aether Glass",
-      "accent": "#b7a6ff",
-      "top": "#f0edff",
-      "mid": "#b8b3e6",
-      "low": "#59608f",
-      "spec": "#ffffff",
-      "secondary": "#6cddf7",
-      "fixed": true
-    },
     "eclipse-crystal": {
       "name": "Eclipse Crystal",
       "accent": "#efc68d",
@@ -130,17 +110,6 @@
       "spec": "#fff8e9",
       "secondary": "#f4a86e",
       "fixed": true
-    },
-    "liquid-silver": {
-      "name": "Liquid Silver",
-      "accent": "#b9ccdc",
-      "top": "#f0f6fb",
-      "mid": "#a7bbcc",
-      "low": "#4d667e",
-      "spec": "#ffffff",
-      "secondary": "#81adc8",
-      "fixed": true,
-      "pulse_base": "#718ba2"
     },
     "nebula-prism": {
       "name": "Nebula Prism",
@@ -162,17 +131,6 @@
       "secondary": "#ffb22f",
       "fixed": true
     },
-    "crystal-glass": {
-      "name": "Crystal Glass",
-      "accent": "#94dfff",
-      "top": "#e6f8ff",
-      "mid": "#98d9ff",
-      "low": "#7865b8",
-      "spec": "#ffffff",
-      "secondary": "#baa7ff",
-      "fixed": true,
-      "glass_material": true
-    },
     "crystal-atrium": {
       "name": "Crystal Atrium",
       "accent": "#7fd6ff",
@@ -186,14 +144,10 @@
   },
   "theme_assets": {
     "obsidian_gold": "obsidian-gold",
-    "black_glass_gold": "black-glass-gold",
-    "aether_glass": "aether-glass",
     "eclipse_crystal": "eclipse-crystal",
-    "liquid_silver": "liquid-silver",
     "nebula_prism": "nebula-prism",
     "quantum_core": "quantum-core",
-    "crystal_atrium": "crystal-atrium",
-    "crystal_glass": "crystal-glass"
+    "crystal_atrium": "crystal-atrium"
   },
   "custom_accent_policy": "Preserve the outlined geometry; moderately richer tint for the circle logo only.",
   "motion_seconds": {

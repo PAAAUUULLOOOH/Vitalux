@@ -9,9 +9,7 @@ bash Designs-testen.sh obsidian_gold
 bash Quantum-Core.sh
 ```
 
-All fifteen standalone designs are available in **Settings → Appearance → Design**. **Obsidian Gold** is the default. **Quantum Core** has a neon reactor HUD; **Nebula Prism** has a floating bottom dock. **Black Glass**, **Black Glass Gold** and **Liquid Silver** retain their separate tiles. Aurora Gold is removed.
-
-Premium palettes/backgrounds remain fixed. Grey selectors explain these restrictions directly; adjustable designs support built-in backgrounds, personal images and preset/custom accents. Personal selections remain saved when a fixed design is active. See the [user guide](USER-GUIDE.md) for the full capability list and image controls.
+Six complete designs are available in **Settings → Appearance → Design**: Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core and Light. All support custom accents and backgrounds. Choices are remembered separately for each design. Original colors, Original background and Reset design restore the active design's factory choices. Retired design names remain available as color/background presets without transferring their effects or layouts.
 
 Preview shortcuts use `design-test-data/` beside the extracted app. Normal Stable and Unstable profiles remain separate. Preview mode disables update checks and installation. Keep the complete runtime, libraries and assets together.
 
@@ -19,4 +17,4 @@ Animations and graphics controls remain available. Software, OpenGL, X11/OpenGL,
 
 Third-party notices and source offers remain in [THIRD-PARTY.md](THIRD-PARTY.md).
 
-Crystal Atrium is available through `python -m vitalux.preview crystal_atrium`: the original liquid-glass dashboard from the supplied archive, with its background frozen. `python -m vitalux.preview crystal_glass` selects the previous clear-glass Obsidian composition under its new Crystal Glass name. Both have normal design-gallery tiles.
+Crystal Atrium is available through `python -m vitalux.preview crystal_atrium`: the original liquid-glass dashboard with its background frozen. Crystal Glass remains available as colors and a static background preset; Glass replaces its complete design.

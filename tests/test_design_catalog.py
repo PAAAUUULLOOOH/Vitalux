@@ -1,0 +1,58 @@
+"""Factory restoration, preserved retired presets and isolated design settings."""
+import os,sys,tempfile,json
+from pathlib import Path
+from unittest.mock import patch
+os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from PySide6.QtWidgets import QApplication,QWidget
+from PySide6.QtCore import QSize
+from vitalux import settings,theme,design_catalog as catalog,backdrops,appearance,wallpaper_accents
+from vitalux.control import PreferencesPage
+from vitalux.design_capabilities import capabilities
+app=QApplication.instance() or QApplication([])
+class Host(QWidget):
+    render_backend_active='software';_tray=object()
+    def apply_appearance(self):
+        theme.set_mode(settings.get('theme','obsidian_gold'))
+        theme.set_accent(wallpaper_accents.resolve_accent(settings.get('accent','design_default'),'#73ba25'))
+        catalog.remember()
+with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Path(folder)/'settings.json')):
+    assert tuple(dict(theme.CHOICES))==catalog.VISIBLE and len(theme.CHOICES)==6
+    assert set(theme._THEMES)==set(catalog.AVAILABLE)
+    for key in catalog.VISIBLE:assert all(capabilities(key).values())
+    assert not any(capabilities('minimal').values())
+    personal=dict(custom_accents=[dict(name='Own',color='#123456')],custom_backgrounds=[dict(name='Own',file='own.png')],dashboard_hidden=['gpu'],lang='en')
+    for old,target in catalog.RETIRED.items():
+        before=dict(personal,theme=old,accent='#ff00ff',background_style='theme_default',_crystal_design_revision=2)
+        after=appearance.migrate(before)
+        assert after['theme']==target and after['background_style']==old
+        assert all(after[k]==v for k,v in personal.items())
+        assert appearance.migrate(after)==after
+    assert catalog.migrate(dict(theme='crystal_atrium'))['theme']=='glass'
+    assert 'accent' not in catalog.migrate({})
+    settings.set_many(dict(personal,theme='glass',accent='#123456',background_style='prism',motion='off',_design_catalog_revision=1))
+    host=Host();host.apply_appearance();page=PreferencesPage(host)
+    assert page.background_combo.itemText(page.background_combo.findData('theme_default')) in ('Originalhintergrund','Original background')
+    for key,item in catalog.PRESETS.items():
+        assert page.background_combo.findData(key)>=0
+        assert page.accent_combo.findData('palette:'+key)>=0
+        assert not backdrops.render(QSize(150,100),key)[0].isNull()
+    page.select_design('obsidian_gold');assert settings.get('accent')=='design_default'
+    page.change_accent('palette:crystal_glass');page.background_combo.setCurrentIndex(page.background_combo.findData('crystal_glass'))
+    assert theme.mode()=='obsidian_gold' and settings.get('theme')=='obsidian_gold'
+    custom=theme.palette_for('obsidian_gold');assert custom['card']==catalog.factory('obsidian_gold')['card']
+    assert custom['accent']!=catalog.factory('obsidian_gold')['accent']
+    page.select_design('glass');assert settings.get('accent')=='#123456' and settings.get('background_style')=='prism'
+    page.select_design('obsidian_gold');assert settings.get('accent')=='palette:crystal_glass'
+    page.reset_category('appearance');assert settings.get('theme')=='obsidian_gold'
+    assert settings.get('accent')=='design_default' and settings.get('background_style')=='theme_default'
+    assert all(settings.get(k)==v for k,v in personal.items())
+    page.select_design('glass');assert settings.get('accent')=='#123456'
+    for key in catalog.VISIBLE:
+        page.select_design(key)
+        original=backdrops.render(QSize(180,120),backdrops.resolve('theme_default',key))[0].toImage()
+        page.change_accent('#f472b6')
+        assert original==backdrops.render(QSize(180,120),backdrops.resolve('theme_default',key))[0].toImage(),key
+        assert not page.accent_combo.isLocked() and not page.background_combo.isLocked()
+    page.close();host.close()
+print('Six designs, retired data-only presets, personal settings, independent factory background and per-design reset PASS')

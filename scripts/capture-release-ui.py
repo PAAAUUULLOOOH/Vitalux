@@ -29,7 +29,7 @@ def capture(output, language, checks, warmup, design='obsidian_gold'):
             app.processEvents()
             time.sleep(min(.012,max(0,deadline-time.monotonic())))
     i18n.set_lang(language)
-    settings.set_many({'theme': design, 'close_to_tray': False,
+    settings.set_many({'theme': 'obsidian_gold' if design=='minimal' else design, 'ultra_eco':design=='minimal', 'component_images':False, 'close_to_tray': False,
                        'first_start_guide_seen': True})
     theme.set_mode(design)
     app.setStyleSheet(theme.stylesheet())

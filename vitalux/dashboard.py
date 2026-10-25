@@ -33,7 +33,7 @@ class Grip(QToolButton):
         p = QPainter(self)
         p.setRenderHint(QPainter.TextAntialiasing)
         ink = QColor(theme.MUTED)
-        ink.setAlpha(205 if theme.mode() in ('glass','black_glass') else 230)
+        ink.setAlpha(205 if theme.mode() in ('glass',) else 230)
         p.setPen(ink)
         p.drawText(self.rect().adjusted(0, 0, -2, 0),
                    Qt.AlignRight | Qt.AlignVCenter, self.text())
@@ -172,19 +172,9 @@ class DashboardBoard(QWidget):
                          graph_load=(0,0,7,8),graph_net=(0,0,5,8),network=(0,0,6,6),drives=(0,0,12,5))
             if selected==list(ORDER):
                 selected=['hero','cpu','gpu','ram','graph_load','graph_net','disk','health','network','drives']
+        for key in ('cpu','gpu','ram','disk','health'):
+            native=sizes[key];sizes[key]=(*native[:3],10)
         positions=grid_pack(selected,self.hidden,self._cols(),sizes)
-        tile=self.tiles.get('gpu')
-        host=tile.content if tile is not None and hasattr(tile,'content') else None
-        if host is not None and hasattr(host,'full_caption') and 'gpu' in positions:
-            text=host.full_caption()
-            width=max(30,self._frame(positions['gpu']).width()-58)
-            font=QFont(self.font())
-            if active():font.setPixelSize(11)
-            metrics=QFontMetrics(font)
-            height=metrics.boundingRect(QRect(0,0,width,10000),Qt.TextWordWrap,text).height()
-            extra=max(0,height-metrics.height())
-            native=sizes['gpu'];sizes['gpu']=(*native[:3],native[3]+(extra+PITCH-1)//PITCH)
-            positions=grid_pack(selected,self.hidden,self._cols(),sizes)
         return positions
 
     def _frame(self,rect):

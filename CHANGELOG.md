@@ -1,5 +1,12 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.3-unstable.23] - 2026-10-25
+- Die Designauswahl konzentriert sich auf Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core und Light. Farben und Hintergründe der entfernten Designs bleiben unter ihren ursprünglichen Namen als Vorlagen verfügbar; sie übernehmen keine fremden Effekte oder Layouts.
+- Alle sechs Designs unterstützen anpassbare Akzentfarben und Hintergründe mit getrennt gespeicherten Einstellungen. Originalfarben, Originalhintergrund und Design zurücksetzen stellen die Vorgaben des aktiven Designs wieder her, ohne eigene Bilder oder andere Designs zu löschen.
+- Designkacheln sind einheitlich abgerundet; Vorschauen und Auswahlhäkchen bleiben innerhalb der Kachel.
+- Die Übersicht zeigt mittige Texte in einheitlicher Reihenfolge und kompakte Wattzeilen. Lange Namen werden mit Auslassungspunkten begrenzt und beim Darüberfahren vollständig angezeigt. Die Grafik-Übersicht bleibt ohne Wattanzeige.
+- Komponentenbilder anzeigen schaltet CPU-, Grafik-, RAM- und Mainboardbilder gemeinsam in den Einstellungen um. Ohne Bilder nutzen die Specs die ganze Breite; der Bildcache bleibt erhalten.
+
 ## [v0.9.6.3-unstable.22] - 2026-10-25
 - Grafik, CPU, RAM und Mainboard bevorzugen passende freigestellte Produktbilder und verwenden andernfalls Bilder mit Hintergrund. Gültige ältere Cachebilder bleiben erhalten; die Suche berücksichtigt CPU-Zusätze, Modellschreibweisen, Produktkennungen und weitere Bildquellen.
 - Ohne Produktbild entfallen Bildspalte und Abstand vollständig; Name und kurze Specs nutzen die verfügbare Breite. Fehlgeschlagene Suchen können erneut versuchen, Bilder nachzuladen.

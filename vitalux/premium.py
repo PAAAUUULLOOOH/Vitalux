@@ -23,14 +23,6 @@ COLLECTIONS = {
 }
 from . import signature_designs
 COLLECTIONS.update(signature_designs.COLLECTIONS)
-COLLECTIONS['liquid_silver'] = dict(
-    title='Liquid Silver', subtitle='SMOKED GLASS / SATIN SILVER',
-    bg='#080b10', sidebar='#0d1219', card='#151b23', border='#73889c',
-    track='#2a3543', grid='#2b3442', text='#edf2f7', muted='#afbdc9',
-    accent='#b9ccdc', secondary='#e3edf5', light='#657f97', bloom='#34465b',
-    shadow='#101b27', series=('#b9ccdc','#e3edf5','#7b95aa','#a7bbcc'))
-from . import crystal_glass
-COLLECTIONS[crystal_glass.KEY] = crystal_glass.PALETTE
 KEYS = tuple(COLLECTIONS)
 
 
@@ -38,7 +30,8 @@ def palette(mode=None):
     if mode is None:
         from . import theme
         mode = theme.mode()
-    return COLLECTIONS[mode]
+    from . import theme
+    return theme.palette_for(mode)
 
 
 def color(value, alpha=255):
@@ -55,10 +48,9 @@ def rounded(rect, radius):
 
 def scene_pixmap(size, mode, phase=0.0):
     """Cached atmosphere; only Quantum Core uses the optional animation phase."""
-    if mode == crystal_glass.KEY:return crystal_glass.scene_pixmap(size,mode,phase)
     if mode in signature_designs.KEYS:
         return signature_designs.scene_pixmap(size,mode,phase)
-    pal = palette(mode)
+    pal = COLLECTIONS[mode]
     w, h = max(1, size.width()), max(1, size.height())
     pixmap = QPixmap(w, h)
     pixmap.fill(QColor(pal['bg']))
@@ -113,7 +105,6 @@ def scene_pixmap(size, mode, phase=0.0):
 def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
     """Position-correct frost, smoked depth, inner bevel and metallic edge."""
     from . import theme
-    if theme.mode() == crystal_glass.KEY:return crystal_glass.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
     if theme.mode() in signature_designs.KEYS:
         return signature_designs.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
     from .glass import draw_frosted_backdrop
@@ -185,7 +176,6 @@ def paint_edge(p, rect, radius, *, active=False, compact=False):
 
 def paint_sidebar(p, widget, rect):
     from . import theme
-    if theme.mode() == crystal_glass.KEY:return crystal_glass.paint_sidebar(p,widget,rect)
     if theme.mode() in signature_designs.KEYS:
         return signature_designs.paint_panel(p,widget,rect.adjusted(1,1,-1,-1),strong=True)
     from .glass import draw_frosted_backdrop
@@ -218,7 +208,6 @@ def paint_nav(p, widget, rect, selected, hover):
 
 def paint_gauge(p, widget, value, text, ring_color):
     from . import theme
-    if theme.mode() == crystal_glass.KEY:return crystal_glass.paint_gauge(p,widget,value,text,ring_color)
     pal = palette()
     side = min(widget.width(), widget.height())
     center = QPointF(widget.width()/2, widget.height()/2)
@@ -295,7 +284,7 @@ def stylesheet(mode):
     #ghostBtn, #langBtn {{ background: {pal['sidebar']}; border-color: {pal['border']}; border-radius: 10px; }}
     QScrollBar:vertical {{ width: 7px; }}
     QScrollBar::handle:vertical {{ background: {pal['border']}; border-radius: 3px; }}
-    ''' + (crystal_glass.stylesheet() if mode == crystal_glass.KEY else '')
+    '''
 
 
 class DesignTile(QAbstractButton):
@@ -376,36 +365,18 @@ class DesignTile(QAbstractButton):
         p.scale(scale, scale)
         p.translate(-self.width()/2, -self.height()/2)
         from . import theme, backdrops
-        pal = (palette(self.key) if self.key in KEYS else
-               dict(theme._THEMES[self.key], accent='#f3cd79' if self.key == 'black_glass_gold'
-                    else '#52d3ff' if self.key == 'holographic' else '#4f8cff'))
-        rect = QRectF(self.rect()).adjusted(2, 2, -2, -2)
-        path = rounded(rect, 12)
+        pal = theme.palette_for(self.key)
+        from .gallery_shape import outline,finish
+        path=outline(self)
         p.setClipPath(path)
         background_key = (self.size(), pal['accent'])
         if self._background_key != background_key:
             if self.key in KEYS:
                 self._background = scene_pixmap(self.size(), self.key)
-            elif self.key == 'holographic':
-                from .holographic import scene_pixmap as hologram
-                self._background = hologram(self.size(), pal['accent'])
-            elif self.key in ('glass', 'black_glass', 'black_glass_gold'):
-                from pathlib import Path
-                filename = 'glass-atmosphere.jpg' if self.key == 'glass' else 'black-glass-atmosphere.jpg'
-                source = QPixmap(str(Path(__file__).resolve().parents[1]/'assets'/filename))
-                self._background = source.scaled(self.size(), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
             else:
-                self._background = backdrops.render(self.size(),
-                    'black_glass' if self.key == 'black_glass_gold' else self.key,
-                    pal['accent'], self.key == 'light')[0]
+                self._background=backdrops.render(self.size(),'original:'+self.key,pal['accent'],self.key=='light')[0]
             self._background_key = background_key
         p.drawPixmap(0, 0, self._background)
-        if self.key == crystal_glass.KEY:
-            crystal_glass.paint_preview(p,self,pal)
-            from .design_capabilities import paint
-            paint(p,self,pal,self._hover)
-            p.end()
-            return
         if self.key in signature_designs.KEYS:
             signature_designs.paint_preview(p,self,pal)
             from .design_capabilities import paint
@@ -439,19 +410,7 @@ class DesignTile(QAbstractButton):
         p.setFont(font)
         p.setPen(color(pal['text']))
         p.drawText(QRectF(10, 78, self.width()-20, 27), Qt.AlignCenter, self.text())
-        p.setClipping(False)
         from .design_capabilities import paint
         paint(p,self,pal,self._hover)
-        p.setBrush(Qt.NoBrush)
-        if self.isChecked():
-            p.setPen(Qt.NoPen)
-            p.setBrush(color(pal['accent']))
-            p.drawEllipse(QPointF(self.width()-15, 14), 7, 7)
-            p.setPen(QPen(color(pal['bg']), 1.5, Qt.SolidLine, Qt.RoundCap))
-            p.drawLine(QPointF(self.width()-18, 14), QPointF(self.width()-16, 16))
-            p.drawLine(QPointF(self.width()-16, 16), QPointF(self.width()-12, 12))
-        selected = self.isChecked() or self.hasFocus()
-        p.setBrush(Qt.NoBrush)
-        p.setPen(QPen(color(pal['accent'], 240 if selected else round(75+100*self._hover)), 2 if selected else 1))
-        p.drawPath(path)
+        finish(p,self,pal)
         p.end()

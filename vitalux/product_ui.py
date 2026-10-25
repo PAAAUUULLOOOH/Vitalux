@@ -7,6 +7,7 @@ from PySide6.QtGui import QPainter, QPixmap
 from PySide6.QtWidgets import QApplication, QBoxLayout, QSizePolicy, QVBoxLayout, QGridLayout, QWidget
 
 from .product_images import lookup_key, resolve
+from . import settings
 from .ui_locale import QLabel
 
 
@@ -57,6 +58,7 @@ class ImageLoader(QObject):
         self.pool.clear()
 
     def request(self, product):
+        if settings.get('component_images',True) is False:return
         key = lookup_key(product)
         if not key:
             return
@@ -160,7 +162,7 @@ class ProductHeader(QWidget):
         if self.isVisible():self._request()
 
     def _request(self):
-        if self.key and not self._requested:
+        if settings.get('component_images',True) is not False and self.key and not self._requested:
             self._requested=True;loader().request(self.product)
 
     def _retry(self):
@@ -184,11 +186,12 @@ class ProductHeader(QWidget):
         self._result=result
         available=not self.picture.pixmap.isNull()
         self._layout_image(available)
-        if available:self.retry.stop()
+        if available or settings.get('component_images',True) is False:self.retry.stop()
         elif self.key:self.retry.start()
         self.picture.update();self.updateGeometry()
 
     def _layout_image(self, available):
+        available=available and settings.get('component_images',True) is not False
         self.picture.setVisible(available)
         self.row.setDirection(QBoxLayout.LeftToRight if available else QBoxLayout.TopToBottom)
         self.row.setSpacing(20 if available else 0)
@@ -198,6 +201,14 @@ class ProductHeader(QWidget):
         self.details.setMinimumWidth(0)
         self.details.updateGeometry()
         self.updateGeometry()
+
+    def sync_preference(self):
+        enabled=settings.get('component_images',True) is not False
+        if not enabled:self.retry.stop()
+        self._layout_image(enabled and not self.picture.pixmap.isNull())
+        if enabled and self.isVisible():
+            self._requested=False
+            self._request()
 
     def retranslate(self):
         for row in self.spec_rows:

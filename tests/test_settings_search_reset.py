@@ -161,7 +161,8 @@ def check():
             # Exactly three groups have their own reset and only when changed.
             settings.set('custom_backgrounds', [{'file':'preserve.png','name':'Do not delete'}])
             settings.set('dashboard_layout', {'keep':'yes'})
-            page.select_design('dark')
+            page.select_design(PreferencesPage.DEFAULTS['theme'])
+            page.change_accent('#f472b6')
             app.processEvents()
             assert page._reset_buttons['appearance'].isVisible()
             assert not page._reset_buttons['alerts'].isVisible()

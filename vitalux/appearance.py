@@ -8,7 +8,7 @@ def _manual_accent(value):
     return '#4f8cff'
 
 
-def migrate(data):
+def _legacy_migrate(data):
     """Restore standalone choices once, retaining a snapshot and personal data."""
     result = dict(data)
     if result.get('theme') == 'liquid_chrome':
@@ -21,8 +21,9 @@ def migrate(data):
         return result
 
     from .backdrops import KEYS
-    from .design_capabilities import FIXED
-    from .premium import COLLECTIONS
+    FIXED={'obsidian_gold','liquid_silver','aether_glass','eclipse_crystal','black_glass_gold','nebula_prism','quantum_core'}
+    from .design_catalog import PRESETS
+    COLLECTIONS={key:item['palette'] for key,item in PRESETS.items()}
 
     result['appearance_before_design_restore'] = {
         key: result[key] for key in (
@@ -59,3 +60,8 @@ def migrate(data):
         result.pop(key, None)
     result['_appearance_revision'] = 2
     return result
+
+
+def migrate(data):
+    from .design_catalog import migrate as migrate_catalog
+    return migrate_catalog(_legacy_migrate(data))

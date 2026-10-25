@@ -29,6 +29,7 @@ def color(value, alpha=255):
     return c
 
 
+
 def shape(rect, compact=False):
     path = QPainterPath()
     radius = min(15 if compact else 27, rect.height() / 2, rect.width() / 2)
@@ -36,11 +37,13 @@ def shape(rect, compact=False):
     return path
 
 
+
 def _spectrum(gradient, alpha=255, reverse=False):
-    stops = SPECTRUM[::-1] if reverse else SPECTRUM
+    stops = palette()['series'][::-1] if reverse else SPECTRUM
     for i, tone in enumerate(stops):
         gradient.setColorAt(i / (len(stops) - 1), color(tone, alpha))
     return gradient
+
 
 
 # ---------------------------------------------------------------- atmosphere
@@ -131,7 +134,7 @@ def scene_pixmap(size):
 # -------------------------------------------------------------------- panels
 def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
     from .glass import draw_frosted_backdrop
-    pal = PALETTE
+    pal = palette()
     path = shape(rect, compact)
     p.save()
     p.setClipPath(path)
@@ -168,9 +171,9 @@ def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
                    QPointF(rect.right() - 26, rect.top() + 1.4))
     p.restore()
     edge = QConicalGradient(rect.center(), 38)
-    for t, tone, alpha in ((0, SPECTRUM[0], 175), (.22, SPECTRUM[1], 105),
-                           (.42, pal['border'], 70), (.58, SPECTRUM[2], 135),
-                           (.78, pal['border'], 60), (1, SPECTRUM[0], 175)):
+    for t, tone, alpha in ((0, palette()['series'][0], 175), (.22, palette()['series'][1], 105),
+                           (.42, pal['border'], 70), (.58, palette()['series'][2], 135),
+                           (.78, pal['border'], 60), (1, palette()['series'][0], 175)):
         edge.setColorAt(t, color(tone, min(255, alpha + 55) if active else alpha))
     p.setBrush(Qt.NoBrush)
     if active:
@@ -184,13 +187,14 @@ def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
     p.drawPath(shape(rect.adjusted(2, 2, -2, -2), compact))
 
 
+
 # ------------------------------------------------------------------ dock nav
 DOCK_BUTTON = (54, 46)
 
 
 def paint_navigation(button):
     from .nav_icons import paint_icon
-    pal = PALETTE
+    pal = palette()
     p = QPainter(button)
     p.setRenderHint(QPainter.Antialiasing)
     rect = QRectF(button.rect()).adjusted(3, 3, -3, -3)
@@ -198,9 +202,9 @@ def paint_navigation(button):
     path = shape(rect, True)
     if selected:
         fill = QLinearGradient(rect.topLeft(), rect.bottomRight())
-        fill.setColorAt(0, color(SPECTRUM[0], 74))
-        fill.setColorAt(.55, color(SPECTRUM[1], 70))
-        fill.setColorAt(1, color(SPECTRUM[2], 82))
+        fill.setColorAt(0, color(palette()['series'][0], 74))
+        fill.setColorAt(.55, color(palette()['series'][1], 70))
+        fill.setColorAt(1, color(palette()['series'][2], 82))
         p.fillPath(path, fill)
         glow = QRadialGradient(QPointF(rect.center().x(), rect.bottom() + 4), rect.width())
         glow.setColorAt(0, color(pal['accent'], 82))
@@ -233,9 +237,10 @@ def paint_navigation(button):
     p.end()
 
 
+
 # --------------------------------------------------------------- stylesheets
 def stylesheet():
-    pal = PALETTE
+    pal = palette()
     return f'''
     #heroTitle {{font-size:20px;font-weight:650;color:{pal['text']};}}
     #pageTitle {{font-size:30px;font-weight:750;}}
@@ -253,11 +258,12 @@ def stylesheet():
     QPushButton#ghostBtn:hover,QPushButton#langBtn:hover,QToolButton#layoutAction:hover {{
         border-color:{pal['accent']};background:{pal['track']};}}
     QPushButton#primaryBtn,QPushButton#langBtn:checked {{
-        background:qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 {SPECTRUM[0]},stop:.55 {SPECTRUM[1]},stop:1 {SPECTRUM[2]});
+        background:qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 {palette()['series'][0]},stop:.55 {palette()['series'][1]},stop:1 {palette()['series'][2]});
         border-radius:12px;border:1px solid {pal['accent']};color:#06071a;}}
     QProgressBar,QProgressBar::chunk {{border-radius:12px;}}
     QScrollBar::handle:vertical {{background:{pal['border']};border-radius:3px;}}
     '''
+
 
 
 # ------------------------------------------------------------ design preview
@@ -304,6 +310,7 @@ def preview_contents(p, tile, pal, box, width):
             p.drawEllipse(QPointF(x, dock.center().y()), 1.4, 1.4)
 
 
+
 # --------------------------------------------------------------- instruments
 def _smooth(points):
     path = QPainterPath(points[0])
@@ -319,9 +326,10 @@ def _smooth(points):
     return path
 
 
+
 def _ring(p, box, value, *, level_tone=None):
     """Prismatic 270-degree gauge with graduated ticks and a luminous cap."""
-    pal = PALETTE
+    pal = palette()
     cx, cy = box.center().x(), box.center().y()
     outer = box.width() / 2
     thick = max(5.0, outer * .17)
@@ -333,7 +341,7 @@ def _ring(p, box, value, *, level_tone=None):
         long_ = i % 5 == 0
         r1, r2 = outer - (4 if long_ else 2.2), outer
         lit = value is not None and i / 40 <= fraction + .0001
-        p.setPen(QPen(color(SPECTRUM[min(3, int(3 * i / 40))] if lit else pal['grid'],
+        p.setPen(QPen(color(palette()['series'][min(3, int(3 * i / 40))] if lit else pal['grid'],
                             200 if lit else 150), 1.2 if long_ else .8))
         p.drawLine(QPointF(cx + math.cos(a) * r1, cy - math.sin(a) * r1),
                    QPointF(cx + math.cos(a) * r2, cy - math.sin(a) * r2))
@@ -344,15 +352,15 @@ def _ring(p, box, value, *, level_tone=None):
         return
     gradient = QConicalGradient(arc.center(), 225)
     # Conical stops run counter-clockwise; the arc runs clockwise.
-    gradient.setColorAt(1, color(level_tone or SPECTRUM[0]))
-    gradient.setColorAt(.8, color(level_tone or SPECTRUM[1]))
-    gradient.setColorAt(.5, color(level_tone or SPECTRUM[2]))
-    gradient.setColorAt(.25, color(level_tone or SPECTRUM[3]))
-    gradient.setColorAt(0, color(level_tone or SPECTRUM[0]))
+    gradient.setColorAt(1, color(level_tone or palette()['series'][0]))
+    gradient.setColorAt(.8, color(level_tone or palette()['series'][1]))
+    gradient.setColorAt(.5, color(level_tone or palette()['series'][2]))
+    gradient.setColorAt(.25, color(level_tone or palette()['series'][3]))
+    gradient.setColorAt(0, color(level_tone or palette()['series'][0]))
     span = round(-270 * 16 * fraction)
     for width, alpha in ((thick * 2.1, 34), (thick * 1.45, 62)):
         glow = QConicalGradient(arc.center(), 225)
-        for stop, tone in ((1, SPECTRUM[0]), (.8, SPECTRUM[1]), (.5, SPECTRUM[2]), (.25, SPECTRUM[3]), (0, SPECTRUM[0])):
+        for stop, tone in ((1, palette()['series'][0]), (.8, palette()['series'][1]), (.5, palette()['series'][2]), (.25, palette()['series'][3]), (0, palette()['series'][0])):
             glow.setColorAt(stop, color(level_tone or tone, alpha))
         p.setPen(QPen(QBrush(glow), width, Qt.SolidLine, Qt.RoundCap))
         p.drawArc(arc, 225 * 16, span)
@@ -364,8 +372,8 @@ def _ring(p, box, value, *, level_tone=None):
         tip = QPointF(arc.center().x() + math.cos(a) * r, arc.center().y() - math.sin(a) * r)
         halo = QRadialGradient(tip, thick * 1.15)
         halo.setColorAt(0, color('#ffffff', 230))
-        halo.setColorAt(.35, color(level_tone or SPECTRUM[3], 120))
-        halo.setColorAt(1, color(level_tone or SPECTRUM[3], 0))
+        halo.setColorAt(.35, color(level_tone or palette()['series'][3], 120))
+        halo.setColorAt(1, color(level_tone or palette()['series'][3], 0))
         p.setPen(Qt.NoPen)
         p.setBrush(halo)
         p.drawEllipse(tip, thick * 1.15, thick * 1.15)
@@ -373,8 +381,9 @@ def _ring(p, box, value, *, level_tone=None):
         p.drawEllipse(tip, thick * .26, thick * .26)
 
 
+
 def _area_graph(p, rect, history):
-    pal = PALETTE
+    pal = palette()
     if rect.width() < 12 or rect.height() < 12:
         return
     p.setBrush(Qt.NoBrush)
@@ -395,8 +404,8 @@ def _area_graph(p, rect, history):
     if run:
         runs.append(run)
     line = QLinearGradient(rect.left(), 0, rect.right(), 0)
-    line.setColorAt(0, color(SPECTRUM[1]))
-    line.setColorAt(.6, color(SPECTRUM[0]))
+    line.setColorAt(0, color(palette()['series'][1]))
+    line.setColorAt(.6, color(palette()['series'][0]))
     line.setColorAt(1, color('#e9fdff'))
     for points in runs:
         if len(points) == 1:
@@ -411,8 +420,8 @@ def _area_graph(p, rect, history):
         area.closeSubpath()
         fill = QLinearGradient(0, rect.top(), 0, rect.bottom())
         fill.setColorAt(0, color(pal['accent'], 96))
-        fill.setColorAt(.6, color(SPECTRUM[1], 30))
-        fill.setColorAt(1, color(SPECTRUM[1], 0))
+        fill.setColorAt(.6, color(palette()['series'][1], 30))
+        fill.setColorAt(1, color(palette()['series'][1], 0))
         p.fillPath(area, fill)
         p.setBrush(Qt.NoBrush)
         p.setPen(QPen(color(pal['accent'], 40), 6, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
@@ -429,9 +438,10 @@ def _area_graph(p, rect, history):
         p.drawEllipse(tip, 9, 9)
 
 
+
 def paint_metric(metric, p):
     from .i18n import tr
-    pal = PALETTE
+    pal = palette()
     p.setRenderHint(QPainter.Antialiasing)
     p.setRenderHint(QPainter.TextAntialiasing)
     rect = QRectF(metric.drawing_rect()).adjusted(5, 3, -5, -3)
@@ -503,3 +513,9 @@ def paint_metric(metric, p):
             text(QRectF(left, top, rect.right() - left, available), tr(metric.detail), 15,
                  pal['text'], QFont.Medium, Qt.AlignLeft | Qt.AlignVCenter)
     text(QRectF(rect.left(), rect.bottom() - 24, width, 24), tr(metric.detail), 11, pal['muted'])
+
+
+
+def palette():
+    from . import theme
+    return theme.palette_for(KEY)

@@ -5,7 +5,7 @@ from PySide6.QtGui import QBrush, QColor, QConicalGradient, QFont, QFontMetrics,
 from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget, QGraphicsDropShadowEffect
 from .ui_locale import QLabel, QPushButton, QComboBox, QCheckBox, paint_check_indicator
 
-from . import theme, motion, holographic, premium
+from . import theme, motion, premium
 from .glass import GlassSurface, paint_glass_body, rgba
 from .i18n import tr
 from .nav_icons import GLYPHS, paint_icon
@@ -179,11 +179,6 @@ class Gauge(QWidget):
         self.update()
 
     def _ring_color(self, value):
-        if theme.mode() == 'black_glass_gold':
-            if self.semantic == 'score':
-                return '#f3cd79' if value is None or value >= 86 else (
-                    '#dfb963' if value >= 66 else '#bb8c45')
-            return theme.level_color(value)
         if self.semantic == 'score':
             if value is None or value >= 86:
                 return theme.accent()
@@ -259,8 +254,6 @@ class Gauge(QWidget):
             grad.setColorAt(1, QColor(ring_color))
             p.setPen(QPen(QBrush(grad), pen_w, Qt.SolidLine, Qt.RoundCap))
             p.drawArc(rect, 225 * 16, int(-270 * 16 * v / 100))
-        if theme.mode() == 'holographic':
-            holographic.paint_gauge_ticks(p, rect, theme.accent())
         font = QFont(self.font())
         font.setPixelSize(int(side * 0.22))
         font.setBold(True)
@@ -270,21 +263,11 @@ class Gauge(QWidget):
         p.drawText(rect, Qt.AlignCenter, shown)
 
 
-class GaugeCaption(QLabel):
-    """Full wrapped model names; caption height never rescales the instrument."""
-    def __init__(self):
-        super().__init__('')
-        self.original_text = ''
-        self.setObjectName('muted')
-        self.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
-        self.setWordWrap(True)
-        self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)
+from .overview_text import ElidedLabel
 
-    def set_caption(self, content):
-        self.original_text = tr(str(content))
-        self.setText(self.original_text)
-        self.setToolTip(self.original_text)
-        self.updateGeometry()
+class GaugeCaption(ElidedLabel):
+    """Bounded model name; the complete name remains available on hover."""
+    pass
 
 
 class GaugeBox(QWidget):
@@ -389,8 +372,6 @@ class HistoryGraph(QWidget):
         minimal = theme.mode() == 'minimal'
         if theme.mode() in premium.KEYS:
             premium.paint_panel(p, self, outer, compact=True)
-        elif theme.mode() == 'holographic':
-            holographic.paint_chart_frame(p, outer, theme.accent())
         else:
             fill = QColor(theme.CARD)
             fill.setAlpha(255 if minimal else 160)
@@ -595,8 +576,6 @@ class ChartPanel(QWidget):
     def _palette_color(self, idx):
         if theme.mode() in premium.KEYS:
             return premium.palette()['series'][idx % 4]
-        if theme.mode() == 'black_glass_gold':
-            return ("#ffe5a0", "#e0b55d", "#f4cf81", "#ba8739")[idx % 4]
         role = self.color_roles[idx]
         if role == 'accent': return theme.accent()
         if role == 'secondary': return theme.secondary_accent()
@@ -822,8 +801,6 @@ class NavButton(_SoftHover, QPushButton):
         # low-alpha brush, rather than forcing a glass redraw every tick.
         if theme.mode() in premium.KEYS:
             premium.paint_nav(p, self, r, checked, hover_amount)
-        elif theme.mode() == 'holographic':
-            holographic.paint_nav(p, r, theme.accent(), selected=checked, hovered=hovered)
         elif checked:
             paint_glass_body(p, self, r, 11, compact=True, active=True)
         else:
@@ -832,7 +809,7 @@ class NavButton(_SoftHover, QPushButton):
             p.setPen(Qt.NoPen)
             p.drawRoundedRect(r, 11, 11)
             if hovered:
-                c = theme.accent_qcolor(max(0, round((19 if theme.mode() in ('glass', 'black_glass') else 14) * hover_amount)))
+                c = theme.accent_qcolor(max(0, round((19 if theme.mode() in ('glass',) else 14) * hover_amount)))
                 p.setBrush(c)
                 p.setPen(Qt.NoPen)
                 p.drawRoundedRect(r, 11, 11)
@@ -875,10 +852,7 @@ class NavButton(_SoftHover, QPushButton):
         aura = QColor(color); aura.setAlpha(43 if checked else 10)
         p.setPen(Qt.NoPen)
         p.setBrush(aura)
-        if theme.mode() == "holographic":
-            p.drawRect(QRectF(cx-12, cy-12, 24, 24))
-        else:
-            p.drawRoundedRect(QRectF(cx-12, cy-12, 24, 24), 7, 7)
+        p.drawRoundedRect(QRectF(cx-12, cy-12, 24, 24), 7, 7)
         if self.glow:
             intensity = 0.5 + 0.5 * math.sin(self._phase)
             ring = theme.accent_qcolor(int(75 + 105 * intensity))
@@ -981,19 +955,6 @@ class SidebarToggle(_SoftHover, QPushButton):
             border = rgba(179, 213, 234, round(48 + 52 * hover_amount))
             ink = QColor(theme.blend(theme.accent(), theme.MUTED, hover_amount))
             ink.setAlpha(round(186 + 36 * hover_amount))
-        elif mode == 'black_glass':
-            # Match the neutral translucent black of the sidebar, with a
-            # barely visible specular rim and accent only on hover/focus.
-            fill = QLinearGradient(rect.topLeft(), rect.bottomRight())
-            fill.setColorAt(0, rgba(45, 46, 52, round(94 + 23 * hover_amount)))
-            fill.setColorAt(1, rgba(12, 13, 16, round(65 + 25 * hover_amount)))
-            border = rgba(206, 209, 216, round(57 + 39 * hover_amount))
-            ink = QColor(theme.blend(theme.accent(), theme.MUTED, hover_amount))
-            ink.setAlpha(round(186 + 36 * hover_amount))
-        elif mode == 'holographic':
-            fill = QColor("#0a2638")
-            border = QColor(theme.BORDER)
-            ink = QColor(theme.accent() if hovered or focused else theme.MUTED)
         elif mode == 'light':
             # Light deliberately uses a solid, pale button with a visible
             # graphite chevron, rather than transparent frosted navy.
@@ -1015,7 +976,7 @@ class SidebarToggle(_SoftHover, QPushButton):
             # The distribution/user accent is subtle on hover, but the focus
             # state remains clear for keyboard users in all three themes.
             border = theme.accent_qcolor(
-                round((165 if focused else 105 * hover_amount) if mode in ('glass', 'black_glass') else
+                round((165 if focused else 105 * hover_amount) if mode in ('glass',) else
                       (225 if focused else 168 * hover_amount))
             )
             if focused:
@@ -1023,17 +984,13 @@ class SidebarToggle(_SoftHover, QPushButton):
                 ink.setAlpha(240)
 
         p.setBrush(QBrush(fill))
-        p.setPen(QPen(border, 1.15 if focused else .85 if mode in ('glass', 'black_glass') else 1.0))
-        if mode == 'holographic':
-            p.drawRect(rect)
-        else:
-            p.drawRoundedRect(rect, 9, 9)
+        p.setPen(QPen(border, 1.15 if focused else .85 if mode in ('glass',) else 1.0))
+        p.drawRoundedRect(rect, 9, 9)
 
-        if mode in ('glass', 'black_glass'):
+        if mode in ('glass',):
             # A short, low-opacity specular reflection replaces a harsh
             # bright outline; it is almost invisible until light catches it.
-            sheen = (rgba(245, 246, 248, round(36 + 20 * hover_amount))
-                     if mode == 'black_glass' else rgba(233, 248, 255, round(35 + 25 * hover_amount)))
+            sheen = rgba(233,248,255,round(35+25*hover_amount))
             p.setPen(QPen(sheen, .8, Qt.SolidLine, Qt.RoundCap))
             p.drawLine(QPointF(rect.left()+7, rect.top()+1.4),
                        QPointF(rect.right()-7, rect.top()+1.4))

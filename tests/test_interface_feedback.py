@@ -25,14 +25,15 @@ def run():
         app.processEvents()
         assert mark._timer.isActive()
         fixed_words = set()
-        for key in theme.FIXED_MODES:
+        for key in ('obsidian_gold','eclipse_crystal','nebula_prism','quantum_core','crystal_atrium'):
             theme.set_mode(key)
             mark.sync_theme()
             suffix = '-light' if theme.is_light() else ''
             assert wordmark_pixmap(200, 42).toImage() == _pixmap(
                 f"brand/vitalux-wordmark-{key.replace('_', '-')}{suffix}.svg", 200, 42, 2).toImage()
             fixed_words.add(bytes(wordmark_pixmap(200, 42).toImage().constBits()))
-        assert len(fixed_words) == len(theme.FIXED_MODES), 'Gold themes share a wordmark palette'
+        assert len(fixed_words) == 5, 'Gold themes share a wordmark palette'
+        theme.set_mode('obsidian_gold');mark.sync_theme()
         mark._phase = .15
         reflected = mark.grab().toImage()
         mark._phase = .75
