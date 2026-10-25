@@ -74,17 +74,11 @@ def run():
             assert page.content.indexOf(page.advanced) == page.content.count()-1
             scroll.verticalScrollBar().setValue(scroll.verticalScrollBar().maximum())
             before = scroll.verticalScrollBar().value()
-            page.advanced.header.click()
+            app.processEvents()
             QTest.qWait(450)
-            settled(lambda:not page.expansion_follower.following)
-            assert page.advanced.panel.width() == page.advanced.clip.width()
-            assert not page.expansion_follower.following
-            assert scroll.verticalScrollBar().value() > before
-            assert page.advanced.header.mapTo(scroll.viewport(), QPoint()).y() >= -2
-            page.interval.setCurrentIndex(page.interval.findData(2))
-            QTest.qWait(300)
-            assert page.advanced.isAncestorOf(page.restore_reveal)
-            assert page._maintenance_card.isAncestorOf(page.restore_reveal)
+            assert page.advanced.panel.isVisible()
+            assert not hasattr(page,'expansion_follower')
+
 
             # A changed section reverses its reveal cleanly when reset mid-fade.
             page.alert_boxes['cpu_temp'].setValue(97)

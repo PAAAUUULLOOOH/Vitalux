@@ -70,7 +70,7 @@ def check():
             assert floating.parentWidget() is scroll.viewport()
             assert not floating.expanded
             assert all(button.isHidden() for button in page._reset_buttons.values())
-            assert page.restore_button.isHidden()
+            assert page.restore_button.isVisible() and not page.restore_button.isEnabled()
 
             # Resting icon belongs to page content; open overlay floats above viewport.
             assert page.search_home.isVisible()
@@ -106,7 +106,7 @@ def check():
             page.choose_search_result(page.search_results.item(0))
             qwait(520)
             assert floating.expanded and floating.field.text() == 'vulk'
-            assert page.advanced.expanded
+            assert page.advanced.panel.isVisible()
             assert page.render_combo.hasFocus()
             floating.close_search()
             qwait(420)

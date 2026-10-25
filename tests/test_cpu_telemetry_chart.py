@@ -17,15 +17,14 @@ with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',str
  settings.set_many(dict(motion='off',component_images=False))
  page=CpuPage();page.resize(780,1250);page.show();page.refresh(sample,h);app.processEvents()
  assert len(page.findChildren(ChartPanel))==1
- panel=page.graph;assert len(panel.toggles)==7
+ panel=page.graph;assert len(panel.toggles)==3
  assert not hasattr(page,'kv') and not hasattr(page,'gauge') and not hasattr(page,'hardware')
- assert set(panel.graph.unit_scales())=={'percent','temperature','frequency','power'}
- assert len(panel.graph.series)==4
+ assert set(panel.graph.unit_scales())=={'percent','temperature','frequency'}
+ assert len(panel.graph.series)==3
  panel.toggles[2].setChecked(False);assert 'frequency' not in panel.graph.unit_scales()
- panel.toggles[4].setChecked(True);assert 'load' in panel.graph.unit_scales()
  graph=panel.graph;rect=QRectF(0,0,200,150);graph._pointer=rect.right()
  text=' '.join(graph.hover_readout(rect))
- assert '50.0 °C' in text and '85.0 W' in text and '0.10' in text and 'GHz' not in text,text
+ assert '50.0 °C' in text and 'W' not in text and 'Last' not in text and 'GHz' not in text,text
  panel.toggles[2].setChecked(True)
  assert '4.00 GHz' in ' '.join(graph.hover_readout(rect))
  for toggle in panel.toggles:toggle.setChecked(False)
@@ -35,4 +34,4 @@ with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',str
  for language in ('de','en'):
   i18n.set_lang(language);panel.retheme();assert not page.grab().isNull()
  page.close()
-print('One CPU chart, selection, real units/hover, zero/gaps, Linux load and time ranges PASS')
+print('One CPU chart, selection, real units/hover, zero/gaps, removed power/load curves and time ranges PASS')

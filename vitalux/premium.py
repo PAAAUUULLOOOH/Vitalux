@@ -377,43 +377,5 @@ class DesignTile(QAbstractButton):
                 self._background=backdrops.render(self.size(),'original:'+self.key,pal['accent'],self.key=='light')[0]
             self._background_key = background_key
         p.drawPixmap(0, 0, self._background)
-        if self.key!='crystal_atrium':
-            from .design_preview import paint as preview
-            preview(p,self,pal);p.end();return
-        if self.key in signature_designs.KEYS:
-            signature_designs.paint_preview(p,self,pal)
-            from .design_capabilities import paint
-            paint(p,self,pal,self._hover)
-            p.end()
-            return
-        if self._hover > .01:
-            p.fillPath(path, QBrush(color(pal['accent'], round(13*self._hover))))
-        p.fillRect(QRectF(0, 0, 24, 75), color(pal['bg'], 220))
-        for y in (15, 26, 37, 48):
-            p.setPen(QPen(color(pal['accent'], 130), 2))
-            p.drawLine(9, y, 15, y)
-        p.setPen(QPen(color(pal['accent'], 100), .7))
-        p.setBrush(color(pal['card'], 190))
-        p.drawRoundedRect(QRectF(33, 10, max(5, self.width()-44), 19), 4, 4)
-        width = max(12, (self.width()-54)/3)
-        for i in range(3):
-            box = QRectF(33+i*(width+5), 35, width, 30)
-            p.setBrush(color(pal['card'], 190))
-            p.drawRoundedRect(box, 5, 5)
-            p.setPen(QPen(color(pal['accent'], 215), 1.5))
-            diameter = min(box.width()-8, box.height()-8)
-            dial = QRectF(box.center().x()-diameter/2, box.center().y()-diameter/2,
-                          diameter, diameter)
-            p.drawArc(dial, 225*16, -220*16)
-            p.setPen(QPen(color(pal['accent'], 100), .7))
-        p.fillRect(QRectF(0, 75, self.width(), 40), color(pal['bg'], 225))
-        font = QFont(self.font())
-        font.setPixelSize(11)
-        font.setWeight(QFont.DemiBold)
-        p.setFont(font)
-        p.setPen(color(pal['text']))
-        p.drawText(QRectF(10, 78, self.width()-20, 27), Qt.AlignCenter, self.text())
-        from .design_capabilities import paint
-        paint(p,self,pal,self._hover)
-        finish(p,self,pal)
-        p.end()
+        from .design_preview import paint as preview
+        preview(p,self,pal);p.end()

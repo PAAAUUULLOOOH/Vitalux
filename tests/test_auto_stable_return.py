@@ -11,9 +11,13 @@ source='0.9.6.3-unstable.24';target='0.9.6.3'
 base=dict(stable=dict(ok=True,latest=target,channel='stable',eligible=True,newer=True,url='https://example.invalid/verified.zip',sha256='a'*64),
           unstable=dict(ok=True,latest=source,channel='unstable',eligible=False,has_test_changes=False,stable_version=target,stable_verified=True,manifest_verified=True,same_as_stable=True))
 with tempfile.TemporaryDirectory() as folder,patch.object(update_manager,'__version__',source),patch.object(profiles,'__version__',source),patch.object(profiles,'installed',return_value='unstable'),patch.object(profiles,'directory',side_effect=lambda *_:Path(folder)),patch.object(profiles,'root',side_effect=lambda *_:Path(folder)):
- for kind in ('valid','contained','has_changes','stale_baseline','missing_manifest','offline','missing_test','stable_too_old','old_test','new_test'):
+ for kind in ('valid','contained','baseline','baseline_without_coverage','uncovered_future','has_changes','stale_baseline','missing_manifest','offline','missing_test','stable_too_old','old_test','new_test'):
   m=update_manager.UpdateManager();m._timer.stop();data=copy.deepcopy(base)
   if kind=='contained':data['unstable'].update(same_as_stable=False,stable_contains_test=True)
+  if kind in ('baseline','baseline_without_coverage','uncovered_future'):
+   data['unstable'].update(latest=target,covered_test_version=source)
+   if kind=='baseline_without_coverage':data['unstable'].pop('covered_test_version')
+   if kind=='uncovered_future':data['unstable']['covered_test_version']='0.9.6.3-unstable.23'
   if kind=='has_changes':data['unstable']['has_test_changes']=True
   if kind=='stale_baseline':data['unstable']['stable_version']='0.9.6.2'
   if kind=='missing_manifest':data['unstable'].pop('manifest_verified')
@@ -24,7 +28,7 @@ with tempfile.TemporaryDirectory() as folder,patch.object(update_manager,'__vers
   if kind=='new_test':data['unstable'].update(latest='0.9.6.4-unstable.1',eligible=True,has_test_changes=True)
   with patch.object(m,'install') as install:
    m._on_checked(data);app.processEvents();app.processEvents()
-   assert install.call_count==int(kind in ('valid','contained')),kind
+   assert install.call_count==int(kind in ('valid','contained','baseline')),kind
    if install.called:
     assert m.channel=='stable' and m.latest==target
     m._on_checked(data);app.processEvents();assert install.call_count==1

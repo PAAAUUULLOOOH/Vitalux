@@ -43,24 +43,9 @@ def run():
         QTest.qWait(120)
         advanced = page.advanced
         assert page.content.indexOf(advanced) == page.content.count()-1
-        assert not advanced.expanded and advanced.clip.isHidden()
+        assert advanced.panel.isVisible()
         assert advanced.isAncestorOf(page.render_combo) and advanced.isAncestorOf(page.restore_button)
-        advanced.header.click()
-        advanced.animation.setCurrentTime(170)
-        height = advanced.clip.height()
-        assert 0 < height < advanced._extent
-        advanced.header.click()
-        assert advanced.clip.height() == height, 'Collapse jumped to an endpoint'
-        advanced.animation.setCurrentTime(170)
-        assert 0 < advanced.clip.height() < height
-        advanced.header.click()
-        QTest.qWait(450)
-        assert advanced.expanded and advanced.clip.height() == advanced._extent
-        advanced.header.click()
-        import time
-        deadline=time.monotonic()+2
-        while (not advanced.clip.isHidden() or advanced.clip.height()!=0) and time.monotonic()<deadline:QTest.qWait(20)
-        assert advanced.clip.isHidden() and advanced.clip.height() == 0
+        assert not hasattr(advanced,'animation') and not hasattr(advanced.header,'click')
 
         # Recognition opens the advanced section and glides there while input stays.
         floating = page.search_overlay
@@ -69,7 +54,7 @@ def run():
         QTest.qWait(400)
         page.search.setText('vulk')
         QTest.qWait(230)
-        assert advanced.expanded
+        assert advanced.panel.isVisible()
         navigation = page.search_navigation
         navigation.animation.setCurrentTime(180)
         assert scroll.verticalScrollBar().value() > 0
@@ -84,6 +69,9 @@ def run():
         floating.animation.setCurrentTime(170)
         assert floating.isVisible() and 0 < floating._opacity.opacity() < 1
         QTest.qWait(450)
+        import time
+        deadline=time.monotonic()+2
+        while not floating.isHidden() and time.monotonic()<deadline:QTest.qWait(20)
         assert floating.isHidden()
 
         # Maintenance is searchable in English too, even while the UI is German.

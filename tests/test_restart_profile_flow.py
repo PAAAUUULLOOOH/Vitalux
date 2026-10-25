@@ -21,7 +21,7 @@ def log(event,**details):
  with (stage/'events.jsonl').open('a') as stream:
   stream.write(json.dumps(dict(event=event,phase=phase,pid=os.getpid(),**details))+'\n')
 import vitalux
-if os.environ['TEST_CHANNEL']=='stable':vitalux.__version__='0.9.6.2'
+vitalux.__version__='0.9.6.3' if os.environ['TEST_CHANNEL']=='stable' else '0.9.6.3-unstable.25'
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication
 from vitalux import __main__,profiles,single_instance,guide

@@ -90,7 +90,7 @@ class MainWindow(QMainWindow):
             self.resize(1380, 900)
         self.hist = {k: deque(maxlen=900) for k in (
             "cpu", "ram", "gpu", "net_down", "net_up", "io_read", "io_write",
-            "cpu_temp", "cpu_clock", "cpu_power", "cpu_load_1", "cpu_load_5", "cpu_load_15", "time")}
+            "cpu_temp", "cpu_clock", "time")}
         self._extrema = SessionExtrema()
         self.gpu_history=GpuHistory()
         self._mini_hud = MiniHUD()
@@ -346,7 +346,6 @@ class MainWindow(QMainWindow):
             page = self.pages[index][1]
             if hasattr(page, 'search_navigation'):
                 page.search_navigation.cancel()
-                page.expansion_follower.cancel()
                 page.search_overlay.close_search()
             self.nav_buttons[index].setFocus(Qt.OtherFocusReason)
             scroll.verticalScrollBar().setValue(0)
@@ -932,11 +931,6 @@ class MainWindow(QMainWindow):
         h["gpu"].append(g.get("usage") if g else None)
         h["cpu_temp"].append(d.get("cpu", {}).get("temp"))
         h['cpu_clock'].append(d['cpu'].get('freq'))
-        from .power_display import component_power
-        h['cpu_power'].append((component_power(d.get('hardware',[]),'cpu') or {}).get('value'))
-        load=d['cpu'].get('load') or []
-        for index,key in enumerate(('cpu_load_1','cpu_load_5','cpu_load_15')):
-            h[key].append(load[index] if index<len(load) else None)
         h["net_down"].append(d["net"]["down"])
         h["net_up"].append(d["net"]["up"])
         h['io_read'].append(d['io']['read'])

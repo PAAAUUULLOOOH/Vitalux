@@ -170,16 +170,6 @@
     "sha256": "878371e787605c0854879df639f4135262b830282e8b4131f6979548c1f346b4"
   },
   {
-    "file": "assets/brand/vitalux-pulse-crystal-atrium.svg",
-    "bytes": 65872,
-    "sha256": "ad1934277a44bcf4a88bc51138a317933e43e5d729d2f31db4186dafd7f917a3"
-  },
-  {
-    "file": "assets/brand/vitalux-wordmark-crystal-atrium.svg",
-    "bytes": 6408,
-    "sha256": "da96d57ef1e4b7deefcdb671d3c6a4a68151747c9b9e62beeae1911556b9d40b"
-  },
-  {
     "file": "assets/vitalux-pulse.svg",
     "bytes": 65862,
     "sha256": "4d0484fa9d4b9bf53d8db7058743bc84be346f0e2b92993ce3d8dc814c35b630"
@@ -365,16 +355,6 @@
     "sha256": "6c267280451822fec39b9d05393cfbdff4029e6b3c13183e41a9fdf6da64b2a9"
   },
   {
-    "file": "assets/brand/animated/vitalux-pulse-crystal-atrium.svg",
-    "bytes": 66690,
-    "sha256": "b885c995263ae01a6474fac105e285594e3e12f1cc21306fa12b7333176156e8"
-  },
-  {
-    "file": "assets/brand/animated/vitalux-wordmark-crystal-atrium.svg",
-    "bytes": 6754,
-    "sha256": "78d0d20beb20ffe32edd98ba8572ea3aaf0de2fbe3a8896510fbd86ce841a697"
-  },
-  {
     "file": "assets/brand/animated/vitalux-pulse.svg",
     "bytes": 66680,
     "sha256": "64eaa8eebcaaf430c0a1878b86a69cc0cdf171d2d8c480d189278830f3240ac7"
@@ -388,5 +368,25 @@
     "file": "assets/brand/animated/vitalux-wordmark-light.svg",
     "bytes": 6744,
     "sha256": "7567e11491aedde966d4110d37639bc5d3884f3d7096f1212f3f5cd054b517b0"
+  },
+  {
+    "file": "assets/brand/vitalux-pulse-crystal-glass.svg",
+    "bytes": 66368,
+    "sha256": "571ff1a00713f3f401ad67bebe2537cdae2af1244c3c0c3b4cebcf5b5421d2b6"
+  },
+  {
+    "file": "assets/brand/vitalux-wordmark-crystal-glass.svg",
+    "bytes": 6622,
+    "sha256": "91e984a6ad243e51be386e09fc277b00d94677e20f0d65f73fd9849c9982d008"
+  },
+  {
+    "file": "assets/brand/animated/vitalux-pulse-crystal-glass.svg",
+    "bytes": 67186,
+    "sha256": "1811c2e917ab80aae92c6c60c1c507631bc417ba0da3ae500edaee52f58fac50"
+  },
+  {
+    "file": "assets/brand/animated/vitalux-wordmark-crystal-glass.svg",
+    "bytes": 6968,
+    "sha256": "e1adb0333a0689471a2066440d4d2e1063faa7fb2e70680afdad582ea096ee8e"
   }
 ]

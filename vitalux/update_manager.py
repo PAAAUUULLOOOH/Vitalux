@@ -183,10 +183,11 @@ class UpdateManager(QObject):
                 test.get('has_test_changes') is False and not test.get('eligible') and
                 (test.get('same_as_stable') is True or test.get('stable_contains_test') is True)):return False
         try:
+            if versions.channel(test.get('latest',''))=='stable' and not test.get('covered_test_version'):return False
             return (stable['latest']==test['stable_version'] and versions.channel(stable['latest'])=='stable' and
-                    versions.channel(test['latest'])=='unstable' and
+                    (versions.channel(test['latest'])=='unstable' or test['latest']==stable['latest']) and
                     versions.parse(stable['latest'])[0]>=versions.parse(__version__)[0] and
-                    versions.parse(test['latest'])>=versions.parse(__version__) and
+                    versions.key(test.get('covered_test_version') or test['latest'])>=versions.key(__version__) and
                     bool(stable.get('url')) and len(stable.get('sha256',''))==64)
         except (KeyError,ValueError,TypeError):return False
 

@@ -14,8 +14,7 @@ from .i18n import tr
 from .mini_hud import DEFAULT_KEYS
 from .settings_search import FloatingSettingsSearch, _SearchIcon
 from .choice_combo import ChoiceComboBox
-from .expandable import ExpandableCard
-from .settings_navigation import SettingsNavigator, ExpansionFollower
+from .settings_navigation import SettingsNavigator
 from .soft_controls import AccentSwatch, ResponsiveActions, SoftReveal
 
 
@@ -561,7 +560,7 @@ class PreferencesPage(Page):
         self._refresh_restore_button()
         self._search_targets = [
             ('appearance','Komponentenbilder anzeigen CPU RAM Grafik Mainboard',self.component_images),
-            ('appearance', 'Design Light Glass Obsidian Crystal Atrium Nebula Prism Quantum Core', self.design_tiles[0]),
+            ('appearance', 'Design Light Glass Obsidian Crystal Glass Nebula Prism Quantum Core', self.design_tiles[0]),
             ('appearance', 'Akzentfarbe Eigene Farben Bearbeiten Löschen', self.accent_combo),
             ('appearance', 'Hintergrund Bild Hintergrundfarbe automatisch', self.background_combo),
             ('appearance', 'Animationen Bewegung Übergang', self.motion_combo),
@@ -576,10 +575,16 @@ class PreferencesPage(Page):
             ('maintenance', 'Wartung Maintenance', self._maintenance_card),
             ('maintenance', 'Standardwerte wiederherstellen Zurücksetzen Werkseinstellungen Cache Reset Restore Defaults Delete Personal Preferences', self.restore_button),
         ]
-        self.advanced = ExpandableCard(self)
+        self.advanced = Card()
+        self.advanced.header=label('Erweiterte Einstellungen','strong')
+        self.advanced.body.addWidget(self.advanced.header)
+        self.advanced.panel=QWidget(self.advanced)
+        advanced_layout=QVBoxLayout(self.advanced.panel)
+        advanced_layout.setContentsMargins(0,0,0,0)
+        self.advanced.body.addWidget(self.advanced.panel)
         for card in self._settings_cards['render']:
-            self.advanced.addWidget(card)
-        self.advanced.addWidget(self._maintenance_card)
+            advanced_layout.addWidget(card)
+        advanced_layout.addWidget(self._maintenance_card)
         self._search_targets.append(('advanced', 'Erweiterte Einstellungen Advanced Settings', self.advanced.header))
         from .design_settings import CardDeck
         for card in self._settings_cards['appearance']:self.content.addWidget(card)
@@ -592,7 +597,6 @@ class PreferencesPage(Page):
         self.settings_deck=CardDeck(deck)
         self.content.addWidget(self.settings_deck)
         self.content.addWidget(self.advanced)
-        self.expansion_follower = ExpansionFollower(self)
         self.refresh_appearance()
 
     SEARCH_CATEGORIES = {
@@ -605,7 +609,6 @@ class PreferencesPage(Page):
     def install_search_overlay(self, scroll):
         self.search_overlay.install_on(scroll)
         self.search_navigation.install_on(scroll)
-        self.expansion_follower.install_on(scroll)
 
     @staticmethod
     @lru_cache(maxsize=256)
@@ -896,8 +899,9 @@ class PreferencesPage(Page):
         changed=(any(values[key] != default for key, default in self.DEFAULTS.items()) or
                  any(settings.get(key) for key in ('custom_accents','custom_backgrounds','dashboard_order',
                      'dashboard_hidden','dashboard_layout','lang')))
-        self._maintenance_card.setVisible(bool(changed))
-        self.restore_reveal.setRevealed(bool(changed))
+        self._maintenance_card.setVisible(True)
+        self.restore_reveal.setRevealed(True)
+        self.restore_button.setEnabled(bool(changed))
 
     def restore_defaults(self):
         answer = QMessageBox.question(

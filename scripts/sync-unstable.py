@@ -33,7 +33,6 @@ def sync():
     git('fetch','origin','refs/heads/main:refs/remotes/origin/main',
         'refs/heads/unstable:refs/remotes/origin/unstable')
     git('checkout','-B','unstable','origin/unstable')
-    current=(ROOT/'vitalux/__init__.py').read_text()
     result=git('merge','--no-ff','--no-commit','origin/main',check=False)
     if result.returncode:
         conflicts=git('diff','--name-only','--diff-filter=U').stdout.splitlines()
@@ -43,7 +42,7 @@ def sync():
             raise RuntimeError('Unstable/main need a reviewed merge: '+', '.join(conflicts))
         try:
             for filename in conflicts:
-                if filename=='vitalux/__init__.py':content=current
+                if filename=='vitalux/__init__.py':content=git('show',':3:'+filename).stdout
                 else:
                     ours=git('show',':2:'+filename).stdout
                     theirs=git('show',':3:'+filename).stdout
@@ -51,7 +50,7 @@ def sync():
                 (ROOT/filename).write_text(content);git('add',filename)
         except Exception:
             git('merge','--abort',check=False);raise
-    if (ROOT/'.git/MERGE_HEAD').exists():git('commit','-m','Merge published Stable baseline into unstable')
+    if git('rev-parse','-q','--verify','MERGE_HEAD',check=False).returncode==0:git('commit','-m','Merge published Stable baseline into unstable')
     git('push','origin','HEAD:refs/heads/unstable')
 
 

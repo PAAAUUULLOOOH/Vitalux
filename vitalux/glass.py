@@ -80,9 +80,6 @@ class _AmbientSceneCore:
         self._composed_key = None
         self._render_key = None
         self.update()
-        from .crystal_atrium import AtriumTile
-        for canvas in self.findChildren(AtriumTile):
-            if canvas.isVisible():canvas._dirty=True;canvas.update()
         # Keep live glass sampling aligned to the painted moving backdrop.
         for kind in (GlassSurface, GlassSidebar):
             for card in self.findChildren(kind):
@@ -117,24 +114,24 @@ class _AmbientSceneCore:
             fit = settings.get('custom_background_fit', 'cover')
             path = user_background.image_path(chosen)
             stamp = path.stat().st_mtime_ns if path else None
-            ratio=self.devicePixelRatioF() if theme.mode()=='crystal_atrium' else 1.0
+            ratio=self.devicePixelRatioF() if theme.mode()=='crystal_glass' else 1.0
             size=self.size()*ratio
             key = (style, chosen, fit, stamp, theme.BG, size, ratio)
             if key != self._render_key:
                 self._sharp_cache = user_background.draw(size, chosen, fit)
-                self._soft_cache = backdrops.smooth_glass(self._sharp_cache,18*ratio) if theme.mode()=='crystal_atrium' else self._sharp_cache
+                self._soft_cache = backdrops.smooth_glass(self._sharp_cache,18*ratio) if theme.mode()=='crystal_glass' else self._sharp_cache
                 self._sharp_cache.setDevicePixelRatio(ratio);self._soft_cache.setDevicePixelRatio(ratio)
                 self._render_key = key
                 self._asset_mode = None
                 self._cache_size = self.size()
             return
-        ratio=self.devicePixelRatioF() if theme.mode()=='crystal_atrium' else 1.0
+        ratio=self.devicePixelRatioF() if theme.mode()=='crystal_glass' else 1.0
         size=self.size()*ratio
-        key=(style,size,ratio,theme.mode()=='crystal_atrium',round(self._phase,3) if style in backdrops.ANIMATED_PRESETS else 0,
+        key=(style,size,ratio,theme.mode()=='crystal_glass',round(self._phase,3) if style in backdrops.ANIMATED_PRESETS else 0,
              theme.accent() if style in ('adaptive','animated_sparkle') else '')
         if key!=self._render_key:
             self._sharp_cache,self._soft_cache=backdrops.render(size,style,theme.accent(),light=theme.is_light(),phase=self._phase)
-            if theme.mode()=='crystal_atrium':self._soft_cache=backdrops.smooth_glass(self._sharp_cache,18*ratio)
+            if theme.mode()=='crystal_glass':self._soft_cache=backdrops.smooth_glass(self._sharp_cache,18*ratio)
             self._sharp_cache.setDevicePixelRatio(ratio);self._soft_cache.setDevicePixelRatio(ratio)
             self._render_key=key;self._asset_mode=None;self._cache_size=self.size()
 

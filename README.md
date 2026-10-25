@@ -7,22 +7,22 @@
 </p>
 
 <p align="center"><strong>Your Linux system, clearly in view.</strong><br>A native desktop monitor with live telemetry, glass interfaces and practical hardware diagnostics.</p>
-<p align="center"><a href="https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable"><strong>Download</strong></a> · <a href="USER-GUIDE.md">User guide</a> · <a href="CHANGELOG.en.md">Changelog</a> · <a href="https://github.com/PAAAUUULLOOOH/Vitalux/issues">Support</a> · <a href="THIRD-PARTY.md">Licenses</a></p>
+<p align="center"><a href="https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest"><strong>Download</strong></a> · <a href="USER-GUIDE.md">User guide</a> · <a href="CHANGELOG.en.md">Changelog</a> · <a href="https://github.com/PAAAUUULLOOOH/Vitalux/issues">Support</a> · <a href="THIRD-PARTY.md">Licenses</a></p>
 
 ![Vitalux running in English with Obsidian Gold and real system measurements](assets/vitalux-dashboard-preview.png)
 
-**Unstable preview**, based on Stable v0.9.6.2. Test downloads use the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable); [Main / Latest](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest) remains Stable.
+**Stable v0.9.6.3.** Download the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). Optional test builds are available through the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable).
 
 ## Features
 
 - Live CPU, GPU, memory, storage, network and sensor measurements, with charts, alerts and local history.
-- A rearrangeable dashboard, MiniHUD and six customizable designs, from smoked glass and live spheres to prismatic space and reactor HUDs. **Obsidian Gold is the default.**
+- A rearrangeable dashboard, MiniHUD and six customizable designs, from smoked glass and glass instruments to prismatic space and reactor HUDs. **Obsidian Gold is the default.**
 - Per-app connections, usage warnings and optional, reversible TCP/UDP session blocks.
 - SMART information, drive benchmarks and local diagnostic reports.
 - Measured component power where supported, with current GPU watts and a readable power limit alongside the live values.
 - Complete CPU/thread meters and broader hardware identification, with centered component information and matching product pictures. CPU, GPU and mainboard headers include manufacturer specifications and a complete-specifications dialog. Cutouts are preferred; matching photos with backgrounds are used when needed. Pictures remain available offline.
-- **Crystal Atrium:** the original liquid-glass instruments on one static background, with editable overview tiles. The former **Crystal Glass** background and colors remain available as presets for the retained designs.
-- One selectable CPU history chart with separate unit scales for usage, temperature, clock, power and Linux load averages.
+- **Crystal Glass:** the glass surfaces on one static background, with editable overview tiles. The restored design uses the shared overview layout and current rounded gallery previews.
+- One selectable CPU history chart with separate unit scales for usage, temperature and clock speed.
 - German and English interfaces, manufacturer datasheets, guides and release notes; monitoring and cached product data work offline.
 
 Missing sensor fields are hidden; real zeroes such as stopped fans remain visible. CPU, GPU and board power describe their reported domains, never total PC wall power. Hostname lookups run only on request; update checks contact the official GitHub release service.
@@ -35,21 +35,21 @@ Full app networking additionally requires cgroup v2/BPF, process-fork tracepoint
 
 ## Start Vitalux
 
-Download a package from the [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable).
+Download a package from the [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest).
 
 **AppImage:**
 
 ```bash
-chmod +x Vitalux-v0.9.6.3-unstable.25-x86_64.AppImage
-./Vitalux-v0.9.6.3-unstable.25-x86_64.AppImage
+chmod +x Vitalux-v0.9.6.3-x86_64.AppImage
+./Vitalux-v0.9.6.3-x86_64.AppImage
 ```
 
 First launch offers user-account installation or **Run once**. Use `--portable` to skip integration, `--install` to add it later, or `--uninstall` to remove it while keeping preferences.
 
-**Portable ZIP:** extract the complete `Vitalux-v0.9.6.3-unstable.25-linux-x86_64.zip` into its own writable folder:
+**Portable ZIP:** extract the complete `Vitalux-v0.9.6.3-linux-x86_64.zip` into its own writable folder:
 
 ```bash
-cd Vitalux-v0.9.6.3-unstable.25
+cd Vitalux-v0.9.6.3
 bash run.sh
 ```
 
@@ -59,7 +59,7 @@ Keep the runtime, libraries, assets and launcher together. **Code → Download Z
 
 ## Appearance and controls
 
-Choose **Obsidian Gold**, **Glass**, **Crystal Atrium**, **Nebula Prism**, **Quantum Core** or **Light** in **Settings → Appearance**. Each design supports preset or custom accent colors and independently selectable backgrounds. The original names of retired designs identify their saved background and color presets; these presets do not change the selected design's layout or effects.
+Choose **Obsidian Gold**, **Glass**, **Crystal Glass**, **Nebula Prism**, **Quantum Core** or **Light** in **Settings → Appearance**. Each design supports preset or custom accent colors and independently selectable backgrounds. The original names of retired designs identify their saved background and color presets; these presets do not change the selected design's layout or effects.
 
 **Original colors** and **Original background** restore the active design's factory choices. Customization is remembered separately for each design; **Reset design** resets only its colors and background, keeping imported pictures, saved colors and other designs intact. Rounded preview tiles clip their artwork and keep the selected check inside the upper-right corner.
 
@@ -69,7 +69,7 @@ Overview captions are centered in a consistent order below equally sized load di
 
 A startup window follows the saved design and shows the actual preparation stage while hardware discovery, first measurements, cached pictures/specifications and the interface are prepared. Existing data is loaded before the main window opens; missing online data does not hold startup open. Motion-off and Ultra Eco use a static startup view.
 
-**Ultra Eco** temporarily uses a plain skin, CPU rendering and a ten-second sample interval. Turning it off restores the last design and its saved appearance. Quantum Core and Crystal Atrium retain static factory backgrounds; logo and instrument motion follow the animation setting.
+**Ultra Eco** temporarily uses a plain skin, CPU rendering and a ten-second sample interval. Turning it off restores the last design and its saved appearance. Quantum Core and Crystal Glass retain static factory backgrounds; logo and instrument motion follow the animation setting.
 
 
 
@@ -81,12 +81,12 @@ The update bar shows a centered percentage for the complete preparation process.
 
 When a fresh verified check confirms that Stable contains all current Unstable changes and there is no separate test offer, Vitalux automatically installs Stable and restarts into its separate profile. New test builds never move a Stable installation back automatically; entering Unstable remains a manual action.
 
-After a verified update or channel switch, Vitalux finishes background work and **restarts automatically**. The target stays fixed throughout. Temporary restart preparation failures are retried automatically, up to three attempts; persistent failures retain the verified package and show an explicit recovery action. Stable and Unstable use separate profiles; only the first test launch copies Stable preferences. **Restore defaults** in Maintenance fully resets only the active profile and reopens the guide. When starting from the older Stable v0.9.6.2, its existing updater still requires **Restart now** once to enter Unstable. Promoting this updater to Stable also makes Stable → Unstable restarts automatic. Notes follow your selected language and remain readable offline. Cached information alone cannot authorize an update.
+After a verified update or channel switch, Vitalux finishes background work and **restarts automatically**. The target stays fixed throughout. Temporary restart preparation failures are retried automatically, up to three attempts; persistent failures retain the verified package and show an explicit recovery action. Stable and Unstable use separate profiles; only the first test launch copies Stable preferences. **Restore defaults** in Maintenance fully resets only the active profile and reopens the guide. Upgrading from v0.9.6.2 still requires its existing **Restart now** action once; current versions restart automatically after verified preparation. Notes follow your selected language and remain readable offline. Cached information alone cannot authorize an update.
 
 Updates check SHA-256 and preserve recovery data. For manual verification, put the matching release manifest beside your downloads and run:
 
 ```bash
-sha256sum --ignore-missing -c Vitalux-v0.9.6.3-unstable.25-SHA256SUMS.txt
+sha256sum --ignore-missing -c Vitalux-v0.9.6.3-SHA256SUMS.txt
 ```
 
 A matching checksum verifies consistency with that manifest, not an independent digital signature.
@@ -103,7 +103,7 @@ VITALUX_RENDERER=software bash run.sh
 For an AppImage/FUSE problem:
 
 ```bash
-./Vitalux-v0.9.6.3-unstable.25-x86_64.AppImage --appimage-extract
+./Vitalux-v0.9.6.3-x86_64.AppImage --appimage-extract
 VITALUX_RENDERER=software bash squashfs-root/AppRun --portable
 ```
 

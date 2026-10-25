@@ -33,24 +33,18 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
      page.resize(width,1800);page.show();page.refresh(data,history);app.processEvents();page.board.refresh_geometry();app.processEvents()
      picture=page.grab();assert not picture.isNull()
      assert 'gpu' not in page.power_labels
-     if design!='crystal_atrium':
-      center=page.distro_name.mapTo(page.hero_card,QPoint(page.distro_name.width()//2,0)).x()
-      assert abs(center-page.hero_card.width()/2)<=2,(design,width,center,page.hero_card.width())
-      assert page.distro_logo_host.width()==76
-      assert abs(page.distro_pic.pixmap().deviceIndependentSize().width()-76)<1
-      for chip in page.chips.chips.values():
-       assert chip.height()>=58
-       for label in chip.findChildren(__import__('PySide6.QtWidgets',fromlist=['QLabel']).QLabel):
-        if label.isVisible():assert chip.rect().contains(label.geometry()),(design,width,label.text(),label.geometry(),chip.rect())
-
+     center=page.distro_name.mapTo(page.hero_card,QPoint(page.distro_name.width()//2,0)).x()
+     assert abs(center-page.hero_card.width()/2)<=2,(design,width,center,page.hero_card.width())
+     assert page.distro_logo_host.width()==76
+     assert abs(page.distro_pic.pixmap().deviceIndependentSize().width()-76)<1
+     for chip in page.chips.chips.values():
+      assert chip.height()>=58
+      for label in chip.findChildren(__import__('PySide6.QtWidgets',fromlist=['QLabel']).QLabel):
+       if label.isVisible():assert chip.rect().contains(label.geometry()),(design,width,label.text(),label.geometry(),chip.rect())
      assert all(w.height()<=max(24,w.fontMetrics().height()+2) for widgets in page.power_labels.values() for w in widgets)
      assert len({card.box.gauge.height() for card in (page.g_cpu,page.g_gpu,page.g_ram,page.g_disk)})==1
-     if design=='crystal_atrium':
-      infos={key:page.atrium_tiles[key].captions[key] for key in ('cpu','gpu','ram')}
-      assert all(len(page.atrium_tiles[key]._sphere_meta)==1 for key in infos)
-      caption=infos['gpu'].name
-     else:
-      signature=design in ('nebula_prism','quantum_core','eclipse_crystal')
+     if True:
+      signature=design in ('nebula_prism','quantum_core','eclipse_crystal','crystal_glass')
       index=1 if signature else 0
       infos={key:items[index] for key,items in page.overview_info.items()}
       caption=infos['gpu'].name

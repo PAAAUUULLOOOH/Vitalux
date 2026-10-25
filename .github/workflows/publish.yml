@@ -50,8 +50,10 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install -r requirements-dev.txt
-          sudo apt-get update
-          sudo apt-get install -y xvfb weston libegl1 libgl1 libopengl0 libgl1-mesa-dri libglx-mesa0 mesa-vulkan-drivers libvulkan1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-util1 libxcb-shape0 curl squashfs-tools unzip file
+          printf '%s\n' 'https://archive.ubuntu.com/ubuntu' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          printf '%s\n' 'https://security.ubuntu.com/ubuntu' | sudo tee /etc/apt/apt-mirrors-security.txt >/dev/null
+          sudo apt-get -o Acquire::ForceIPv4=true -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 update
+          sudo apt-get -o Acquire::ForceIPv4=true -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=120 install -y xvfb weston libegl1 libgl1 libopengl0 libgl1-mesa-dri libglx-mesa0 mesa-vulkan-drivers libvulkan1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-util1 libxcb-shape0 curl squashfs-tools unzip file
           python -m compileall -q vitalux tests scripts packaging
           bash -n run.sh packaging/AppRun packaging/build-appimage.sh packaging/appimage-integration.sh packaging/appimage-rollback-watch.sh
       - uses: actions/cache@v4
@@ -94,6 +96,12 @@ jobs:
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-regressions.py --output "$GITHUB_WORKSPACE/build/regressions"
+      - name: Check real component pictures and offline reuse
+        run: python scripts/check-product-image-network.py --require-all-components
+      - name: Check real manufacturer datasheets and offline reuse
+        run: python scripts/check-product-spec-network.py --require-all-components
+      - name: Check real DE/EN datasheet translation and offline reuse
+        run: python scripts/check-spec-translation-network.py
       - name: Check kernel traffic accounting and session blocks in the disposable runner VM
         run: |
           set -euo pipefail
@@ -125,7 +133,7 @@ jobs:
           set -euo pipefail
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
-          for DESIGN in obsidian_gold glass light crystal_atrium nebula_prism quantum_core eclipse_crystal minimal; do
+          for DESIGN in obsidian_gold glass light crystal_glass nebula_prism quantum_core eclipse_crystal minimal; do
             LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/capture-release-ui.py --output "$GITHUB_WORKSPACE/build/ui-scale-checks/$DESIGN" --design "$DESIGN" --scales 1,1.25,1.5,2
           done
       - name: Prepare AppImage tooling
@@ -176,6 +184,9 @@ jobs:
           path: |
             build/regressions/
             build/graphics-checks/
+            build/product-image-check/
+            build/product-spec-check/
+            build/spec-language-check/
             build/source-startup-checks/
             build/ui-scale-checks/
             build/network-kernel.log

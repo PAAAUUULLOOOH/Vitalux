@@ -34,7 +34,7 @@ EN_MORE = {
     'Anschlüsse': 'Outputs',
     'Stable enthält alle Teständerungen. Die App wechselt automatisch zu Stable.': 'Stable includes all test changes. The app is switching to Stable automatically.',
 
-    'Sechs Designs stehen zur Auswahl: Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core und Light. Alle unterstützen eigene Akzentfarben und Hintergründe.': 'Choose from six designs: Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core and Light. All support custom accent colors and backgrounds.',
+    'Sechs Designs stehen zur Auswahl: Obsidian Gold, Glass, Crystal Glass, Nebula Prism, Quantum Core und Light. Alle unterstützen eigene Akzentfarben und Hintergründe.': 'Choose from six designs: Obsidian Gold, Glass, Crystal Glass, Nebula Prism, Quantum Core and Light. All support custom accent colors and backgrounds.',
     'Originalfarben und Originalhintergrund stellen die Vorgaben des aktiven Designs wieder her. Farben und Hintergründe früherer Designs bleiben als Vorlagen erhalten. Design zurücksetzen betrifft nur das aktuelle Design. Komponentenbilder anzeigen schaltet die Bilder gemeinsam um und behält den Cache.': 'Original colors and Original background restore the active design’s factory choices. Colors and backgrounds from previous designs remain available as presets. Reset design affects only the current design. Show component pictures toggles all product images while retaining the cache.',
     'Übersichtskacheln zeigen mittige Texte in gleicher Reihenfolge. Lange Namen werden gekürzt; beim Darüberfahren erscheint der volle Name. Im Bearbeitungsmodus bleiben Verschieben und das X sichtbar.': 'Overview captions are centered in a consistent order. Long names are shortened; hover to read the full name. Move and X controls remain visible while editing.',
     'Originalfarben': 'Original colors',
@@ -44,7 +44,7 @@ EN_MORE = {
     'Akzentfarben und Hintergrund sind anpassbar.': 'Accent colors and background are adjustable.',
     'Obsidian Gold · Akzentfarben und Hintergrund sind anpassbar.': 'Obsidian Gold · Accent colors and background are adjustable.',
     'Glass · Akzentfarben und Hintergrund sind anpassbar.': 'Glass · Accent colors and background are adjustable.',
-    'Crystal Atrium · Akzentfarben und Hintergrund sind anpassbar.': 'Crystal Atrium · Accent colors and background are adjustable.',
+    'Crystal Glass · Akzentfarben und Hintergrund sind anpassbar.': 'Crystal Glass · Accent colors and background are adjustable.',
     'Nebula Prism · Akzentfarben und Hintergrund sind anpassbar.': 'Nebula Prism · Accent colors and background are adjustable.',
     'Quantum Core · Akzentfarben und Hintergrund sind anpassbar.': 'Quantum Core · Accent colors and background are adjustable.',
     'Light · Akzentfarben und Hintergrund sind anpassbar.': 'Light · Accent colors and background are adjustable.',
@@ -1126,11 +1126,14 @@ EN_MORE.update({
 EN_MORE.update({
     'CPU-Messwerte · Verlauf':'CPU readings · history',
     'Last 1 Min':'Load average 1 min', 'Last 5 Min':'Load average 5 min', 'Last 15 Min':'Load average 15 min',
-    'Jede Messgröße hat eine eigene farbige Skala. Last zeigt den Linux-Lastdurchschnitt.':
-        'Each measurement uses its own colored scale. Load shows the Linux load average.',
     'Herstellerangaben · {language} · Stand: {date}':'Manufacturer specifications · {language} · checked: {date}',
     'Übersetzung derzeit nicht verfügbar. Erkannte Systemdaten werden angezeigt.':
         'Translation currently unavailable. Detected system data is shown.',
 })
 
-EN_MORE.update({'Der Prozessor bündelt Auslastung, Temperatur, Takt, Leistung und wählbare Linux-Lastdurchschnitte in einer Diagrammkachel mit eigenen Einheitenskalen. Mit Häkchen wählst du Kurven für 60 Sekunden, 5 oder 15 Minuten. Bei Grafik stehen aktuelle Leistung und Leistungsgrenze bei den Live-Werten. Fehlende Messungen bleiben unbekannt, echte Nullwerte sichtbar. Spezifikationen folgen der App-Sprache; verfügbare Übersetzungen bleiben offline erhalten.': 'Processor combines usage, temperature, clock speed, power and optional Linux load averages in one chart card with independent unit scales. Select curves for 60 seconds, 5 or 15 minutes with checkboxes. Graphics shows current power and its limit with live readings. Missing measurements remain unknown; real zeroes stay visible. Specifications follow the app language; available translations remain accessible offline.'})
+EN_MORE.update({'Der Prozessor bündelt Auslastung, Temperatur und Takt in einer Diagrammkachel mit eigenen Einheitenskalen. Mit Häkchen wählst du Kurven für 60 Sekunden, 5 oder 15 Minuten. Bei Grafik stehen aktuelle Leistung und Leistungsgrenze bei den Live-Werten. Fehlende Messungen bleiben unbekannt, echte Nullwerte sichtbar. Spezifikationen folgen der App-Sprache; verfügbare Übersetzungen bleiben offline erhalten.': 'Processor combines usage, temperature and clock speed in one chart card with independent unit scales. Select curves for 60 seconds, 5 or 15 minutes with checkboxes. Graphics shows current power and its limit with live readings. Missing measurements remain unknown; real zeroes stay visible. Specifications follow the app language; available translations remain accessible offline.'})
+
+EN_MORE.update({
+    'Keine neuen Updates · Wechsel zu Unstable nicht möglich':'No new updates · Switching to Unstable is unavailable',
+    'Jede Messgröße hat eine eigene farbige Skala.':'Each measurement has its own colored scale.',
+})

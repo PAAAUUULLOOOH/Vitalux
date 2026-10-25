@@ -60,7 +60,7 @@ class ActivityLine(QWidget):
 
 class StartupWindow(QWidget):
     def __init__(self):
-        super().__init__(None,Qt.SplashScreen|Qt.FramelessWindowHint)
+        super().__init__(None,Qt.Window|Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground,True)
         self.setWindowTitle('Vitalux');self.setFixedSize(460,400);self.ready=False
         from .brand import PulseCore,Wordmark
@@ -71,7 +71,9 @@ class StartupWindow(QWidget):
         self.activity=ActivityLine(self);layout.addWidget(self.activity)
         self.status=label('Hardware erkennen …','muted',Qt.AlignCenter,wrap=True);self.status.setMinimumHeight(36);layout.addWidget(self.status)
         screen=QApplication.primaryScreen()
-        if screen:self.move(screen.availableGeometry().center()-self.rect().center())
+        if screen:
+            frame=self.frameGeometry();frame.moveCenter(screen.availableGeometry().center())
+            self.move(frame.topLeft())
     def paintEvent(self,event):
         p=QPainter(self);p.setRenderHint(QPainter.Antialiasing)
         fill=QLinearGradient(0,0,self.width(),self.height());fill.setColorAt(0,QColor(theme.CARD));fill.setColorAt(1,QColor(theme.BG))

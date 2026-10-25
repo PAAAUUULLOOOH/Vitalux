@@ -61,7 +61,7 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
         card.close()
         cpu_page=CpuPage();cpu_page.refresh(sample,h)
         assert len(cpu_page.findChildren(ChartPanel))==1
-        assert cpu_page.graph.graph.mode=='mixed' and len(cpu_page.graph.toggles)==7
+        assert cpu_page.graph.graph.mode=='mixed' and len(cpu_page.graph.toggles)==3
         assert cpu_page.graph._source[0][0] is h['cpu']
         cpu_page.refresh(dict(sample,cpu=dict(cpu,temp=None)),h)
         assert len(cpu_page.findChildren(ChartPanel))==1 and not hasattr(cpu_page,'cpu_temp_card')

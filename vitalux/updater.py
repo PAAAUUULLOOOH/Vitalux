@@ -84,7 +84,9 @@ def _unstable_manifest(data):
     with _github_request(urllib.request.Request(url,headers=HEADERS),timeout=12) as response:raw=response.read(65537)
     if len(raw)>65536 or hashlib.sha256(raw).hexdigest()!=digest.split(':')[1].lower():raise ValueError('Testkanal-Manifest konnte nicht geprüft werden.')
     manifest=json.loads(raw)
-    if not isinstance(manifest,dict) or manifest.get('schema')!=1 or versions.channel(manifest.get('version'))!='unstable':raise ValueError('Ungültige Testversionsnummer.')
+    if not isinstance(manifest,dict) or manifest.get('schema')!=1:raise ValueError('Ungültiges Testkanal-Manifest.')
+    # Legacy version identifies the last covered test for older installations.
+    if versions.channel(manifest.get('version'))!='unstable':raise ValueError('Ungültige Testversionsnummer.')
     return manifest
 
 
@@ -117,8 +119,8 @@ def check(channel=None, stable_result=None):
         return {"ok": False, "error": tr("Unerwartete Antwort von GitHub.")}
 
     tag = str(data.get("tag_name", ""))
-    version=str(manifest['version']) if manifest else tag.lstrip('v')
-    try:valid=versions.channel(version)==channel and (tag=='unstable' if manifest else not data.get('prerelease',False))
+    version=str(manifest.get('baseline_version') or manifest['version']) if manifest and manifest.get('has_test_changes') is False else str(manifest['version']) if manifest else tag.lstrip('v')
+    try:valid=((versions.channel(version)==channel or bool(manifest and manifest.get('has_test_changes') is False and version==manifest.get('stable_version'))) and (tag=='unstable' if manifest else not data.get('prerelease',False)))
     except ValueError:valid=False
     if not valid:
         return {"ok": False, "error": tr("Ungültige Versionsangabe bei GitHub.")}
@@ -135,7 +137,7 @@ def check(channel=None, stable_result=None):
             eligible=(manifest.get('has_test_changes') is True and baseline==stable_version
                       and versions.channel(baseline)=='stable' and _ver(version)>_ver(stable_version))
         except ValueError:eligible=False
-        common.update(manifest_verified=True,stable_contains_test=manifest.get('stable_contains_test') is True and baseline==stable_version,release_notes=notes,eligible=eligible,stable_version=stable_version or baseline,
+        common.update(covered_test_version=manifest['version'],manifest_verified=True,stable_contains_test=manifest.get('stable_contains_test') is True and baseline==stable_version,release_notes=notes,eligible=eligible,stable_version=stable_version or baseline,
                       has_test_changes=manifest.get('has_test_changes') is True,
                       stable_verified=bool(stable_result.get('ok')),same_as_stable=manifest.get('same_as_stable') is True and baseline==stable_version)
         if not eligible:

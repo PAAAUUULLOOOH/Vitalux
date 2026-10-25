@@ -58,7 +58,7 @@ def capture(output, language, checks, warmup, design='obsidian_gold'):
         page.interval.setCurrentIndex(page.interval.findData(2))
         wait(280)
         scroll.verticalScrollBar().setValue(scroll.verticalScrollBar().maximum())
-        page.advanced.header.click()
+        app.processEvents()
         wait(500)
         assert window.grab().save(str(output/'advanced-settings.png'))
         assert page.advanced.header.mapTo(scroll.viewport(), QPoint()).y() >= 0
