@@ -44,7 +44,7 @@ def main():
   if not record['found']:continue
   kind,vendor,model=item;product=dict(kind=kind,vendor=vendor,model=model,revision='',exact=True)
   data=SpecCache(args.output/product_key(product)/'cache').load(product)
-  specification_loader().results[product_key(product)]=data
+  specification_loader()._ready(product_key(product),dict(source=data,localized=data,language=__import__('vitalux.i18n',fromlist=['lang']).lang()))
   header=ProductHeader(label(model,'bigName',wrap=True),label(vendor,'muted'),kind)
   header.set_product(product);header.resize(800,260);header.show();app.processEvents()
   assert not header.picture.isVisible()

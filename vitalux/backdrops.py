@@ -274,3 +274,21 @@ def _cover(size,path):
 def _soften(sharp,size):
     tiny=sharp.scaled(max(12,size.width()//14),max(12,size.height()//14),Qt.IgnoreAspectRatio,Qt.SmoothTransformation)
     return tiny.scaled(size,Qt.IgnoreAspectRatio,Qt.SmoothTransformation)
+
+
+def smooth_glass(sharp, radius=18.):
+    """Full-resolution native blur for Atrium glass, without enlarged sample blocks."""
+    from PySide6.QtCore import QRectF
+    from PySide6.QtWidgets import QGraphicsBlurEffect,QGraphicsPixmapItem,QGraphicsScene
+    scene=QGraphicsScene()
+    item=QGraphicsPixmapItem(sharp)
+    effect=QGraphicsBlurEffect()
+    effect.setBlurRadius(radius)
+    effect.setBlurHints(QGraphicsBlurEffect.QualityHint)
+    item.setGraphicsEffect(effect)
+    scene.addItem(item)
+    result=QPixmap(sharp.size());result.fill(Qt.transparent)
+    painter=QPainter(result)
+    scene.render(painter,QRectF(result.rect()),QRectF(sharp.rect()),Qt.IgnoreAspectRatio)
+    painter.end()
+    return result

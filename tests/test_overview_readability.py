@@ -46,8 +46,8 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
      assert all(w.height()<=max(24,w.fontMetrics().height()+2) for widgets in page.power_labels.values() for w in widgets)
      assert len({card.box.gauge.height() for card in (page.g_cpu,page.g_gpu,page.g_ram,page.g_disk)})==1
      if design=='crystal_atrium':
-      infos=page.atrium.captions
-      assert len(page.atrium._sphere_meta)==3
+      infos={key:page.atrium_tiles[key].captions[key] for key in ('cpu','gpu','ram')}
+      assert all(len(page.atrium_tiles[key]._sphere_meta)==1 for key in infos)
       caption=infos['gpu'].name
      else:
       signature=design in ('nebula_prism','quantum_core','eclipse_crystal')

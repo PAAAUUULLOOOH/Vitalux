@@ -1,5 +1,14 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.3-unstable.25] - 2026-10-25
+- Der Initialisierungsbildschirm besitzt tatsächlich abgerundete transparente Außenecken passend zur gezeichneten Kontur.
+- Crystal Atrium verwendet einen durchgehenden Fensterhintergrund und weich gezeichnete Glasflächen in passender Bildschirmauflösung. Die Übersicht behält ihre Glaskugeln und unterstützt nun den Layouteditor mit Verschieben, Ausblenden, Wiederherstellen, Rückgängig und Speichern.
+- Der Prozessor-Reiter bündelt Auslastung, Temperatur, Takt und verfügbare Leistung in einer Diagrammkachel mit auswählbaren Kurven, eigenen Einheitenskalen und Zeitbereichen. Linux-Lastdurchschnitte sind zusätzlich anwählbar; doppelte aktuelle Anzeigen entfallen.
+- Prozessorbilder werden anhand der konkreten CPU und ihrer Variante geprüft. Widersprechende i3/i5/i7/i9- und Modellangaben sowie unsicher zugeordnete ältere CPU-Cachebilder werden verworfen.
+- Hersteller-Spezifikationen folgen der ausgewählten App-Sprache Deutsch oder Englisch. Übersetzungen erhalten technische Kennungen, werden für Offline-Anzeige gespeichert und wechseln auch in geöffneten Datenblättern mit der Sprache.
+- Reset und Neustart warten auch auf laufende Produktdaten-Abfragen und geben die Oberfläche geordnet frei. AppImage-Neustart, Updates und Wiederherstellung teilen einen Startverantwortlichen: Ein angeforderter Reset behält seine Version; ein vorbereitetes Update wird nicht durch eine konkurrierende Rückkehr überschrieben.
+- Die Wartungskachel erscheint erst bei zurücksetzbaren Änderungen und bleibt nach einem vollständigen Reset oder beim unveränderten Erststart ausgeblendet.
+
 ## [v0.9.6.3-unstable.24] - 2026-10-25
 - Die Übersicht erhält in allen Designs einen größeren Systemkopf mit größerem Distro-Logo und geräumigeren Mini-Infokacheln. Distro-Name und Informationen sind mittig ausgerichtet; die weiteren Kacheln beginnen entsprechend tiefer.
 - Designvorschauen passen vollständig in die abgerundeten Kacheln und zeigen die jeweiligen Oberflächen übersichtlicher. Die Crystal-Atrium-Vorschau bleibt erhalten; das aktive Auswahlhäkchen sitzt oberhalb der Farb- und Hintergrundsymbole.

@@ -16,6 +16,7 @@ PRODUCTS=(
  ('gpu','ASUS','ASUS TUF Gaming Radeon RX 9060 XT'),
  ('cpu','AMD','AMD Ryzen 7 9800X3D 8-Core Processor'),
  ('cpu','Intel','13th Gen Intel(R) Core(TM) i7-13700K'),
+ ('cpu','Intel','Intel(R) Core(TM) i5-14600KF'),
  ('mainboard','MSI','MAG B650 TOMAHAWK WIFI (MS-7D75)'),
  ('ram','Kingston','KF560C30BB-16'),
 )
@@ -35,7 +36,7 @@ def main():
    restored=resolve(product,ProductCache(cache.root),download=offline)
    assert restored and restored['cached'] and restored['sha256']==result['sha256']
    assert valid_image(Path(restored['path']).read_bytes())
-   record.update(offline_reuse=True,cutout=result['cutout'],bytes=Path(result['path']).stat().st_size,source=result['source'])
+   record.update(offline_reuse=True,cutout=result['cutout'],bytes=Path(result['path']).stat().st_size,source=result['source'],image_url=result['image_url'],image_identity=result.get('image_identity',''))
   else:
    report=cache.root/(product_key(product)+'.lookup.json')
    if report.exists():record['diagnostic']=json.loads(report.read_text())

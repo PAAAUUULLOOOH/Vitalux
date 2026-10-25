@@ -24,12 +24,12 @@ for vendor,part in (('Kingston','KF560C30-16'),('Corsair','CMK16GX5')):
 power=dict(id='cpu-pkg',component='cpu',kind='powers',unit='W',name='Package',value=88,
            limits=[('PL1',125),('PL2',181)],primary=True,domain='package-0')
 sample=dict(cpu=cpu,ram=ram,hardware=[power])
-history=dict(cpu=[20],ram=[30])
+history=dict(cpu=[20],ram=[30],cpu_temp=[50],cpu_clock=[4200],cpu_power=[88])
 for product in [cpu['product']]+[m['product'] for m in ram['modules']]:loader().results[lookup_key(product)]=None
 page=CpuPage();page.refresh(sample,history)
-assert not {'PL1','PL2','Kerne / Threads'} & set(page.kv)
-assert page.kv['Leistung'].v.text()=='88 W'
-assert page.kv['Takt'].v.text()=='4.20 GHz'
+assert not hasattr(page,'kv')
+assert '88.0 W' in page.graph.live_labels[3].text()
+assert '4.20 GHz' in page.graph.live_labels[2].text()
 assert ('Maximaler Takt','5.20 GHz') in page.product_header._spec_values
 assert ('Kerne / Threads','8 / 16') in page.product_header._spec_values
 assert page.product_header.picture.isHidden()

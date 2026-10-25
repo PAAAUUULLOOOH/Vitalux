@@ -31,14 +31,14 @@ for language,no_sensor,permission in (('de','Kein Sensor erkannt','Berechtigung 
                                       ('en','No sensor detected','Permission required')):
     i18n.set_lang(language)
     page=CpuPage();page.refresh(dict(cpu=cpu),dict(cpu=[0]))
-    assert page.kv['Temperatur'].isHidden() and page.kv['Temperatur'].v.text()==''
-    assert page.kv['Takt'].isHidden() and page.kv['Takt'].v.text()==''
+    assert page.graph.live_labels[1].text().endswith('–')
+    assert page.graph.live_labels[2].text().endswith('–')
     card=GpuCard();card.refresh(gpu)
     assert card.kv['Temperatur'].isHidden() and card.kv['Temperatur'].v.text()==''
     assert 'driver' in unavailable('driver_no_data').lower() if language=='en' else 'Treiber' in unavailable('driver_no_data')
     assert unavailable('invented reason')==unavailable()
-    cpu['temp']=54;page.refresh(dict(cpu=cpu),dict(cpu=[0]))
-    assert page.kv['Temperatur'].v.text()=='54 °C'
+    cpu['temp']=54;page.refresh(dict(cpu=cpu),dict(cpu=[0],cpu_temp=[None,54]))
+    assert '54.0 °C' in page.graph.live_labels[1].text()
     cpu['temp']=None
     gpu['temp']=60;card.refresh(gpu);assert card.kv['Temperatur'].v.text()=='60 °C'
     gpu['temp']=None;page.close();card.close()

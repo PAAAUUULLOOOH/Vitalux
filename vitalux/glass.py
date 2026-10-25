@@ -80,8 +80,8 @@ class _AmbientSceneCore:
         self._composed_key = None
         self._render_key = None
         self.update()
-        from .crystal_atrium import AtriumCanvas
-        for canvas in self.findChildren(AtriumCanvas):
+        from .crystal_atrium import AtriumTile
+        for canvas in self.findChildren(AtriumTile):
             if canvas.isVisible():canvas._dirty=True;canvas.update()
         # Keep live glass sampling aligned to the painted moving backdrop.
         for kind in (GlassSurface, GlassSidebar):
@@ -117,18 +117,25 @@ class _AmbientSceneCore:
             fit = settings.get('custom_background_fit', 'cover')
             path = user_background.image_path(chosen)
             stamp = path.stat().st_mtime_ns if path else None
-            key = (style, chosen, fit, stamp, theme.BG, self.size())
+            ratio=self.devicePixelRatioF() if theme.mode()=='crystal_atrium' else 1.0
+            size=self.size()*ratio
+            key = (style, chosen, fit, stamp, theme.BG, size, ratio)
             if key != self._render_key:
-                self._sharp_cache = user_background.draw(self.size(), chosen, fit)
-                self._soft_cache = self._sharp_cache
+                self._sharp_cache = user_background.draw(size, chosen, fit)
+                self._soft_cache = backdrops.smooth_glass(self._sharp_cache,18*ratio) if theme.mode()=='crystal_atrium' else self._sharp_cache
+                self._sharp_cache.setDevicePixelRatio(ratio);self._soft_cache.setDevicePixelRatio(ratio)
                 self._render_key = key
                 self._asset_mode = None
                 self._cache_size = self.size()
             return
-        key=(style,self.size(),round(self._phase,3) if style in backdrops.ANIMATED_PRESETS else 0,
+        ratio=self.devicePixelRatioF() if theme.mode()=='crystal_atrium' else 1.0
+        size=self.size()*ratio
+        key=(style,size,ratio,theme.mode()=='crystal_atrium',round(self._phase,3) if style in backdrops.ANIMATED_PRESETS else 0,
              theme.accent() if style in ('adaptive','animated_sparkle') else '')
         if key!=self._render_key:
-            self._sharp_cache,self._soft_cache=backdrops.render(self.size(),style,theme.accent(),light=theme.is_light(),phase=self._phase)
+            self._sharp_cache,self._soft_cache=backdrops.render(size,style,theme.accent(),light=theme.is_light(),phase=self._phase)
+            if theme.mode()=='crystal_atrium':self._soft_cache=backdrops.smooth_glass(self._sharp_cache,18*ratio)
+            self._sharp_cache.setDevicePixelRatio(ratio);self._soft_cache.setDevicePixelRatio(ratio)
             self._render_key=key;self._asset_mode=None;self._cache_size=self.size()
 
     def _ensure_composed(self):
@@ -237,8 +244,9 @@ def draw_frosted_backdrop(p, widget, target, opacity=1.0, *, softened=True):
     if image.isNull():
         return
     pos = widget.mapTo(scene, QPoint(0, 0))
-    src = QRectF(pos.x() + target.x(), pos.y() + target.y(),
-                 target.width(), target.height())
+    ratio=image.devicePixelRatioF()
+    src = QRectF((pos.x() + target.x())*ratio, (pos.y() + target.y())*ratio,
+                 target.width()*ratio, target.height()*ratio)
     p.save()
     p.setOpacity(opacity)
     # The source crop and destination are equal-sized in scene coordinates.

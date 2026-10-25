@@ -28,15 +28,34 @@ log_child() {
 }
 
 # Never trust or follow an unrelated/symlinked rollback file.
-if [[ ! -f "$PREVIOUS" || -L "$PREVIOUS" || ! -f "$TARGET" || -L "$TARGET" ]]; then
+if [[ ! -f "$TARGET" || -L "$TARGET" ]]; then
   exec bash "$BASE/run.sh" "$@"
 fi
 
-log_line "Starting updated Vitalux with previous version retained."
-# Our normal launcher captures Python and Qt diagnostics in vitalux.log.
-# Wait for the real application, not the AppImage mount/launcher alone.
-VITALUX_GUARDED=1 bash "$BASE/run.sh" "$@"
+REQUEST="$(mktemp "$STATE/.appimage-launch-XXXXXXXX")" || exit 1
+trap 'rm -f -- "$REQUEST"' EXIT
+log_line "Starting Vitalux with one owner for update and recovery."
+# The mailbox is unique to this launch and remains on disk through a reset.
+VITALUX_GUARDED=1 VITALUX_APPIMAGE_REQUEST_FILE="$REQUEST" VITALUX_APPIMAGE_TARGET="$TARGET" bash "$BASE/run.sh" "$@"
 status=$?
+if [[ -s "$REQUEST" && ! -L "$REQUEST" ]]; then
+  "$BASE/runtime/bin/python3.12" -I "$BASE/packaging/appimage-activate.py" "$REQUEST" "$TARGET" "$VERSION" >>"$LOG" 2>&1
+  activation=$?
+  if [[ "$activation" == 0 || "$activation" == 10 || "$activation" == 20 ]]; then
+    if [[ "$activation" == 20 ]]; then
+      log_line "Requested restart retained the current version; recovery of the exiting process is skipped."
+    else
+      log_line "Prepared update activated; recovery of the exiting version is skipped."
+    fi
+    if [[ "$activation" == 0 || "$activation" == 20 ]]; then
+      unset APPDIR APPIMAGE LD_LIBRARY_PATH LD_PRELOAD PYTHONHOME PYTHONPATH PYTHONUSERBASE VITALUX_GUARDED VITALUX_APPIMAGE_REQUEST_FILE VITALUX_APPIMAGE_TARGET
+      ( "$TARGET" --launch "$@" 2>&1 | log_child ) &
+    fi
+    exit 0
+  fi
+  log_line "Prepared update activation failed (status $activation); previous files retained."
+  if [[ "$status" == 0 ]]; then exit 1; fi
+fi
 case "$status" in
   0|129|130|143)
     # Normal exit, terminal interrupt or a typical session-shutdown signal.
@@ -51,7 +70,7 @@ if [[ ! -f "$PREVIOUS" || -L "$PREVIOUS" || ! -f "$TARGET" || -L "$TARGET" ]]; t
   exit "$status"
 fi
 TMP="$(mktemp "${TARGET}.rollback-XXXXXXXX")" || exit "$status"
-trap 'rm -f -- "$TMP"' EXIT
+trap 'rm -f -- "$TMP" "$REQUEST"' EXIT
 if ! cp -p -- "$PREVIOUS" "$TMP"; then
   log_line "Rollback copy failed."
   exit "$status"
@@ -62,9 +81,9 @@ if ! mv -f -- "$TMP" "$TARGET"; then
   exit "$status"
 fi
 trap - EXIT
-rm -f -- "$PREVIOUS"
+rm -f -- "$PREVIOUS" "$REQUEST"
 log_line "Recovered previous Vitalux version. Restarting it."
 # Launch the restored version once, without inheriting the failed AppImage mount.
-unset APPDIR APPIMAGE LD_LIBRARY_PATH LD_PRELOAD PYTHONHOME PYTHONPATH PYTHONUSERBASE
+unset APPDIR APPIMAGE LD_LIBRARY_PATH LD_PRELOAD PYTHONHOME PYTHONPATH PYTHONUSERBASE VITALUX_GUARDED VITALUX_APPIMAGE_REQUEST_FILE VITALUX_APPIMAGE_TARGET
 ( "$TARGET" --launch "$@" 2>&1 | log_child ) &
 exit 0

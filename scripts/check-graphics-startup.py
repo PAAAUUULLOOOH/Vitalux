@@ -71,7 +71,7 @@ class XMaps:
 
 
 def child(mode, output):
-    from vitalux import renderer, settings, theme, distro
+    from vitalux import renderer, settings, theme, distro, profiles
     os.environ['VITALUX_SPEC_OFFLINE']='1'
     settings.set_many({'render_backend': mode, 'component_images':False, 'theme': 'obsidian_gold',
                        'first_start_guide_seen': True, 'close_to_tray': False})
@@ -168,7 +168,7 @@ def child(mode, output):
                   'size': [win.width(), win.height()]}), flush=True)
             result[0] = 0
         finally:
-            win.quit_from_tray()
+            assert win.restart_for_renderer(commit=lambda: profiles.reset_preferences(settings.PATH)), 'Native reset restart was refused'
 
     from vitalux.startup import StartupController
     class Guard:
@@ -182,6 +182,10 @@ def child(mode, output):
         QTimer.singleShot(3000,capture)
     controller=StartupController(app,info,load_logo(info,96),Guard(),ready)
     app.exec()
+    from vitalux.lifecycle import dispose_gui
+    dispose_gui(controller)
+    assert profiles.read(settings.PATH)=={'_schema_version':profiles.SCHEMA},'Native reset did not preserve clean defaults'
+    print(f'{mode}/{app.platformName()}: actual profile reset and native GUI disposal PASS',flush=True)
     return result[0]
 
 
@@ -189,6 +193,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--child')
     parser.add_argument('--mode', help='Validate one renderer in an isolated compositor session')
+    parser.add_argument('--platform',choices=('xcb','wayland'),help='Native QPA override for CPU rendering')
     parser.add_argument('--output', type=Path, default=ROOT/'build/graphics-checks')
     args = parser.parse_args()
     output = args.output.resolve()
@@ -198,6 +203,7 @@ def main():
     from vitalux import renderer
     results = []
     modes = (args.mode,) if args.mode else renderer.CHOICES
+    if args.platform and modes!=(renderer.SOFTWARE,):parser.error('Platform override requires --mode software')
     if any(mode not in renderer.CHOICES for mode in modes):
         parser.error('Unknown renderer')
     for mode in modes:
@@ -206,7 +212,7 @@ def main():
             for key, part in (('XDG_CONFIG_HOME', 'config'), ('XDG_STATE_HOME', 'state'),
                               ('XDG_DATA_HOME', 'data'), ('XDG_CACHE_HOME', 'cache')):
                 env[key] = str(Path(folder)/part)
-            env['QT_QPA_PLATFORM'] = renderer.display_api(mode) or 'xcb'
+            env['QT_QPA_PLATFORM'] = args.platform or renderer.display_api(mode) or 'xcb'
             env['VITALUX_RENDERER'] = mode
             env['VITALUX_LOCAL_PREVIEW'] = '1'
             watcher = XMaps()
@@ -226,7 +232,7 @@ def main():
                         time.sleep(.005)
                 watcher.poll()
                 assert process.returncode == 0, log.read_text()
-                expected_maps = 0 if renderer.display_api(mode) == 'wayland' else 2
+                expected_maps = 0 if env['QT_QPA_PLATFORM'] == 'wayland' else 2
                 assert watcher.maps == expected_maps, f'{mode}: {watcher.windows}, expected {expected_maps}'
                 result = next(json.loads(line) for line in log.read_text().splitlines()
                               if line.startswith('{"mode"'))

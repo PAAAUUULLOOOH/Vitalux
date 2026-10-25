@@ -109,6 +109,9 @@ jobs:
       - name: Check manufacturer specifications and offline reuse
         if: steps.prepare.outputs.changed == 'true'
         run: python scripts/check-product-spec-network.py --require-all-components
+      - name: Check translated specifications and offline reuse
+        if: steps.prepare.outputs.changed == 'true'
+        run: python scripts/check-spec-translation-network.py
       - name: Exercise real kernel and desktop paths
         if: steps.prepare.outputs.changed == 'true'
         id: native
@@ -170,6 +173,7 @@ jobs:
             build/graphics-checks/
             build/product-image-check
             build/product-spec-check/
+            build/spec-language-check/
             build/ui-scale-checks/
             build/network-kernel.log
             dist/

@@ -1,5 +1,5 @@
 """Live design-shell changes, fixed controls, palette assets and small windows."""
-import os,sys,tempfile
+import os,sys,tempfile,time
 from pathlib import Path
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
@@ -28,7 +28,10 @@ def run():
         preferences=dict(window.pages)['Einstellungen']
         network=dict(window.pages)['Netzwerk']
         assert network.watcher.worker is None,'Network scanning started before opening its tab'
+        deadline=time.monotonic()+12
         def verify():
+            if window.last_sample is None and time.monotonic()<deadline:
+                QTimer.singleShot(50,verify);return
             try:
                 assert window.last_sample is not None
                 for mode in ('nebula_prism','eclipse_crystal','quantum_core','glass','crystal_atrium','obsidian_gold'):

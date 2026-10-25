@@ -25,7 +25,7 @@ for kind,vendor,model,title in cases:
  assert images.matches_product(product,title),(model,title)
  assert not images.matches_product(product,'Intel Core i5-12400F / ASUS PRIME B650M / unrelated'),model
  with tempfile.TemporaryDirectory() as directory:
-  page='https://retailer.com/product';photo='https://cdn.retailer.com/photo.png';events=[]
+  page='https://retailer.com/product';photo='https://cdn.retailer.com/'+title.replace(' ','-').lower()+'.png';events=[]
   def download(url,limit,hosts):
    if url.startswith('https://www.bing.com/search?'):
     return ('<rss><channel><item><title>'+title+'</title><link>'+page+'</link></item></channel></rss>').encode()
@@ -44,7 +44,7 @@ for kind,vendor,model,title in cases:
 
 product=dict(kind='cpu',vendor='AMD',model='Ryzen 7 9800X3D',exact=True,revision='')
 with tempfile.TemporaryDirectory() as directory:
- page='https://retailer.com/ryzen';opaque='https://cdn.retailer.com/photo.png';alpha='https://cdn.retailer.com/transparent.png';events=[]
+ page='https://retailer.com/ryzen';opaque='https://cdn.retailer.com/ryzen-7-9800x3d-photo.png';alpha='https://cdn.retailer.com/transparent.png';events=[]
  def download(url,limit,hosts):
   if 'bing.com/search?' in url:return ('<rss><channel><item><title>AMD Ryzen 7 9800X3D</title><link>'+page+'</link></item></channel></rss>').encode()
   if url==page:return ('<title>AMD Ryzen 7 9800X3D</title><meta property="og:image" content="'+opaque+'"><img src="placeholder.gif" data-src="'+alpha+'" alt="AMD Ryzen 7 9800X3D">').encode()
@@ -59,9 +59,9 @@ with tempfile.TemporaryDirectory() as directory:
  def download(url,limit,hosts):
   if 'bing.com/images/search?' in url:
    if 'qft=' in url:return b''
-   row=dict(t='AMD Ryzen 7 9800X3D',purl='https://retailer.com/ryzen',murl='https://cdn.retailer.com/photo.png')
+   row=dict(t='AMD Ryzen 7 9800X3D',purl='https://retailer.com/ryzen',murl='https://cdn.retailer.com/ryzen-7-9800x3d-photo.png')
    return ('<a m="'+escape(json.dumps(row),quote=True)+'"></a>').encode()
-  if url=='https://cdn.retailer.com/photo.png':return background
+  if url=='https://cdn.retailer.com/ryzen-7-9800x3d-photo.png':return background
   raise OSError('Unavailable')
  assert images.resolve(product,images.ProductCache(directory),download)['cutout'] is False
 print('CPU/GPU/RAM/mainboard real model spellings, opaque cache recovery, early preview, preferred cutout and unfiltered image fallback PASS')

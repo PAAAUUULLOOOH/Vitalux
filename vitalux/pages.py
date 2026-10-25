@@ -2,7 +2,7 @@ from collections import deque
 import platform
 
 import PySide6
-from PySide6.QtCore import Qt, QPoint, QTimer, qVersion, QPropertyAnimation, QParallelAnimationGroup, QEasingCurve, QThread, Signal
+from PySide6.QtCore import Qt, QEvent, QPoint, QTimer, qVersion, QPropertyAnimation, QParallelAnimationGroup, QEasingCurve, QThread, Signal
 from PySide6.QtWidgets import QBoxLayout, QGridLayout, QHBoxLayout, QVBoxLayout, QWidget, QMenu, QToolButton, QGraphicsOpacityEffect, QStackedWidget, QTabWidget, QLayout
 
 from . import theme, motion
@@ -336,24 +336,38 @@ class OverviewPage(Page):
             self.design_metrics[key]=instrument
             self.design_metric_hosts[key]=host
             return host
+        from .crystal_atrium import AtriumTile, TILE_KEYS
+        self.atrium_tiles = {}
+        self.atrium_hosts = {}
         for key, widget in (
             ('hero',head), ('cpu',metric_host('cpu',self.g_cpu)), ('gpu',metric_host('gpu',self.g_gpu)),
             ('ram',metric_host('ram',self.g_ram)), ('disk',metric_host('disk',self.g_disk)),
             ('graph_load',c1), ('graph_net',c2),
             ('health',metric_host('health',self.g_health)), ('network',net), ('drives',self.disks_card),
         ):
+            if key in TILE_KEYS:
+                host=QStackedWidget()
+                host.setSizePolicy(QSizePolicy.Ignored,QSizePolicy.Ignored)
+                host.addWidget(widget)
+                atrium=AtriumTile(key,distro['name'],logo)
+                host.addWidget(atrium)
+                self.atrium_tiles[key]=atrium
+                self.atrium_hosts[key]=host
+                widget=host
             self.board.register(key,widget)
         for card in (head,c1,c2,net,self.disks_card):
             card.layout().setAlignment(Qt.AlignTop)
             for text in card.findChildren(QLabel):
                 if text.objectName() in ('cardTitle','chipTitle','chipValue'):text.setAlignment(Qt.AlignCenter)
         self.content.addWidget(self.board)
-        from .crystal_atrium import AtriumCanvas
-        self.atrium = AtriumCanvas(distro["name"], logo, self)
-        self.root.setStretch(0,1)
-        self.root.setStretch(1,0)
-        self.atrium.hide()
-        self.content.addWidget(self.atrium)
+        self.atrium_logo_remove=QToolButton(self.atrium_tiles['hero'])
+        self.atrium_logo_remove.setObjectName('tileRemoveHint')
+        self.atrium_logo_remove.setProperty('distroLogoRemove',True)
+        self.atrium_logo_remove.setText('×')
+        self.atrium_logo_remove.setToolTip(tr('Distributionslogo ausblenden'))
+        self.atrium_logo_remove.setFixedSize(25,25)
+        self.atrium_logo_remove.move(80,20)
+        self.atrium_logo_remove.clicked.connect(self.board.hide_distro_logo)
         self.layout_toggle.clicked.connect(self.toggle_editor)
         self.board.changed.connect(self._refresh_editor_actions)
         self.board.changed.connect(self._sync_distro_logo)
@@ -370,17 +384,15 @@ class OverviewPage(Page):
             host.setCurrentIndex(1 if selected else 0)
         self.root.setContentsMargins(16 if selected else 30,45,16 if selected else 30,24 if selected else 30)
         atrium_on = theme.mode() == 'crystal_atrium'
-        self.root.setStretch(0,1 if atrium_on else 0)
-        self.root.setStretch(1,0 if atrium_on else 1)
-        self.atrium._dirty=True
-        self.atrium.update()
-        self.board.setVisible(not atrium_on)
-        self.atrium.setVisible(atrium_on)
-        self.layout_toggle.setVisible(not atrium_on)
-        if atrium_on:
-            self.root.setContentsMargins(10,10,10,10)
-            self.layout_actions.hide()
-            self.atrium.sync_timer()
+        self.root.setStretch(0,0)
+        self.root.setStretch(1,1)
+        for key,host in self.atrium_hosts.items():
+            host.setCurrentIndex(int(atrium_on))
+            self.atrium_tiles[key]._dirty=True
+            self.atrium_tiles[key].sync_timer()
+        self.board.show()
+        self.layout_toggle.show()
+        self._sync_distro_logo()
         self.distro_logo_host.setFixedSize(76,76)
         for chip in self.chips.chips.values():
             chip.layout().setContentsMargins(14,10,14,10)
@@ -468,6 +480,10 @@ class OverviewPage(Page):
         self.distro_logo_host.setVisible(visible)
         self.distro_balance.setVisible(visible)
         self.distro_logo_remove.setVisible(visible and self.board.editing)
+        hero=self.atrium_tiles['hero']
+        hero.logo_visible=visible
+        hero._dirty=True;hero.update()
+        self.atrium_logo_remove.setVisible(visible and self.board.editing)
 
     def _refresh_editor_actions(self):
         for key, _icon, _txt, action in self._editor_buttons:
@@ -536,6 +552,7 @@ class OverviewPage(Page):
             tile.drag.setToolTip(tr('Kachel verschieben'))
             tile.remove.setToolTip(tr('Kachel ausblenden'))
         self.distro_logo_remove.setToolTip(tr('Distributionslogo ausblenden'))
+        self.atrium_logo_remove.setToolTip(tr('Distributionslogo ausblenden'))
 
     def apply_layout(self):
         if not self.board.editing:
@@ -607,7 +624,7 @@ class OverviewPage(Page):
             for info in infos:info.set(name,details,power_text(readings.get(key)) if key in self.power_labels else '')
 
         if theme.mode() == 'crystal_atrium':
-            self.atrium.set_data({
+            atrium_data={
                 'chips': [("Kernel", self.static["kernel"]), ("KDE", f"Plasma {self.static['plasma']}"),
                           ("Mesa", self.static["mesa"]), ("Sitzung", self.static["session"]),
                           ("Laufzeit", fmt_duration(d['uptime']))],
@@ -620,7 +637,8 @@ class OverviewPage(Page):
                 'net': {'name': primary.get('name', '–'), 'down': fmt_rate(net['down']), 'up': fmt_rate(net['up']),
                         'total': f"↓ {fmt_bytes(net['total_down'])}   ·   ↑ {fmt_bytes(net['total_up'])}"},
                 'history': {k: h[k] for k in ('cpu', 'gpu', 'ram', 'net_down', 'net_up')},
-            })
+            }
+            for tile in self.atrium_tiles.values():tile.set_data(atrium_data)
         self.graph_load.set_series([(h["cpu"], theme.accent()), (h["gpu"], theme.secondary_accent()), (h["ram"], theme.TEAL)])
         self.graph_net.set_series([(h["net_down"], theme.accent()), (h["net_up"], theme.secondary_accent())])
         self.net_name.set(primary.get("name", "–") + (f"  ·  {primary.get('speed', 0)} Mbit/s" if primary.get("speed") else ""))
@@ -645,36 +663,17 @@ class CpuPage(Page):
         self.meta = label('', 'muted', wrap=True)
         self.product_header = ProductHeader(self.name, self.meta, 'cpu')
         top.body.addWidget(self.product_header)
-        grid = QGridLayout()
-        grid.setHorizontalSpacing(40)
-        self.kv = {k: KeyValue(k) for k in ('Leistung', "Takt", "Temperatur", "Last (1 / 5 / 15 Min)")}
-        self.sensor_grid = grid
-        for i, w in enumerate(self.kv.values()):
-            grid.addWidget(w, i // 2, i % 2)
-        self.kv['Leistung'].hide()
-        top.body.addLayout(grid)
         self.content.addWidget(top)
-
-        self.gauge = GaugeCard("Gesamtauslastung")
-        graph = Card("Verlauf")
-        self.graph = ChartPanel(['CPU'], [theme.accent()])
+        graph=Card('CPU-Messwerte · Verlauf')
+        self.graph=ChartPanel(['Auslastung','Temperatur','Takt','Leistung',
+                              'Last 1 Min','Last 5 Min','Last 15 Min'],
+                             [theme.accent(),theme.secondary_accent(),theme.TEAL,
+                              '#ffc46b','#b79bff','#7fd6ff','#ff8bdc'],mode='mixed',
+                             series_modes=['percent','temperature','frequency','power','load','load','load'])
+        for toggle in self.graph.toggles[4:]:toggle.setChecked(False)
         graph.body.addWidget(self.graph)
-        lay = QHBoxLayout()
-        self.cpu_layout=lay
-        lay.setSpacing(16)
-        lay.addWidget(self.gauge, 1)
-        lay.addWidget(graph, 3)
-        self.content.addLayout(lay)
-
-        self.cpu_temp_card = Card("CPU-Temperatur · Verlauf")
-        self.cpu_temp_graph = ChartPanel(["Temperatur"], [theme.accent()], mode="temperature")
-        self.cpu_temp_card.body.addWidget(self.cpu_temp_graph)
-        self.content.addWidget(self.cpu_temp_card)
-        self.cpu_extrema = KeyValue("CPU-Temperatur · Min/Max seit Start")
-        self.cpu_temp_card.body.addWidget(self.cpu_extrema)
-
-        self.hardware = SensorPanel(include_power=False)
-        self.content.addWidget(self.hardware)
+        graph.body.addWidget(label('Jede Messgröße hat eine eigene farbige Skala. Last zeigt den Linux-Lastdurchschnitt.','muted',wrap=True))
+        self.content.addWidget(graph)
 
         self.cores_card = Card("Kerne / Threads · Auslastung")
         self.cores_card.body.addWidget(label(
@@ -690,14 +689,26 @@ class CpuPage(Page):
         self.root.setSizeConstraint(QLayout.SetMinimumSize)
         self.cores_card.layout().setSizeConstraint(QLayout.SetMinimumSize)
 
+    def showEvent(self,event):
+        super().showEvent(event)
+        if self.parentWidget() is not None:self.parentWidget().installEventFilter(self)
+        self._arrange_cores()
+
+    def eventFilter(self,watched,event):
+        if watched is self.parentWidget() and event.type()==QEvent.Resize:
+            self._arrange_cores()
+        return super().eventFilter(watched,event)
+
     def resizeEvent(self,event):
         super().resizeEvent(event)
-        width=self.parentWidget().width() if self.parentWidget() is not None else self.width()
-        self.cpu_layout.setDirection(QBoxLayout.TopToBottom if width<850 else QBoxLayout.LeftToRight)
         self._arrange_cores()
 
     def _arrange_cores(self):
-        columns = max(1, min(4, (self.width() - 100) // 200))
+        # A large grid's minimum width can prevent the page from shrinking.
+        # Follow its viewport too, so columns reflow before that constraint.
+        parent=self.parentWidget()
+        available=min(self.width(),parent.width()) if parent is not None else self.width()
+        columns = max(1, min(4, (available - 100) // 200))
         if columns == self._core_columns:
             return
         for i, meter in enumerate(self.core_meters):
@@ -715,20 +726,8 @@ class CpuPage(Page):
             ('Kerne / Threads', f'{c["cores"]} / {c["threads"]}'),
             ('Maximaler Takt', f'{c["freq_max"]/1000:.2f} GHz' if c.get('freq_max') else ''),
             ('Architektur', platform.machine())])
-        optional(self.kv['Takt'], c.get('freq')/1000 if number(c.get('freq')) is not None else None, 'GHz', 2)
-        optional(self.kv['Temperatur'], c.get('temp'), '°C', 0)
-        power=component_power(d.get('hardware',[]),'cpu')
-        optional(self.kv['Leistung'],(power or {}).get('value'),'W')
-        self.kv['Leistung'].setToolTip(source_text(power))
-        reflow(self.sensor_grid, list(self.kv.values()))
-        self.kv["Last (1 / 5 / 15 Min)"].set(" / ".join(f"{x:.2f}" for x in c["load"]))
-        self.gauge.set(c["usage"], f"{c['threads']} {tr('Threads')}")
-        self.graph.set_series([(h['cpu'],theme.accent())])
-        self.cpu_temp_graph.set_series([(h.get('cpu_temp',()),theme.accent())])
-        self.cpu_temp_card.setVisible(number(c.get('temp')) is not None)
-        from .monitoring import format_range
-        self.cpu_extrema.set(format_range(d.get('session_extrema') or {},'cpu_temp','°C',1))
-        self.hardware.sync([r for r in d.get('hardware',[]) if r['component']=='cpu'])
+        keys=('cpu','cpu_temp','cpu_clock','cpu_power','cpu_load_1','cpu_load_5','cpu_load_15')
+        self.graph.set_series([(h.get(key,()),tone) for key,tone in zip(keys,self.graph.colors)])
         entries = c.get('logical_cpus')
         if entries is None:
             entries = [dict(id=i, usage=v, online=True) for i, v in enumerate(c['per_core'])]

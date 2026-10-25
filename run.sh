@@ -87,9 +87,16 @@ rm -f -- "$QT_CHECK"
 done
 STATUS=${PIPESTATUS[0]}
 log_line "=== Vitalux ended (exit code $STATUS) ==="
+# AppRun owns prepared updates and intentional restarts after this process
+# exits. Do not restart the old mount for GPU recovery before that exit.
+UPDATE_QUEUED=0
+if [[ "${VITALUX_GUARDED:-0}" == 1 && -s "${VITALUX_APPIMAGE_REQUEST_FILE:-}" && ! -L "${VITALUX_APPIMAGE_REQUEST_FILE:-}" ]]; then
+  UPDATE_QUEUED=1
+fi
 if [ "$STATUS" -eq 42 ]; then
-  log_line '=== Grafik-Rendering geändert – Vitalux wird kontrolliert neu gestartet ==='
-  exec bash "$HERE/run.sh" "$@"
+  log_line '=== Vitalux wird kontrolliert neu gestartet ==='
+  if [ "$UPDATE_QUEUED" = 0 ]; then exec bash "$HERE/run.sh" "$@"; fi
+  exit 42  # AppRun owns the queued restart/update.
 fi
 # Preserve a timestamped native-crash record before an automatic recovery.
 if [ "$STATUS" -ne 0 ] && [ "$STATUS" -ne 42 ]; then
@@ -100,7 +107,7 @@ if [ "$STATUS" -ne 0 ] && [ "$STATUS" -ne 42 ]; then
       "$(date -Is)" "${VERSION:-unknown}" "$STATUS" >>"$STATE_DIR/errors.log"
   fi
 fi
-if [[ "$STATUS" =~ ^(132|134|139)$ ]] && [ "${VITALUX_GPU_RECOVERY:-0}" != "1" ]; then
+if [[ "$STATUS" =~ ^(132|134|139)$ ]] && [ "${VITALUX_GPU_RECOVERY:-0}" != "1" ] && [ "$UPDATE_QUEUED" = 0 ]; then
   if "$PY" - <<'PYGPU'
 from vitalux import settings
 from vitalux import renderer

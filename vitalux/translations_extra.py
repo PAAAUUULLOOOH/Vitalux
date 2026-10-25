@@ -1122,3 +1122,15 @@ EN_MORE.update({
     'Die Komponenten verwenden wieder getrennte Auslastungs-, Temperatur-, Takt- und Durchsatzverläufe. Mit Häkchen wählst du vorhandene Kurven aus und zeigst 60 Sekunden, 5 oder 15 Minuten an. Bei Grafik stehen aktuelle Leistung und Leistungsgrenze bei den Live-Werten. Fehlende Sensorwerte werden ausgeblendet; echte Nullwerte bleiben sichtbar. Überlappende Messbereiche werden nicht als PC-Gesamtverbrauch addiert.':
         'Components use separate load, temperature, clock and transfer-rate histories again. Select existing curves with checkboxes and view 60 seconds, 5 minutes or 15 minutes. Graphics shows current power and its limit with the live values. Missing sensor fields are hidden; real zeroes remain visible. Overlapping domains are not added into total PC power.',
 })
+
+EN_MORE.update({
+    'CPU-Messwerte · Verlauf':'CPU readings · history',
+    'Last 1 Min':'Load average 1 min', 'Last 5 Min':'Load average 5 min', 'Last 15 Min':'Load average 15 min',
+    'Jede Messgröße hat eine eigene farbige Skala. Last zeigt den Linux-Lastdurchschnitt.':
+        'Each measurement uses its own colored scale. Load shows the Linux load average.',
+    'Herstellerangaben · {language} · Stand: {date}':'Manufacturer specifications · {language} · checked: {date}',
+    'Übersetzung derzeit nicht verfügbar. Erkannte Systemdaten werden angezeigt.':
+        'Translation currently unavailable. Detected system data is shown.',
+})
+
+EN_MORE.update({'Der Prozessor bündelt Auslastung, Temperatur, Takt, Leistung und wählbare Linux-Lastdurchschnitte in einer Diagrammkachel mit eigenen Einheitenskalen. Mit Häkchen wählst du Kurven für 60 Sekunden, 5 oder 15 Minuten. Bei Grafik stehen aktuelle Leistung und Leistungsgrenze bei den Live-Werten. Fehlende Messungen bleiben unbekannt, echte Nullwerte sichtbar. Spezifikationen folgen der App-Sprache; verfügbare Übersetzungen bleiben offline erhalten.': 'Processor combines usage, temperature, clock speed, power and optional Linux load averages in one chart card with independent unit scales. Select curves for 60 seconds, 5 or 15 minutes with checkboxes. Graphics shows current power and its limit with live readings. Missing measurements remain unknown; real zeroes stay visible. Specifications follow the app language; available translations remain accessible offline.'})

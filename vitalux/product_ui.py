@@ -56,9 +56,14 @@ class ImageLoader(QObject):
     def shutdown(self):
         self.cancelled.set()
         self.pool.clear()
+        return self.pool.activeThreadCount()==0
+
+    def resume(self):
+        if not self.cancelled.is_set():return
+        self.cancelled=Event();self.pending.clear()
 
     def request(self, product):
-        if settings.get('component_images',True) is False:return
+        if self.cancelled.is_set() or settings.get('component_images',True) is False:return
         key = lookup_key(product)
         if not key:
             return
@@ -245,6 +250,8 @@ class ProductHeader(QWidget):
 
     def retranslate(self):
         from .spec_ui import brief
+        self._spec_requested=False;self._manufacturer_specs=None
         self._spec_values=None
         self._display_specs(brief(self._manufacturer_specs,self._local_specs,self.kind))
+        self.request_specs()
         self.picture.update()

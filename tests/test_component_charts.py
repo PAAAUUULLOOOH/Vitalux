@@ -60,11 +60,11 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
         card.graph.toggles[1].setChecked(True);assert len(card.graph.graph.series)==2
         card.close()
         cpu_page=CpuPage();cpu_page.refresh(sample,h)
-        assert len(cpu_page.findChildren(ChartPanel))==2
-        assert cpu_page.graph.graph.mode=='percent' and cpu_page.cpu_temp_graph.graph.mode=='temperature'
+        assert len(cpu_page.findChildren(ChartPanel))==1
+        assert cpu_page.graph.graph.mode=='mixed' and len(cpu_page.graph.toggles)==7
         assert cpu_page.graph._source[0][0] is h['cpu']
         cpu_page.refresh(dict(sample,cpu=dict(cpu,temp=None)),h)
-        assert cpu_page.cpu_temp_card.isHidden()
+        assert len(cpu_page.findChildren(ChartPanel))==1 and not hasattr(cpu_page,'cpu_temp_card')
         cpu_page.close()
         memory=MemoryPage();memory.refresh(sample,h)
         assert len(memory.findChildren(ChartPanel))==1 and memory.graph.graph.mode=='percent'

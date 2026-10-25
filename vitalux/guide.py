@@ -70,7 +70,7 @@ SLIDES = [
         "Die Sensorseite zeigt Messwerte, die Linux tatsächlich bereitstellt.",
         "Dazu gehören je nach Gerät Temperaturen, Lüfterdrehzahlen und Spannungen.",
         "Unter Einstellungen aktivierst du Hardware-Warnungen; die schmalen Zahlenfelder stehen rechts neben der Bezeichnung.",
-        "Die Komponenten verwenden wieder getrennte Auslastungs-, Temperatur-, Takt- und Durchsatzverläufe. Mit Häkchen wählst du vorhandene Kurven aus und zeigst 60 Sekunden, 5 oder 15 Minuten an. Bei Grafik stehen aktuelle Leistung und Leistungsgrenze bei den Live-Werten. Fehlende Sensorwerte werden ausgeblendet; echte Nullwerte bleiben sichtbar. Überlappende Messbereiche werden nicht als PC-Gesamtverbrauch addiert.",
+        "Der Prozessor bündelt Auslastung, Temperatur, Takt, Leistung und wählbare Linux-Lastdurchschnitte in einer Diagrammkachel mit eigenen Einheitenskalen. Mit Häkchen wählst du Kurven für 60 Sekunden, 5 oder 15 Minuten. Bei Grafik stehen aktuelle Leistung und Leistungsgrenze bei den Live-Werten. Fehlende Messungen bleiben unbekannt, echte Nullwerte sichtbar. Spezifikationen folgen der App-Sprache; verfügbare Übersetzungen bleiben offline erhalten.",
         "sensors",
     ),
     (

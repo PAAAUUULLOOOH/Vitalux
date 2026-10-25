@@ -61,6 +61,7 @@ class ActivityLine(QWidget):
 class StartupWindow(QWidget):
     def __init__(self):
         super().__init__(None,Qt.SplashScreen|Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground,True)
         self.setWindowTitle('Vitalux');self.setFixedSize(460,400);self.ready=False
         from .brand import PulseCore,Wordmark
         layout=QVBoxLayout(self);layout.setContentsMargins(44,24,44,28);layout.setSpacing(12)
@@ -73,7 +74,6 @@ class StartupWindow(QWidget):
         if screen:self.move(screen.availableGeometry().center()-self.rect().center())
     def paintEvent(self,event):
         p=QPainter(self);p.setRenderHint(QPainter.Antialiasing)
-        p.fillRect(self.rect(),QColor(theme.BG))
         fill=QLinearGradient(0,0,self.width(),self.height());fill.setColorAt(0,QColor(theme.CARD));fill.setColorAt(1,QColor(theme.BG))
         p.setBrush(fill);p.setPen(QPen(QColor(theme.BORDER),1));p.drawRoundedRect(self.rect().adjusted(1,1,-1,-1),24,24);p.end()
     def closeEvent(self,event):

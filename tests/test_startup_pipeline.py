@@ -32,6 +32,7 @@ with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',str
    while not windows and time.monotonic()<deadline:app.processEvents();time.sleep(.01)
    assert windows,case
    assert threads==[True] and controller.splash.ready
+   assert controller.splash.testAttribute(__import__('PySide6.QtCore',fromlist=['Qt']).Qt.WA_TranslucentBackground)
    if case!='animated':assert not controller.splash.activity.timer.isActive()
    else:assert not controller.splash.logo.grab().isNull()
    win=windows[0];assert win.isVisible()

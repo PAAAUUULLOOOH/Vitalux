@@ -172,8 +172,15 @@ class DashboardBoard(QWidget):
                          graph_load=(0,0,7,8),graph_net=(0,0,5,8),network=(0,0,6,6),drives=(0,0,12,5))
             if selected==list(ORDER):
                 selected=['hero','cpu','gpu','ram','graph_load','graph_net','disk','health','network','drives']
-        for key in ('cpu','gpu','ram','disk','health'):
-            native=sizes[key];sizes[key]=(*native[:3],10)
+        if theme.mode() == 'crystal_atrium':
+            from .crystal_atrium import TILE_KEYS
+            selected=[key for key in selected if key in TILE_KEYS]
+            sizes.update(hero=(0,0,12,7),cpu=(0,0,4,11),gpu=(0,0,4,11),
+                         ram=(0,0,4,11),graph_load=(0,0,6,11),
+                         network=(0,0,3,11),drives=(0,0,3,11))
+        else:
+            for key in ('cpu','gpu','ram','disk','health'):
+                native=sizes[key];sizes[key]=(*native[:3],10)
         positions=grid_pack(selected,self.hidden,self._cols(),sizes)
         return positions
 
@@ -433,19 +440,20 @@ class DashboardBoard(QWidget):
         # Calculate a *prospective* snapped insertion for the other tiles.
         # Only a changed insertion starts a neighboring-tile animation.
         where = self.mapFromGlobal(global_pos)
-        visible = [k for k in state['preview'] if k not in self.hidden]
+        targets = self._render_positions(state['preview'])
+        visible = [k for k in state['preview'] if k in targets]
         without = [k for k in visible if k != key]
         candidates = []
         for index in range(len(without) + 1):
             sequence = without[:index] + [key] + without[index:]
-            layout = grid_pack(sequence, self.hidden, self._cols())
+            layout = self._render_positions(sequence)
             rect = self._frame(layout[key])
             center = rect.center()
             distance = (center.x()-where.x())**2 + (center.y()-where.y())**2
             candidates.append((distance, index))
         index = min(candidates)[1]
         proposed = without[:index] + [key] + without[index:]
-        proposed += [k for k in state['preview'] if k in self.hidden]
+        proposed += [k for k in state['preview'] if k not in proposed]
         if proposed != state['preview']:
             state['preview'] = proposed
             self.refresh_geometry(animate=True, order=proposed, skip_dragged=True)
@@ -466,7 +474,9 @@ class DashboardBoard(QWidget):
         self.tiles[state['key']]._sync_grips()
 
     def available_hidden(self):
-        hidden = [(key,tr(TITLES[key])) for key in ORDER if key in self.hidden]
+        from .crystal_atrium import TILE_KEYS
+        supported=TILE_KEYS if theme.mode()=='crystal_atrium' else ORDER
+        hidden = [(key,tr(TITLES[key])) for key in supported if key in self.hidden]
         if not self.distro_logo_visible:
             hidden.append(('distro_logo', tr('Distributionslogo')))
         return hidden

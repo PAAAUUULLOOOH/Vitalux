@@ -5,41 +5,68 @@ from PySide6.QtCore import QObject,QRunnable,QThreadPool,Signal,Qt,QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QApplication,QDialog,QVBoxLayout,QHBoxLayout,QScrollArea,QWidget,QSizePolicy
 from .ui_locale import QLabel,QPushButton
-from . import product_specs,theme
+from . import product_specs,theme,i18n,spec_language
 from .i18n import tr
 
 class _Signals(QObject):done=Signal(str,object)
 class _Task(QRunnable):
-    def __init__(self,product,signals,cancelled):
+    def __init__(self,product,signals,cancelled,language,source=None):
         super().__init__();self.product=dict(product);self.signals=signals;self.cancelled=cancelled
+        self.language=language;self.source=source
     def run(self):
-        try:result=product_specs.resolve(self.product,cancelled=self.cancelled)
-        except Exception:result=None
-        if not self.cancelled.is_set():self.signals.done.emit(product_specs.product_key(self.product),result)
+        source=self.source;localized=None
+        try:
+            source=source or product_specs.resolve(self.product,cancelled=self.cancelled)
+            localized=spec_language.localize(source,self.language,cancelled=self.cancelled)
+        except Exception:pass
+        if not self.cancelled.is_set():
+            self.signals.done.emit(product_specs.product_key(self.product),
+                                   dict(source=source,localized=localized,language=self.language))
 
 class SpecLoader(QObject):
     loaded=Signal(str,object)
     def __init__(self,app):
         super().__init__(app);self.pool=QThreadPool(self);self.pool.setMaxThreadCount(3)
         self.signals=_Signals(self);self.signals.done.connect(self._ready)
-        self.results={};self.pending=set();self.failed_at={};self.cancelled=Event();app.aboutToQuit.connect(self.shutdown)
+        self.results={};self.views={};self.pending=set();self._languages=set();self.failed_at={}
+        self.cancelled=Event();app.aboutToQuit.connect(self.shutdown)
     def request(self,product):
-        key=product_specs.product_key(product)
+        if self.cancelled.is_set():return
+        key=product_specs.product_key(product);language=i18n.lang();pair=(key,language)
         if not key or product.get('kind') not in ('cpu','gpu','mainboard'):return
-        if key in self.failed_at and time.monotonic()-self.failed_at[key]>=60:self.results.pop(key,None);self.failed_at.pop(key,None)
-        if key in self.results:self.loaded.emit(key,self.results[key]);return
-        if key in self.pending:return
-        cached=product_specs.SpecCache().load(product)
-        if cached:self._ready(key,cached);return
+        if pair in self.failed_at and time.monotonic()-self.failed_at[pair]>=60:
+            self.views.pop(pair,None);self.failed_at.pop(pair,None)
+        if pair in self.views:self.loaded.emit(key,self.views[pair]);return
+        if pair in self._languages:return
+        source=self.results.get(key) or product_specs.SpecCache().load(product)
+        if source:self.results[key]=source
         import os
-        if os.environ.get('VITALUX_SPEC_OFFLINE')=='1':self._ready(key,None);return
-        self.pending.add(key);self.pool.start(_Task(product,self.signals,self.cancelled))
+        if os.environ.get('VITALUX_SPEC_OFFLINE')=='1':
+            try:localized=spec_language.localize(source,language,offline=True)
+            except (OSError,ValueError,TypeError,KeyError):localized=None
+            self._ready(key,dict(source=source,localized=localized,language=language));return
+        self.pending.add(key);self._languages.add(pair)
+        self.pool.start(_Task(product,self.signals,self.cancelled,language,source))
     def _ready(self,key,result):
-        self.pending.discard(key);self.results[key]=result
-        if result is None:self.failed_at[key]=time.monotonic()
-        else:self.failed_at.pop(key,None)
-        self.loaded.emit(key,result)
-    def shutdown(self):self.cancelled.set();self.pool.clear()
+        # Raw source data may also be provided by startup/network diagnostics.
+        if result is not None and 'localized' not in result:
+            self.results[key]=result
+            result=dict(source=result,localized=result,language=i18n.lang())
+        result=result or dict(source=None,localized=None,language=i18n.lang())
+        pair=(key,result['language']);self._languages.discard(pair)
+        if not any(k==key for k,_ in self._languages):self.pending.discard(key)
+        if result['source']:self.results[key]=result['source']
+        self.views[pair]=result['localized']
+        if result['localized'] is None:self.failed_at[pair]=time.monotonic()
+        else:self.failed_at.pop(pair,None)
+        if result['language']==i18n.lang():self.loaded.emit(key,result['localized'])
+    def view(self,key):return self.views.get((key,i18n.lang()))
+    def shutdown(self):
+        self.cancelled.set();self.pool.clear()
+        return self.pool.activeThreadCount()==0
+    def resume(self):
+        if not self.cancelled.is_set():return
+        self.cancelled=Event();self.pending.clear();self._languages.clear()
 
 def loader():
     app=QApplication.instance()
@@ -64,7 +91,7 @@ def brief(data,local,kind=''):
     for section in data.get('sections',[]):
         for key,value in section['rows']:
             if len(value)>180:continue
-            rank=next((index for index,pattern in enumerate(patterns) if re.search(pattern,key,re.I)),None)
+            rank=next((index for index,pattern in enumerate(patterns) if re.search(pattern,data.get('original_keys',{}).get(key,key),re.I)),None)
             if rank is not None:preferred.append((rank,caption(key),value))
     preferred.sort(key=lambda row:row[0])
     seen=set();result=[]
@@ -77,6 +104,7 @@ def brief(data,local,kind=''):
 class SpecificationDialog(QDialog):
     def __init__(self,header):
         super().__init__(header.window());self.header=header;self.key=header.key;self.local_specs=list(header._local_specs)
+        self.product=dict(header.product)
         self.setWindowTitle(tr('Alle Spezifikationen'));self.setObjectName('specificationDialog')
         self.setStyleSheet(f'QDialog#specificationDialog {{ background:{theme.BG}; color:{theme.TEXT}; }}')
         self.resize(760,650);self.setMinimumSize(400,320)
@@ -97,7 +125,8 @@ class SpecificationDialog(QDialog):
     def open_source(self):
         if self.source:QDesktopServices.openUrl(QUrl(self.source))
     def populate(self,data):
-        self.source=data.get('source','') if data else ''
+        original=loader().results.get(self.key) or {}
+        self.source=(data or original).get('source','')
         self.source_button.setVisible(bool(self.source))
         host=QWidget();body=QVBoxLayout(host);body.setContentsMargins(8,8,8,8);body.setSpacing(14)
         groups=[]
@@ -116,6 +145,11 @@ class SpecificationDialog(QDialog):
         if data:
             from datetime import datetime
             stamp=datetime.fromtimestamp(data['checked_at']).strftime('%d.%m.%Y')
-            self.status.setText(tr('Herstellerangaben · Originalsprache · Stand: {date}').format(date=stamp))
+            self.status.setText(tr('Herstellerangaben · {language} · Stand: {date}').format(language='Deutsch' if i18n.lang()=='de' else 'English',date=stamp))
         elif self.key in loader().pending:self.status.setText(tr('Herstellerspezifikationen werden geladen …'))
+        elif original:self.status.setText(tr('Übersetzung derzeit nicht verfügbar. Erkannte Systemdaten werden angezeigt.'))
         else:self.status.setText(tr('Herstellerangaben derzeit nicht verfügbar. Erkannte Systemdaten werden angezeigt.'))
+    def retranslate(self):
+        self.setWindowTitle(tr('Alle Spezifikationen'))
+        self.populate(loader().view(self.key))
+        loader().request(self.product)

@@ -26,9 +26,9 @@ case "${1:-}" in
     ;;
   --portable|--launch)
     shift
-    # Guard all launches while the single rollback copy exists. Crashes restore
-    # that copy; normal exits leave it ready for future recovery.
-    if [[ -n "${APPIMAGE:-}" && -f "${APPIMAGE}.previous" && -f "$BASE/packaging/appimage-rollback-watch.sh" ]]; then
+    # The launch owner coordinates intentional restarts, verified updates and
+    # recovery using the single previous-version copy when available.
+    if [[ -n "${APPIMAGE:-}" && -f "$BASE/packaging/appimage-rollback-watch.sh" ]]; then
       exec bash "$BASE/packaging/appimage-rollback-watch.sh" "$BASE" "$APPIMAGE" "$@"
     fi
     exec "$BASE/run.sh" "$@"
@@ -75,5 +75,8 @@ if [[ -n "${APPIMAGE:-}" && -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]] && ! integr
     fi
     echo "Vitalux: Desktop-Installation fehlgeschlagen; Log: $STATE/installation.log" >&2
   fi
+fi
+if [[ -n "${APPIMAGE:-}" && -f "$BASE/packaging/appimage-rollback-watch.sh" ]]; then
+  exec bash "$BASE/packaging/appimage-rollback-watch.sh" "$BASE" "$APPIMAGE" "$@"
 fi
 exec "$BASE/run.sh" "$@"

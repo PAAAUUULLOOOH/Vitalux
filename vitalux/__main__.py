@@ -69,7 +69,9 @@ def main():
     win=app.startup.window
     if result == 0 and win is not None and win.restart_requested:
         renderer.successful_start()
-        sys.exit(42)  # The portable launcher restarts with the new renderer.
+        result=42  # The portable launcher restarts after native GUI disposal.
+    from .lifecycle import dispose_gui
+    dispose_gui(app.startup)
     sys.exit(result)
 
 

@@ -307,6 +307,7 @@ class HistoryGraph(QWidget):
         super().__init__()
         self.maxlen, self.mode = maxlen, mode
         self.series, self.series_names, self.series_styles = [], [], []
+        self.series_modes = []
         self.sample_times = []
         self.horizon_seconds = 60
         self._pointer = None
@@ -328,12 +329,16 @@ class HistoryGraph(QWidget):
         self.update()
         super().leaveEvent(event)
 
-    def _format(self, value):
+    def _format(self, value, mode=None):
         if value is None or not math.isfinite(float(value)):
             return '–'
-        if self.mode == 'percent': return f'{value:.0f}%'
-        if self.mode == 'temperature': return f'{value:.1f} °C'
-        if self.mode == 'clock': return f'{value:.0f} MHz'
+        mode = mode or self.mode
+        if mode == 'percent': return f'{value:.0f}%'
+        if mode == 'temperature': return f'{value:.1f} °C'
+        if mode == 'clock': return f'{value:.0f} MHz'
+        if mode == 'frequency': return f'{value/1000:.2f} GHz'
+        if mode == 'power': return f'{value:.1f} W'
+        if mode == 'load': return f'{value:.2f}'
         from .sensors import fmt_rate
         return fmt_rate(value)
 
@@ -362,8 +367,24 @@ class HistoryGraph(QWidget):
             offset = index-(count-len(values))
             name = self.series_names[number] if number < len(self.series_names) else str(number+1)
             value = values[offset] if 0 <= offset < len(values) else None
-            lines.append(f'{tr(name)}  {self._format(value)}')
+            mode=self.series_modes[number] if number<len(self.series_modes) else self.mode
+            lines.append(f'{tr(name)}  {self._format(value,mode)}')
         return lines
+
+    def unit_scales(self):
+        """Independent axes keep GHz, degrees, watts and percentages truthful."""
+        scales={}
+        for index,(values,tone) in enumerate(self.series):
+            mode=self.series_modes[index] if index<len(self.series_modes) else self.mode
+            peak=max((float(v) for v in values if v is not None and math.isfinite(float(v))),default=0.)
+            if mode=='percent':upper=100.
+            elif mode=='temperature':upper=max(100.,math.ceil(peak/20)*20)
+            elif mode=='frequency':upper=max(1000.,math.ceil(peak*1.08/1000)*1000)
+            elif mode=='power':upper=max(10.,math.ceil(peak*1.1/25)*25)
+            else:upper=max(1.,math.ceil(peak*1.1))
+            previous=scales.get(mode,(0,tone))
+            scales[mode]=(max(previous[0],upper),previous[1])
+        return scales
 
     def paintEvent(self, event):
         p = QPainter(self)
@@ -378,7 +399,8 @@ class HistoryGraph(QWidget):
             p.setBrush(fill)
             p.setPen(QPen(QColor(theme.BORDER), .75))
             p.drawRoundedRect(outer, 0 if minimal else 13, 0 if minimal else 13)
-        rect = outer.adjusted(10, 14, -65, -30)
+        scales=self.unit_scales() if self.mode=='mixed' else {}
+        rect = outer.adjusted(10, 20 if scales else 14, -max(65,66*len(scales)), -30)
         if rect.width() <= 8 or rect.height() <= 8:
             p.end()
             return
@@ -401,9 +423,15 @@ class HistoryGraph(QWidget):
             grid.setAlpha(150)
             p.setPen(QPen(grid, .7))
             p.drawLine(QPointF(rect.left(), y), QPointF(rect.right(), y))
-            p.setPen(QColor(theme.MUTED))
-            p.drawText(QRectF(rect.right()+6, y-10, 58, 20), Qt.AlignLeft | Qt.AlignVCenter,
-                       self._format(upper*fraction))
+            if scales:
+                for index,(mode,(limit,tone)) in enumerate(scales.items()):
+                    p.setPen(QColor(tone))
+                    p.drawText(QRectF(rect.right()+6+index*66,y-10,64,20),Qt.AlignLeft|Qt.AlignVCenter,
+                               self._format(limit*fraction,mode))
+            elif self.mode!='mixed':
+                p.setPen(QColor(theme.MUTED))
+                p.drawText(QRectF(rect.right()+6, y-10, 58, 20), Qt.AlignLeft | Qt.AlignVCenter,
+                           self._format(upper*fraction))
         for fraction in (.25, .5, .75):
             p.setPen(QPen(QColor(theme.GRID), .6, Qt.DotLine))
             x = rect.left()+rect.width()*fraction
@@ -417,6 +445,10 @@ class HistoryGraph(QWidget):
             p.drawText(QRectF(x-(0 if fraction == 0 else 29), rect.bottom()+6, 58, 20), align, stamp)
         any_data = False
         for number, (values, color) in enumerate(self.series):
+            limit=upper
+            if scales:
+                mode=self.series_modes[number]
+                limit=scales[mode][0]
             values = list(values)[-self.maxlen:]
             runs, run = [], []
             for index, value in enumerate(values):
@@ -425,7 +457,7 @@ class HistoryGraph(QWidget):
                     run = []
                     continue
                 any_data = True
-                y = rect.bottom()-min(1, max(0, float(value)/upper))*rect.height()
+                y = rect.bottom()-min(1, max(0, float(value)/limit))*rect.height()
                 run.append(QPointF(self._x(index, len(values), rect), y))
             if run: runs.append(run)
             style = self.series_styles[number] if number < len(self.series_styles) else Qt.SolidLine
@@ -527,10 +559,11 @@ class ChartSeriesCheckBox(QCheckBox):
 
 class ChartPanel(QWidget):
     """History chart with 1/5/15min selection and per-series visibility toggles."""
-    def __init__(self, series_names, colors, mode="percent"):
+    def __init__(self, series_names, colors, mode="percent", series_modes=None):
         super().__init__()
         self.series_names = list(series_names)
         self.colors = list(colors)
+        self.series_modes=list(series_modes or [mode]*len(series_names))
         self.color_roles = ["accent" if c.lower() == theme.accent().lower() else
                             "secondary" if c.lower() == theme.secondary_accent().lower() else
                             "teal" if c.lower() == theme.TEAL.lower() else "fixed"
@@ -541,13 +574,14 @@ class ChartPanel(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
         layout.setSpacing(10)
-        controls = QHBoxLayout()
+        controls = QGridLayout() if mode=='mixed' else QHBoxLayout()
         controls.setSpacing(10)
+        self._mixed_controls=controls if mode=='mixed' else None
         self.time_range = QComboBox()
         for label_, secs in (("60 s", 60), ("5 min", 300), ("15 min", 900)):
             self.time_range.addItem(label_, secs)
         self.time_range.currentIndexChanged.connect(self._update)
-        controls.addWidget(self.time_range)
+        controls.addWidget(self.time_range,0,0) if mode=="mixed" else controls.addWidget(self.time_range)
         self.toggles = []
         self.live_labels = []
         for idx, name in enumerate(self.series_names):
@@ -556,21 +590,25 @@ class ChartPanel(QWidget):
             cb = ChartSeriesCheckBox(name, self._palette_color(idx))
             cb.setChecked(True)
             cb.toggled.connect(self._update)
-            controls.addWidget(cb)
+            controls.addWidget(cb,(idx+1)//3,(idx+1)%3) if mode=="mixed" else controls.addWidget(cb)
             self.toggles.append(cb)
-        controls.addStretch(1)
+        if mode!='mixed':controls.addStretch(1)
         layout.addLayout(controls)
         self.graph = HistoryGraph(mode=mode)
         layout.addWidget(self.graph)
         # Values are real samples, not decoration; unavailable data is shown as dashes.
-        live = QHBoxLayout()
+        live = QGridLayout() if mode=='mixed' else QHBoxLayout()
         live.setSpacing(10)
         for name in self.series_names:
             item = label(f"{name}  –", "muted")
             item.setToolTip(tr("Aktueller Wert / Minimum / Maximum im ausgewählten Zeitraum"))
             self.live_labels.append(item)
-            live.addWidget(item)
-        live.addStretch()
+            if mode=='mixed':
+                index=len(self.live_labels)-1
+                live.addWidget(item,index//2,index%2)
+                item.setWordWrap(True)
+            else:live.addWidget(item)
+        if mode!='mixed':live.addStretch()
         layout.addLayout(live)
 
     def _palette_color(self, idx):
@@ -610,6 +648,7 @@ class ChartPanel(QWidget):
         self.graph.sample_times = self._timestamps[-count:]
         self.graph.series_names = []
         self.graph.series_styles = []
+        self.graph.series_modes = []
         self.graph.maxlen = count
         self.graph.horizon_seconds = horizon
         active = []
@@ -624,15 +663,7 @@ class ChartPanel(QWidget):
                 continue
             vals = [float(v) for v in list(values)[-count:] if v is not None]
             if vals:
-                from .sensors import fmt_rate
-                if self.graph.mode == "percent":
-                    fmt = lambda value: f"{value:.0f}%"
-                elif self.graph.mode == "temperature":
-                    fmt = lambda value: f"{value:.1f} °C"
-                elif self.graph.mode == "clock":
-                    fmt = lambda value: f"{value:.0f} MHz"
-                else:
-                    fmt = fmt_rate
+                fmt = lambda value: self.graph._format(value,self.series_modes[i])
                 current = list(values)[-1] if values else None
                 shown = fmt(current) if current is not None else '–'
                 self.live_labels[i].setText(f'{tr(self.series_names[i])} {shown}  ·  {fmt(min(vals))}–{fmt(max(vals))}')
@@ -643,6 +674,7 @@ class ChartPanel(QWidget):
             recent = list(values)[-count:]
             active.append((recent, color))
             self.graph.series_names.append(self.series_names[i])
+            self.graph.series_modes.append(self.series_modes[i])
             self.graph.series_styles.append((Qt.SolidLine, Qt.DashLine, Qt.DotLine)[i % 3])
         self.graph.set_series(active)
 

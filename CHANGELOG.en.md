@@ -1,5 +1,14 @@
 # Vitalux – Changes
 
+## [v0.9.6.3-unstable.25] - 2026-10-25
+- The initialization window has actual rounded transparent outer corners matching its outline.
+- Crystal Atrium uses one continuous window background and smoothly blurred glass at the display resolution. Overview retains its liquid spheres and now supports moving, hiding, restoring, undoing and saving tiles with the layout editor.
+- Processor combines usage, temperature, clock speed and available power in one chart card with selectable curves, separate unit scales and time ranges. Linux load averages can also be selected; duplicate current-reading displays are removed.
+- Processor pictures are checked against the exact CPU and variant. Conflicting i3/i5/i7/i9 or model references and uncertain older CPU cache pictures are rejected.
+- Manufacturer specifications follow the selected German or English app language. Translations preserve technical identifiers, remain available offline and follow language changes in open datasheets.
+- Reset and restart wait for ongoing product-data requests and dispose the interface in order. AppImage restarts, updates and recovery share one launch owner: an intentional reset retains its version and a prepared update cannot be overwritten by competing recovery.
+- Maintenance appears only when settings can be reset and stays hidden after a full reset or an unchanged first start.
+
 ## [v0.9.6.3-unstable.24] - 2026-10-25
 - Overview has a larger system header in every design, with a larger distribution logo and roomier information chips. The distribution name and information are centered; the remaining cards begin lower down.
 - Design previews fit fully inside rounded tiles and show each interface more clearly. The Crystal Atrium preview is retained; the active selection check sits above the accent and background symbols.

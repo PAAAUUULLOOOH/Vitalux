@@ -272,11 +272,42 @@ def _stage_appimage(url, sha256, progress, expected_size=None):
         raise
 
 
+def _appimage_mailbox(target):
+    request=os.environ.get('VITALUX_APPIMAGE_REQUEST_FILE','')
+    guarded_target=os.environ.get('VITALUX_APPIMAGE_TARGET','')
+    if not request or not guarded_target or os.path.realpath(guarded_target)!=target:return None
+    import stat
+    path=Path(request);info=path.lstat()
+    if path.is_symlink() or not stat.S_ISREG(info.st_mode) or info.st_uid!=os.getuid():
+        raise RuntimeError('Unsafe AppImage activation mailbox')
+    return path
+
+
+def queue_appimage_restart():
+    """Let the current AppRun restart this same image after an intentional close."""
+    image=appimage_path()
+    if not image:return False
+    target=os.path.realpath(image);path=_appimage_mailbox(target)
+    if path is None:return False
+    profiles.atomic_json(path,dict(schema=1,action='restart',source_version=__version__,
+                                  source_pid=os.getpid(),target=target))
+    return True
+
+
 def activate_appimage_update(staged, relaunch=True):
-    """External Bash helper survives unmounting the old AppImage."""
+    """Queue activation for AppRun, retaining a helper for older unguarded starts."""
     target = os.path.realpath(appimage_path())
     if not os.path.isfile(target) or os.path.dirname(staged) != os.path.dirname(target):
         raise RuntimeError(tr('AppImage-Update konnte nicht sicher vorbereitet werden.'))
+    path=_appimage_mailbox(target)
+    if path is not None:
+        # AppRun applies this one-use request after the GUI and launcher exit.
+        candidate=Path(staged)
+        if candidate.is_symlink():raise RuntimeError('Unsafe staged AppImage')
+        with candidate.open('rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
+        profiles.atomic_json(path,dict(schema=1,source_version=__version__,source_pid=os.getpid(),
+            target=target,staged=str(candidate.resolve()),sha256=digest,relaunch=bool(relaunch)))
+        return
     cache = str(profiles.directory('cache'))
     os.makedirs(cache, mode=0o700, exist_ok=True)
     logging_functions = (Path(__file__).resolve().parents[1]/'packaging/logging.sh').read_text()

@@ -153,17 +153,19 @@ class ProductCache:
                 return None
             if not allowed_url(meta.get('source', '')):
                 return None
+            if not cpu_image_matches(product,meta.get('image_url',''),meta.get('image_identity','')):return None
             return dict(meta, path=str(path), cached=True, cutout=cutout_image(raw))
         except (OSError, ValueError, TypeError, AttributeError):
             return None
 
-    def save(self, product, raw, source, image_url):
+    def save(self, product, raw, source, image_url, image_identity=""):
         key = product_key(product)
         if not key or not valid_image(raw):
             raise ValueError('Invalid product image')
         if not all(allowed_url(url) for url in (source, image_url)):
             raise ValueError('Unsupported manufacturer source')
-        meta = {'key': key, 'source': source, 'image_url': image_url,
+        if not cpu_image_matches(product,image_url,image_identity):raise ValueError('CPU image does not identify the exact processor')
+        meta = {'image_identity':image_identity,'key': key, 'source': source, 'image_url': image_url,
                 'sha256': hashlib.sha256(raw).hexdigest(), 'saved': int(time.time()),
                 'vendor': product['vendor'], 'model': product['model'], 'cutout': cutout_image(raw)}
         path = self.root / (key + '.image')
@@ -234,6 +236,24 @@ def matches_product(product, title):
         for variant in ('xt','xtx','super','ti','gre'):
             if (variant in required)!=(variant in actual):return False
     return True
+
+
+def cpu_image_matches(product, image_url, identity=''):
+    """Require image-level CPU identity, not just the enclosing article title."""
+    if product.get('kind')!='cpu':return True
+    model=search_model(product)
+    evidence=unquote(str(image_url))+' '+str(identity)
+    # An i9 hero shot on an i5 product/review page is never the requested CPU.
+    tier=re.search(r'\bi[3579]\b',model,re.I)
+    tiers=re.findall(r'(?<![a-z0-9])i[3579](?![a-z0-9])',evidence,re.I)
+    if tier and any(value.casefold()!=tier[0].casefold() for value in tiers):return False
+    code=re.search(r'(?<![a-z0-9])(\d{4,5}[a-z][a-z0-9]*)(?![a-z0-9])',model,re.I)
+    if code:
+        expected=code[1].casefold()
+        codes=re.findall(r'(?<![a-z0-9])(\d{4,5}[a-z][a-z0-9]*)(?![a-z0-9])',evidence,re.I)
+        if any(value.casefold()!=expected for value in codes):return False
+        if any(value.casefold()==expected for value in codes):return True
+    return matches_product(product,evidence)
 
 
 class ProductPage(HTMLParser):
@@ -431,9 +451,12 @@ def resolve(product, cache=None, download=fetch, cancelled=None, on_preview=None
         except (OSError,ValueError) as exc:
             note('download_failed',host=urlsplit(url).hostname,error=type(exc).__name__)
             raise
-    def image_result(source,image):
+    def image_result(source,image,identity=""):
         nonlocal fallback
         if not allowed_url(image) or image in visited:return None
+        if not cpu_image_matches(product,image,identity):
+            note('cpu_identity_rejected',host=urlsplit(image).hostname)
+            return None
         visited.add(image)
         if re.search(r'(?:^|[/_.-])(?:logo|icon|banner)(?:[/_.-]|$)',urlsplit(image).path,re.I):return None
         try:
@@ -441,9 +464,9 @@ def resolve(product, cache=None, download=fetch, cancelled=None, on_preview=None
             if not valid_image(raw):note('invalid_image',host=urlsplit(image).hostname);return None
             if cutout_image(raw):
                 note('cutout',host=urlsplit(image).hostname)
-                return cache.save(product,raw,source,image)
+                return cache.save(product,raw,source,image,identity)
             if fallback is None:
-                fallback=cache.save(product,raw,source,image)
+                fallback=cache.save(product,raw,source,image,identity)
                 note('background_alternative',host=urlsplit(image).hostname)
                 if on_preview:on_preview(fallback)
         except (OSError,ValueError):pass
@@ -456,13 +479,13 @@ def resolve(product, cache=None, download=fetch, cancelled=None, on_preview=None
             try:
                 page=ProductPage();page.feed(download(source,MAX_PAGE,()).decode('utf-8','replace'))
                 matches=any(matches_product(product,title) for title in page.titles)
-                images=[url for name,url in page.named_images if matches_product(product,name)]
-                if matches:images+=page.images+page.product_images
-                images+=[url for url,alt in page.gallery if matches_product(product,alt) or
-                         (matches and matches_product(product,unquote(url)))]
+                images=[(url,name) for name,url in page.named_images if matches_product(product,name)]
+                if matches:images += [(url,'') for url in page.images+page.product_images]
+                images += [(url,alt) for url,alt in page.gallery if matches_product(product,alt) or
+                           (matches and matches_product(product,unquote(url)))]
                 note('product_page',host=urlsplit(source).hostname,matched=matches,candidates=len(images))
-                for image in list(dict.fromkeys(images))[:5]:
-                    result=image_result(source,urljoin(source,image))
+                for image,identity in list(dict.fromkeys(images))[:12]:
+                    result=image_result(source,urljoin(source,image),identity)
                     if result:return result
             except (OSError,ValueError):continue
         return None

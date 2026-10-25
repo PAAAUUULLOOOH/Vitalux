@@ -445,6 +445,7 @@ class PreferencesPage(Page):
         self._refresh_renderer_status()
         self._settings_cards['render'].append(render_card)
         maintenance = Card('Wartung')
+        maintenance.setParent(self)  # Visibility changes must never map an orphan window.
         self.reset_description = label(
             'Setzt alle Einstellungen dieses Profils zurück: Design, Farben, Layouts, Sprache, '
             'Warnwerte und Grafik-Renderer. Gespeicherte eigene Farben, importierte Bildkopien '
@@ -892,10 +893,11 @@ class PreferencesPage(Page):
             if button is not None:
                 defaults=design_catalog.defaults() if section=='appearance' else self.DEFAULTS
                 self._reset_reveals[section].setRevealed(any(settings.get(key,defaults[key]) != defaults[key] for key in keys))
-        self.restore_reveal.setRevealed(
-            any(values[key] != default for key, default in self.DEFAULTS.items()) or
-            any(settings.get(key) for key in ('custom_accents', 'custom_backgrounds', 'dashboard_order',
-                'dashboard_hidden', 'dashboard_layout', 'lang')))
+        changed=(any(values[key] != default for key, default in self.DEFAULTS.items()) or
+                 any(settings.get(key) for key in ('custom_accents','custom_backgrounds','dashboard_order',
+                     'dashboard_hidden','dashboard_layout','lang')))
+        self._maintenance_card.setVisible(bool(changed))
+        self.restore_reveal.setRevealed(bool(changed))
 
     def restore_defaults(self):
         answer = QMessageBox.question(

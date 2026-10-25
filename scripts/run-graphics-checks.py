@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Own and clean up X11/Wayland test sessions for the five-renderer matrix."""
+"""Own X11/Wayland sessions for all renderers and repeated Wayland CPU resets."""
 import argparse
 import json
 import os
@@ -67,13 +67,19 @@ def main():
             sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
             from vitalux import renderer
             results = []
-            for mode in renderer.CHOICES:
+            cases=[(mode,None,mode) for mode in renderer.CHOICES]
+            # The reported native reset crashes occurred on Wayland/software,
+            # a distinct platform path from the normal X11 software check.
+            cases += [(renderer.SOFTWARE,'wayland',f'wayland-software-reset-{index}') for index in range(1,4)]
+            for mode,platform,case in cases:
+                case_output=output if platform is None else output/case
+                case_output.mkdir(exist_ok=True)
                 weston = None
                 try:
-                    if renderer.display_api(mode) == 'wayland':
+                    if (platform or renderer.display_api(mode)) == 'wayland':
                         # Each client gets a fresh compositor, so GL/Vulkan
                         # resources and protocol state cannot leak across modes.
-                        env['WAYLAND_DISPLAY'] = 'wayland-vitalux-'+mode
+                        env['WAYLAND_DISPLAY'] = 'wayland-vitalux-'+case
                         weston = subprocess.Popen([programs['weston'], '--backend=headless-backend.so',
                             '--shell=kiosk-shell.so', '--socket='+env['WAYLAND_DISPLAY'],
                             '--width=1600', '--height=1100', '--no-config', '--idle-time=0',
@@ -84,19 +90,21 @@ def main():
                             if weston.poll() is not None or time.monotonic() > deadline:
                                 raise RuntimeError('Weston startup failed; see '+str(output/'weston.log'))
                             time.sleep(.1)
-                    check = subprocess.run([sys.executable,
+                    command=[sys.executable,
                         str(Path(__file__).with_name('check-graphics-startup.py')),
-                        '--mode', mode, '--output', str(output)], env=env,
+                        '--mode', mode, '--output', str(case_output)]
+                    if platform:command.extend(['--platform',platform])
+                    check = subprocess.run(command, env=env,
                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=60)
-                    (output/(mode+'-runner.log')).write_text(check.stdout)
+                    (case_output/(mode+'-runner.log')).write_text(check.stdout)
                     print(check.stdout, end='', flush=True)
                     if check.returncode:
                         status = weston.poll() if weston else None
                         message = f'{mode}: validation exit {check.returncode}; compositor status {status}'
-                        with (output/(mode+'-runner.log')).open('a') as failure_log:
+                        with (case_output/(mode+'-runner.log')).open('a') as failure_log:
                             failure_log.write('\n'+message+'\n')
                         raise RuntimeError(message)
-                    results.extend(json.loads((output/'results.json').read_text()))
+                    results.extend(json.loads((case_output/'results.json').read_text()))
                 finally:
                     if weston is not None and weston.poll() is None:
                         weston.terminate()

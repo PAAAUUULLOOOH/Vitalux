@@ -1,10 +1,9 @@
 """Crystal Atrium: original liquid-glass dashboard over a static colourful stage.
 
-Unlike the other signature skins this one does not just repaint the shared
-dashboard board. ``AtriumCanvas`` is a separate, fully custom-painted
-Overview with its own composition: three glass spheres filled with live,
-sloshing liquid (CPU / GPU / RAM), glowing ribbon charts, a network panel and
-glass drive tubes, all on a stage of drifting luminous orbs.
+The shared dashboard editor arranges custom-painted glass tiles: three
+spheres filled with live liquid (CPU / GPU / RAM), glowing ribbon charts,
+a network panel and glass drive tubes. Every tile samples the same static
+window backdrop; there is no second stage behind the overview.
 
 Why the glass reads as glass here (and not as a grey translucent box):
 
@@ -20,9 +19,8 @@ Why the glass reads as glass here (and not as a grey translucent box):
   meniscus and bubbles, and get a crescent of caustic light opposite the
   main highlight.
 
-Everything expensive is cached: the stage and every static pane are drawn
-once per data refresh into one pixmap; the 15 fps timer only repaints the
-three sphere areas.
+Every static pane is cached until its data, position or backdrop changes.
+Only the three visible liquid instruments use a 15 fps animation timer.
 """
 import math
 import time
@@ -52,6 +50,7 @@ ORBS = (
     (.06, .86, .12, '#a77bff', '#4a1fb8', .030, .030, 1.0, 5.2),
     (.76, .94, .10, '#7be0ff', '#2563eb', .040, .020, .5, 2.4),
 )
+TILE_KEYS = ('hero', 'cpu', 'gpu', 'ram', 'graph_load', 'network', 'drives')
 _BASE_CACHE = {}
 
 
@@ -295,8 +294,7 @@ def stylesheet():
 
 
 def paint_metric(metric, p):
-    """The board (and with it these tiles) is hidden while Crystal Atrium is
-    active; this only keeps a stray paint request safe and legible."""
+    """Fallback for an instrument before its Atrium tile is selected."""
     p.setPen(color(palette()['text']))
     p.drawText(metric.rect(), Qt.AlignCenter, str(metric.detail or '–'))
 
@@ -492,8 +490,8 @@ def _fmt_pct(value):
 
 
 
-class AtriumCanvas(QWidget):
-    """The custom Overview. Pure data in (`set_data`), pure painting out."""
+class AtriumTile(QWidget):
+    """One editable glass tile, aligned to the shared window background."""
 
     SPHERES = (
         ('cpu', 'Prozessor', '#7fd6ff', '#2b6bff'),
@@ -501,12 +499,14 @@ class AtriumCanvas(QWidget):
         ('ram', 'Arbeitsspeicher', '#ffcb72', '#ff6a3c'),
     )
 
-    def __init__(self, distro_name, logo, parent=None):
+    def __init__(self, key, distro_name, logo, parent=None):
         super().__init__(parent)
+        self.key = key
         self.distro_name = distro_name
         self.logo = logo
-        self.setMinimumSize(680, 1000)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.logo_visible = True
+        self.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        self._backdrop_key = None
         self._data = None
         self._hint_regions=[]
         self._static = QPixmap()
@@ -521,12 +521,12 @@ class AtriumCanvas(QWidget):
         self._timer.setInterval(66)
         self._timer.timeout.connect(self._tick)
         from .overview_text import OverviewInfo
-        self.captions={key:OverviewInfo(self) for key,*_ in self.SPHERES}
+        self.captions={name:OverviewInfo(self) for name,*_ in self.SPHERES if name == key}
         for caption in self.captions.values():caption.setAttribute(Qt.WA_TranslucentBackground,True)
 
     def sizeHint(self):
         from PySide6.QtCore import QSize
-        return QSize(1100, 780)
+        return QSize(340, 370)
 
     # -- data / lifecycle ------------------------------------------------
     def set_data(self, data):
@@ -537,7 +537,7 @@ class AtriumCanvas(QWidget):
 
     def _animate(self):
         from . import motion
-        return self.isVisible() and motion.enabled()
+        return self.key in self.captions and self.isVisible() and motion.enabled()
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -577,25 +577,17 @@ class AtriumCanvas(QWidget):
         else:
             self.update()
 
-    # -- layout ----------------------------------------------------------
-    def _layout(self):
-        w, h = self.width(), self.height()
-        m, gap = 18.0, 16.0
-        hero_h = 200.0
-        spheres_h = max(365.0, (h - 2 * m - hero_h - 2 * gap) * .56)
-        bottom_h = h - 2 * m - hero_h - spheres_h - 2 * gap
-        hero = QRectF(m, m, w - 2 * m, hero_h)
-        top = hero.bottom() + gap
-        col_w = (w - 2 * m - 2 * gap) / 3
-        spheres = [QRectF(m + i * (col_w + gap), top, col_w, spheres_h) for i in range(3)]
-        by = top + spheres_h + gap
-        total = w - 2 * m - 2 * gap
-        graph = QRectF(m, by, total * .46, bottom_h)
-        net = QRectF(graph.right() + gap, by, total * .26, bottom_h)
-        drives = QRectF(net.right() + gap, by, total * .28, bottom_h)
-        return hero, spheres, graph, net, drives
-
     # -- painting --------------------------------------------------------
+    def _background(self):
+        from .glass import scene_for
+        from PySide6.QtCore import QPoint
+        scene = scene_for(self)
+        if scene is None:
+            return None, QPoint(), (self.size(), self.devicePixelRatioF())
+        image = scene.soft_backdrop()
+        pos = self.mapTo(scene, QPoint())
+        return image, pos, (self.size(), self.devicePixelRatioF(), pos, image.cacheKey())
+
     def _backdrop(self):
         blur = self._blur
         sx = blur.width() / max(1, self.width())
@@ -633,23 +625,20 @@ class AtriumCanvas(QWidget):
         p.drawText(rect, Qt.AlignHCenter | Qt.AlignTop | Qt.TextWordWrap, str(value))
 
     def _rebuild(self):
-        from . import motion
         self._hint_regions=[];self.setProperty('vitaluxFullNameHint',False)
         w, h = max(1, self.width()), max(1, self.height())
         dpr = self.devicePixelRatioF()
-        t = (time.monotonic() - self._t0) * .12
-        from . import settings,backdrops,theme,user_background
-        style=settings.get('background_style','theme_default')
-        if style=='theme_default':stage=stage_pixmap(w,h,0.0)
-        elif style=='custom_image':
-            stage=user_background.draw(self.size(),settings.get('custom_background_selected',''),settings.get('custom_background_fit','cover'))
-        else:
-            scene=self.parentWidget()
-            while scene is not None and not hasattr(scene,'_phase'):scene=scene.parentWidget()
-            phase=getattr(scene,'_phase',0)
-            stage=backdrops.render(self.size(),backdrops.resolve(style,KEY),theme.accent(),phase=phase)[0]
-        self._blur = stage.scaled(max(8, w // 6), max(8, h // 6), Qt.IgnoreAspectRatio,
-                                  Qt.SmoothTransformation)
+        image, pos, self._backdrop_key = self._background()
+        self._blur = QPixmap(max(1, round(w*dpr)), max(1, round(h*dpr)))
+        self._blur.setDevicePixelRatio(dpr)
+        self._blur.fill(Qt.transparent)
+        if image is not None and not image.isNull():
+            ratio=image.devicePixelRatioF()
+            painter=QPainter(self._blur)
+            painter.setRenderHint(QPainter.SmoothPixmapTransform)
+            painter.drawPixmap(QRectF(0,0,w,h),image,
+                               QRectF(pos.x()*ratio,pos.y()*ratio,w*ratio,h*ratio))
+            painter.end()
         pm = QPixmap(max(1, round(w * dpr)), max(1, round(h * dpr)))
         pm.setDevicePixelRatio(dpr)
         pm.fill(Qt.transparent)
@@ -657,28 +646,19 @@ class AtriumCanvas(QWidget):
         p.setRenderHint(QPainter.Antialiasing)
         p.setRenderHint(QPainter.TextAntialiasing)
         p.setRenderHint(QPainter.SmoothPixmapTransform)
-        frame = QRectF(1, 1, w - 2, h - 2)
-        stage_path = _rr(frame, 30)
-        p.save()
-        p.setClipPath(stage_path)
-        p.drawPixmap(0, 0, stage)
-        p.restore()
-        p.setPen(QPen(color('#ffffff', 40), 1.0))
-        p.setBrush(Qt.NoBrush)
-        p.drawPath(stage_path)
+        from . import settings
         data = self._data
-        hero, spheres, graph, net, drives = self._layout()
+        area = QRectF(5, 5, max(1,w-10), max(1,h-10))
         backdrop = self._backdrop()
         self._sphere_geo = {}
         self._sphere_meta = {}
-        sx = self._blur.width() / max(1, w)
-        sy = self._blur.height() / max(1, h)
-        self._scale = (sx, sy)
-
-        glass(p, hero, 28, backdrop)
-        self._paint_hero(p, hero, data)
+        self._scale = (self._blur.width()/w, self._blur.height()/h)
+        if self.key == 'hero':
+            glass(p, area, 28, backdrop)
+            self._paint_hero(p, area, data)
         for i, (key, title, col_a, col_b) in enumerate(self.SPHERES):
-            area = spheres[i]
+            if key != self.key:
+                continue
             if settings.get('accent','design_default')!='design_default':
                 colors=palette()['series'];col_a=colors[i%len(colors)];col_b=palette()['secondary']
             glass(p, area, 30, backdrop, tint=col_a)
@@ -694,16 +674,14 @@ class AtriumCanvas(QWidget):
             top=round(centre.y()+radius+16)
             caption.setGeometry(round(area.left()+20),top,round(area.width()-40),max(1,round(area.bottom()-top-16)))
             self._sphere_meta[key] = (centre, radius, col_a, col_b, i)
-        glass(p, graph, 28, backdrop)
-        self._paint_graph(p, graph, data)
-        glass(p, net, 28, backdrop)
-        self._paint_network(p, net, data)
-        glass(p, drives, 28, backdrop)
-        self._paint_drives(p, drives, data)
+        for key, paint in (('graph_load',self._paint_graph),
+                           ('network',self._paint_network),('drives',self._paint_drives)):
+            if self.key == key:
+                glass(p, area, 28, backdrop)
+                paint(p, area, data)
         p.end()
         self._static = pm
         self._dirty = False
-        self._mid_t = t
 
     def _tr(self, value):
         from .i18n import tr
@@ -711,7 +689,7 @@ class AtriumCanvas(QWidget):
 
     def _paint_hero(self, p, rect, data):
         data = data or {}
-        if self.logo is not None and not self.logo.isNull():
+        if self.logo_visible and self.logo is not None and not self.logo.isNull():
             ratio=max(1.,self.logo.devicePixelRatioF())
             pix=self.logo.scaled(round(76*ratio),round(76*ratio),Qt.KeepAspectRatio,Qt.SmoothTransformation)
             p.drawPixmap(QPointF(rect.left()+24,rect.top()+16),pix)
@@ -879,7 +857,7 @@ class AtriumCanvas(QWidget):
         return super().event(event)
 
     def paintEvent(self, event):
-        if self._dirty or self._static.isNull():
+        if self._dirty or self._static.isNull() or self._background()[2] != self._backdrop_key:
             self._rebuild()
         p = QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)

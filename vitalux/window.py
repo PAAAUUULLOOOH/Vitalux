@@ -90,7 +90,7 @@ class MainWindow(QMainWindow):
             self.resize(1380, 900)
         self.hist = {k: deque(maxlen=900) for k in (
             "cpu", "ram", "gpu", "net_down", "net_up", "io_read", "io_write",
-            "cpu_temp", "time")}
+            "cpu_temp", "cpu_clock", "cpu_power", "cpu_load_1", "cpu_load_5", "cpu_load_15", "time")}
         self._extrema = SessionExtrema()
         self.gpu_history=GpuHistory()
         self._mini_hud = MiniHUD()
@@ -383,6 +383,8 @@ class MainWindow(QMainWindow):
         self.refresh_mini_hud()
         self._tray.setToolTip(tray_tooltip(self.last_sample))
         retranslate_widgets(self.centralWidget())
+        from .spec_ui import SpecificationDialog
+        for dialog in self.findChildren(SpecificationDialog):retranslate_widgets(dialog)
         diagnosis = next((page for title, page in self.pages if title == 'Diagnostic Center'), None)
         if diagnosis is not None:
             diagnosis.retranslate()
@@ -898,6 +900,7 @@ class MainWindow(QMainWindow):
             self._refresh_visible_page()
 
     def on_sample(self, d):
+        if self._shutdown_pending:return
         import time
         started = time.perf_counter()
         d["session_extrema"] = self._extrema.update(d)
@@ -928,6 +931,12 @@ class MainWindow(QMainWindow):
         h["ram"].append(d["ram"]["percent"])
         h["gpu"].append(g.get("usage") if g else None)
         h["cpu_temp"].append(d.get("cpu", {}).get("temp"))
+        h['cpu_clock'].append(d['cpu'].get('freq'))
+        from .power_display import component_power
+        h['cpu_power'].append((component_power(d.get('hardware',[]),'cpu') or {}).get('value'))
+        load=d['cpu'].get('load') or []
+        for index,key in enumerate(('cpu_load_1','cpu_load_5','cpu_load_15')):
+            h[key].append(load[index] if index<len(load) else None)
         h["net_down"].append(d["net"]["down"])
         h["net_up"].append(d["net"]["up"])
         h['io_read'].append(d['io']['read'])
@@ -1016,6 +1025,8 @@ class MainWindow(QMainWindow):
         for _title,page in self.pages:
             if isinstance(page,NetworkPage):page.watcher.resume_after_shutdown()
         self.manager.resume_after_shutdown()
+        from .lifecycle import resume_product_workers
+        resume_product_workers()
         for _title,page in self.pages:
             if isinstance(page,PreferencesPage):page._refresh_restore_button()
         self.statusBar().showMessage(tr(message),8000)
@@ -1065,7 +1076,9 @@ class MainWindow(QMainWindow):
         workers_running = any(worker.isRunning() for worker in self.findChildren(QThread))
         network_ready=all(page.shutdown() for _title,page in self.pages if isinstance(page,NetworkPage))
         manager_ready = self.manager.shutdown() is not False
-        if workers_running or not network_ready or not manager_ready or time.monotonic() < self._shutdown_not_before:
+        from .lifecycle import stop_product_workers
+        products_ready=stop_product_workers()
+        if workers_running or not network_ready or not manager_ready or not products_ready or time.monotonic() < self._shutdown_not_before:
             event.ignore()
             self._close_retry.start(25)
             return
@@ -1087,6 +1100,16 @@ class MainWindow(QMainWindow):
             self._cancel_shutdown('Neustart wird automatisch erneut vorbereitet …' if self.manager.restart_retrying
                                   else 'Neustart fehlgeschlagen. Bitte unter Updates erneut versuchen.')
             return
+        if self.restart_requested:
+            try:
+                from .updater import queue_appimage_restart
+                queue_appimage_restart()
+            except (OSError,RuntimeError):
+                event.ignore()
+                self._cancel_shutdown('Neustart fehlgeschlagen. Bitte unter Updates erneut versuchen.')
+                return
+        from .lifecycle import stop_gui_activity
+        stop_gui_activity(self)
         self._tray_click_timer.stop()
         self._tray_glow.stop()
         self._mini_hud.hide()

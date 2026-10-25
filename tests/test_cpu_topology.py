@@ -60,7 +60,7 @@ for design in ('obsidian_gold', 'liquid_silver', 'holographic', 'minimal'):
             app.processEvents()
             last = page.core_meters[-1]
             assert last.mapTo(area.viewport(), last.rect().bottomLeft()).y() <= area.viewport().height()
-            assert area.horizontalScrollBar().maximum() == 0
+            assert area.horizontalScrollBar().maximum() == 0,(design,language,width,page.width(),page.minimumWidth(),page._core_columns)
 cpu['logical_cpus'] = cpu['logical_cpus'][:4]
 page.refresh({'cpu': cpu}, {'cpu': [20]})
 app.processEvents()
