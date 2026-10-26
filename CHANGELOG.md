@@ -1,5 +1,10 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.4-unstable.3] - 2026-10-26
+
+- Alle Designs: Rahmenloses Hauptfenster mit echten runden Außenecken, eigenen Fensterknöpfen sowie Verschieben, Größenänderung und Maximieren.
+- Initialisierungskarte nach dem Anzeigen und bei Bildschirmänderungen mittig ausgerichtet, auch unter KDE/Wayland.
+
 ## [v0.9.6.4-unstable.2] - 2026-10-26
 
 - Gespeicherte Diagrammauswahl und Zeitfenster sowie eine bevorzugte Grafikkarte für Übersicht, MiniHUD und Diagnosen.

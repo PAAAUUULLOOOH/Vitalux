@@ -146,3 +146,10 @@ EN_MORE.update({
     'Unterstützte Berichtsformate: .txt oder .json': 'Supported report formats: .txt or .json',
     'Messwerte werden nicht mehr aktualisiert.': 'Readings are no longer being updated.',
 })
+
+EN_MORE.update({
+    'Fenster minimieren': 'Minimize window',
+    'Fenster maximieren': 'Maximize window',
+    'Fenster wiederherstellen': 'Restore window',
+    'Fenster schließen': 'Close window',
+})

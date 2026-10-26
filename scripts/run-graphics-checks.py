@@ -80,8 +80,11 @@ def main():
                         # Each client gets a fresh compositor, so GL/Vulkan
                         # resources and protocol state cannot leak across modes.
                         env['WAYLAND_DISPLAY'] = 'wayland-vitalux-'+case
+                        # Exercise real windowed client corners and restore.
+                        # A bare extracted sysroot may lack desktop helpers.
+                        shell = 'kiosk-shell.so' if args.sysroot else 'desktop-shell.so'
                         weston = subprocess.Popen([programs['weston'], '--backend=headless-backend.so',
-                            '--shell=kiosk-shell.so', '--socket='+env['WAYLAND_DISPLAY'],
+                            '--shell='+shell, '--socket='+env['WAYLAND_DISPLAY'],
                             '--width=1600', '--height=1100', '--no-config', '--idle-time=0',
                             *compositor_renderer], env=env, stdout=streams[1], stderr=subprocess.STDOUT)
                         processes.append(weston)

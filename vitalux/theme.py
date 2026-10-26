@@ -148,7 +148,9 @@ def combo_surface():
 _QSS = Template(r"""
 QWidget { background: transparent; color: $TEXT; font-family: "Inter", "Noto Sans", "Cantarell", "DejaVu Sans", sans-serif; font-size: 13px; }
 QMainWindow { background: $BG; }
+QMainWindow#vitaluxMainWindow { background: transparent; }
 #root, QFrame#sidebar { background: transparent; border: none; }
+QWidget#root[vitaluxRoundedWindow="true"] { background: transparent; }
 #card, #heroCard, #chip { background: transparent; border: none; }
 #cardTitle { color: $MUTED; font-size: 11px; font-weight: 750; letter-spacing: 1.2px; }
 #pageTitle { font-size: 28px; font-weight: 800; }

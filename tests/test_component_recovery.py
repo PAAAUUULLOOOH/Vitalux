@@ -17,7 +17,9 @@ def picture(color):
     return bytes(buffer.data())
 def wait_until(condition):
     deadline=time.monotonic()+4
-    while not condition() and time.monotonic()<deadline:QTest.qWait(10)
+    while not condition() and time.monotonic()<deadline:
+        QTest.qWait(10)
+        time.sleep(.005)  # Let the Python QRunnable acquire the GIL too.
     assert condition()
 product=dict(kind='gpu',vendor='ASUS',model='TUF GAMING Radeon RX 9060 XT',exact=True)
 other=dict(kind='mainboard',vendor='ASUS',model='ROG STRIX B650-A GAMING WIFI',exact=True)

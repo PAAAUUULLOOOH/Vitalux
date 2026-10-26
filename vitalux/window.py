@@ -78,10 +78,12 @@ class Sampler(QThread):
 class MainWindow(WindowLifecycle, QMainWindow):
     def __init__(self, distro, logo, manager, *, startup_sample=None, preparing=None):
         super().__init__()
-        # Never request per-pixel transparency of the native window.
-        # Frosted materials are drawn inside Vitalux;
-        # the entire application canvas remains fully opaque.
-        self.setAutoFillBackground(True)
+        self.setWindowFlag(Qt.FramelessWindowHint, True)
+        self.setAttribute(Qt.WA_TranslucentBackground, True)
+        self.setAutoFillBackground(False)
+        self.setObjectName('vitaluxMainWindow')
+        from .window_frame import WindowFrame
+        self.window_frame = WindowFrame(self)
         self.distro, self.logo, self.manager = distro, logo, manager
         self._startup_progress=preparing
         self.setWindowTitle(APP_NAME)
@@ -194,6 +196,11 @@ class MainWindow(WindowLifecycle, QMainWindow):
         # startup stays responsive. The overview incorporates results on the
         # next sensor sample, even if the user never opens the Drives page.
         QTimer.singleShot(8000, self._start_background_smart)
+
+    def statusBar(self):
+        if self.window_frame.status is not None:
+            return self.window_frame.status
+        return super().statusBar()
 
     def _start_background_smart(self):
         disk = next((page for title, page in self.pages if title == 'Laufwerke'), None)
@@ -338,6 +345,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
         outer.addWidget(self.stack, 1)
         from .design_shell import DesignShell
         self.design_shell=DesignShell(self,canvas)
+        self.window_frame.attach(root, canvas)
         self.setCentralWidget(root)
         self._optimize_scroll_surfaces()
         self._apply_sidebar_state()
@@ -426,6 +434,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
         self._sync_glow()
         # Layout reflow may happen when labels grow in English.
         self.design_shell.retranslate()
+        self.window_frame.retranslate()
         network=next((page for title,page in self.pages if title=='Netzwerk'),None)
         if network is not None and hasattr(network,'retranslate'):
             network.retranslate()

@@ -140,3 +140,9 @@ A disappearing sensor immediately loses its current field; remaining fields refl
 The graphics overview tile shows the complete GPU name with line wrapping and has no watt caption. Its load display keeps the same size as the other overview instruments; long names add text space instead of shrinking the meter. Current GPU power and power limit remain in the Graphics page.
 
 Diagnostic report text follows the selected German or English interface language, including export. Raw output from system tools remains unchanged. Saving a ChangeRadar baseline runs in the background. Network error details have an explicit copyable view; hidden network pages keep collecting traffic and warnings without rebuilding tables. Update progress remains monotonic when a verified promotion requires a second package download.
+
+## Window controls
+
+The main window has rounded outer corners and its own minimize, maximize/restore and close buttons. Drag the top strip to move it; double-click that strip to maximize or restore. Drag an edge or corner to resize. Right-click the strip for window actions. The buttons are keyboard-accessible, and desktop window shortcuts retain their configured actions. Maximized and full-screen windows fill the display without rounded corner cutouts. The close button follows **Keep running in the system tray**; the tray’s Quit action still exits the app.
+
+The initialization card stays centered as the display becomes ready, including compositor-managed Wayland placement. Only the small rounded card is visible; its position also follows display geometry changes during login.

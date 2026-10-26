@@ -5,8 +5,8 @@ Ordinary QWidget charts/cards remain CPU-painted.
 """
 from pathlib import Path
 
-from PySide6.QtCore import QMutex, QMutexLocker, QTimer, QUrl
-from PySide6.QtGui import QColor, QImage
+from PySide6.QtCore import QMutex, QMutexLocker, QTimer, QUrl, QRectF, Qt
+from PySide6.QtGui import QColor, QImage, QPainter, QPainterPath, QPen
 from PySide6.QtQuick import QQuickImageProvider
 from PySide6.QtQuickWidgets import QQuickWidget
 
@@ -76,8 +76,21 @@ class QuickAmbientScene(_AmbientSceneCore, QQuickWidget):
             image.fill(QColor(theme.BG))
         else:
             image = source.toImage()
+        framed = self.property('vitaluxRoundedWindow')
+        if framed:
+            from .window_frame import outline
+            image = image.convertToFormat(QImage.Format_ARGB32_Premultiplied)
+            painter = QPainter(image)
+            painter.setRenderHint(QPainter.Antialiasing)
+            outer = QPainterPath(); outer.addRect(QRectF(self.rect()))
+            painter.setCompositionMode(QPainter.CompositionMode_DestinationOut)
+            painter.fillPath(outer.subtracted(outline(self.rect(), self.property('vitaluxWindowRadius') or 0)), QColor('white'))
+            painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
+            painter.setPen(QPen(QColor(theme.BORDER), 1));painter.setBrush(Qt.NoBrush)
+            painter.drawPath(outline(self.rect(), self.property('vitaluxWindowRadius') or 0))
+            painter.end()
         self._provider.replace(image)
-        self.setClearColor(QColor(theme.BG))
+        self.setClearColor(QColor('transparent') if framed else QColor(theme.BG))
         self._generation += 1
         root = self.rootObject()
         if root is not None:

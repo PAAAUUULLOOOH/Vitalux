@@ -102,6 +102,19 @@ def child(mode, output):
                 assert condition(), 'Native animation did not settle within two seconds'
             assert win.width() >= 800 and win.height() >= 560
             assert win.last_sample is not None
+            assert win.windowFlags() & __import__('PySide6.QtCore',fromlist=['Qt']).Qt.FramelessWindowHint
+            if hasattr(win.centralWidget(), 'finish_background_frame'):win.centralWidget().finish_background_frame()
+            image = win.grab().toImage()
+            expanded = win.isMaximized() or win.isFullScreen()
+            for x,y in ((0,0),(image.width()-1,0),(0,image.height()-1),(image.width()-1,image.height()-1)):
+                assert image.pixelColor(x,y).alpha()==(255 if expanded else 0), (mode, 'outer corner',expanded,x,y,image.pixelColor(x,y).getRgb())
+            original_size = win.size()
+            if not expanded:  # Kiosk compositors force fullscreen permanently.
+                win.window_frame.buttons['maximize'].click()
+                settled(win.isMaximized)
+                QTest.qWait(150)
+                win.window_frame.buttons['maximize'].click()
+                settled(lambda: not win.isMaximized() and win.size()==original_size)
             scene = win.centralWidget()
             if mode in renderer.QUICK_MODES:
                 assert not scene.grabFramebuffer().isNull()

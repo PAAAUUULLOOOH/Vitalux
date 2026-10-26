@@ -1,5 +1,10 @@
 # Vitalux – Changes
 
+## [v0.9.6.4-unstable.3] - 2026-10-26
+
+- All designs: Frameless main window with rounded outer corners, integrated window controls, dragging, resizing and maximization.
+- The initialization card stays centered after opening and follows display geometry changes, including KDE/Wayland placement.
+
 ## [v0.9.6.4-unstable.2] - 2026-10-26
 
 - Saved chart selections and time windows, plus a preferred GPU for the overview, MiniHUD and diagnostics.

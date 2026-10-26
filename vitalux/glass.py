@@ -1,8 +1,8 @@
 """Native glass materials for the Vitalux Qt6 interface.
 
 Glass samples a cached, softly blurred in-app backdrop,
-matching each card's actual position. The whole window stays opaque.
-No KWin compositor transparency or blur-behind is required.
+matching each card's actual position. The painted interior stays opaque.
+Glass materials do not depend on KWin blur-behind effects.
 """
 from __future__ import annotations
 
@@ -37,7 +37,8 @@ class _AmbientSceneCore:
         super().__init__(parent)
         self.setObjectName('root')
         self.setAutoFillBackground(False)
-        # Every theme repaints all its pixels. The application window is opaque.
+        # Standalone scenes repaint all pixels. The rounded window frame
+        # disables this hint for its transparent outer corners.
         self.setAttribute(Qt.WA_OpaquePaintEvent, True)
         self._sharp_cache = QPixmap()
         self._soft_cache = QPixmap()
@@ -92,8 +93,7 @@ class _AmbientSceneCore:
         self.sync_background()
 
     def _ensure_cache(self):
-        # The entire window stays opaque. The softened
-        # atmosphere is an *internal* backdrop sampled under glass widgets.
+        # The softened atmosphere is an internal backdrop sampled under glass.
         style = backdrops.resolve(settings.observed('background_style', 'theme_default'),
                                   theme.mode())
         if style == 'minimal' and theme.mode() == 'minimal':
@@ -144,13 +144,29 @@ class _AmbientSceneCore:
 
     def _paint_background(self):
         p = QPainter(self)
-        p.fillRect(self.rect(), QColor(theme.BG))
+        framed = self.property('vitaluxRoundedWindow')
+        if framed:
+            p.setCompositionMode(QPainter.CompositionMode_Source)
+            p.fillRect(self.rect(), Qt.transparent)
+            p.setCompositionMode(QPainter.CompositionMode_SourceOver)
+        else:
+            p.fillRect(self.rect(), QColor(theme.BG))
         style = backdrops.resolve(settings.observed('background_style', 'theme_default'),
                                   theme.mode())
         if style == 'minimal' and theme.mode() == 'minimal':
-            p.fillRect(self.rect(), backdrops.minimal_color())
+            background = QBrush(backdrops.minimal_color())
         else:
             self._ensure_composed()
+            background = QBrush(self._composed_sharp) if not self._composed_sharp.isNull() else QBrush(QColor(theme.BG))
+        if framed:
+            from .window_frame import outline
+            p.setRenderHint(QPainter.Antialiasing)
+            p.fillPath(outline(self.rect(), self.property('vitaluxWindowRadius') or 0), background)
+            p.setPen(QPen(QColor(theme.BORDER), 1))
+            p.drawPath(outline(self.rect(), self.property('vitaluxWindowRadius') or 0))
+        elif style=='minimal' and theme.mode()=='minimal':
+            p.fillRect(self.rect(), background)
+        else:
             if not self._composed_sharp.isNull():
                 p.setRenderHint(QPainter.SmoothPixmapTransform)
                 p.drawPixmap(0, 0, self._composed_sharp)
