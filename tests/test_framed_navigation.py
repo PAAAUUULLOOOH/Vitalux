@@ -39,7 +39,17 @@ def check_frame():
                  (0, image.height()-1), (image.width()-1, image.height()-1)):
         assert image.pixelColor(x, y).alpha() == (255 if window.isMaximized() else 0)
     bar = bounds(window.window_frame.titlebar)
-    assert bar.top() == 0
+    header=window.design_shell.header
+    if header.isHidden():
+        assert bar.top() == 0
+    else:
+        assert bounds(header).top() == 0
+        assert bounds(header).width() == window.width()
+        assert bounds(header).contains(bar)
+        assert window.window_frame.titlebar.parentWidget() is window.design_shell.bar
+    if not window.sidebar.isHidden():
+        side=bounds(window.sidebar)
+        assert side.left()==0 and side.top()==0
     assert bounds(window.content_host).top() < bar.bottom()
     if not window.collapse_button.isHidden():assert bounds(window.collapse_button).top() > bar.bottom()
     if window._sidebar_collapsed and not window.collapse_button.isHidden():
@@ -80,6 +90,8 @@ with tempfile.TemporaryDirectory() as folder, \
                 appearance.finish()
             wait(30)
             check_frame()
+            if not window.sidebar.isHidden():
+                assert bounds(window.nav_buttons[0]).top()>bounds(window.window_frame.titlebar).bottom(),design
             window._switch_page(9)
             preferences=window.pages[9][1]
             preferences.search_overlay.open_search()
@@ -106,9 +118,24 @@ with tempfile.TemporaryDirectory() as folder, \
             layout_button.click()
             wait(300)
             assert page.board.editing and layout_button.isChecked()
+            check_frame()
             assert page.layout_actions.parentWidget() is window.window_frame.titlebar
             assert bounds(window.window_frame.titlebar).contains(bounds(page.layout_actions))
             assert {key:tile.geometry() for key,tile in page.board.tiles.items()} == before_tiles
+            if not header.isHidden():
+                for width in (980,1180,1280):
+                    window.resize(width,840)
+                    wait(20)
+                    check_frame()
+                    bar=bounds(window.window_frame.titlebar)
+                    assert not bar.intersects(bounds(window.design_shell.brand)),(design,width)
+                    if window.lang_host.parentWidget() is window.design_shell.bar:
+                        assert not bar.intersects(bounds(window.lang_host)),(design,width)
+                    if not page._editor_compact:
+                        for _,_,_,action in page._editor_buttons:
+                            assert action.sizeHint().width()<=action.width(),(design,action.text())
+                window.resize(1200,840)
+                wait(20)
             layout_button.click()
             wait(300)
             assert not page.board.editing and not layout_button.isChecked()
@@ -196,6 +223,38 @@ with tempfile.TemporaryDirectory() as folder, \
                     assert bounds(window.sidebar).right() < bounds(window.stack).left()
             if evidence:
                 window.grab().save(str(evidence/(design+'-settled.png')))
+        # Header controls and all editing actions stay separate at the minimum
+        # width, including DE labels and designs with a wider brand/dock.
+        settings.set_many(dict(motion='off',ultra_eco=False))
+        for design in [key for key,_ in theme.CHOICES]+['eclipse_crystal']:
+            settings.set('theme',design)
+            window.apply_appearance()
+            window.resize(800,560)
+            window._switch_page(0)
+            wait(40)
+            page=window.pages[0][1]
+            window.window_frame.layout_button.click()
+            wait(40)
+            bar=bounds(window.window_frame.titlebar)
+            assert bar.contains(bounds(page.layout_actions)),design
+            assert not bounds(page.layout_actions).intersects(bounds(window.window_frame.layout_button)),design
+            if not window.design_shell.header.isHidden():
+                assert not bounds(window.design_shell.brand).intersects(bar),design
+                for _,_,_,button in page._editor_buttons:
+                    assert button.toolTip() and button.accessibleName(),design
+            check_frame()
+            image=window.grab().toImage()
+            cache=window.window_frame.materials._cache
+            assert len(cache)<=2
+            for _,material in cache.values():
+                assert material.devicePixelRatio()==window.devicePixelRatioF()
+            cached_images={key:entry[1].cacheKey() for key,entry in cache.items()}
+            window.grab()
+            assert {key:entry[1].cacheKey() for key,entry in cache.items()}==cached_images
+            if evidence:window.grab().save(str(evidence/(design+'-compact-editor.png')))
+            page.discard_edit()
+        settings.set('motion','full')
+        window.resize(1200,840)
         # A theme change interrupts an in-flight sidebar transition before reparenting
         # navigation; resizing/maximizing also discards its obsolete cached geometry.
         settings.set_many(dict(theme='obsidian_gold', ultra_eco=False))

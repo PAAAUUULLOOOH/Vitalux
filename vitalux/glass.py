@@ -405,20 +405,22 @@ class GlassSidebar(QFrame):
     def paintEvent(self,event):
         # Keep direct compositing: recording the layered material changes Qt's
         # clip/alpha rounding at fractional display scales.
+        if self.property('vitaluxEdgeJoined'):return
         painter=QPainter(self)
         self._paint_material(painter)
         painter.end()
 
-    def _paint_material(self, p):
+    def _paint_material(self, p, area=None):
         """Restore the original Vitalux frosted sidebar and luminous seam.
 
         Matching Glass/Black Glass/Light/Dark schemes keep their original
         treatment. For new wallpapers, the frost adapts gently to the chosen
         palette so it remains related to the cards and the scene.
         """
+        area=QRectF(self.rect()) if area is None else area
         if theme.mode() in premium.KEYS:
             p.setRenderHint(QPainter.Antialiasing)
-            premium.paint_sidebar(p, self, QRectF(self.rect()))
+            premium.paint_sidebar(p, self, area)
             return
         style = backdrops.resolve(settings.observed('background_style', 'theme_default'),
                                   theme.mode())
@@ -426,10 +428,10 @@ class GlassSidebar(QFrame):
         if theme.mode() == 'minimal' and style == 'minimal':
             # Original opaque sidebar with a stable monochrome material.
             base = backdrops.minimal_color()
-            p.fillRect(self.rect(), QColor(theme.blend(theme.SIDEBAR, base.name(), .68)))
+            p.fillRect(area, QColor(theme.blend(theme.SIDEBAR, base.name(), .68)))
         else:
             p.setRenderHint(QPainter.Antialiasing)
-            rect = QRectF(self.rect())
+            rect = area
             if theme.mode() in ('glass',):
                 draw_frosted_backdrop(p, self, rect, 1.0)
                 shade = QLinearGradient(0, 0, self.width(), 0)
@@ -446,14 +448,14 @@ class GlassSidebar(QFrame):
                 elif not matching:
                     material.setAlpha(210 if theme.mode() == 'light' else 188)
                 p.fillRect(rect, material)
-        side = QLinearGradient(0, 0, 0, max(1, self.height()))
+        side = QLinearGradient(0, 0, 0, max(1, area.height()))
         accent = theme.accent_qcolor(130 if theme.mode() in ('glass',) else 82)
         side.setColorAt(0, QColor(theme.BORDER))
         side.setColorAt(.5, accent)
         side.setColorAt(1, QColor(theme.BORDER))
         p.setPen(QPen(QBrush(side), 1.1))
         x = self.width()-1
-        p.drawLine(x, 0, x, self.height())
+        p.drawLine(QPointF(x,0),QPointF(x,area.height()))
 
 
 

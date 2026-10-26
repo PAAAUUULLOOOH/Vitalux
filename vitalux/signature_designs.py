@@ -285,12 +285,47 @@ def paint_toggle(p,rect,checked,progress):
 
 class Surface(QWidget):
     def paintEvent(self,event):
+        frame=getattr(self,'_window_frame',None)
+        if frame is not None:
+            p=QPainter(self);frame.materials.paint_header(p,self);p.end();return
         if not active():
             return
         p=QPainter(self)
         p.setRenderHint(QPainter.Antialiasing)
         paint_panel(p,self,QRectF(self.rect()).adjusted(1,1,-1,-1),compact=True)
         p.end()
+
+    def mousePressEvent(self,event):
+        frame=getattr(self,'_window_frame',None)
+        if frame is not None:return frame.titlebar.mousePressEvent(event)
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self,event):
+        frame=getattr(self,'_window_frame',None)
+        if frame is not None:return frame.titlebar.mouseMoveEvent(event)
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self,event):
+        frame=getattr(self,'_window_frame',None)
+        if frame is not None:return frame.titlebar.mouseReleaseEvent(event)
+        super().mouseReleaseEvent(event)
+
+    def mouseDoubleClickEvent(self,event):
+        frame=getattr(self,'_window_frame',None)
+        if frame is not None:return frame.titlebar.mouseDoubleClickEvent(event)
+        super().mouseDoubleClickEvent(event)
+
+    def wheelEvent(self,event):
+        frame=getattr(self,'_window_frame',None)
+        if frame is not None:return frame.titlebar.wheelEvent(event)
+        super().wheelEvent(event)
+
+    def contextMenuEvent(self,event):
+        frame=getattr(self,'_window_frame',None)
+        if frame is not None:
+            frame.show_menu(event.globalPos());event.accept()
+        else:
+            super().contextMenuEvent(event)
 
 
 

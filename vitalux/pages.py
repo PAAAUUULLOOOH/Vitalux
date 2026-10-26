@@ -121,7 +121,7 @@ class OverviewPage(Page):
         strip.setSpacing(5)
         self._editor_buttons = []
         for key, icon, text, handler, width in (
-            ('add', '+', 'Kacheln hinzufügen', self._show_hidden_tiles, 136),
+            ('add', '+', 'Kacheln hinzufügen', self._show_hidden_tiles, 156),
             ('undo', '↶', 'Rückgängig', self._undo_layout, 109),
             ('reset', '↺', 'Standardlayout', self.reset_editor, 123),
             ('discard', '×', 'Verwerfen', self.discard_edit, 108),
@@ -133,6 +133,8 @@ class OverviewPage(Page):
             action.setCursor(Qt.PointingHandCursor)
             action.setFocusPolicy(Qt.StrongFocus)
             action.setProperty('layoutName',key)
+            action.setProperty('layoutBaseWidth',width)
+            action.setProperty('layoutWideWidth',width)
             action.setText(f'{icon}  {tr(text)}')
             action.clicked.connect(handler)
             strip.addWidget(action)
@@ -224,7 +226,7 @@ class OverviewPage(Page):
             self._position_editor_controls()
 
     def set_window_layout_toggle(self, button):
-        """Use the accessible frame control; keep editor actions in the page."""
+        """Use accessible frame controls and their shared editing-action row."""
         self.layout_toggle.hide()
         self.layout_toggle.deleteLater()
         self.layout_toggle = button
@@ -236,6 +238,24 @@ class OverviewPage(Page):
 
     def _editor_strip_x(self):
         return self.width()-self._strip_width-self.layout_toggle.width()-12
+
+    def set_frame_editor_compact(self, compact):
+        for _,_,_,action in self._editor_buttons:action.ensurePolished()
+        key=(compact,theme.mode(),tr('Kacheln hinzufügen'),
+             tuple(action.font().toString() for _,_,_,action in self._editor_buttons))
+        if getattr(self,'_editor_size_key',None)==key:return
+        self._editor_size_key=key
+        self._editor_compact=compact
+        for _,icon,source,action in self._editor_buttons:
+            action.setText(f'{icon}  {tr(source)}')
+            width=max(action.property('layoutBaseWidth'),action.sizeHint().width())
+            action.setProperty('layoutWideWidth',width)
+            action.setFixedWidth(28 if compact else width)
+            if compact:action.setText(icon)
+            action.setToolTip(tr(source));action.setAccessibleName(tr(source))
+        strip=self.layout_actions.layout()
+        self._strip_width=sum(a.width() for _,_,_,a in self._editor_buttons)+strip.spacing()*4
+        self.layout_actions.setFixedWidth(self._strip_width)
 
     def _position_editor_controls(self):
         if getattr(self, '_window_layout_toggle', False):return
@@ -269,12 +289,14 @@ class OverviewPage(Page):
             self.layout_actions.show()
             self.layout_actions.raise_()
             self.layout_toggle.raise_()
+        if getattr(self,'_window_layout_toggle',False):self.layout_toggle.frame.sync_controls()
         if not motion.enabled() or abs(finish-start) < .001:
             self._strip_fraction = finish
             self._strip_effect.setOpacity(finish)
             self._position_editor_controls()
             if not opening:
                 self.layout_actions.hide()
+                if getattr(self,'_window_layout_toggle',False):self.layout_toggle.frame.sync_controls()
             return
         # Keep the strip in one row with stable letter spacing. A property
         # animation on the opacity effect avoids a per-frame pixel mask.
@@ -301,6 +323,7 @@ class OverviewPage(Page):
             self._strip_fraction=finish
             if not opening:
                 self.layout_actions.hide()
+                if getattr(self,'_window_layout_toggle',False):self.layout_toggle.frame.sync_controls()
             self._position_editor_controls()
             group.deleteLater()
         group.finished.connect(completed)
@@ -373,7 +396,9 @@ class OverviewPage(Page):
         self.layout_toggle.setToolTip(tr('Dashboard-Layout'))
         self.layout_toggle.setAccessibleName(tr('Dashboard-Layout'))
         for _,icon,source,action in self._editor_buttons:
-            action.setText(f'{icon}  {tr(source)}')
+            action.setText(icon if getattr(self,'_editor_compact',False) else f'{icon}  {tr(source)}')
+            action.setToolTip(tr(source));action.setAccessibleName(tr(source))
+        if getattr(self,'_window_layout_toggle',False):self.layout_toggle.frame.sync_controls()
         for tile in self.board.tiles.values():
             tile.drag.setText(tr('Zum Verschieben halten'))
             tile.drag.setToolTip(tr('Kachel verschieben'))

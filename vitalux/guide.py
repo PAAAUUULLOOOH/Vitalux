@@ -27,15 +27,15 @@ SLIDES = [
     ),
     (
         "Die Live-Übersicht",
-        "Das Raster-Symbol links neben Minimieren öffnet die Layout-Bearbeitung; die Bearbeitungsaktionen erscheinen in der Fensterleiste.",
-        "Du siehst unter anderem Prozessor, Grafik, RAM, Systemlaufwerk und den Systemzustand. Beim Scrollen laufen die Kacheln unter der festen Fensterleiste weiter.",
+        "Das Raster-Symbol links neben Minimieren öffnet die Layout-Bearbeitung. Die Aktionen stehen in derselben Leiste; schmale Kopfleisten zeigen Symbole mit erklärenden Hinweisen.",
+        "Du siehst Prozessor, Grafik, RAM, Systemlaufwerk und den Systemzustand. Kacheln scrollen hinter den festen Fensterknöpfen und Kopfleisten weiter; auch dort funktioniert das Mausrad.",
         "Diagramme zeigen, wie sich die Auslastung im Zeitverlauf verändert.",
         "Übersichtskacheln zeigen mittige Texte in gleicher Reihenfolge. Lange Namen werden gekürzt; beim Darüberfahren erscheint der volle Name. Im Bearbeitungsmodus bleiben Verschieben und das X sichtbar.",
         "overview",
     ),
     (
         "Die Navigation links",
-        "Die Seitenleiste ist wieder fest links angeordnet und lässt sich für mehr Platz ein- und ausklappen.",
+        "Die Navigation folgt dem gewählten Design. Seitenleisten schließen bündig am Fensterrand ab und docken bei Designs mit Kopfleiste direkt darunter an.",
         "Jeder Reiter öffnet einen anderen Teil der Systemüberwachung.",
         "Kreislogo und Vitalux-Schriftzug passen sich dem Design an; Außenbögen, Herzschlag und Lichtreflex laufen unabhängig.",
         "Unten wechselst du jederzeit zwischen Deutsch und Englisch.",

@@ -1139,8 +1139,10 @@ EN_MORE.update({
 })
 
 EN_MORE.update({
-    'Das Raster-Symbol links neben Minimieren öffnet die Layout-Bearbeitung; die Bearbeitungsaktionen erscheinen in der Fensterleiste.':
-        'The grid icon left of Minimize opens layout editing; editing actions appear in the window strip.',
-    'Du siehst unter anderem Prozessor, Grafik, RAM, Systemlaufwerk und den Systemzustand. Beim Scrollen laufen die Kacheln unter der festen Fensterleiste weiter.':
-        'See processor, graphics, memory, system drive and system health. Cards scroll beneath the fixed window strip.',
+    'Das Raster-Symbol links neben Minimieren öffnet die Layout-Bearbeitung. Die Aktionen stehen in derselben Leiste; schmale Kopfleisten zeigen Symbole mit erklärenden Hinweisen.':
+        'The grid icon left of Minimize opens layout editing. Actions share that strip; narrow headers use icons with explanatory tooltips.',
+    'Du siehst Prozessor, Grafik, RAM, Systemlaufwerk und den Systemzustand. Kacheln scrollen hinter den festen Fensterknöpfen und Kopfleisten weiter; auch dort funktioniert das Mausrad.':
+        'See processor, graphics, memory, system drive and system health. Cards scroll behind fixed window controls and headers; the mouse wheel works there too.',
+    'Die Navigation folgt dem gewählten Design. Seitenleisten schließen bündig am Fensterrand ab und docken bei Designs mit Kopfleiste direkt darunter an.':
+        'Navigation follows the selected design. Sidebars meet the window contour and join directly below the header in designs that have one.',
 })

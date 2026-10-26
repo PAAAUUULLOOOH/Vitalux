@@ -154,7 +154,7 @@ QWidget#root[vitaluxRoundedWindow="true"] { background: transparent; }
 #card, #heroCard, #chip { background: transparent; border: none; }
 #cardTitle { color: $MUTED; font-size: 11px; font-weight: 750; letter-spacing: 1.2px; }
 #pageTitle { font-size: 28px; font-weight: 800; }
-#pageSub, #metricDetail, #sidebarDistro, #sidebarVersion, #muted { color: $MUTED; }
+#pageSub, #metricDetail, #sidebarVersion, #muted { color: $MUTED; }
 #bigName { font-size: 18px; font-weight: 800; }
 #heroTitle { font-size: 22px; font-weight: 800; }
 #heroUptime { color: $MUTED; font-size: 12px; font-weight: 650; }
@@ -174,7 +174,6 @@ QPushButton#systemUpdatesInstall:disabled { color: $MUTED; }
 
 #metricCaption { color: $MUTED; font-size: 11px; font-weight: 800; }
 #overviewLive, #statusTag { color: $ACCENT; font-weight: 800; }
-#sidebarDistro { font-size: 11px; }
 #sidebarVersion { font-size: 10px; }
 #navBtn { background: transparent; border: none; padding: 0; color: $TEXT; font-size: 13px; font-weight: 600; }
 QScrollArea, QScrollArea#glassScroll, QScrollArea#glassScroll > QWidget,

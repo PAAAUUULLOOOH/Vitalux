@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget, QScrollArea, QF
 from . import theme, __version__
 from .i18n import tr
 from .widgets import label
-from .signature_designs import KEYS, COLLECTIONS, Surface
+from .signature_designs import KEYS, Surface
 
 
 class DesignShell(QObject):
@@ -28,14 +28,10 @@ class DesignShell(QObject):
         self.brand_layout.setContentsMargins(0,0,0,0)
         self.brand_layout.setSpacing(10)
         top.addWidget(self.brand)
-        self.design_name=label('','metricCaption')
-        top.addWidget(self.design_name)
         top.addStretch(1)
         self.current_page=label('','strong')
         top.addWidget(self.current_page)
         top.addSpacing(10)
-        self.system=label(window.distro['short'],'muted')
-        top.addWidget(self.system)
         vertical.addWidget(bar)
         self.primary_host=Surface()
         self.primary=QHBoxLayout(self.primary_host)
@@ -151,7 +147,8 @@ class DesignShell(QObject):
             if eclipse:
                 self.bottom.addWidget(w.lang_host)
             elif nebula:
-                self.top.addWidget(w.lang_host)
+                index=self.top.indexOf(w.window_frame.titlebar)
+                self.top.insertWidget(index if index>=0 else self.top.count(),w.lang_host)
             else:
                 w.sidebar_layout.insertWidget(self._language_index,w.lang_host)
         self.header.setVisible(signature)
@@ -167,9 +164,8 @@ class DesignShell(QObject):
             w.sidebar.setFixedWidth(210)
             w.sidebar_layout.setContentsMargins(12,16,12,12)
             w.nav_host.layout().setContentsMargins(0,0,0,0)
-            w._outer_layout.setContentsMargins(*( (10,0,10,10) if mode=='eclipse_crystal' else (16,2,16,12) if mode=='nebula_prism' else (12,0,12,12) ))
+            w._outer_layout.setContentsMargins(0,0,0,0)
             w._outer_layout.setSpacing(10 if mode=='nebula_prism' else 8)
-            self.design_name.setText(COLLECTIONS[mode]['title'].upper())
         else:
             w._outer_layout.setContentsMargins(0,0,0,0)
             w._outer_layout.setSpacing(0)
@@ -177,6 +173,7 @@ class DesignShell(QObject):
         self.retranslate()
         self._footer_compact=None
         self._responsive()
+        if w.window_frame.scene is not None:w.window_frame.sync_controls()
         overview=w.pages[0][1]
         overview.refresh_design()
         for _,page in w.pages[1:]:
@@ -193,12 +190,11 @@ class DesignShell(QObject):
         frame=getattr(w,'window_frame',None)
         if frame is None or frame.scene is None:return
         signature=self.mode in KEYS
-        margin=0 if frame.expanded else 10
         height=self.header.sizeHint().height() if signature else 0
         if signature:
-            self.header.setGeometry(margin,frame.titlebar.height(),max(1,w.width()-2*margin),height)
+            self.header.setGeometry(0,0,w.width(),height)
             self.header.raise_()
-        inset=frame.titlebar.height()+height-margin
+        inset=height if signature else frame.titlebar.height()
         top=inset+(16 if signature else 2)
         for index,(_,page) in enumerate(w.pages):
             if index==0:page._frame_top_margin=top
@@ -209,11 +205,13 @@ class DesignShell(QObject):
             if old.top()!=top:page.root.setContentsMargins(old.left(),top,old.right(),old.bottom())
         if not w.sidebar.isHidden():
             old=w.sidebar_layout.contentsMargins()
-            w.sidebar._toggle_y=max(13,frame.titlebar.height()-margin+2)
+            w.sidebar._toggle_y=max(13,inset+2)
             side_top=max(55,top,w.sidebar._toggle_y+w.collapse_button.height()+2) if w._sidebar_collapsed and not signature else top
             if old.top()!=side_top:w.sidebar_layout.setContentsMargins(old.left(),side_top,old.right(),old.bottom())
             w.sidebar._position_toggle()
         frame.titlebar.raise_()
+        frame.materials.refresh()
+        frame._clip_content()
 
     def retranslate(self):
         w=self.window

@@ -250,10 +250,6 @@ class MainWindow(WindowLifecycle, QMainWindow):
         mark.setFixedSize(200, 42)
         self.brand_mark = mark
         brand_lay.addWidget(mark, 0, Qt.AlignHCenter)
-        brand_lay.addSpacing(7)
-        self.sidebar_distro = label(distro['short'], 'sidebarDistro', Qt.AlignHCenter, wrap=True)
-        brand_lay.addWidget(self.sidebar_distro)
-        brand_lay.addSpacing(15)
         sl.addWidget(brand)
 
         self.stack = QStackedWidget()
@@ -589,9 +585,12 @@ class MainWindow(WindowLifecycle, QMainWindow):
         background = QPixmap(round(side.width()*dpr), round(side.height()*dpr))
         background.setDevicePixelRatio(dpr)
         background.fill(Qt.transparent)
-        painter = QPainter(background)
-        side.render(painter, QPoint(0, 0), QRegion(), QWidget.RenderFlag.DrawWindowBackground)
-        painter.end()
+        if side.property('vitaluxEdgeJoined'):
+            background=self.window_frame.materials.sidebar_background()
+        else:
+            painter = QPainter(background)
+            side.render(painter, QPoint(0, 0), QRegion(), QWidget.RenderFlag.DrawWindowBackground)
+            painter.end()
         return dict(background=background, nav=nav, brand=brand,
                     language=language, version=version, viewport=viewport)
 
@@ -765,6 +764,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
         self.collapse_button.set_collapsed(compact)
         self.sidebar._position_toggle()
         if hasattr(self, 'design_shell'):self.design_shell.sync_window_geometry()
+        self.sidebar_layout.activate()
 
     @staticmethod
     def _is_scrolling_card(widget):

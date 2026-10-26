@@ -1,5 +1,12 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.4-unstable.5] - 2026-10-26
+
+- Alle Designs: zusätzliche Abdunklung der Fensterleiste und doppelte Distro-/Designnamen aus den Navigationsleisten entfernt. Der Distributionsname bleibt in der Übersicht.
+- Seitenleisten reichen bündig bis an die linke und untere Fensterkontur; Designs ohne Kopfleiste schließen auch oben am Fensterrand ab. Material und Rundungen folgen dem jeweiligen Design.
+- Vorhandene Kopfleisten füllen den oberen Fensterrand und enthalten die Layout- und Fensterknöpfe. Seitenleisten docken direkt darunter an, ohne zusätzliche Leiste oder schwebenden Abstand.
+- Kacheln nutzen die gewonnene Fläche und scrollen hinter der festen Navigation weiter. Bearbeitungsaktionen passen auch in schmale Kopfleisten; Fensterknöpfe und Scrollen bleiben bedienbar.
+
 ## [v0.9.6.4-unstable.4] - 2026-10-26
 
 - Alle Designs: Seitenleiste beim Ein-/Ausklappen korrekt am rahmenlosen Fenster ausgerichtet; saubere Übergänge und gerade Anschlüsse.

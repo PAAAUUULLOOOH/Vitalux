@@ -177,7 +177,8 @@ def paint_edge(p, rect, radius, *, active=False, compact=False):
 def paint_sidebar(p, widget, rect):
     from . import theme
     if theme.mode() in signature_designs.KEYS:
-        return signature_designs.paint_panel(p,widget,rect.adjusted(1,1,-1,-1),strong=True)
+        area=rect.adjusted(-32,-32,0,32) if widget.property('vitaluxEdgeJoined') else rect.adjusted(1,1,-1,-1)
+        return signature_designs.paint_panel(p,widget,area,strong=True)
     from .glass import draw_frosted_backdrop
     pal = palette()
     p.fillRect(rect, color(pal['sidebar']))
@@ -273,7 +274,6 @@ def stylesheet(mode):
     #chipTitle {{ color: {pal['muted']}; font-size: 10px; }}
     #chipValue {{ color: {pal['text']}; font-size: 13px; font-weight: 600; }}
     #telemetryValue {{ color: {pal['text']}; font-weight: 400; }}
-    #sidebarDistro {{ color: {pal['muted']}; font-size: 10px; letter-spacing: 1px; }}
     QToolTip {{ background: {pal['sidebar']}; color: {pal['text']}; border: 1px solid {pal['border']}; padding: 8px; }}
     QLineEdit, QComboBox, QSpinBox, QTextEdit, QListWidget {{
         background: {pal['sidebar']}; border: 1px solid {pal['border']}; border-radius: 10px; }}

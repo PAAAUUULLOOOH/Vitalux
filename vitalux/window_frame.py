@@ -1,6 +1,6 @@
 """Native move/resize operations and a rounded, design-aware client window frame."""
 from PySide6.QtCore import QObject, QEvent, QPoint, QPointF, QRect, QRectF, Qt, QTimer
-from PySide6.QtGui import QColor, QCursor, QLinearGradient, QPainter, QPainterPath, QPen, QRegion, QWheelEvent
+from PySide6.QtGui import QColor, QCursor, QPainter, QPainterPath, QPen, QRegion, QWheelEvent
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QHBoxLayout,
                               QMenu, QStatusBar, QWidget)
 from . import theme
@@ -100,17 +100,6 @@ class TitleBar(QWidget):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(lambda _: frame.show_menu(QCursor.pos()))
 
-    def paintEvent(self, event):
-        # Only the small strip is tinted. The live scroll surface remains
-        # visible beneath it; the transparent rounded frame stays untouched.
-        painter=QPainter(self)
-        shade=QLinearGradient(0,0,0,self.height())
-        top=QColor(theme.BG);top.setAlpha(205)
-        bottom=QColor(theme.BG);bottom.setAlpha(100)
-        shade.setColorAt(0,top);shade.setColorAt(1,bottom)
-        painter.fillRect(self.rect().adjusted(0,0 if self.frame.expanded else 10,0,0),shade)
-        painter.end()
-
     def wheelEvent(self, event):
         viewport=self.frame.window.stack.currentWidget().viewport()
         forwarded=QWheelEvent(QPointF(viewport.mapFromGlobal(event.globalPosition().toPoint())),
@@ -199,7 +188,9 @@ class ClientStatusBar(QStatusBar):
 
     def _sync_visibility(self, *_):
         self._queued = False
-        self.setVisible(bool(self.currentMessage()) or any(not item.isHidden() for item in self._notices))
+        shown=bool(self.currentMessage()) or any(not item.isHidden() for item in self._notices)
+        self.setVisible(shown)
+        if self.parentWidget().objectName()=='clientStatusHost':self.parentWidget().setVisible(shown)
 
     def addPermanentWidget(self, widget, stretch=0):
         self._notices.append(widget)
@@ -239,6 +230,11 @@ class WindowFrame(QObject):
         self.scene, self.canvas = scene, canvas
         scene.setProperty('vitaluxRoundedWindow', True)
         scene.setAttribute(Qt.WA_OpaquePaintEvent, False)
+        scene.installEventFilter(self)
+        from .edge_material import EdgeMaterials
+        self.materials=EdgeMaterials(self)
+        self.window.sidebar.setProperty('vitaluxEdgeJoined',True)
+        self.window.design_shell.bar._window_frame=self
         self.titlebar.setParent(scene)
         self.titlebar.show()
         self.layout_button = LayoutButton(self, self.window.pages[0][1])
@@ -247,7 +243,11 @@ class WindowFrame(QObject):
         self.title_layout.insertWidget(self.title_layout.indexOf(self.layout_button), self.window.pages[0][1].layout_actions)
         self.window.stack.currentChanged.connect(self._sync_page)
         self._sync_page()
-        self.status = ClientStatusBar(scene); canvas.addWidget(self.status)
+        status_host=QWidget(scene);status_host.setObjectName('clientStatusHost')
+        status_layout=QHBoxLayout(status_host);status_layout.setContentsMargins(24,0,24,2)
+        self.status = ClientStatusBar(status_host);status_layout.addWidget(self.status)
+        canvas.addWidget(status_host);status_host.hide()
+        for widget in (self.window.design_shell.header,self.window.design_shell.footer,self.window.content_host):widget.installEventFilter(self)
         self.refresh()
 
     def toggle_maximized(self):
@@ -263,19 +263,22 @@ class WindowFrame(QObject):
         finally:menu.deleteLater()
 
     def eventFilter(self, obj, event):
-        if obj is self.window and event.type() in (QEvent.Resize, QEvent.WindowStateChange, QEvent.Show, QEvent.DevicePixelRatioChange):
+        if obj in (self.window,self.scene) and event.type() in (QEvent.Resize, QEvent.WindowStateChange, QEvent.Show, QEvent.DevicePixelRatioChange):
             self.refresh()
+        elif self.scene is not None and event.type() in (QEvent.Resize,QEvent.Move):
+            self._clip_content()
         return False
 
     def refresh(self):
         if self.scene is None:return
         radius = 0 if self.expanded else CORNER_RADIUS
         self.scene.setProperty('vitaluxWindowRadius', radius)
-        margin = 0 if self.expanded else 10
-        self.canvas.setContentsMargins(margin, margin, margin, margin)
+        self.canvas.setContentsMargins(0,0,0,0)
         width, height = self.window.width(), self.window.height()
-        self.titlebar.setGeometry(margin,0,max(1,width-2*margin),self.titlebar.height())
+        self.sync_controls()
         self.window.design_shell.sync_window_geometry()
+        self.materials.refresh()
+        self._clip_content()
         t, c = 5, 12
         rectangles = (QRect(c, 0, width-2*c, 2), QRect(c, height-t, width-2*c, t),
                       QRect(0, c, t, height-2*c), QRect(width-t, c, t, height-2*c),
@@ -297,9 +300,46 @@ class WindowFrame(QObject):
         for button in self.buttons.values():button.retranslate()
         if hasattr(self, 'layout_button'):self.layout_button.retranslate()
 
+    def sync_controls(self):
+        if self.scene is None or not hasattr(self,'layout_button'):return
+        shell=self.window.design_shell
+        joined=not shell.header.isHidden()
+        self.title_layout.setContentsMargins(0,2,8 if joined or self.expanded else 18,2)
+        page=self.window.pages[0][1]
+        page.set_frame_editor_compact(getattr(page,'_editor_compact',False))
+        wide_extra=0
+        if page._editor_compact and not page.layout_actions.isHidden():
+            wide_extra=sum(action.property('layoutWideWidth')-action.width()
+                           for _,_,_,action in page._editor_buttons)
+        if joined:
+            if self.titlebar.parentWidget() is not shell.bar:
+                self.titlebar.setParent(shell.bar);shell.top.addWidget(self.titlebar,0,Qt.AlignVCenter)
+            shell.current_page.setVisible(self.window.width()>=980)
+            self.titlebar.setFixedWidth(self.title_layout.sizeHint().width())
+            page.set_frame_editor_compact(shell.top.minimumSize().width()+wide_extra>self.window.width())
+            self.titlebar.setFixedWidth(self.title_layout.sizeHint().width())
+        else:
+            page.set_frame_editor_compact(self.title_layout.sizeHint().width()+wide_extra>self.window.width())
+            shell.top.removeWidget(self.titlebar)
+            if self.titlebar.parentWidget() is not self.scene:self.titlebar.setParent(self.scene)
+            self.titlebar.setMinimumWidth(0);self.titlebar.setMaximumWidth(16777215)
+            self.titlebar.setGeometry(0,0,self.window.width(),32)
+        self.titlebar.show();self.title_layout.activate()
+        if joined:shell.top.activate()
+        self.materials.update()
+
+    def _clip_content(self):
+        if self.scene is None:return
+        path=QPainterPath()
+        path.addRoundedRect(QRectF(self.scene.rect()).adjusted(3,3,-3,-3),22,22)
+        for widget in (self.window.content_host,self.window.design_shell.header,self.window.design_shell.footer):
+            position=widget.mapTo(self.scene,QPoint())
+            widget.setMask(QRegion() if self.expanded else QRegion(path.translated(-position.x(),-position.y()).toFillPolygon().toPolygon()))
+
     def _sync_page(self, *_):
         overview = self.window.pages[0][1]
         visible = self.window.stack.currentIndex() == 0
         if not visible and overview.board.editing:overview.save_editor()
         self.layout_button.setVisible(visible)
         if not visible:overview.layout_actions.hide()
+        self.sync_controls()

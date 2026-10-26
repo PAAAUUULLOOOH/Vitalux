@@ -14,6 +14,8 @@ Reopening a sidebar category returns to its page start. The sidebar opens Overvi
 
 On Overview, use the **Dashboard layout** grid button immediately left of Minimize to arrange cards. Its editing actions appear in the same top strip. Tiles stay stationary when editing opens. Their **Hold to move** captions and X controls stay visible throughout edit mode. Drives loads SMART data asynchronously. Start disk benchmarks or external diagnostics only when needed; writing tests temporarily create files on the selected drive.
 
+Navigation follows the rounded window contour. Sidebar-only designs fill the left edge from top to bottom. Designs with a header integrate the window controls there; their sidebar joins directly below it. The extra dark window strip and duplicate distro/design captions are removed. The distribution remains in Overview. Cards scroll behind the fixed controls and header; the mouse wheel also works over these areas. In narrow header layouts, editing actions use icons with explanatory tooltips.
+
 ## Designs and backgrounds
 
 Choose one of six rounded preview tiles under **Settings → Appearance → Design**: **Obsidian Gold**, **Glass**, **Crystal Atrium**, **Nebula Prism**, **Quantum Core** and **Light**. Obsidian Gold is the default for new profiles. Design changes retain your page, scroll position and running measurements. The selected check stays inside the tile's upper-right edge.
@@ -143,7 +145,7 @@ Diagnostic report text follows the selected German or English interface language
 
 ## Window controls
 
-The main window has rounded outer corners and its own minimize, maximize/restore and close buttons. The compact top strip has no application-name caption. Drag its free area to move it; double-click that area to maximize or restore. Drag an edge or corner to resize. Right-click the strip for window actions. Content scrolls beneath the fixed translucent strip; the window controls stay available, and the wheel works over the strip. Authored design headers remain fixed above scrolling content. The buttons are keyboard-accessible, and desktop window shortcuts retain their configured actions. Maximized and full-screen windows fill the display without rounded corner cutouts. The close button follows **Keep running in the system tray**; the tray’s Quit action still exits the app.
+The main window has rounded outer corners and its own minimize, maximize/restore and close buttons. Designs with a header integrate these controls directly into it; sidebar-only designs show them over the window background without an extra tinted strip. Drag a free area beside the controls to move the window; double-click it to maximize or restore, or right-click for window actions. Drag an edge or corner to resize. Content scrolls behind the fixed controls/header, and the wheel works over these areas. Navigation fills the window contour without duplicate distro or design captions. The buttons are keyboard-accessible, and desktop window shortcuts retain their configured actions. Maximized and full-screen windows fill the display without rounded corner cutouts. The close button follows **Keep running in the system tray**; the tray’s Quit action still exits the app.
 
 Overview cards use the available width with even outer margins, adapt to window resizing and sidebar width, and start close below the top controls. Expanding or collapsing the sidebar animates only its content row, keeping window controls and fixed design navigation in place.
 

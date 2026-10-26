@@ -1,5 +1,12 @@
 # Vitalux – Changes
 
+## [v0.9.6.4-unstable.5] - 2026-10-26
+
+- All designs: removed the extra window-strip tint and duplicate distro/design captions from navigation. The distribution name remains in Overview.
+- Sidebars meet the left and bottom window contour; designs without a header also meet the top edge. Materials and rounded corners follow each design.
+- Existing headers fill the top window edge and contain layout and window controls. Sidebars join directly below, without an additional strip or floating gap.
+- Cards use the recovered space and continue scrolling behind fixed navigation. Editing actions fit narrow headers while window controls and scrolling remain accessible.
+
 ## [v0.9.6.4-unstable.4] - 2026-10-26
 
 - All designs: Sidebar expansion and collapse align with the frameless window, with clean transitions and straight edges.
