@@ -42,6 +42,8 @@ def check_frame():
     assert bar.top() == 0
     assert bounds(window.content_host).top() < bar.bottom()
     if not window.collapse_button.isHidden():assert bounds(window.collapse_button).top() > bar.bottom()
+    if window._sidebar_collapsed and not window.collapse_button.isHidden():
+        assert not bounds(window.collapse_button).intersects(bounds(window.nav_buttons[0]))
     for button in window.window_frame.buttons.values():
         assert not button.isHidden() and bar.contains(bounds(button))
 
@@ -219,6 +221,16 @@ with tempfile.TemporaryDirectory() as folder, \
         window.window_frame.buttons['maximize'].click()
         wait(30)
         check_frame()
+        window.toggle_sidebar()
+        window._sidebar_finish()
+        wait(30)
+        check_frame()
+        window.toggle_sidebar()
+        window._sidebar_finish()
+        wait(30)
+        window.window_frame.buttons['maximize'].click()
+        wait(30)
+        check_frame()
         window.resize(800,560)
         window._switch_page(0)
         window.window_frame.layout_button.click()
@@ -226,8 +238,6 @@ with tempfile.TemporaryDirectory() as folder, \
         assert bounds(window.window_frame.titlebar).contains(bounds(window.pages[0][1].layout_actions))
         assert bounds(window.window_frame.titlebar).contains(bounds(window.window_frame.layout_button))
         window.pages[0][1].discard_edit()
-        window.window_frame.buttons['maximize'].click()
-        wait(30)
         check_frame()
     finally:
         window.close()

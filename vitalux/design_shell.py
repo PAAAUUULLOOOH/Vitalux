@@ -209,9 +209,9 @@ class DesignShell(QObject):
             if old.top()!=top:page.root.setContentsMargins(old.left(),top,old.right(),old.bottom())
         if not w.sidebar.isHidden():
             old=w.sidebar_layout.contentsMargins()
-            side_top=max(55,top) if w._sidebar_collapsed and not signature else top
-            if old.top()!=side_top:w.sidebar_layout.setContentsMargins(old.left(),side_top,old.right(),old.bottom())
             w.sidebar._toggle_y=max(13,frame.titlebar.height()-margin+2)
+            side_top=max(55,top,w.sidebar._toggle_y+w.collapse_button.height()+2) if w._sidebar_collapsed and not signature else top
+            if old.top()!=side_top:w.sidebar_layout.setContentsMargins(old.left(),side_top,old.right(),old.bottom())
             w.sidebar._position_toggle()
         frame.titlebar.raise_()
 
