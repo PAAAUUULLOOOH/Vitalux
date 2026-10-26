@@ -1,6 +1,6 @@
 # Vitalux – Changes
 
-## [v0.9.6.4-unstable.1] - 2026-10-25
+## [v0.9.6.4-unstable.1] - 2026-10-26
 - Unstable updates directly install and start Stable once it contains the test build. Parity is checked during preparation and before restarting; no separate channel-switch action is needed.
 - Crystal Atrium design: the former Crystal Glass is renamed Crystal Atrium and uses the original static Atrium background. Glass surfaces, the overview layout editor and rounded design gallery remain. Personal colors and backgrounds are retained; Crystal Glass remains available as a color and background preset.
 
