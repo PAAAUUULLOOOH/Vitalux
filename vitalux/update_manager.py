@@ -10,6 +10,7 @@ from PySide6.QtCore import QObject, QThread, QTimer, Signal
 
 from . import __version__, updater, profiles, versions, changelog, logfiles, events
 from .i18n import tr
+from .update_state import UpdatePhase
 
 
 class _CheckThread(QThread):
@@ -44,6 +45,7 @@ def _stable_target(records, candidate):
 
 class _InstallThread(QThread):
     progress = Signal(float)
+    phase_changed = Signal(object)
     done = Signal(str)
 
     def __init__(self, url, sha256, parent, pending=None):
@@ -59,9 +61,14 @@ class _InstallThread(QThread):
             self.sha256=pending['sha256'];self.pending_path=pending.get('path');self.kind=pending['kind']
             self.promotion_guard=pending.get('promotion_guard',False)
         self.resume=bool(pending)
+        self.transfer_progress = 100. if self.resume else 0.
+        self.overall_progress = 98. if self.resume else 0.
+        self.second_transfer = self.resume
+        self.phase = None
 
     def _promoted_target(self):
         if self.channel!='unstable' or not self.promotion_guard:return None
+        self._set_phase(UpdatePhase.PARITY)
         try:return _stable_target(updater.catalog(),self.version)
         except Exception:return None  # An offline check cannot authorize a channel change.
 
@@ -70,7 +77,13 @@ class _InstallThread(QThread):
         self.url,self.sha256=record['url'],record['sha256'];self.expected_size=record.get('bytes')
 
     def _download(self):
+        self.transfer_progress = 0.
         return updater.install(self.url,sha256=self.sha256,progress=self._report_progress,defer=True,expected_size=self.expected_size)
+
+    def _set_phase(self, phase):
+        if phase == self.phase:return
+        self.phase = phase
+        self.phase_changed.emit(phase)
 
     def _discard(self,path):
         # Only remove the exact, superseded staged file, never its profile directory.
@@ -95,6 +108,7 @@ class _InstallThread(QThread):
             promoted=self._promoted_target()
             if promoted:
                 previous=self.pending_path;self._use_stable(promoted)
+                self.second_transfer = True
                 profiles.backup('stable');profiles.backup('unstable')
                 self.pending_path=self._download()
                 self._discard(previous)
@@ -108,9 +122,14 @@ class _InstallThread(QThread):
             self.done.emit(f"{tr('Installation fehlgeschlagen:')} {reason}")
 
     def _report_progress(self,value):
+        self.transfer_progress = value
         if value<=80 and self.isInterruptionRequested():
             raise RuntimeError(tr('Download abgebrochen.'))
-        self.progress.emit(value)
+        self._set_phase((UpdatePhase.STABLE if self.channel=='stable' else UpdatePhase.DOWNLOAD) if value<80
+                        else UpdatePhase.VERIFY if value<85 else UpdatePhase.PREPARE)
+        mapped = 85. + value * .13 if self.second_transfer else value * .85
+        self.overall_progress = max(self.overall_progress, min(99., mapped))
+        self.progress.emit(self.overall_progress)
 
 
 class _RestoreThread(QThread):
@@ -140,6 +159,7 @@ class UpdateManager(QObject):
         self.error_kind='check'
         self.records={};self.last_checked=0.;self.last_attempt=0.
         self.checking=False;self.progress_value=0.;self.cancelling=False
+        self.phase = UpdatePhase.DOWNLOAD
         self.pending_path=None;self.pending_restart=False;self.pending={}
         self._activation_started=False;self._restart_requested=False
         self._pending_checked=False
@@ -324,18 +344,29 @@ class UpdateManager(QObject):
         if self.channel=='unstable' and self.can_return_automatically and _stable_target(self.records,candidate):
             self.automatic_stable_return=True;self.set_channel('stable')
         if not self.can_install:return
+        self.phase = UpdatePhase.DOWNLOAD
         self.status='installing';self.cancelling=False;self.progress_value=0.;self.progress.emit(0.);self.changed.emit()
         worker=_InstallThread(self.url,self.sha256,self)
         worker.progress.connect(self._on_progress)
+        worker.phase_changed.connect(self._on_phase)
         worker.done.connect(lambda error,w=worker:self._on_installed(error,w))
         self._start_worker(worker)
 
     def _on_progress(self,value):
-        self.progress_value=max(0.,min(100.,float(value)))
+        self.progress_value=max(self.progress_value,min(100.,float(value)))
         self.progress.emit(self.progress_value)
 
+    def _on_phase(self, phase):
+        self.phase = phase
+        self.changed.emit()
+
+    @property
+    def can_cancel(self):
+        worker = self._thread
+        return self.status == 'installing' and isinstance(worker, _InstallThread) and not worker.resume and worker.transfer_progress < 80
+
     def cancel_install(self):
-        if self.status!='installing' or self.progress_value>=80:return
+        if not self.can_cancel:return
         if isinstance(self._thread,_InstallThread):
             self.cancelling=True;self._thread.requestInterruption();self.changed.emit()
 
@@ -369,7 +400,8 @@ class UpdateManager(QObject):
         self.pending_restart=True;self.status='installed';self.error='';self._timer.stop()
         self.restart_attempts=0;self._restart_retrying=False
         self._restart_event('installation_prepared')
-        self._on_progress(100.)
+        self._on_phase(UpdatePhase.READY)
+        self._on_progress(98. if self.pending.get('promotion_guard') and self.pending['channel']=='unstable' and not self._pending_checked else 100.)
         try:profiles.atomic_json(self._pending_file,self.pending)
         except OSError:pass
         self.changed.emit()
@@ -377,6 +409,7 @@ class UpdateManager(QObject):
 
     def rollback(self):
         if self.pending_restart or updater.appimage_path() or self.checking or self.status=='installing' or not updater.backup_available():return
+        self.phase=UpdatePhase.PREPARE;self.progress_value=0.;self.progress.emit(0.)
         self.status='installing';self.changed.emit()
         worker=_RestoreThread(self)
         worker.done.connect(lambda error,w=worker:self._on_installed(error,w))
@@ -390,6 +423,7 @@ class UpdateManager(QObject):
             self.status='installing';self.changed.emit()
             worker=_InstallThread('',self.pending['sha256'],self,pending=dict(self.pending))
             worker.progress.connect(self._on_progress)
+            worker.phase_changed.connect(self._on_phase)
             worker.done.connect(lambda error,w=worker:self._on_installed(error,w))
             self._start_worker(worker)
             return
@@ -446,7 +480,7 @@ class UpdateManager(QObject):
     def shutdown(self):
         self._shutting_down=True
         self._auto_stable_timer.stop();self._timer.stop();self._restart_timer.stop()
-        if isinstance(self._thread,_InstallThread) and self._thread.isRunning() and self.progress_value<80:
+        if isinstance(self._thread,_InstallThread) and self._thread.isRunning() and self._thread.transfer_progress<80:
             self._thread.requestInterruption()
         return not any(worker.isRunning() for worker in self._active_threads)
 

@@ -1,6 +1,6 @@
 """Locally stored, safe user background images with configurable placement."""
 from pathlib import Path
-from functools import lru_cache
+from .image_cache import cached_images
 from uuid import uuid4
 import shutil
 from PySide6.QtCore import Qt, QSize
@@ -55,7 +55,7 @@ def import_image(filename):
     return {'name': source.stem[:80], 'file': dest}
 
 
-@lru_cache(maxsize=6)
+@cached_images(max_bytes=32*1024*1024,max_entries=6)
 def _scaled_image(path, modified, source_bytes, width, height, mode):
     """Cache bounded decoded wallpapers; JPEG readers can subsample at decode.
 

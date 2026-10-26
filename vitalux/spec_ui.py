@@ -10,25 +10,25 @@ from .i18n import tr
 
 class _Signals(QObject):done=Signal(str,object)
 class _Task(QRunnable):
-    def __init__(self,product,signals,cancelled,language,source=None):
+    def __init__(self,product,signals,cancelled,language,source=None,generation=0):
         super().__init__();self.product=dict(product);self.signals=signals;self.cancelled=cancelled
-        self.language=language;self.source=source
+        self.language=language;self.source=source;self.generation=generation
     def run(self):
-        source=self.source;localized=None
+        source=self.source;localized=None;error=''
         try:
             source=source or product_specs.resolve(self.product,cancelled=self.cancelled)
             localized=spec_language.localize(source,self.language,cancelled=self.cancelled)
-        except Exception:pass
+        except Exception as exc:error=f'{type(exc).__name__}: {exc}'
         if not self.cancelled.is_set():
             self.signals.done.emit(product_specs.product_key(self.product),
-                                   dict(source=source,localized=localized,language=self.language))
+                                   dict(source=source,localized=localized,language=self.language,generation=self.generation,error=error))
 
 class SpecLoader(QObject):
     loaded=Signal(str,object)
     def __init__(self,app):
         super().__init__(app);self.pool=QThreadPool(self);self.pool.setMaxThreadCount(3)
         self.signals=_Signals(self);self.signals.done.connect(self._ready)
-        self.results={};self.views={};self.pending=set();self._languages=set();self.failed_at={}
+        self.generations={};self.errors={};self.results={};self.views={};self.pending=set();self._languages=set();self.failed_at={}
         self.cancelled=Event();app.aboutToQuit.connect(self.shutdown)
     def request(self,product):
         if self.cancelled.is_set():return
@@ -46,8 +46,19 @@ class SpecLoader(QObject):
             except (OSError,ValueError,TypeError,KeyError):localized=None
             self._ready(key,dict(source=source,localized=localized,language=language));return
         self.pending.add(key);self._languages.add(pair)
-        self.pool.start(_Task(product,self.signals,self.cancelled,language,source))
+        self.pool.start(_Task(product,self.signals,self.cancelled,language,source,self.generations.get(key,0)))
+    def invalidate(self, product):
+        key=product_specs.product_key(product)
+        self.generations[key]=self.generations.get(key,0)+1
+        self.results.pop(key,None);self.errors.pop(key,None);self.pending.discard(key)
+        for mapping in (self.views,self.failed_at):
+            for pair in list(mapping):
+                if pair[0]==key:mapping.pop(pair,None)
+        self._languages={pair for pair in self._languages if pair[0]!=key}
+
     def _ready(self,key,result):
+        if result and result.get('generation',self.generations.get(key,0))!=self.generations.get(key,0):return
+        if result and result.get('error'):self.errors[key]=result['error']
         # Raw source data may also be provided by startup/network diagnostics.
         if result is not None and 'localized' not in result:
             self.results[key]=result
@@ -57,6 +68,7 @@ class SpecLoader(QObject):
         if not any(k==key for k,_ in self._languages):self.pending.discard(key)
         if result['source']:self.results[key]=result['source']
         self.views[pair]=result['localized']
+        if result['localized'] is not None:self.errors.pop(key,None)
         if result['localized'] is None:self.failed_at[pair]=time.monotonic()
         else:self.failed_at.pop(pair,None)
         if result['language']==i18n.lang():self.loaded.emit(key,result['localized'])
@@ -120,7 +132,18 @@ class SpecificationDialog(QDialog):
     def _disconnect(self):
         try:loader().loaded.disconnect(self._ready)
         except (RuntimeError,TypeError):pass
+    def invalidate(self, product):
+        key=product_specs.product_key(product)
+        self.generations[key]=self.generations.get(key,0)+1
+        self.results.pop(key,None);self.errors.pop(key,None);self.pending.discard(key)
+        for mapping in (self.views,self.failed_at):
+            for pair in list(mapping):
+                if pair[0]==key:mapping.pop(pair,None)
+        self._languages={pair for pair in self._languages if pair[0]!=key}
+
     def _ready(self,key,result):
+        if result and result.get('generation',self.generations.get(key,0))!=self.generations.get(key,0):return
+        if result and result.get('error'):self.errors[key]=result['error']
         if key==self.key:self.populate(result)
     def open_source(self):
         if self.source:QDesktopServices.openUrl(QUrl(self.source))

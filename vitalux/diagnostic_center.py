@@ -12,20 +12,20 @@ from .widgets import Card, label
 from . import diagnostic_engine as engine, settings, events
 from .i18n import tr
 from .pages import Page
+from .work_result import WorkResult
 
 
 class DiagnosticWorker(QThread):
-    completed = Signal(str, str)
+    completed = Signal(str, object)
 
     def __init__(self, section, sample, parent=None):
         super().__init__(parent)
         self.section, self.sample = section, sample
 
     def run(self):
-        try:
-            result = engine.run(self.section, self.sample)
-        except Exception as exc:
-            result = f'Diagnose nicht verfügbar: {type(exc).__name__}: {exc}'
+        outcome = WorkResult.perform('diagnostic', lambda: engine.raw_run(self.section, self.sample))
+        result = outcome.value if not outcome.error else tr('Diagnose nicht verfügbar: {}').format(outcome.error)
+        if hasattr(result, 'localized'):result.localized('en')
         self.completed.emit(self.section, result)
 
 
@@ -211,7 +211,7 @@ class DiagnosticCenter(Page):
         if self.worker is not None and self.worker.isRunning():
             self.status.setText('Eine Diagnose läuft bereits. Bitte kurz warten.')
             return
-        actual = 'network' if section == 'ping' else section
+        actual = {'ping':'network','baseline':'compare'}.get(section,section)
         self.status.setText(tr('Diagnose läuft: {}').format(tr(dict((key, title) for key, title, _ in self.SECTIONS).get(actual, actual))))
         self.scan_btn.setEnabled(False)
         self.worker = DiagnosticWorker(section, self.last_sample or {}, self)
@@ -220,10 +220,10 @@ class DiagnosticCenter(Page):
         self.worker.start()
 
     def _complete(self, section, result):
-        key = 'network' if section == 'ping' else section
+        key = {'ping':'network','baseline':'compare'}.get(section,section)
         self._reports[key] = result
         self._empty_keys.discard(key)
-        self.texts[key].setPlainText(result)
+        self.texts[key].setPlainText(result.localized() if hasattr(result, 'localized') else result)
         self.status.setText(tr('Abgeschlossen · {} · {}').format(datetime.now().strftime('%H:%M:%S'),
                             tr(dict((a,b) for a,b,_ in self.SECTIONS).get(key,key))))
         self.scan_btn.setEnabled(True)
@@ -243,13 +243,7 @@ class DiagnosticCenter(Page):
     def save_baseline(self):
         if self.worker and self.worker.isRunning():
             return
-        self._empty_keys.discard('compare')
-        try:
-            text = engine.baseline_save()
-        except (OSError, ValueError) as exc:
-            text = f'Vergleichsbasis konnte nicht gespeichert werden: {exc}'
-        self.texts['compare'].setPlainText(text)
-        self.select_area('history', 'compare')
+        self.start_check('baseline')
 
     def clear_blackbox(self):
         answer = QMessageBox.question(self, 'Vitalux Blackbox', 'Alle gespeicherten Blackbox-Ereignisse lokal löschen?',
@@ -264,6 +258,7 @@ class DiagnosticCenter(Page):
         content = self._reports.get(key)
         if not content:
             content = self.texts[key].toPlainText()
+        if hasattr(content, 'localized'):content=content.localized()
         if not content or key in self._empty_keys:
             QMessageBox.information(self, 'Vitalux', 'Bitte zuerst eine Diagnose durchführen.')
             return
@@ -329,6 +324,8 @@ class DiagnosticCenter(Page):
             QMessageBox.information(self, 'Vitalux', tr('Fehlerbericht gespeichert.'))
 
     def retranslate(self):
+        for key, result in self._reports.items():
+            if hasattr(result, 'localized'):self.texts[key].setPlainText(result.localized())
         for key in self._empty_keys:self.texts[key].setPlainText(tr(self.EMPTY))
         self._event_revision = None
         self._refresh_events()

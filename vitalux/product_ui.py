@@ -6,35 +6,36 @@ from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal, Qt, QRectF, 
 from PySide6.QtGui import QPainter, QPixmap
 from PySide6.QtWidgets import QApplication, QBoxLayout, QSizePolicy, QVBoxLayout, QGridLayout, QWidget
 
-from .product_images import lookup_key, resolve
+from .product_images import lookup_key, resolve, ProductCache
+from .work_result import WorkResult
 from . import settings
 from .ui_locale import QLabel, QPushButton
 
 
 class _Signals(QObject):
-    done = Signal(str, object)
-    preview = Signal(str, object)
+    done = Signal(str, int, object)
+    preview = Signal(str, int, object)
 
 
 class _ImageTask(QRunnable):
-    def __init__(self, key, product, signals, cancelled):
+    def __init__(self, key, product, signals, cancelled, generation=0):
         super().__init__()
         self.key, self.product, self.signals = key, dict(product), signals
         self.cancelled = cancelled
+        self.generation = generation
 
     def run(self):
         preview=[None]
         def show_preview(result):
             preview[0]=result
-            if not self.cancelled.is_set():self.signals.preview.emit(self.key,result)
-        try:
-            result = resolve(self.product, cancelled=self.cancelled,
-                             on_preview=show_preview)
-        except Exception:
-            # Image lookup is optional and must never disrupt monitoring.
-            result = preview[0]
+            if not self.cancelled.is_set():self.signals.preview.emit(self.key,self.generation,result)
+        outcome = WorkResult.perform('product_image', lambda: resolve(
+            self.product, cache=ProductCache(include_image=True), cancelled=self.cancelled,
+            on_preview=show_preview))
+        result = outcome.value or preview[0]
         if not self.cancelled.is_set():
-            self.signals.done.emit(self.key, result)
+            self.signals.done.emit(self.key, self.generation, WorkResult(result, outcome.error, outcome.stage))
+
 
 
 class ImageLoader(QObject):
@@ -45,9 +46,11 @@ class ImageLoader(QObject):
         self.pool = QThreadPool(self)
         self.pool.setMaxThreadCount(2)
         self.signals = _Signals(self)
-        self.signals.done.connect(self._ready)
-        self.signals.preview.connect(self._preview)
+        self.signals.done.connect(lambda key, generation, result: self._ready(key, result, generation))
+        self.signals.preview.connect(lambda key, generation, result: self._preview(key, result, generation))
         self.results = {}
+        self.generations = {}
+        self.errors = {}
         self.pending = set()
         self.failed_at = {}
         self.cancelled = Event()
@@ -71,23 +74,41 @@ class ImageLoader(QObject):
             self.results.pop(key, None)
             self.failed_at.pop(key, None)
         if key in self.results:
-            self.loaded.emit(key, self.results[key])
+            result=self.results[key]
+            self.loaded.emit(key,result)
+            if result:result.pop('_image',None)
         elif key not in self.pending:
             self.pending.add(key)
-            self.pool.start(_ImageTask(key, product, self.signals, self.cancelled))
+            self.pool.start(_ImageTask(key, product, self.signals, self.cancelled, self.generations.get(key, 0)))
 
-    def _ready(self, key, result):
+    def invalidate(self, product):
+        key = lookup_key(product)
+        self.generations[key] = self.generations.get(key, 0) + 1
+        self.pending.discard(key)
+        self.results.pop(key, None)
+        self.failed_at.pop(key, None)
+        self.errors.pop(key, None)
+
+    def _ready(self, key, result, generation=None):
+        if generation is not None and generation != self.generations.get(key, 0):return
+        if isinstance(result, WorkResult):
+            if result.error:self.errors[key] = result.error
+            elif result.value:self.errors.pop(key, None)
+            result = result.value
         self.pending.discard(key)
         self.results[key] = result
         if result is None:
             self.failed_at[key] = time.monotonic()
         else:self.failed_at.pop(key,None)
         self.loaded.emit(key, result)
+        if result:result.pop('_image',None)
 
-    def _preview(self, key, result):
+    def _preview(self, key, result, generation=None):
+        if generation is not None and generation != self.generations.get(key, 0):return
         self.results[key] = result
         self.failed_at.pop(key,None)
         self.loaded.emit(key, result)
+        if result:result.pop('_image',None)
 
 
 def loader():
@@ -148,6 +169,68 @@ class ProductHeader(QWidget):
         from .spec_ui import loader as spec_loader
         spec_loader().loaded.connect(self._spec_ready)
         self.set_specs([])
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._context_menu)
+
+    def _context_menu(self, position):
+        if not self.key:return
+        from PySide6.QtWidgets import QMenu
+        from .i18n import tr
+        menu = QMenu(self)
+        menu.addAction(tr('Komponentendaten neu laden'), self.refresh_component)
+        menu.addAction(tr('Falsches Bild verwerfen'), self.discard_image)
+        menu.addAction(tr('Eigenes Komponentenbild auswählen …'), self.choose_image)
+        menu.addAction(tr('Details anzeigen'), self.lookup_details)
+        menu.exec(self.mapToGlobal(position))
+
+    def refresh_component(self):
+        from . import product_specs
+        from .spec_ui import loader as specs
+        loader().invalidate(self.product)
+        ProductCache().discard(self.product)
+        specs().invalidate(self.product)
+        product_specs.SpecCache().path(self.product).unlink(missing_ok=True)
+        self._requested = self._spec_requested = False
+        self._manufacturer_specs = None
+        self._ready(self.key, None)
+        self._request();self.request_specs()
+
+    def discard_image(self):
+        ProductCache().discard(self.product, reject=True)
+        settings.set('component_picture_customized', True)
+        loader().invalidate(self.product)
+        loader()._ready(self.key, None)
+        self.retry.stop()
+
+    def choose_image(self):
+        from pathlib import Path
+        from .ui_locale import QFileDialog, QMessageBox
+        from .i18n import tr
+        path, _ = QFileDialog.getOpenFileName(self, tr('Komponentenbild auswählen'), '', 'Images (*.png *.jpg *.jpeg *.webp)')
+        if not path:return
+        try:
+            from .product_images import MAX_IMAGE
+            if Path(path).stat().st_size > MAX_IMAGE:raise ValueError(tr('Das Bild ist zu groß.'))
+            result = ProductCache(include_image=True).save_manual(self.product, Path(path).read_bytes())
+        except (OSError, ValueError) as error:
+            QMessageBox.warning(self, 'Vitalux', str(error));return
+        loader().invalidate(self.product)
+        loader()._ready(self.key, result)
+        settings.set('component_picture_customized', True)
+
+    def lookup_details(self):
+        from pathlib import Path
+        from .detail_dialog import show_details
+        from .product_images import product_key
+        from .spec_ui import loader as specs
+        from .i18n import tr
+        messages = [loader().errors.get(self.key, ''), specs().errors.get(self.key, '')]
+        path = ProductCache().root / (product_key(self.product) + '.lookup.json')
+        from .product_specs import SpecCache
+        for report_path in (path, SpecCache().path(self.product).with_suffix('.lookup.json')):
+            try:messages.append(report_path.read_text())
+            except OSError:pass
+        self._lookup_dialog = show_details(self, 'Komponentendaten', '\n\n'.join(filter(None, messages)) or tr('Keine weiteren Details verfügbar.'))
 
     def set_specs(self,rows):
         from .spec_ui import brief
@@ -194,7 +277,7 @@ class ProductHeader(QWidget):
         self.product,self.key,self._requested,self._result=product,key,False,None
         self._manufacturer_specs=None;self._spec_requested=False
         self.retry.stop()
-        self.picture.pixmap=QPixmap();self.picture.hide();self.setMinimumHeight(0)
+        self.picture.pixmap=QPixmap();self._image_identity=None;self.picture.hide();self.setMinimumHeight(0)
         self._layout_image(False)
         self.updateGeometry()
         if self.isVisible():self._request();self.request_specs()
@@ -220,7 +303,11 @@ class ProductHeader(QWidget):
 
     def _ready(self,key,result):
         if key!=self.key:return
-        self.picture.pixmap=QPixmap(result['path']) if result else QPixmap()
+        identity=(result.get('path'),result.get('sha256')) if result else None
+        if identity!=getattr(self,'_image_identity',None):
+            image=result.get('_image') if result else None
+            self.picture.pixmap=QPixmap.fromImage(image) if image is not None else QPixmap(result['path']) if result else QPixmap()
+            self._image_identity=identity
         self._result=result
         available=not self.picture.pixmap.isNull()
         self._layout_image(available)

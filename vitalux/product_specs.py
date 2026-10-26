@@ -169,7 +169,12 @@ def resolve(product,cache=None,download=fetch,cancelled=None):
     candidates=list(manufacturer_pages(product))
     image=ProductCache().load(product)
     if image and official(product,image.get('source','')):candidates.insert(0,image['source'])
-    visited=set()
+    visited=set();events=[]
+    def finish(result):
+        report=dict(model=product.get('model',''),result='available' if result else 'missing',events=events[-30:])
+        try:_atomic_bytes(cache.path(product).with_suffix('.lookup.json'),json.dumps(report,ensure_ascii=False).encode())
+        except OSError:pass
+        return result
     def attempt(urls):
         for url in urls:
             if not official(product,url):continue
@@ -179,10 +184,12 @@ def resolve(product,cache=None,download=fetch,cancelled=None):
                 try:
                     data=parse(product,checked_download(source,MAX_PAGE,domains(product)),source)
                     if data:cache.save(product,data);return data
-                except (OSError,ValueError,RecursionError):continue
+                except (OSError,ValueError,RecursionError) as exc:
+                    events.append(dict(source=source,error=f'{type(exc).__name__}: {exc}'[:500]))
+                    continue
         return None
     data=attempt(candidates)
-    if data:return data
+    if data:return finish(data)
     try:data=attempt(search_pages(product,checked_download))
     except (OSError,ValueError):data=None
-    return data
+    return finish(data)

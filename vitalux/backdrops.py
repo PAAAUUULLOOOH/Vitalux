@@ -236,7 +236,8 @@ def _render_native(size, style='glass', accent='#4f8cff', light=False, phase=0.0
     return sharp, soft
 
 
-_IMAGE_CACHE = {}
+from .image_cache import ImageCache
+_IMAGE_CACHE = ImageCache()
 
 def render(size, style='original:glass', accent='#4f8cff', light=False, phase=0.0):
     """Only backgrounds are selected here; never activate another design."""

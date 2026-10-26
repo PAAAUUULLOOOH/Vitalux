@@ -7,12 +7,14 @@ from .widgets import Card, KeyValue, label
 
 
 def reflow(grid, widgets, columns=2):
-    while grid.count():
-        grid.takeAt(0)
     visible = [w for w in widgets if not w.isHidden()]
     parent=grid.parentWidget()
     if parent is not None and parent.width()<640:
         columns=1
+    signature=(columns,tuple(id(w) for w in visible))
+    if getattr(grid,'_visible_signature',None)==signature:return
+    grid._visible_signature=signature
+    while grid.count():grid.takeAt(0)
     for i, widget in enumerate(visible):
         grid.addWidget(widget, i//columns, i % columns)
 

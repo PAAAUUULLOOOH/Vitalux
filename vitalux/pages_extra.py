@@ -161,9 +161,9 @@ class UpdatePage(Page):
 
     def _progress(self,value):
         self.progress_bar.set_value(value)
-        text='Paket herunterladen …' if value<80 else 'Paket prüfen …' if value<85 else 'Installation vorbereiten …'
+        text=self.m.phase.value
         self.phase.setText(tr('Download wird abgebrochen …' if self.m.cancelling else text))
-        self.cancel_button.setVisible(self.m.status=='installing' and value<80)
+        self.cancel_button.setVisible(self.m.can_cancel)
         self.cancel_button.setEnabled(not self.m.cancelling)
 
     def retranslate(self):self.sync()

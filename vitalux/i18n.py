@@ -115,3 +115,34 @@ EN = {
 }
 
 from .translations_extra import EN_MORE
+
+# User-visible improvements for component recovery and monitoring state.
+EN_MORE.update({
+    'Bevorzugte Grafikkarte': 'Preferred graphics card',
+    'Automatisch': 'Automatic',
+    'Für Übersicht, MiniHUD und Diagnosen. Alle Grafikkarten bleiben hier sichtbar.': 'Used for the overview, MiniHUD and diagnostics. All graphics cards remain visible here.',
+    'Komponentendaten neu laden': 'Reload component data',
+    'Falsches Bild verwerfen': 'Discard incorrect picture',
+    'Eigenes Komponentenbild auswählen …': 'Choose a component picture …',
+    'Komponentenbild auswählen': 'Choose component picture',
+    'Keine weiteren Details verfügbar.': 'No further details available.',
+    'Das Bild ist zu groß.': 'The picture is too large.',
+    'Komponentendaten': 'Component data',
+    'Messwerte veraltet · seit {seconds} s': 'Readings outdated · for {seconds} s',
+    'Stable-Verfügbarkeit prüfen …': 'Checking Stable availability …',
+    'Stable-Paket herunterladen …': 'Downloading Stable package …',
+    'Neustart vorbereiten …': 'Preparing restart …',
+    'Details anzeigen': 'Show details',
+    'Kopieren': 'Copy',
+})
+
+EN_MORE['Diagnose nicht verfügbar: {}'] = 'Diagnostic unavailable: {}'
+
+EN_MORE.update({
+    'Sensordaten stammen aus verfügbaren Linux-Schnittstellen. Fehlende Werte sind nicht verfügbar.': 'Sensor readings come from the available Linux interfaces. Missing readings are unavailable.',
+    'Vitalux · Systembericht · Version {version}': 'Vitalux · System report · Version {version}',
+    'Erstellt: {time}': 'Created: {time}',
+    'HARDWARE UND SENSOREN': 'HARDWARE AND SENSORS',
+    'Unterstützte Berichtsformate: .txt oder .json': 'Supported report formats: .txt or .json',
+    'Messwerte werden nicht mehr aktualisiert.': 'Readings are no longer being updated.',
+})

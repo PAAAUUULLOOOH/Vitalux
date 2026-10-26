@@ -54,6 +54,11 @@ class NetworkWatch(QWidget):
         self.state_label.setTextFormat(Qt.PlainText)
         self.scope=label('Ohne Freigabe: TCP-Nutzdaten der erkennbaren Verbindungen. UDP-Verbrauch ist nicht verfügbar. Werte gelten ab Messbeginn.','muted',wrap=True)
         controls.body.addWidget(self.state_label)
+        self.notice_details = QPushButton('Details anzeigen')
+        self.notice_details.setObjectName('ghostBtn')
+        self.notice_details.hide()
+        self.notice_details.clicked.connect(self._show_notice)
+        controls.body.addWidget(self.notice_details)
         controls.body.addWidget(self.scope)
         buttons=QHBoxLayout()
         self.full=QPushButton('Vollständige Messung freigeben')
@@ -153,6 +158,7 @@ class NetworkWatch(QWidget):
     def showEvent(self,event):
         super().showEvent(event)
         self._start_sampler()
+        self._render()
 
     def _start_sampler(self):
         if not self._closing and self.worker is None:
@@ -186,13 +192,29 @@ class NetworkWatch(QWidget):
             app=self.ledger.apps[key]
             name=app['name'] or app['exe'] or tr('Nicht zugeordnet')
             self.alert.emit(tr('Verbrauchswarnung'),f'{name}: {fmt_bytes(total)} / {fmt_bytes(limit)}')
-        self._render()
+        if self.isVisible():self._render()
         self.clear.setEnabled(bool(self.ledger.rules or self.ledger.connection_rules) and self.client.active)
         if self.ledger.errors:
             self.state_label.setText(tr('Messung teilweise verfügbar. Details stehen im Hinweis.'))
             self.state_label.setToolTip('\n'.join(self.ledger.errors))
+            self.notice_details.show()
+
+    def _show_notice(self):
+        from .detail_dialog import show_details
+        self._notice_dialog = show_details(self, 'Netzwerk-Hinweis', self._last_notice or '\n'.join(self.ledger.errors))
+
+    @staticmethod
+    def _cell(table,row,column,text,value=None,number=False):
+        item=table.item(row,column)
+        if item is None or number and not isinstance(item,NumberItem):
+            item=NumberItem(text,value) if number else QTableWidgetItem(text)
+            table.setItem(row,column,item)
+        elif item.text()!=text:item.setText(text)
+        if number and item.data(Qt.UserRole)!=value:item.setData(Qt.UserRole,value)
+        return item
 
     def _render(self,*_):
+        if not self.isVisible():return
         scroll=(self.table.verticalScrollBar().value(),self.table.horizontalScrollBar().value())
         needle=self.filter.text().casefold()
         rows=[row for row in self.ledger.apps.values() if not needle or needle in
@@ -206,20 +228,19 @@ class NetworkWatch(QWidget):
         selected_item=None
         for index,row in enumerate(rows):
             name=row['name'] or (row['exe'].rsplit('/',1)[-1] if row['exe'] else tr('Nicht zugeordnet'))
-            item=QTableWidgetItem(name)
+            item=self._cell(self.table,index,0,name)
             item.setData(Qt.UserRole,row['key'])
             item.setToolTip(row['exe'] or tr('Prozess konnte nicht zugeordnet werden.'))
-            self.table.setItem(index,0,item)
             for column,key in ((1,'down'),(2,'up')):
                 value=row.get(key)
                 shown='–' if value is None else fmt_rate(value)
-                self.table.setItem(index,column,NumberItem(shown,value))
+                self._cell(self.table,index,column,shown,value,True)
             total=row['total_down']+row['total_up']
-            self.table.setItem(index,3,NumberItem(fmt_bytes(total) if row['measured'] or total else '–',total))
-            self.table.setItem(index,4,NumberItem(str(row['connections']),row['connections']))
+            self._cell(self.table,index,3,fmt_bytes(total) if row['measured'] or total else '–',total,True)
+            self._cell(self.table,index,4,str(row['connections']),row['connections'],True)
             pending=(self._pending or self._inflight or {}).get('key')==row['key']
             state=tr('Wird geändert …') if pending else tr('Fehler') if row['key'] in self._action_errors else tr('Gesperrt') if row['blocked'] else tr('Teilweise') if row['partial'] else tr('Aktiv') if row['pids'] else tr('Beendet')
-            self.table.setItem(index,5,QTableWidgetItem(state))
+            self._cell(self.table,index,5,state)
             button=self.table.cellWidget(index,6)
             if button is None or button.property('appkey')!=row['key']:
                 button=QPushButton('');button.setObjectName('ghostBtn');button.setProperty('appkey',row['key'])
@@ -266,6 +287,7 @@ class NetworkWatch(QWidget):
         self._render_connections()
 
     def _render_connections(self):
+        if not self.isVisible():return
         scroll=(self.connections.verticalScrollBar().value(),self.connections.horizontalScrollBar().value())
         current=self._selected_connection()
         selected=current.get('cookie') if current else None
@@ -281,10 +303,9 @@ class NetworkWatch(QWidget):
             blocked=row['cookie'] in self.ledger.connection_rules or self._key in self.ledger.rules
             values=(row['protocol'],str(row.get('pid') or '–'),remote,name,tr('Gesperrt') if blocked else row['state'])
             for column,value in enumerate(values):
-                item=QTableWidgetItem(value)
+                item=self._cell(self.connections,index,column,value)
                 if column==0:item.setData(Qt.UserRole,row['cookie'])
                 item.setToolTip(local if column==2 else value)
-                self.connections.setItem(index,column,item)
             if row['cookie']==selected:selected_item=self.connections.item(index,0)
         self._restore_selection(self.connections,selected_item)
         self.connections.blockSignals(False)
@@ -353,6 +374,7 @@ class NetworkWatch(QWidget):
         if action:self._action_errors[action['key']]=str(message)
         self._pending=None;self._inflight=None
         self._last_notice=message
+        self.notice_details.show()
         short=tr('Der Netzwerk-Helfer konnte nicht gestartet werden. Die Basisansicht bleibt verfügbar.') if len(message)>160 or '\n' in message else tr(message)
         self.state_label.setText(tr('Netzwerk-Hinweis')+': '+short)
         self.state_label.setToolTip(message)

@@ -152,6 +152,23 @@ class KeyValue(QWidget):
         self.v = label("–", "strong", Qt.AlignRight, wrap=True)
         self.v.setTextInteractionFlags(Qt.TextSelectableByMouse)
         lay.addWidget(self.v, 1)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._show_details)
+        self.v.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.v.customContextMenuRequested.connect(self._show_details)
+
+    def _show_details(self, _):
+        from PySide6.QtWidgets import QApplication, QMenu
+        from PySide6.QtGui import QCursor
+        text = self.toolTip() or self.v.toolTip()
+        menu = QMenu(self)
+        menu.addAction(tr('Kopieren'), lambda: QApplication.clipboard().setText(self.v.selectedText() or self.v.text()))
+        if text:
+            from .detail_dialog import show_details
+            def open_details():
+                self._detail_dialog = show_details(self, 'Datenquelle', text)
+            menu.addAction(tr('Datenquelle'), open_details)
+        menu.exec(QCursor.pos())
 
     def set(self, text):
         self.v.setText(tr(text))
@@ -571,6 +588,9 @@ class ChartPanel(QWidget):
         self._source = []
         self.sample_interval = 1
         self._timestamps = []
+        self._loaded_key = None
+        self._loading_choices = False
+        self._scope = ''
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0,0,0,0)
         layout.setSpacing(10)
@@ -610,6 +630,51 @@ class ChartPanel(QWidget):
             else:live.addWidget(item)
         if mode!='mixed':live.addStretch()
         layout.addLayout(live)
+        self.time_range.currentIndexChanged.connect(self._choice_changed)
+        for toggle in self.toggles:
+            toggle.toggled.connect(self._choice_changed)
+
+    def _preferences_key(self):
+        parent = self.parentWidget()
+        while parent is not None:
+            page = parent.property('page_key')
+            if page:
+                return '|'.join((page, self._scope, *self.series_names))
+            parent = parent.parentWidget()
+        return None
+
+    def _load_choices(self):
+        from .chart_preferences import load
+        key = self._preferences_key()
+        if not key or key == self._loaded_key:
+            return
+        self._loaded_key = key
+        self._loading_choices = True
+        try:
+            saved = load(key)
+            index = self.time_range.findData(saved.get('seconds', 60))
+            self.time_range.setCurrentIndex(max(0, index))
+            enabled = saved.get('enabled', [])
+            if not isinstance(enabled, (list, tuple)):enabled = []
+            for index, toggle in enumerate(self.toggles):
+                toggle.setChecked(enabled[index] if index < len(enabled) and isinstance(enabled[index], bool) else True)
+        finally:
+            self._loading_choices = False
+        self._update()
+
+    def set_scope(self, scope):
+        self._scope = str(scope or '')
+        self._load_choices()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._load_choices()
+
+    def _choice_changed(self, *_):
+        from .chart_preferences import save
+        key = self._preferences_key()
+        if key and not self._loading_choices:
+            save(key, self.time_range.currentData(), [toggle.isChecked() for toggle in self.toggles])
 
     def _palette_color(self, idx):
         if theme.mode() in premium.KEYS:
@@ -656,22 +721,23 @@ class ChartPanel(QWidget):
             if i >= len(self.toggles):
                 continue
             color = self._palette_color(i)
-            self.live_labels[i].setStyleSheet(f'color: {color}; font-weight: 700;')
+            style=f'color: {color}; font-weight: 700;'
+            if self.live_labels[i].styleSheet()!=style:self.live_labels[i].setStyleSheet(style)
             if not self.toggles[i].isChecked():
                 self.live_labels[i].setText('')
                 self.live_labels[i].hide()
                 continue
-            vals = [float(v) for v in list(values)[-count:] if v is not None]
+            recent=list(values)[-count:]
+            vals = [float(v) for v in recent if v is not None]
             if vals:
                 fmt = lambda value: self.graph._format(value,self.series_modes[i])
-                current = list(values)[-1] if values else None
+                current = recent[-1] if recent else None
                 shown = fmt(current) if current is not None else '–'
                 self.live_labels[i].setText(f'{tr(self.series_names[i])} {shown}  ·  {fmt(min(vals))}–{fmt(max(vals))}')
                 self.live_labels[i].setToolTip(f'{tr(self.series_names[i])}: {tr("Jetzt")} {shown} | Min {fmt(min(vals))} | Max {fmt(max(vals))}')
             else:
                 self.live_labels[i].setText(f'{tr(self.series_names[i])} –')
             self.live_labels[i].show()
-            recent = list(values)[-count:]
             active.append((recent, color))
             self.graph.series_names.append(self.series_names[i])
             self.graph.series_modes.append(self.series_modes[i])

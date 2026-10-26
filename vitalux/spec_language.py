@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import re
 import textwrap
+import time
 from threading import Lock
 from urllib.request import Request,urlopen
 from . import profiles,i18n
@@ -24,7 +25,16 @@ def network_translate(text,language):
                     data=payload,headers={'Content-Type':'application/json; charset=UTF-8',
                                          'User-Agent':'Mozilla/5.0'})
     with urlopen(request,timeout=6,context=_tls_context()) as response:
-        raw=response.read(1024*1024+1)
+        deadline=time.monotonic()+6
+        chunks=[];size=0
+        read=getattr(response,'read1',response.read)
+        while True:
+            if time.monotonic()>deadline:raise TimeoutError('Translation response timed out')
+            chunk=read(min(65536,1024*1024+1-size))
+            if not chunk:break
+            chunks.append(chunk);size+=len(chunk)
+            if size>1024*1024:break
+        raw=b''.join(chunks)
     if len(raw)>1024*1024:raise ValueError('Translation response too large')
     data=json.loads(raw)
     if not isinstance(data,list) or len(data)!=len(lines):raise ValueError('Translation rows changed')

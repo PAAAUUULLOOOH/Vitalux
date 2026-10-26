@@ -95,30 +95,34 @@ def fetch(url, limit, hosts):
         raise ValueError('Product response too large')
 
 
-def valid_image(raw):
+def decode_image(raw):
     # Decode in the image worker, never on the GUI thread. Reject HTML error
     # pages and huge dimensions before asking an image plugin to allocate.
     from PySide6.QtCore import QByteArray, QBuffer, QIODevice
-    from PySide6.QtGui import QImageReader
+    from PySide6.QtGui import QImageReader,QImage
     if not raw or len(raw) > MAX_IMAGE:
-        return False
+        return QImage()
     buffer = QBuffer()
     buffer.setData(QByteArray(raw))
     buffer.open(QIODevice.ReadOnly)
     reader = QImageReader(buffer)
     size = reader.size()
     if size.width() <= 0 or size.height() <= 0 or size.width() * size.height() > 16000000:
-        return False
+        return QImage()
     image=reader.read()
-    if image.isNull():return False
+    if image.isNull():return QImage()
     # A fully transparent placeholder is decodable but is not a product photo.
     if image.hasAlphaChannel():
         from PySide6.QtCore import Qt
         sample=image.scaled(40,40,Qt.KeepAspectRatio,Qt.SmoothTransformation)
         visible=sum(sample.pixelColor(x,y).alpha()>220
                     for y in range(sample.height()) for x in range(sample.width()))
-        if visible/max(1,sample.width()*sample.height())<.025:return False
-    return True
+        if visible/max(1,sample.width()*sample.height())<.025:return QImage()
+    return image
+
+
+def valid_image(raw):
+    return not decode_image(raw).isNull()
 
 
 def _atomic_bytes(path, raw):
@@ -134,7 +138,8 @@ def _atomic_bytes(path, raw):
 
 
 class ProductCache:
-    def __init__(self, root=None):
+    def __init__(self, root=None, include_image=False):
+        self.include_image=include_image
         self.root = Path(root) if root is not None else profiles.directory('cache') / 'hardware-products'
 
     def load(self, product):
@@ -142,44 +147,84 @@ class ProductCache:
         if not key:
             return None
         try:
+            manual = self.root / (key + '.manual.image')
+            if manual.is_file() and manual.stat().st_size <= MAX_IMAGE:
+                raw = manual.read_bytes()
+                decoded = decode_image(raw)
+                if not decoded.isNull():
+                    result = dict(key=key, path=str(manual), sha256=hashlib.sha256(raw).hexdigest(), cached=True, manual=True, source='', image_url='')
+                    if self.include_image:result['_image']=decoded
+                    return result
             meta = json.loads((self.root / (key + '.json')).read_text())
             path = self.root / (key + '.image')
             if (meta.get('key') != key or path.stat().st_size > MAX_IMAGE or
                     meta.get('vendor', '').casefold() != product['vendor'].casefold() or
                     meta.get('model', '').casefold() != product['model'].casefold()):
                 return None
+            if meta.get('image_url') in self.rejected(product):return None
             raw = path.read_bytes()
-            if hashlib.sha256(raw).hexdigest() != meta.get('sha256') or not valid_image(raw):
-                return None
+            if hashlib.sha256(raw).hexdigest() != meta.get('sha256'):return None
+            decoded=decode_image(raw)
+            if decoded.isNull():return None
             if not allowed_url(meta.get('source', '')):
                 return None
             if not cpu_image_matches(product,meta.get('image_url',''),meta.get('image_identity','')):return None
-            return dict(meta, path=str(path), cached=True, cutout=cutout_image(raw))
+            result=dict(meta,path=str(path),cached=True,cutout=cutout_image(raw,decoded))
+            if self.include_image:result['_image']=decoded
+            return result
         except (OSError, ValueError, TypeError, AttributeError):
             return None
 
-    def save(self, product, raw, source, image_url, image_identity=""):
+    def save(self, product, raw, source, image_url, image_identity="", decoded=None):
         key = product_key(product)
-        if not key or not valid_image(raw):
+        decoded=decoded if decoded is not None else decode_image(raw)
+        if not key or decoded.isNull():
             raise ValueError('Invalid product image')
         if not all(allowed_url(url) for url in (source, image_url)):
             raise ValueError('Unsupported manufacturer source')
         if not cpu_image_matches(product,image_url,image_identity):raise ValueError('CPU image does not identify the exact processor')
         meta = {'image_identity':image_identity,'key': key, 'source': source, 'image_url': image_url,
                 'sha256': hashlib.sha256(raw).hexdigest(), 'saved': int(time.time()),
-                'vendor': product['vendor'], 'model': product['model'], 'cutout': cutout_image(raw)}
+                'vendor': product['vendor'], 'model': product['model'], 'cutout': cutout_image(raw,decoded)}
         path = self.root / (key + '.image')
         _atomic_bytes(path, raw)
         _atomic_bytes(self.root / (key + '.json'), json.dumps(meta).encode())
-        return dict(meta, path=str(path), cached=False)
+        result=dict(meta,path=str(path),cached=False)
+        if self.include_image:result['_image']=decoded
+        return result
+
+    def rejected(self, product):
+        try:
+            data = json.loads((self.root / (product_key(product) + '.rejected.json')).read_text())
+            return set(data) if isinstance(data, list) else set()
+        except (OSError, ValueError, TypeError):
+            return set()
+
+    def discard(self, product, reject=False):
+        key = product_key(product)
+        if not key:return
+        if reject:
+            current = self.load(product) or {}
+            urls = self.rejected(product)
+            if current.get('image_url'):urls.add(current['image_url'])
+            _atomic_bytes(self.root / (key + '.rejected.json'), json.dumps(sorted(urls)).encode())
+        for suffix in ('.image', '.json', '.manual.image'):
+            (self.root / (key + suffix)).unlink(missing_ok=True)
+
+    def save_manual(self, product, raw):
+        key = product_key(product)
+        if not key or len(raw) > MAX_IMAGE or decode_image(raw).isNull():
+            raise ValueError('Invalid product image')
+        _atomic_bytes(self.root / (key + '.manual.image'), raw)
+        return self.load(product)
 
 
-def cutout_image(raw):
+def cutout_image(raw, decoded=None):
     """Require a real transparent surround, never just a PNG filename/alpha flag."""
     from PySide6.QtGui import QImage
     from PySide6.QtCore import Qt
-    if not valid_image(raw):return False
-    image = QImage.fromData(raw)
+    image=decoded if decoded is not None else decode_image(raw)
+    if image.isNull():return False
     if not image.hasAlphaChannel():return False
     image = image.scaled(96,96,Qt.KeepAspectRatio,Qt.SmoothTransformation)
     width,height = image.width(),image.height()
@@ -435,6 +480,7 @@ def resolve(product, cache=None, download=fetch, cancelled=None, on_preview=None
     deadline=time.monotonic()+40
     original_download=download
     fallback=None
+    rejected=cache.rejected(product)
     visited=set()
     report=dict(kind=product['kind'],model=search_model(product),events=[])
     def note(stage, **details):
@@ -449,11 +495,11 @@ def resolve(product, cache=None, download=fetch, cancelled=None, on_preview=None
             raise TimeoutError('Product lookup finished')
         try:return original_download(url,limit,hosts)
         except (OSError,ValueError) as exc:
-            note('download_failed',host=urlsplit(url).hostname,error=type(exc).__name__)
+            note('download_failed',host=urlsplit(url).hostname,error=f'{type(exc).__name__}: {exc}'[:500])
             raise
     def image_result(source,image,identity=""):
         nonlocal fallback
-        if not allowed_url(image) or image in visited:return None
+        if not allowed_url(image) or image in visited or image in rejected:return None
         if not cpu_image_matches(product,image,identity):
             note('cpu_identity_rejected',host=urlsplit(image).hostname)
             return None
@@ -461,12 +507,13 @@ def resolve(product, cache=None, download=fetch, cancelled=None, on_preview=None
         if re.search(r'(?:^|[/_.-])(?:logo|icon|banner)(?:[/_.-]|$)',urlsplit(image).path,re.I):return None
         try:
             raw=download(image,MAX_IMAGE,())
-            if not valid_image(raw):note('invalid_image',host=urlsplit(image).hostname);return None
-            if cutout_image(raw):
+            decoded=decode_image(raw)
+            if decoded.isNull():note('invalid_image',host=urlsplit(image).hostname);return None
+            if cutout_image(raw,decoded):
                 note('cutout',host=urlsplit(image).hostname)
-                return cache.save(product,raw,source,image,identity)
+                return cache.save(product,raw,source,image,identity,decoded=decoded)
             if fallback is None:
-                fallback=cache.save(product,raw,source,image,identity)
+                fallback=cache.save(product,raw,source,image,identity,decoded=decoded)
                 note('background_alternative',host=urlsplit(image).hostname)
                 if on_preview:on_preview(fallback)
         except (OSError,ValueError):pass

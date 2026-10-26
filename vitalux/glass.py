@@ -54,7 +54,7 @@ class _AmbientSceneCore:
     def sync_background(self):
         self._render_key = None
         self._composed_key = None
-        style = backdrops.resolve(settings.get('background_style', 'theme_default'),
+        style = backdrops.resolve(settings.observed('background_style', 'theme_default'),
                                   theme.mode())
         # Only designs with moving backgrounds participate in this timer.
         # Quantum Core uses a cached static image; its logos stay independent.
@@ -82,7 +82,7 @@ class _AmbientSceneCore:
 
     def set_low_power(self, enabled):
         """Free the atmospheric pixmaps in Minimalistisch; reload only if needed."""
-        if enabled and backdrops.resolve(settings.get('background_style', 'theme_default'),
+        if enabled and backdrops.resolve(settings.observed('background_style', 'theme_default'),
                                          theme.mode()) == 'minimal':
             # Minimal releases the caches; normal scenes rebuild on return.
             self._sharp_cache = QPixmap()
@@ -94,13 +94,13 @@ class _AmbientSceneCore:
     def _ensure_cache(self):
         # The entire window stays opaque. The softened
         # atmosphere is an *internal* backdrop sampled under glass widgets.
-        style = backdrops.resolve(settings.get('background_style', 'theme_default'),
+        style = backdrops.resolve(settings.observed('background_style', 'theme_default'),
                                   theme.mode())
         if style == 'minimal' and theme.mode() == 'minimal':
             return
         if style == 'custom_image':
-            chosen = settings.get('custom_background_selected', '')
-            fit = settings.get('custom_background_fit', 'cover')
+            chosen = settings.observed('custom_background_selected', '')
+            fit = settings.observed('custom_background_fit', 'cover')
             path = user_background.image_path(chosen)
             stamp = path.stat().st_mtime_ns if path else None
             ratio=self.devicePixelRatioF() if theme.mode()=='crystal_atrium' else 1.0
@@ -123,7 +123,7 @@ class _AmbientSceneCore:
             self._render_key=key
 
     def _ensure_composed(self):
-        style=backdrops.resolve(settings.get('background_style','theme_default'),theme.mode())
+        style=backdrops.resolve(settings.observed('background_style','theme_default'),theme.mode())
         if style=='minimal' and theme.mode()=='minimal':
             self._composed_sharp=QPixmap();self._composed_soft=QPixmap();self._composed_key=None;return
         self._ensure_cache()
@@ -145,7 +145,7 @@ class _AmbientSceneCore:
     def _paint_background(self):
         p = QPainter(self)
         p.fillRect(self.rect(), QColor(theme.BG))
-        style = backdrops.resolve(settings.get('background_style', 'theme_default'),
+        style = backdrops.resolve(settings.observed('background_style', 'theme_default'),
                                   theme.mode())
         if style == 'minimal' and theme.mode() == 'minimal':
             p.fillRect(self.rect(), backdrops.minimal_color())
@@ -307,7 +307,7 @@ def paint_glass_body(p, widget, rect, radius, *, strong=False, compact=False, ac
     p.setClipPath(glass)
     if theme.mode() not in ('glass',):
         # Solid cards are intentional. Dark and Light must not resemble frosted glass.
-        bg_style = backdrops.resolve(settings.get('background_style', 'theme_default'),
+        bg_style = backdrops.resolve(settings.observed('background_style', 'theme_default'),
                                      theme.mode())
         bg = backdrops.material_tint(bg_style, theme.CARD, theme.accent(), .085)
         tint = QColor(theme.accent())
@@ -325,7 +325,7 @@ def paint_glass_body(p, widget, rect, radius, *, strong=False, compact=False, ac
         overlay.setColorAt(0, rgba(28, 62, 88, 108 if strong else 80))
         overlay.setColorAt(.54, rgba(13, 27, 49, 130 if strong else 103))
         overlay.setColorAt(1, rgba(27, 31, 61, 123 if strong else 103))
-        style = backdrops.resolve(settings.get('background_style', 'theme_default'),
+        style = backdrops.resolve(settings.observed('background_style', 'theme_default'),
                                   theme.mode())
         if style not in backdrops.DEFAULT_THEMES:
             # New wallpapers reflect subtly in the cards, but the accent hue
@@ -386,20 +386,25 @@ class GlassSidebar(QFrame):
         super().resizeEvent(event)
         self._position_toggle()
 
-    def paintEvent(self, event):
+    def paintEvent(self,event):
+        # Keep direct compositing: recording the layered material changes Qt's
+        # clip/alpha rounding at fractional display scales.
+        painter=QPainter(self)
+        self._paint_material(painter)
+        painter.end()
+
+    def _paint_material(self, p):
         """Restore the original Vitalux frosted sidebar and luminous seam.
 
         Matching Glass/Black Glass/Light/Dark schemes keep their original
         treatment. For new wallpapers, the frost adapts gently to the chosen
         palette so it remains related to the cards and the scene.
         """
-        p = QPainter(self)
         if theme.mode() in premium.KEYS:
             p.setRenderHint(QPainter.Antialiasing)
             premium.paint_sidebar(p, self, QRectF(self.rect()))
-            p.end()
             return
-        style = backdrops.resolve(settings.get('background_style', 'theme_default'),
+        style = backdrops.resolve(settings.observed('background_style', 'theme_default'),
                                   theme.mode())
         matching = style == theme.mode()
         if theme.mode() == 'minimal' and style == 'minimal':
@@ -433,7 +438,7 @@ class GlassSidebar(QFrame):
         p.setPen(QPen(QBrush(side), 1.1))
         x = self.width()-1
         p.drawLine(x, 0, x, self.height())
-        p.end()
+
 
 
 class GlassSurface(QFrame):

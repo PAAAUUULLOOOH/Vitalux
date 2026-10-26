@@ -66,6 +66,8 @@ def child(folder,kind,scenario):
             m._on_installed('',worker);m._restart_timer.stop();m.shutdown();m.deleteLater()
             m=update_manager.UpdateManager();m._timer.stop()
         else:m.install()
+        progress=[]
+        m.progress.connect(progress.append)
         restarts=[]
         failures=[]
         def changed():
@@ -83,6 +85,8 @@ def child(folder,kind,scenario):
         deadline=time.monotonic()+10
         while not restarts and time.monotonic()<deadline:app.processEvents();time.sleep(.01)
         assert len(restarts)==1,(scenario,m.status,m.error,calls)
+        assert progress == sorted(progress), (scenario, progress)
+        assert not progress or progress[-1] == 100, (scenario, progress)
         if scenario=='retry':assert failures and m.pending['channel']=='stable'
         while not m.shutdown() and time.monotonic()<deadline:app.processEvents();time.sleep(.01)
         m.finalize_exit()

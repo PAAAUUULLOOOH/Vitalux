@@ -1,5 +1,14 @@
 # Vitalux – Changes
 
+## [v0.9.6.4-unstable.2] - 2026-10-26
+
+- Saved chart selections and time windows, plus a preferred GPU for the overview, MiniHUD and diagnostics.
+- Reload individual components, reject incorrect pictures or choose local images; accessible error and data-source details.
+- Complete sensor lists with distinct identities, explicit outdated readings and no false recovery when data disappears.
+- Diagnostic reports and exports follow the app language; ChangeRadar saves its baseline without blocking the interface.
+- Monotonic update progress when automatically switching to Stable.
+- Less work for backgrounds, animations, tables and sensor queries with unchanged rendering quality.
+
 ## [v0.9.6.4-unstable.1] - 2026-10-26
 - Unstable updates directly install and start Stable once it contains the test build. Parity is checked during preparation and before restarting; no separate channel-switch action is needed.
 - Crystal Atrium design: the former Crystal Glass is renamed Crystal Atrium and uses the original static Atrium background. Glass surfaces, the overview layout editor and rounded design gallery remain. Personal colors and backgrounds are retained; Crystal Glass remains available as a color and background preset.

@@ -9,6 +9,7 @@ from datetime import datetime
 from collections import deque
 import json
 import math
+from .i18n import tr
 
 
 def valid_number(value):
@@ -78,6 +79,7 @@ class SessionExtrema:
 
     def __init__(self):
         self.values = {}
+        self.gpu_values = {}
         self.started_at = datetime.now().astimezone().isoformat()
 
     def update(self, sample):
@@ -94,17 +96,35 @@ class SessionExtrema:
             "ram_usage": ram.get("percent"),
         }
         for key, number in values.items():
+            if key.startswith('gpu_'):
+                continue
             if not valid_number(number):
                 continue
             low, high = self.values.get(key, (number, number))
             self.values[key] = (min(low, number), max(high, number))
+        for index, device in enumerate(sample.get('gpus') or []):
+            recorded = self.gpu_values.setdefault(GpuHistory.identity(device, index), {})
+            for field in ('usage', 'temp', 'clock', 'power'):
+                number = device.get(field)
+                if valid_number(number):
+                    key = 'gpu_' + field
+                    low, high = recorded.get(key, (number, number))
+                    recorded[key] = (min(low, number), max(high, number))
+        self.select_primary(gpu)
         return self.snapshot()
+
+    def select_primary(self, gpu):
+        for key in list(self.values):
+            if key.startswith('gpu_'):
+                del self.values[key]
+        self.values.update(self.gpu_values.get(GpuHistory.identity(gpu), {}))
 
     def snapshot(self):
         return {name: list(pair) for name, pair in self.values.items()}
 
     def reset(self):
         self.values.clear()
+        self.gpu_values.clear()
         self.started_at = datetime.now().astimezone().isoformat()
 
 
@@ -177,21 +197,20 @@ def report_data(sample, static, version, extrema=None):
         "system": static,
         "sample": sample,
         "min_max_since_start": extrema or {},
-        "note": "Sensordaten stammen aus verfügbaren Linux-Schnittstellen. "
-                "Fehlende Werte sind nicht verfügbar.",
+        "note": tr("Sensordaten stammen aus verfügbaren Linux-Schnittstellen. Fehlende Werte sind nicht verfügbar."),
     }
 
 
 def report_text(data):
     lines = [
-        f"Vitalux · Systembericht · Version {data['version']}",
-        f"Erstellt: {data['created_at']}",
+        tr("Vitalux · Systembericht · Version {version}").format(version=data['version']),
+        tr("Erstellt: {time}").format(time=data['created_at']),
         "",
         "SYSTEM",
     ]
     for key, value in (data.get("system") or {}).items():
         lines.append(f"{key}: {value}")
-    lines += ["", "HARDWARE UND SENSOREN"]
+    lines += ["", tr("HARDWARE UND SENSOREN")]
     sample = data.get("sample") or {}
     for name in ("cpu", "ram", "gpus", "disks", "net", "io"):
         lines.append(f"{name}: {json.dumps(sample.get(name), ensure_ascii=False, default=str)}")
@@ -210,4 +229,4 @@ def write_report(path, data):
         elif path.lower().endswith(".txt"):
             target.write(report_text(data))
         else:
-            raise ValueError("Unterstützte Berichtsformate: .txt oder .json")
+            raise ValueError(tr("Unterstützte Berichtsformate: .txt oder .json"))

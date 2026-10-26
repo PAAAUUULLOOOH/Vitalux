@@ -65,8 +65,11 @@ def prime():
 def collect():
     net_total = psutil.net_io_counters()
     dio = psutil.disk_io_counters()
-    cpu, ram, gpus = cpu_info(), ram_info(), gpu_info()
+    cpu, ram, gpus = cpu_info(include_temperatures=False), ram_info(), gpu_info(include_hwmon=False)
     hardware = _hardware.sample(gpus)
+    temperatures=[r for r in hardware if r['component']=='cpu' and r['kind']=='temps']
+    preferred=next((r for r in temperatures if r.get('label') in ('Package id 0','Tctl','Tdie')),None)
+    cpu['temp']=(preferred or temperatures[0])['value'] if temperatures else _cpu_temp(cpu['unavailable'])
     cpu['power'] = hardware_sensors.primary_power(hardware, 'cpu')
     ram['power'] = hardware_sensors.primary_power(hardware, 'ram')
     return {
@@ -115,7 +118,11 @@ def _cpu_temp(reasons=None):
     return None
 
 
-def cpu_info():
+@functools.lru_cache(maxsize=1)
+def _physical_cores():return psutil.cpu_count(logical=False) or 0
+
+
+def cpu_info(include_temperatures=True):
     reasons = {}
     try:freq = psutil.cpu_freq()
     except (OSError, NotImplementedError) as exc:
@@ -126,18 +133,20 @@ def cpu_info():
     except OSError:
         load = (0, 0, 0)
     per_core = psutil.cpu_percent(interval=None, percpu=True)
+    topology=cpu_topology.logical_cpus(per_core)
+    physical={(row['package'],row['core']) for row in topology if row['core'] is not None}
     return {
         "model": _cpu_model(),
         "manufacturer": hardware_inventory.cpu_product()['vendor'],
         "product": dict(hardware_inventory.cpu_product()),
         "usage": sum(per_core) / len(per_core) if per_core else 0.0,
         "per_core": per_core,
-        "logical_cpus": cpu_topology.logical_cpus(per_core),
-        "cores": psutil.cpu_count(logical=False) or 0,
+        "logical_cpus": topology,
+        "cores": len(physical) if physical else _physical_cores(),
         "threads": psutil.cpu_count(logical=True) or 0,
         "freq": freq.current if freq else None,
         "freq_max": freq.max if freq and freq.max else None,
-        "temp": _cpu_temp(reasons),
+        "temp": _cpu_temp(reasons) if include_temperatures else None,
         "unavailable": reasons,
         "power": None,  # Collected once with all power domains in collect().
         "load": load,
@@ -226,6 +235,14 @@ def _name_for_slot(slot, fallback):
 def _nvidia_gpus():
     if not shutil.which("nvidia-smi"):
         return []
+    xml=_run('nvidia-smi','-q','-x')
+    extra=hardware_sensors.nvidia_details(xml)
+    complete=[dict(value,id=key,vendor='NVIDIA',sensor_source='nvidia-smi') for key,value in extra.items() if value.get('name')]
+    if complete:
+        for gpu in complete:
+            for field in ('hotspot','fan_rpm','voltage','pcie_current','pcie_max'):gpu.setdefault(field,None)
+            gpu['unavailable']={key:'driver_no_data' for key in ('usage','vram_used','vram_total','temp','power','fan','clock','clock_mem') if gpu.get(key) is None}
+        return complete
     q = "name,driver_version,utilization.gpu,memory.used,memory.total,temperature.gpu,power.draw,fan.speed,clocks.gr,clocks.mem,uuid"
     out = _run("nvidia-smi", f"--query-gpu={q}", "--format=csv,noheader,nounits")
     gpus = []
@@ -240,7 +257,7 @@ def _nvidia_gpus():
                      "clock": _num(p[8]), "clock_mem": _num(p[9]), "hotspot": None,
                      "fan_rpm": None, "voltage": None, "pcie_current": None,
                      "pcie_max": None, "sensor_source": "nvidia-smi"})
-    extra = hardware_sensors.nvidia_details(_run('nvidia-smi', '-q', '-x')) if gpus else {}
+    # Older/limited XML implementations retain the CSV fallback.
     for gpu in gpus:
         gpu.update(extra.get(gpu['id'], {}))
         gpu['unavailable'] = {key: 'driver_no_data' for key in (
@@ -249,7 +266,7 @@ def _nvidia_gpus():
     return gpus
 
 
-def _drm_gpus(have_nvidia):
+def _drm_gpus(have_nvidia, include_hwmon=True):
     gpus = []
     vendors = {"0x1002": "AMD", "0x8086": "Intel", "0x10de": "NVIDIA"}
     for card in sorted(glob.glob("/sys/class/drm/card[0-9]*")):
@@ -265,7 +282,7 @@ def _drm_gpus(have_nvidia):
         name = overview_gpu_name(_name_for_slot(m.group(1) if m else "", f"{vendor} Grafik"))
         hw = glob.glob(os.path.join(dev, "hwmon", "hwmon*"))
         temp = power = None
-        if hw:
+        if hw and include_hwmon:
             t = _read(os.path.join(hw[0], "temp1_input"), reasons, 'temp')
             caption=(_read(os.path.join(hw[0], 'temp1_label')) or '').lower()
             temp = float(t) / 1000 if t and t.isdigit() and not any(k in caption for k in ('mem','junction','hotspot')) else None
@@ -274,7 +291,7 @@ def _drm_gpus(have_nvidia):
         # These read-only sysfs values are provided by the kernel; do not use
         # optional overclocking drivers, services or elevated permissions.
         voltage = None
-        if hw:
+        if hw and include_hwmon:
             millivolts = _num(_read(os.path.join(hw[0], "in0_input")))
             if millivolts is not None and 100 <= millivolts <= 2500:
                 voltage = millivolts
@@ -287,7 +304,7 @@ def _drm_gpus(have_nvidia):
         )
         busy = _read(os.path.join(dev, "gpu_busy_percent"), reasons, 'usage')
         used, total = _read(os.path.join(dev, "mem_info_vram_used"), reasons, 'vram_used'), _read(os.path.join(dev, "mem_info_vram_total"), reasons, 'vram_total')
-        extra = extended.drm_extra(dev)
+        extra = extended.drm_extra(dev,include_hwmon=include_hwmon,uevent=uevent)
         gpus.append({"id": os.path.realpath(dev), "device_path": dev,
                      "product_name": _read(os.path.join(dev, 'product_name')) or '',
                      "vendor": vendor, "name": name, "driver": extra["driver"],
@@ -301,9 +318,9 @@ def _drm_gpus(have_nvidia):
     return gpus
 
 
-def gpu_info():
+def gpu_info(include_hwmon=True):
     nv = _nvidia_gpus()
-    gpus = nv + _drm_gpus(bool(nv))
+    gpus = nv + (_drm_gpus(bool(nv)) if include_hwmon else _drm_gpus(bool(nv),include_hwmon=False))
     for gpu in gpus:
         gpu.update(hardware_identity.gpu_identity(gpu))
         if gpu.get('identified_name'):

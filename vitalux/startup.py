@@ -30,7 +30,7 @@ class StartupWorker(QThread):
             for product in products:
                 if not product:continue
                 if settings.get('component_images',True) is not False:
-                    cached=ProductCache().load(product)
+                    cached=ProductCache(include_image=True).load(product)
                     if cached:images[lookup_key(product)]=cached
                 cached=SpecCache().load(product)
                 if cached:specs[product_key(product)]=cached

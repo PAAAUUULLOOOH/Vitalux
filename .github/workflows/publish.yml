@@ -22,6 +22,8 @@ jobs:
     timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -96,6 +98,15 @@ jobs:
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-regressions.py --output "$GITHUB_WORKSPACE/build/regressions"
+      - name: Check resource budgets, endurance and reference rendering
+        timeout-minutes: 18
+        run: |
+          set -euo pipefail
+          python scripts/check-resource-budgets.py
+          python scripts/check-ui-endurance.py --cycles 180 --output build/ui-endurance
+          git worktree add --detach build/render-reference 5bcc1e90a69f3f58f1de582db0b5eeec5b0e4332
+          python scripts/check-render-parity.py --reference build/render-reference --output build/render-parity
+          git worktree remove build/render-reference
       - name: Check real component pictures and offline reuse
         run: python scripts/check-product-image-network.py --require-all-components
       - name: Check real manufacturer datasheets and offline reuse

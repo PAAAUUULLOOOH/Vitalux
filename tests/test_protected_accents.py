@@ -71,7 +71,7 @@ def test_color_protection():
 
 
 def test_no_first_close_tray_toast():
-    path = Path(__file__).resolve().parents[1] / "vitalux/window.py"
+    path = Path(__file__).resolve().parents[1] / "vitalux/window_lifecycle.py"
     tree = ast.parse(path.read_text(encoding="utf-8"))
     methods = [method for cls in ast.walk(tree)
                if isinstance(cls, ast.ClassDef)

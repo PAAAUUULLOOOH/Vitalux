@@ -54,9 +54,9 @@ def _freq_active(path):
     return None
 
 
-def drm_extra(card_device):
+def drm_extra(card_device,include_hwmon=True,uevent=None):
     hw = _hwmon(card_device)
-    temps = _temp_label_data(hw)
+    temps = _temp_label_data(hw) if include_hwmon else {}
     hotspot = next((v for k, v in temps.items() if 'junction' in k or 'hotspot' in k or 'hot spot' in k), None)
     edge = next((v for k, v in temps.items() if 'edge' in k), None)
     if edge is None:
@@ -64,10 +64,10 @@ def drm_extra(card_device):
     raw_pwm = num(read(os.path.join(hw, 'pwm1'))) if hw else None
     raw_max = num(read(os.path.join(hw, 'pwm1_max'))) if hw else None
     fan_percent = raw_pwm / raw_max * 100 if raw_pwm is not None and raw_max else None
-    rpm = num(read(os.path.join(hw, 'fan1_input'))) if hw else None
+    rpm = num(read(os.path.join(hw, 'fan1_input'))) if hw and include_hwmon else None
     clk = _freq_active(os.path.join(card_device, 'pp_dpm_sclk'))
     memclk = _freq_active(os.path.join(card_device, 'pp_dpm_mclk'))
-    uevent = read(os.path.join(card_device, 'uevent'))
+    uevent = uevent if uevent is not None else read(os.path.join(card_device, 'uevent'))
     match = re.search(r'^DRIVER=(.+)$', uevent, re.M)
     return dict(hotspot=hotspot, edge=edge, fan_percent=fan_percent, fan_rpm=rpm,
                 clock=clk, clock_mem=memclk, driver=match.group(1) if match else None)

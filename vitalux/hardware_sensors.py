@@ -4,6 +4,7 @@ Values retain their kernel device/channel identity. Overlapping RAPL domains,
 GPU rails and board channels are never summed into a purported PC total.
 """
 import math
+import fnmatch
 from pathlib import Path
 import re
 import struct
@@ -134,6 +135,9 @@ def hwmon_readings(sysroot='/sys', gpus=()):
         chip = read(hw/'name') or hw.name
         device = (hw/'device').resolve() if (hw/'device').exists() else hw.resolve().parent.parent
         gpu = gpu_devices.get(str(device))
+        resolved_hw=hw.resolve()
+        try:channels=list(hw.iterdir())
+        except OSError:channels=[]
         if gpu:
             component = 'gpu:'+gpu['id']
         elif chip.lower() in ('coretemp', 'k10temp', 'zenpower', 'cpu_thermal', 'amd_energy'):
@@ -152,14 +156,14 @@ def hwmon_readings(sysroot='/sys', gpus=()):
                 ('voltages', 'in*_input', 1000, 'V', 0, 1000),
                 ('frequencies', 'freq*_input', 1e6, 'MHz', 0, 1e6),
                 ('powers', 'power*_input', 1e6, 'W', 0, 1e6)):
-            files = list(hw.glob(pattern))
+            files = [p for p in channels if fnmatch.fnmatchcase(p.name,pattern)]
             if kind == 'powers':
                 # Prefer instantaneous input; average is a fallback on the same rail.
-                files += list(hw.glob('power*_average'))
-                files += list(hw.glob('power*_cap'))
+                files += [p for p in channels if fnmatch.fnmatchcase(p.name,'power*_average')]
+                files += [p for p in channels if fnmatch.fnmatchcase(p.name,'power*_cap')]
             for path in sorted(files, key=lambda p: (2 if p.stem.endswith('_cap') else 1 if p.stem.endswith('_average') else 0, p.name)):
                 prefix = path.name.rsplit('_', 1)[0]
-                identity = str(hw.resolve()/prefix)
+                identity = str(resolved_hw/prefix)
                 if identity in seen or read(hw/(prefix+'_fault')) == '1' or read(hw/(prefix+'_enable')) == '0':
                     continue
                 value = None if path.stem.endswith('_cap') else scaled(path, divisor, low, high)
@@ -245,6 +249,14 @@ def nvidia_details(xml):
         readings = dict(power_limit=value('gpu_power_readings/enforced_power_limit', 'power_readings/enforced_power_limit', 'power_readings/power_limit'),
             vram_temp=value('temperature/memory_temp'), memory_busy=value('utilization/memory_util'),
             encoder_busy=value('utilization/encoder_util'), decoder_busy=value('utilization/decoder_util'))
+        if gpu.findtext('product_name'):
+            readings.update(name=gpu.findtext('product_name'),driver=document.findtext('driver_version'),
+                usage=value('utilization/gpu_util'),vram_used=value('fb_memory_usage/used'),
+                vram_total=value('fb_memory_usage/total'),temp=value('temperature/gpu_temp'),
+                power=value('gpu_power_readings/instant_power_draw','gpu_power_readings/power_draw','power_readings/power_draw','gpu_power_readings/average_power_draw'),
+                fan=value('fan_speed'),clock=value('clocks/graphics_clock'),clock_mem=value('clocks/mem_clock'))
+            for key in ('vram_used','vram_total'):
+                if readings[key] is not None:readings[key]*=1048576
         pci_bus = gpu.findtext('pci/pci_bus_id') or gpu.get('id')
         if pci_bus:
             readings['pci_slot'] = pci_bus

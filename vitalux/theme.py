@@ -1,5 +1,6 @@
 """Vitalux themes with a shared, user-selectable accent palette."""
 from string import Template
+from functools import lru_cache
 from . import DEFAULT_THEME
 from PySide6.QtGui import QColor
 from .premium import COLLECTIONS, KEYS as PREMIUM_MODES
@@ -17,7 +18,7 @@ def palette_for(key):
     from . import settings
     base=design_catalog.factory(key)
     if key!=mode() or key=='minimal':return base
-    selected=settings.get('accent','design_default')
+    selected=settings.observed('accent','design_default')
     if selected=='design_default':return base
     chosen=design_catalog.accent_preset(selected)
     primary=accent()
@@ -82,10 +83,14 @@ def _luminance(c):
 def accent():
     """Keep user-selected hues readable against white/dark backgrounds."""
     from . import settings
-    selected=settings.get('accent','design_default')
-    original=design_catalog.factory(_mode)['accent']
-    c = QColor(original if selected=='design_default' else _accent)
-    if _mode == 'light':
+    return _resolved_accent(_mode,_accent,settings.observed('accent','design_default'))
+
+
+@lru_cache(maxsize=128)
+def _resolved_accent(selected_mode, selected_accent, selected):
+    original=design_catalog.factory(selected_mode)['accent']
+    c = QColor(original if selected=='design_default' else selected_accent)
+    if selected_mode == 'light':
         for _ in range(12):
             if (1.05 / (_luminance(c) + .05)) >= 4.0:
                 break
@@ -106,7 +111,7 @@ def accent_qcolor(alpha=255):
 
 def secondary_accent():
     from . import settings
-    selected=settings.get('accent','design_default')
+    selected=settings.observed('accent','design_default')
     if selected=='design_default':return design_catalog.factory(_mode)['secondary']
     chosen=design_catalog.accent_preset(selected)
     if chosen:return chosen['palette']['secondary']

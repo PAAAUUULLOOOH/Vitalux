@@ -1,3 +1,4 @@
+from .window_lifecycle import WindowLifecycle
 from collections import deque
 from threading import Event
 import time
@@ -30,6 +31,7 @@ from .sample_clock import sampling_gap
 
 class Sampler(QThread):
     sample = Signal(object)
+    failed = Signal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -37,6 +39,7 @@ class Sampler(QThread):
         self._last_error = None
         self._stopped = Event()
         self._sample_clock = None
+        self._missed = False
 
     def start(self, *args):
         self._stopped.clear()
@@ -55,11 +58,14 @@ class Sampler(QThread):
                 data = sensors.collect()
                 self._sample_clock = (time.time(), time.monotonic())
                 data['timestamp'] = self._sample_clock[0]
-                data['_gap_before'] = gap
+                data['_gap_before'] = gap or self._missed
+                self._missed = False
                 if not self.isInterruptionRequested():
                     self.sample.emit(data)
                 self._last_error = None
             except Exception as exc:
+                self._missed = True
+                self.failed.emit(str(exc))
                 # Retain one timestamped, versioned traceback per distinct
                 # failure instead of flooding logs at one-second intervals.
                 error = (type(exc), str(exc))
@@ -69,7 +75,7 @@ class Sampler(QThread):
             self._stopped.wait(max(1, self.interval))
 
 
-class MainWindow(QMainWindow):
+class MainWindow(WindowLifecycle, QMainWindow):
     def __init__(self, distro, logo, manager, *, startup_sample=None, preparing=None):
         super().__init__()
         # Never request per-pixel transparency of the native window.
@@ -159,6 +165,18 @@ class MainWindow(QMainWindow):
 
         self.sampler = Sampler(self)
         self.sampler.sample.connect(self.on_sample)
+        from .sample_state import SamplingState
+        self.sample_state=SamplingState()
+        self.sample_notice=label('', 'muted')
+        self.sample_notice.setParent(self)
+        self.sample_notice.setTextInteractionFlags(Qt.LinksAccessibleByMouse | Qt.LinksAccessibleByKeyboard)
+        self.sample_notice.linkActivated.connect(self._sample_error_details)
+        self.sample_notice.hide()
+        self._sample_notice_added=False
+        self.sampler.failed.connect(self._sample_failed)
+        self._freshness_timer=QTimer(self);self._freshness_timer.setInterval(1000)
+        self._freshness_timer.timeout.connect(self._check_sample_freshness)
+        self._freshness_timer.start()
         if startup_sample is not None:
             self.on_sample(startup_sample)
             for _,page in self.pages:
@@ -890,7 +908,6 @@ class MainWindow(QMainWindow):
                 hud.update_sample(self.last_sample)
 
 
-
     def reset_session_extrema(self):
         """Reset displayed minimum/maximum values without touching hardware."""
         self._extrema.reset()
@@ -898,11 +915,49 @@ class MainWindow(QMainWindow):
             self.last_sample["session_extrema"] = self._extrema.snapshot()
             self._refresh_visible_page()
 
+    def _sample_failed(self, reason):
+        self.sample_state=self.sample_state.failed(reason)
+        self._check_sample_freshness()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        if hasattr(self, '_freshness_timer'):
+            self._freshness_timer.start()
+            self._check_sample_freshness()
+
+    def hideEvent(self, event):
+        if hasattr(self, '_freshness_timer'):
+            self._freshness_timer.stop()
+        super().hideEvent(event)
+
+    def _sample_error_details(self, *_):
+        from .detail_dialog import show_details
+        self._sample_detail_dialog=show_details(self, 'Datenquelle', self.sample_state.error or tr('Messwerte werden nicht mehr aktualisiert.'))
+
+    def _check_sample_freshness(self):
+        if not self.isVisible() or self._shutdown_pending:return
+        stale=self.sample_state.stale(time.monotonic(),self.sampler.interval)
+        self.sample_notice.setVisible(stale)
+        if stale:
+            if not self._sample_notice_added:
+                self.statusBar().addPermanentWidget(self.sample_notice)
+                self._sample_notice_added=True
+            age=round(time.monotonic()-self.sample_state.received) if self.sample_state.received is not None else 0
+            text=tr('Messwerte veraltet · seit {seconds} s').format(seconds=age)
+            self.sample_notice.setText(f'<a href="details">{text}</a>')
+            self.sample_notice.setAccessibleDescription(self.sample_state.error)
+
     def on_sample(self, d):
         if self._shutdown_pending:return
         import time
+        if hasattr(self,'sample_state'):
+            self.sample_state=self.sample_state.success(time.monotonic())
+            self.sample_notice.hide()
         started = time.perf_counter()
+        from .gpu_selection import ordered
+        d['gpus'] = ordered(d.get('gpus'))
         d["session_extrema"] = self._extrema.update(d)
+        d['gpu_extrema'] = {key: dict(value) for key, value in self._extrema.gpu_values.items()}
         disk_page = next((p for title, p in self.pages if title == 'Laufwerke'), None)
         if disk_page is not None and disk_page._smart_loaded:
             d['smart_reports'] = list(disk_page.smart_card._reports)
@@ -936,182 +991,29 @@ class MainWindow(QMainWindow):
         h['io_read'].append(d['io']['read'])
         h['io_write'].append(d['io']['write'])
         self.gpu_history.update(d['gpus'],gap=bool(d.get('_gap_before')))
+        primary = self.gpu_history.identity(g) if g else ''
+        if primary != getattr(self, '_primary_identity', None):
+            self._primary_identity = primary
+            h['gpu'].clear()
+            h['gpu'].extend((self.gpu_history.get(g) or {}).get('gpu', ()) if g else ())
         # History is populated above; repaint only the selected page.
         # Switching pages immediately uses the latest sample and all history.
         if self._sidebar_motion is None:
             self._refresh_visible_page()
         self.last_render_ms = (time.perf_counter() - started) * 1000
 
-    def _on_tray_activated(self, reason):
-        """Plasma uses Trigger for a single left click, Context for right click."""
-        if reason == QSystemTrayIcon.Trigger:
-            self._tray_click_timer.start()
-        elif reason == QSystemTrayIcon.DoubleClick:
-            self._tray_click_timer.stop()
-            self.show_from_tray()
-        # Context is handled by QSystemTrayIcon's persistent QMenu itself.
-
-
-
-    def _toggle_tray_window(self):
-        if self.isVisible() and not self.isMinimized():
-            self._hide_to_tray()
-        else:
-            self.show_from_tray()
-
-    def _hide_to_tray(self):
-        """Only hide when a real system tray is available to reopen the app."""
-        if not (self._tray and self._tray.isVisible() and
-                QSystemTrayIcon.isSystemTrayAvailable()):
-            return False
-        self._tray_was_maximized = self.isMaximized()
-        self.hide()
-        return True
-
-    def show_from_tray(self):
-        self._tray_click_timer.stop()
-        if self._tray_was_maximized or self.isMaximized():
-            self.showMaximized()
-        else:
-            self.showNormal()
-        if eco.enabled():
-            self._refresh_visible_page()  # Bring cached data up to date on restore.
-        self.raise_()
-        self.activateWindow()
-
-    def restart_for_renderer(self, commit=None):
-        """Defer reset commits until workers have stopped and a restart is safe."""
-        if getattr(self.manager,'pending_restart',False):
-            if commit is not None:return False
-            self.manager._restart()
-            return True
-        if self.restart_requested:
-            return True
-        if getattr(self.manager, 'status', '') == 'installing':
-            return False
-        for _title, page in self.pages:
-            worker = (page.benchmark.thread if isinstance(page, DiskPage) else
-                      page.worker if isinstance(page, DiagnosticCenter) else None)
-            if worker is not None and worker.isRunning():
-                return False
-        self._tray_click_timer.stop()
-        self._force_quit = True
-        self.restart_requested = True
-        self._reset_commit = commit
-        self._shutdown_not_before = time.monotonic()+motion.duration(260)/1000 if commit else 0
-        if self.close() or self._close_retry.isActive():
-            return True
-        self.restart_requested = self._force_quit = False
-        self._reset_commit = None
-        return False
-
-    def _restart_after_update(self):
-        # AppImages have an external atomic activation helper. ZIP editions
-        # restart through the launcher only after this process exits cleanly.
-        self.restart_requested = not bool(getattr(self.manager, 'pending_path', None))
-        self._force_quit = True
-        self.close()
-
-    def _cancel_shutdown(self,message):
-        self._shutdown_pending = self.restart_requested = self._force_quit = False
-        self.centralWidget().setEnabled(True)
-        if not self.sampler.isRunning():self.sampler.start()
-        for _title,page in self.pages:
-            if isinstance(page,NetworkPage):page.watcher.resume_after_shutdown()
-        self.manager.resume_after_shutdown()
-        from .lifecycle import resume_product_workers
-        resume_product_workers()
-        for _title,page in self.pages:
-            if isinstance(page,PreferencesPage):page._refresh_restore_button()
-        self.statusBar().showMessage(tr(message),8000)
-
-    def quit_from_tray(self):
-        self._tray_click_timer.stop()
-        self._force_quit = True
-        if not self.close() and not self._close_retry.isActive():
-            # An active benchmark may refuse to close until its worker stops.
-            self._force_quit = False
-
-    def _inform_missing_tray(self):
-        from PySide6.QtWidgets import QMessageBox
-        QMessageBox.information(self, APP_NAME, tr('Die KDE-Systemleiste ist momentan nicht verfügbar. Vitalux bleibt geöffnet. Um es vollständig zu beenden, deaktiviere die Tray-Funktion unter Einstellungen.'))
-
-
-    def closeEvent(self, event):
-        if not self._force_quit and settings.get('close_to_tray', True):
-            if self._hide_to_tray():
-                event.ignore()
-                return
-            # On systems without an available system tray, do not silently
-            # terminate the process when the user expects X to hide the app.
-            # Remain accessible until the user changes the setting or a host
-            # is available. Never hide a window that cannot be reopened.
-            event.ignore()
-            if not getattr(self, '_tray_missing_notice', False):
-                self._tray_missing_notice = True
-                QTimer.singleShot(0, self._inform_missing_tray)
+    def select_primary_gpu(self):
+        from .gpu_selection import ordered
+        if not self.last_sample:
             return
-        if not self._shutdown_pending:
-            # Save edits before a reset transaction is committed, never after it.
-            if self.pages and hasattr(self.pages[0][1], 'board') and self.pages[0][1].board.editing:
-                self.pages[0][1].save_editor()
-            self._shutdown_pending = True
-            self.sampler.stop()
-            self.manager.shutdown()
-            for _title, page in self.pages:
-                if isinstance(page,NetworkPage):
-                    page.shutdown()
-                if isinstance(page, DiskPage):
-                    worker = page.benchmark.thread
-                    if worker is not None and worker.isRunning():
-                        worker.stop()
-            self.centralWidget().setEnabled(False)
-            self.statusBar().showMessage(tr('Vitalux wird neu gestartet …' if self.restart_requested else 'Vitalux wird beendet …'))
-        workers_running = any(worker.isRunning() for worker in self.findChildren(QThread))
-        network_ready=all(page.shutdown() for _title,page in self.pages if isinstance(page,NetworkPage))
-        manager_ready = self.manager.shutdown() is not False
-        from .lifecycle import stop_product_workers
-        products_ready=stop_product_workers()
-        if workers_running or not network_ready or not manager_ready or not products_ready or time.monotonic() < self._shutdown_not_before:
-            event.ignore()
-            self._close_retry.start(25)
-            return
-        self._close_retry.stop()
-        if self._reset_commit is not None:
-            commit, self._reset_commit = self._reset_commit, None
-            try:
-                committed = commit() is not False
-            except Exception as exc:
-                log_exception(type(exc), exc, exc.__traceback__)
-                committed = False
-            if not committed:
-                event.ignore()
-                self._cancel_shutdown('Einstellungen konnten nicht zurückgesetzt werden.')
-                return
-        if (getattr(self.manager,'_restart_requested',False)
-                and not self.manager.prepare_exit()):
-            event.ignore()
-            self._cancel_shutdown('Neustart wird automatisch erneut vorbereitet …' if self.manager.restart_retrying
-                                  else 'Neustart fehlgeschlagen. Bitte unter Updates erneut versuchen.')
-            return
-        if self.restart_requested:
-            try:
-                from .updater import queue_appimage_restart
-                queue_appimage_restart()
-            except (OSError,RuntimeError):
-                event.ignore()
-                self._cancel_shutdown('Neustart fehlgeschlagen. Bitte unter Updates erneut versuchen.')
-                return
-        from .lifecycle import stop_gui_activity
-        stop_gui_activity(self)
-        self._tray_click_timer.stop()
-        self._tray_glow.stop()
-        self._mini_hud.hide()
+        self.last_sample['gpus'] = ordered(self.last_sample.get('gpus'))
+        gpu = next(iter(self.last_sample['gpus']), {})
+        self._extrema.select_primary(gpu)
+        self.last_sample['session_extrema'] = self._extrema.snapshot()
+        self.hist['gpu'].clear()
+        self.hist['gpu'].extend((self.gpu_history.get(gpu) or {}).get('gpu', ()))
+        self._primary_identity = self.gpu_history.identity(gpu)
+        self._refresh_visible_page()
+        self._mini_hud.update_sample(self.last_sample)
         if self._tray is not None:
-            self._tray.hide()
-        self.manager.shutdown()
-        super().closeEvent(event)
-        # quitOnLastWindowClosed(False) keeps the event loop alive when hidden
-        # in the tray. An intentional close must end the process explicitly.
-        if event.isAccepted():
-            QTimer.singleShot(0, QApplication.instance().quit)
+            self._tray.setToolTip(tray_tooltip(self.last_sample))

@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 os.environ['VITALUX_LOCAL_PREVIEW'] = '1'
+os.environ['VITALUX_SPEC_OFFLINE'] = '1'
 
 
 def main():
@@ -39,7 +40,7 @@ def main():
             while time.monotonic()<deadline:
                 app.processEvents()
                 time.sleep(min(.012,max(0,deadline-time.monotonic())))
-        settings.set_many({'theme': 'obsidian_gold', 'close_to_tray': False})
+        settings.set_many({'theme': 'obsidian_gold', 'close_to_tray': False, 'component_images': False})
         theme.set_mode('obsidian_gold')
         app.setStyleSheet(theme.stylesheet())
         info = distro.info()

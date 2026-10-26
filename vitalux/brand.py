@@ -19,7 +19,7 @@ from pathlib import Path
 
 from PySide6.QtCore import QEvent, QObject, QPointF, QRectF, Qt, QTimer
 from PySide6.QtGui import (QBrush, QColor, QIcon, QLinearGradient,
-                           QPainter, QPainterPath, QPen, QPixmap, QRadialGradient)
+                           QPainter, QPainterPath, QPen, QPixmap, QRadialGradient, QPicture)
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import QSizePolicy, QWidget
 
@@ -142,7 +142,7 @@ ACCENT_VARIANTS = {pal['accent']: key for key, pal in _PALETTES['variants'].item
 def _selected_variant():
     from . import theme,settings
     if theme.mode() in _PALETTES['theme_assets']:
-        return _PALETTES['theme_assets'][theme.mode()] if settings.get('accent','design_default')=='design_default' else None
+        return _PALETTES['theme_assets'][theme.mode()] if settings.observed('accent','design_default')=='design_default' else None
     return ACCENT_VARIANTS.get(str(theme.source_accent()).lower())
 
 
@@ -525,14 +525,18 @@ class PulseCore(QWidget):
             core, self._bands = _logo_layers(data)
             self._core_pixmap = _render_pixmap(core, rect.width(), rect.height(), ratio)
             self._core_signature = signature
+            origin=QPointF(rect.left()+rect.width()*_CENTER[0]/_VIEWBOX[2],rect.top()+rect.height()*_CENTER[1]/_VIEWBOX[3])
+            self._bands_picture=QPicture()
+            recorder=QPainter(self._bands_picture)
+            self._bands.render(recorder,QRectF(rect.left()-origin.x(),rect.top()-origin.y(),rect.width(),rect.height()))
+            recorder.end()
         painter.drawPixmap(rect.topLeft(), self._core_pixmap)
         origin = QPointF(rect.left()+rect.width()*_CENTER[0]/_VIEWBOX[2],
                          rect.top()+rect.height()*_CENTER[1]/_VIEWBOX[3])
         painter.save()
         painter.translate(origin)
         painter.rotate(self._phase)
-        self._bands.render(painter, QRectF(rect.left()-origin.x(), rect.top()-origin.y(),
-                                           rect.width(), rect.height()))
+        painter.drawPicture(0,0,self._bands_picture)
         painter.restore()
 
     def _paint_pulse(self, painter, rect):

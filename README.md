@@ -11,19 +11,21 @@
 
 ![Vitalux running in English with Obsidian Gold and real system measurements](assets/vitalux-dashboard-preview.png)
 
-**Unstable v0.9.6.4-unstable.1.** Download this test build from the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest) for daily use.
+**Unstable v0.9.6.4-unstable.2.** Download this test build from the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest) for daily use.
 
 ## Features
 
-- Live CPU, GPU, memory, storage, network and sensor measurements, with charts, alerts and local history.
+- Live CPU, GPU, memory, storage, network and sensor measurements, with saved chart choices, alerts and local history. Multi-GPU systems can select a preferred GPU for the overview, MiniHUD and diagnostics.
 - A rearrangeable dashboard, MiniHUD and six customizable designs, from smoked glass and glass instruments to prismatic space and reactor HUDs. **Obsidian Gold is the default.**
 - Per-app connections, usage warnings and optional, reversible TCP/UDP session blocks.
 - SMART information, drive benchmarks and local diagnostic reports.
 - Measured component power where supported, with current GPU watts and a readable power limit alongside the live values.
-- Complete CPU/thread meters and broader hardware identification, with centered component information and matching product pictures. CPU, GPU and mainboard headers include manufacturer specifications and a complete-specifications dialog. Cutouts are preferred; matching photos with backgrounds are used when needed. Pictures remain available offline.
+- Complete CPU/thread meters and broader hardware identification, with centered component information and matching product pictures. CPU, GPU and mainboard headers include manufacturer specifications and a complete-specifications dialog. Cutouts are preferred; matching photos with backgrounds are used when needed. Pictures remain available offline. A component context menu can refresh its data, reject a wrong image or choose a local picture.
 - **Crystal Atrium:** the glass surfaces on the original static Atrium background, with editable overview tiles. The restored design uses the shared overview layout and current rounded gallery previews.
 - One selectable CPU history chart with separate unit scales for usage, temperature and clock speed.
 - German and English interfaces, manufacturer datasheets, guides and release notes; monitoring and cached product data work offline.
+
+Background image caches are bounded without reducing image resolution or animation quality. Sampling failures are marked explicitly, and missing sensors do not trigger a false recovery.
 
 Missing sensor fields are hidden; real zeroes such as stopped fans remain visible. CPU, GPU and board power describe their reported domains, never total PC wall power. Hostname lookups run only on request; update checks contact the official GitHub release service.
 

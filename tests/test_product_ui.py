@@ -12,7 +12,7 @@ from PySide6.QtCore import QThread
 from PySide6.QtGui import QImage,QPainter,QColor
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
-from vitalux import i18n, product_ui, theme, pages
+from vitalux import i18n, product_ui, theme, pages, system_pages
 from vitalux.product_images import product_key
 from vitalux.widgets import label
 from vitalux.ui_locale import retranslate_widgets
@@ -68,7 +68,7 @@ with tempfile.TemporaryDirectory() as directory:
                   session='Wayland', vendor='ASUS', product='Desktop', board='ASUS ROG STRIX B650-A GAMING WIFI',
                   bios='1', plasma='6', kwin='6', frameworks='6', mesa='25',
                   board_product=dict(kind='mainboard', vendor='ASUS', model='ROG STRIX B650-A GAMING WIFI', revision='1.0', exact=True))
-    with patch.object(pages, 'system_static', return_value=static):
+    with patch.object(system_pages, 'system_static', return_value=static):
         board = pages.SystemPage(dict(name='Linux'))
         assert board.board_name.text() == static['board_product']['model']
         assert board.board_header.product['kind'] == 'mainboard'

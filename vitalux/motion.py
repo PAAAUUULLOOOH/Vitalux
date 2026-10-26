@@ -12,14 +12,14 @@ MODES = ("smooth", "reduced", "off")
 def level():
     if eco.enabled():
         return 'off'
-    value = settings.get("motion", "smooth")
+    value = settings.observed("motion", "smooth")
     return value if value in MODES else "smooth"
 
 
 def duration(milliseconds):
     base = max(0, int(milliseconds))
     profile = level()
-    if profile == "off" or eco.enabled() or settings.get("theme", DEFAULT_THEME) == "minimal":
+    if profile == "off" or eco.enabled() or settings.observed("theme", DEFAULT_THEME) == "minimal":
         return 0
     if profile == "reduced":
         return max(50, min(110, round(base * .43)))
@@ -27,4 +27,4 @@ def duration(milliseconds):
 
 
 def enabled():
-    return not eco.enabled() and level() != "off" and settings.get("theme", DEFAULT_THEME) != "minimal"
+    return not eco.enabled() and level() != "off" and settings.observed("theme", DEFAULT_THEME) != "minimal"

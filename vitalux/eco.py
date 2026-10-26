@@ -11,17 +11,17 @@ SAMPLE_INTERVAL = 10
 
 
 def enabled():
-    return settings.get(KEY, False) is True
+    return settings.observed(KEY, False) is True
 
 
 def theme_name():
-    return 'minimal' if enabled() else settings.get('theme', DEFAULT_THEME)
+    return 'minimal' if enabled() else settings.observed('theme', DEFAULT_THEME)
 
 
 def interval():
     if enabled():
         return SAMPLE_INTERVAL
     try:
-        return max(1, min(5, int(settings.get('interval', 1))))
+        return max(1, min(5, int(settings.observed('interval', 1))))
     except (ValueError, TypeError):
         return 1

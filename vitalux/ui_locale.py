@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (QLabel as _QLabel, QPushButton as _QPushButton,
     QListWidgetItem as _QListWidgetItem, QMessageBox as _QMessageBox,
     QFileDialog as _QFileDialog)
 from .i18n import tr
+from functools import lru_cache
 from PySide6.QtCore import Qt, QRectF, QSize, QVariantAnimation, QEasingCurve
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen, QPalette
 
@@ -414,14 +415,17 @@ class QFileDialog(_QFileDialog):
 
 # v0.9.3.10: retranslate existing widgets in place. We deliberately do not
 # reconstruct pages, which would reset scrollbars and destroy running workers.
-def original_text(text):
-    if not isinstance(text, str):
-        return text
+@lru_cache(maxsize=1)
+def _reverse_translations():
     from .i18n import EN, EN_MORE
     reverse = {english: german for mapping in (EN, EN_MORE) for german, english in mapping.items()}
     reverse.update({english.upper(): german.upper() for mapping in (EN, EN_MORE)
                     for german, english in mapping.items()})
-    return reverse.get(text, text)
+    return reverse
+
+
+def original_text(text):
+    return _reverse_translations().get(text,text) if isinstance(text,str) else text
 
 
 def retranslate_widgets(root):

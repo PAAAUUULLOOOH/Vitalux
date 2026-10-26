@@ -44,6 +44,19 @@ def get(key, default=None):
     return copy.deepcopy(_snapshot().get(key, default))
 
 
+def observed(key, default=None):
+    """Read the latest observed snapshot in paint paths, without filesystem I/O.
+
+    Normal getters still detect external edits immediately. GUI changes update
+    this snapshot atomically; regular sample/settings reads discover external
+    changes without thousands of stat calls in an animation frame.
+    """
+    if _cache_value is None or not _cache_identity or _cache_identity[0]!=PATH:
+        return get(key,default)
+    value=_cache_value.get(key,default)
+    return value if type(value) in (str,int,float,bool,type(None)) else copy.deepcopy(value)
+
+
 def migrate_crystal_designs():
     from . import design_catalog
     before=_load();after=design_catalog.migrate(before)
