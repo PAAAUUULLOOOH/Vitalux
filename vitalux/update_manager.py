@@ -20,26 +20,90 @@ class _CheckThread(QThread):
         except Exception as exc:self.done.emit({'error':str(exc)})
 
 
+def _stable_target(records, candidate):
+    """Resolve only fresh, verified parity covering both running and staged code."""
+    stable=records.get('stable',{});test=records.get('unstable',{})
+    if not all(record.get('ok') and not record.get('stale') for record in (stable,test)):return None
+    if not (test.get('manifest_verified') is True and test.get('stable_verified') is True and
+            test.get('has_test_changes') is False and not test.get('eligible') and
+            (test.get('same_as_stable') is True or test.get('stable_contains_test') is True)):return None
+    try:
+        covered=test.get('covered_test_version') or test['latest']
+        if versions.channel(covered)!='unstable':return None
+        if (stable['latest']!=test['stable_version'] or versions.channel(stable['latest'])!='stable' or
+                not (versions.channel(test['latest'])=='unstable' or test['latest']==stable['latest']) or
+                versions.parse(stable['latest'])[0]<versions.parse(__version__)[0] or
+                versions.key(stable['latest'])<versions.key(candidate) or
+                versions.key(covered)<versions.key(candidate) or
+                (versions.channel(__version__)=='unstable' and versions.key(covered)<versions.key(__version__))):return None
+        if not stable.get('url') or len(stable.get('sha256',''))!=64:return None
+        int(stable['sha256'],16)
+        return stable
+    except (KeyError,ValueError,TypeError):return None
+
+
 class _InstallThread(QThread):
     progress = Signal(float)
     done = Signal(str)
 
-    def __init__(self, url, sha256, parent):
+    def __init__(self, url, sha256, parent, pending=None):
         super().__init__(parent)
         self.url,self.sha256=url,sha256
         self.channel,self.version=parent.channel,parent.latest
         self.expected_size=parent.records.get(parent.channel,{}).get('bytes')
         self.pending_path=None
         self.kind='appimage' if updater.appimage_path() else 'zip'
+        self.promotion_guard=self.channel=='unstable' and parent.records.get('unstable',{}).get('manifest_verified') is True
+        if pending:
+            self.channel,self.version=pending['channel'],pending['version']
+            self.sha256=pending['sha256'];self.pending_path=pending.get('path');self.kind=pending['kind']
+            self.promotion_guard=pending.get('promotion_guard',False)
+        self.resume=bool(pending)
+
+    def _promoted_target(self):
+        if self.channel!='unstable' or not self.promotion_guard:return None
+        try:return _stable_target(updater.catalog(),self.version)
+        except Exception:return None  # An offline check cannot authorize a channel change.
+
+    def _use_stable(self,record):
+        self.channel='stable';self.version=record['latest']
+        self.url,self.sha256=record['url'],record['sha256'];self.expected_size=record.get('bytes')
+
+    def _download(self):
+        return updater.install(self.url,sha256=self.sha256,progress=self._report_progress,defer=True,expected_size=self.expected_size)
+
+    def _discard(self,path):
+        # Only remove the exact, superseded staged file, never its profile directory.
+        if path and path!=self.pending_path:
+            try:
+                candidate=Path(path);candidate.unlink(missing_ok=True)
+                if self.kind=='zip' and candidate.parent.name.startswith('prepared-zip-'):
+                    candidate.parent.rmdir()
+            except OSError:pass
 
     def run(self):
         try:
+            promoted=self._promoted_target()
+            if promoted:self._use_stable(promoted)
             if self.channel!=profiles.installed():
                 profiles.backup('stable');profiles.backup('unstable')
-            self.pending_path=updater.install(self.url,sha256=self.sha256,progress=self._report_progress,defer=True,expected_size=self.expected_size)
+            if not self.resume or promoted:
+                previous=self.pending_path
+                self.pending_path=self._download()
+                self._discard(previous)
+            # Promotion can happen while the normal Unstable transfer is in flight.
+            promoted=self._promoted_target()
+            if promoted:
+                previous=self.pending_path;self._use_stable(promoted)
+                profiles.backup('stable');profiles.backup('unstable')
+                self.pending_path=self._download()
+                self._discard(previous)
             profiles.select(self.channel)
             self.done.emit('')
         except Exception as exc:
+            if not self.resume:
+                abandoned,self.pending_path=self.pending_path,None
+                self._discard(abandoned)
             reason=tr('Die Verbindung hat zu lange nicht geantwortet. Bitte den Download erneut versuchen.') if isinstance(exc,TimeoutError) else str(exc)
             self.done.emit(f"{tr('Installation fehlgeschlagen:')} {reason}")
 
@@ -78,6 +142,7 @@ class UpdateManager(QObject):
         self.checking=False;self.progress_value=0.;self.cancelling=False
         self.pending_path=None;self.pending_restart=False;self.pending={}
         self._activation_started=False;self._restart_requested=False
+        self._pending_checked=False
         self.automatic_stable_return=False;self._auto_return_attempted=set()
         self._auto_stable_timer=QTimer(self);self._auto_stable_timer.setSingleShot(True)
         self._auto_stable_timer.timeout.connect(self._return_to_stable)
@@ -177,19 +242,7 @@ class UpdateManager(QObject):
     @property
     def can_return_automatically(self):
         if profiles.installed()!='unstable' or self._shutting_down or self.checking or self.pending_restart or self.status in ('installing','installed','preview'):return False
-        stable=self.records.get('stable',{});test=self.records.get('unstable',{})
-        if not all(record.get('ok') and not record.get('stale') for record in (stable,test)):return False
-        if not (test.get('manifest_verified') is True and test.get('stable_verified') is True and
-                test.get('has_test_changes') is False and not test.get('eligible') and
-                (test.get('same_as_stable') is True or test.get('stable_contains_test') is True)):return False
-        try:
-            if versions.channel(test.get('latest',''))=='stable' and not test.get('covered_test_version'):return False
-            return (stable['latest']==test['stable_version'] and versions.channel(stable['latest'])=='stable' and
-                    (versions.channel(test['latest'])=='unstable' or test['latest']==stable['latest']) and
-                    versions.parse(stable['latest'])[0]>=versions.parse(__version__)[0] and
-                    versions.key(test.get('covered_test_version') or test['latest'])>=versions.key(__version__) and
-                    bool(stable.get('url')) and len(stable.get('sha256',''))==64)
-        except (KeyError,ValueError,TypeError):return False
+        return _stable_target(self.records,__version__) is not None
 
     def _return_to_stable(self):
         if not self.can_return_automatically:return
@@ -264,7 +317,13 @@ class UpdateManager(QObject):
             self._auto_stable_timer.start(0)
 
     def install(self):
-        if self._shutting_down or os.environ.get('VITALUX_LOCAL_PREVIEW')=='1' or not self.can_install:return
+        if self._shutting_down or os.environ.get('VITALUX_LOCAL_PREVIEW')=='1':return
+        # The ordinary update action resolves parity itself; it does not depend
+        # on a separate return button or the automatic-check timer winning a race.
+        candidate=self.latest if self.latest and versions.channel(self.latest)=='unstable' else __version__
+        if self.channel=='unstable' and self.can_return_automatically and _stable_target(self.records,candidate):
+            self.automatic_stable_return=True;self.set_channel('stable')
+        if not self.can_install:return
         self.status='installing';self.cancelling=False;self.progress_value=0.;self.progress.emit(0.);self.changed.emit()
         worker=_InstallThread(self.url,self.sha256,self)
         worker.progress.connect(self._on_progress)
@@ -289,6 +348,11 @@ class UpdateManager(QObject):
         cancelled = self.cancelling
         self.cancelling=False
         if error:
+            if getattr(worker,'resume',False):
+                self.status='installed';self.error=error;self.error_kind='restart'
+                self.restart_attempts+=1;self._restart_retrying=self.restart_attempts<3
+                if self._restart_retrying:self._restart_timer.start(600*2**(self.restart_attempts-1))
+                self.changed.emit();return
             self.status='error';self.error=error;self.error_kind='install'
             if not cancelled:events.record('update_failed', stage='install')
             self.changed.emit();return
@@ -297,7 +361,11 @@ class UpdateManager(QObject):
         self.pending={'source_version':__version__,'version':getattr(worker,'version',self.latest),
                       'channel':getattr(worker,'channel',self.channel),'path':self.pending_path,
                       'kind':getattr(worker,'kind','appimage' if self.pending_path else 'zip'),
-                      'sha256':getattr(worker,'sha256',self.sha256)}
+                      'sha256':getattr(worker,'sha256',self.sha256),
+                      'promotion_guard':bool(getattr(worker,'promotion_guard',False))}
+        self.channel=self.pending['channel']
+        self.automatic_stable_return|=self.channel=='stable' and profiles.installed()=='unstable'
+        self._pending_checked=bool(getattr(worker,'resume',False))
         self.pending_restart=True;self.status='installed';self.error='';self._timer.stop()
         self.restart_attempts=0;self._restart_retrying=False
         self._restart_event('installation_prepared')
@@ -317,6 +385,14 @@ class UpdateManager(QObject):
     def _restart(self):
         if self._shutting_down or self._restart_requested:return
         self._restart_timer.stop()
+        if self.pending.get('promotion_guard') and self.pending.get('channel')=='unstable' and not self._pending_checked:
+            if self.status=='installing':return
+            self.status='installing';self.changed.emit()
+            worker=_InstallThread('',self.pending['sha256'],self,pending=dict(self.pending))
+            worker.progress.connect(self._on_progress)
+            worker.done.connect(lambda error,w=worker:self._on_installed(error,w))
+            self._start_worker(worker)
+            return
         self._restart_requested=True;self._relaunch_on_exit=True
         self.restart_attempts+=1;self._restart_retrying=False
         self.error=''
@@ -331,6 +407,10 @@ class UpdateManager(QObject):
 
     def prepare_exit(self):
         """Activate only after the window has finished stopping all workers."""
+        if self.pending.get('promotion_guard') and self.pending.get('channel')=='unstable' and not self._pending_checked:
+            # A manual exit or failed promotion must retain the staged package
+            # for revalidation, never activate the superseded test build.
+            return True
         if self.pending_path and self.pending_restart and not self._activation_started:
             try:
                 if self.pending.get('kind','appimage')=='zip':

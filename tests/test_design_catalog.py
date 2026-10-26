@@ -25,10 +25,31 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
     for old,target in catalog.RETIRED.items():
         before=dict(personal,theme=old,accent='#ff00ff',background_style='theme_default',_crystal_design_revision=2)
         after=appearance.migrate(before)
-        assert after['theme']==target and after['background_style']==old
+        assert after['theme']==target and after['background_style']==('theme_default' if old=='crystal_glass' else old)
         assert all(after[k]==v for k,v in personal.items())
         assert appearance.migrate(after)==after
-    assert catalog.migrate(dict(theme='crystal_glass'))['theme']=='crystal_glass'
+    assert catalog.migrate(dict(theme='crystal_glass'))['theme']=='crystal_atrium'
+    for revision in (1,2):
+        before=dict(theme='glass',accent='palette:crystal_atrium',_design_catalog_revision=revision,
+                    design_settings={'glass':dict(accent='palette:crystal_atrium')})
+        after=catalog.migrate(before)
+        assert after['accent']=='palette:crystal_atrium_original'
+        assert after['design_settings']['glass']['accent']=='palette:crystal_atrium_original'
+        assert before['design_settings']['glass']['accent']=='palette:crystal_atrium'
+    for revision in (1,2):
+        for background in ('theme_default','custom_image','crystal_glass'):
+            before=dict(personal,theme='crystal_glass',accent='#aabbcc',background_style=background,
+                        custom_background_selected='own.png',_design_catalog_revision=revision,
+                        design_settings={'crystal_glass':dict(accent='#123456',background_style=background)})
+            after=catalog.migrate(before)
+            assert after['theme']=='crystal_atrium' and after['accent']=='#aabbcc'
+            assert after['background_style']==background and after['custom_background_selected']=='own.png'
+            assert after['design_settings']['crystal_atrium']==before['design_settings']['crystal_glass']
+            assert 'crystal_glass' not in after['design_settings'] and catalog.migrate(after)==after
+    # The factory scene must use the actual original image, independently of accent or motion.
+    original=backdrops._cover(QSize(180,120),catalog.ROOT/'assets/backgrounds/crystal_atrium.png').toImage()
+    assert backdrops.render(QSize(180,120),'original:crystal_atrium')[0].toImage()==original
+    assert backdrops.render(QSize(180,120),'original:crystal_atrium',phase=.9)[0].toImage()==original
     assert 'accent' not in catalog.migrate({})
     settings.set_many(dict(personal,theme='glass',accent='#123456',background_style='prism',motion='off',_design_catalog_revision=1))
     host=Host();host.apply_appearance();page=PreferencesPage(host)

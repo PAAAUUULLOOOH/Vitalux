@@ -16,13 +16,13 @@ Use **Edit layout** on Overview to arrange cards. Tiles stay stationary when edi
 
 ## Designs and backgrounds
 
-Choose one of six rounded preview tiles under **Settings → Appearance → Design**: **Obsidian Gold**, **Glass**, **Crystal Glass**, **Nebula Prism**, **Quantum Core** and **Light**. Obsidian Gold is the default for new profiles. Design changes retain your page, scroll position and running measurements. The selected check stays inside the tile's upper-right edge.
+Choose one of six rounded preview tiles under **Settings → Appearance → Design**: **Obsidian Gold**, **Glass**, **Crystal Atrium**, **Nebula Prism**, **Quantum Core** and **Light**. Obsidian Gold is the default for new profiles. Design changes retain your page, scroll position and running measurements. The selected check stays inside the tile's upper-right edge.
 
-Every retained design supports preset/custom accents and backgrounds. Choose a retired design's original name in either selector to reuse only its colors or background. It does not restore the retired design's layout, materials or effects. Glass and Crystal Glass are separate complete designs.
+Every retained design supports preset/custom accents and backgrounds. Choose a retired design's original name in either selector to reuse only its colors or background. It does not restore the retired design's layout, materials or effects. Glass and Crystal Atrium are separate complete designs. Crystal Glass remains available as a color and background preset.
 
 **Original colors** restores factory accents; **Original background** restores exactly the active design's factory backdrop without changing its accent. Choices are remembered separately for each design. **Reset design** restores only the current design's color/background choices; saved colors, imported images, other designs, motion and dashboard layouts remain intact. Own images still support Fill, Fit, Stretch, Center and Tile. The Sparkle background is animated; archived design backgrounds are static.
 
-Crystal Glass uses smooth glass surfaces on the shared window background. Its overview supports the same layout editor: move or hide tiles, restore hidden tiles, undo, discard or save changes. Nebula Prism retains its floating dock and prism instruments. Quantum Core retains its sidebar, angular panels and reactor instruments. Original Crystal Glass and Quantum Core backgrounds stay static while logos and instruments follow **Animations**. **Ultra Eco** temporarily uses a plain skin, CPU rendering and a ten-second sample interval. Disabling it restores the last design and its saved appearance.
+Crystal Atrium uses smooth glass surfaces on the shared window background. Its overview supports the same layout editor: move or hide tiles, restore hidden tiles, undo, discard or save changes. Nebula Prism retains its floating dock and prism instruments. Quantum Core retains its sidebar, angular panels and reactor instruments. Crystal Atrium uses its original static Atrium background; Quantum Core also stays static while logos and instruments follow **Animations**. **Ultra Eco** temporarily uses a plain skin, CPU rendering and a ten-second sample interval. Disabling it restores the last design and its saved appearance.
 
 Overview headings, names and values are centered. The larger top card centers the distribution name relative to its entire width; a larger distro logo and larger system-information chips leave room for their text and move the remaining dashboard down. Component cards follow the same order: heading, load display, available name, details and supported watts. GPU overview omits watts; Graphics retains current watts and the limit. Long names are shortened with an ellipsis; hover over shortened text to read the full name. The load display keeps the same size when power measurements appear or disappear.
 
@@ -60,7 +60,6 @@ CPU rendering is the stable default. Experimental OpenGL, X11/OpenGL, Wayland/Op
 
 MiniHUD reuses the main sensor stream and offers three layouts and adjustable opacity. Your desktop compositor determines its placement relative to fullscreen applications.
 
-Crystal Glass retains the original liquid-glass composition with three live CPU/GPU/RAM spheres and a static factory stage. The former Crystal Glass appearance remains available as colors and a static background preset for the retained designs; its complete design has been replaced by Glass.
 
 ## Reset settings
 
@@ -76,13 +75,15 @@ Use **DE / EN** in the navigation area. Labels, the native guide, update notes a
 
 Vitalux checks the official release at startup and about every six hours. Read the current-language notes in **Updates**, then choose **Update now**. The full archive/AppImage and checksum must be available. AppImage replacement is atomic; a ZIP installation keeps its previous version for rollback. Personal data and settings are retained. Updates check free space before staging files and report interrupted downloads; a failed download does not replace the installed application. A centered percentage shows total preparation progress: downloading uses 0–80%, followed by verification and staging up to 100%. Slow connections report smaller received chunks. An idle socket times out after 15 seconds, subject to DNS and connection setup. When the server omits its size header, the official asset size or verified test manifest supplies the total. Progress stays at 0 until reception finishes only if neither source provides a size. **Cancel download** stops a transfer without activating the destination; a blocked read can take until its timeout to finish. **Retry download** starts a fresh verified transfer after a failure. Cancellation is unavailable once verification/preparation begins.
 
+When Stable covers the installed or prepared Unstable build, the normal update automatically installs and starts Stable. This is checked again during preparation and before the automatic restart. There is no separate return step. Unstable becomes available again only when a newer test build exists.
+
 The full release ZIP includes Python/Qt. Manual delta ZIPs are only for overlaying the immediately preceding portable ZIP version, never for AppImages. Keep a backup before a manual overlay.
 
 ## Troubleshooting
 
 Normal settings: `${XDG_CONFIG_HOME:-~/.config}/vitalux`. Logs: `${XDG_STATE_HOME:-~/.local/state}/vitalux`. Diagnostic Center exports local reports; **About → Guide** opens the translated tour.
 
-Explicit `Designs-testen.sh` previews keep their separate `design-test-data/` profile and disable releases. Use the normal stable `run.sh` or AppImage for update-enabled operation.
+Explicit `Designs-testen.sh` previews keep their separate `design-test-data/` profile and disable releases. Use the normal `run.sh` or AppImage for update-enabled operation.
 
 ## Update channels and profiles
 

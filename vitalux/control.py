@@ -560,7 +560,7 @@ class PreferencesPage(Page):
         self._refresh_restore_button()
         self._search_targets = [
             ('appearance','Komponentenbilder anzeigen CPU RAM Grafik Mainboard',self.component_images),
-            ('appearance', 'Design Light Glass Obsidian Crystal Glass Nebula Prism Quantum Core', self.design_tiles[0]),
+            ('appearance', 'Design Light Glass Obsidian Crystal Atrium Nebula Prism Quantum Core', self.design_tiles[0]),
             ('appearance', 'Akzentfarbe Eigene Farben Bearbeiten Löschen', self.accent_combo),
             ('appearance', 'Hintergrund Bild Hintergrundfarbe automatisch', self.background_combo),
             ('appearance', 'Animationen Bewegung Übergang', self.motion_combo),

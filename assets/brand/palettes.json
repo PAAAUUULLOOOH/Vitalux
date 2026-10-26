@@ -131,8 +131,8 @@
       "secondary": "#ffb22f",
       "fixed": true
     },
-    "crystal-glass": {
-      "name": "Crystal Glass",
+    "crystal-atrium": {
+      "name": "Crystal Atrium",
       "accent": "#94dfff",
       "top": "#e6f8ff",
       "mid": "#98d9ff",
@@ -148,7 +148,7 @@
     "eclipse_crystal": "eclipse-crystal",
     "nebula_prism": "nebula-prism",
     "quantum_core": "quantum-core",
-    "crystal_glass": "crystal-glass"
+    "crystal_atrium": "crystal-atrium"
   },
   "custom_accent_policy": "Preserve the outlined geometry; moderately richer tint for the circle logo only.",
   "motion_seconds": {

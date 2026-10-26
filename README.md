@@ -11,7 +11,7 @@
 
 ![Vitalux running in English with Obsidian Gold and real system measurements](assets/vitalux-dashboard-preview.png)
 
-**Stable v0.9.6.3.** Download the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). Optional test builds are available through the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable).
+**Unstable v0.9.6.4-unstable.1.** Download this test build from the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest) for daily use.
 
 ## Features
 
@@ -21,7 +21,7 @@
 - SMART information, drive benchmarks and local diagnostic reports.
 - Measured component power where supported, with current GPU watts and a readable power limit alongside the live values.
 - Complete CPU/thread meters and broader hardware identification, with centered component information and matching product pictures. CPU, GPU and mainboard headers include manufacturer specifications and a complete-specifications dialog. Cutouts are preferred; matching photos with backgrounds are used when needed. Pictures remain available offline.
-- **Crystal Glass:** the glass surfaces on one static background, with editable overview tiles. The restored design uses the shared overview layout and current rounded gallery previews.
+- **Crystal Atrium:** the glass surfaces on the original static Atrium background, with editable overview tiles. The restored design uses the shared overview layout and current rounded gallery previews.
 - One selectable CPU history chart with separate unit scales for usage, temperature and clock speed.
 - German and English interfaces, manufacturer datasheets, guides and release notes; monitoring and cached product data work offline.
 
@@ -59,7 +59,7 @@ Keep the runtime, libraries, assets and launcher together. **Code → Download Z
 
 ## Appearance and controls
 
-Choose **Obsidian Gold**, **Glass**, **Crystal Glass**, **Nebula Prism**, **Quantum Core** or **Light** in **Settings → Appearance**. Each design supports preset or custom accent colors and independently selectable backgrounds. The original names of retired designs identify their saved background and color presets; these presets do not change the selected design's layout or effects.
+Choose **Obsidian Gold**, **Glass**, **Crystal Atrium**, **Nebula Prism**, **Quantum Core** or **Light** in **Settings → Appearance**. Each design supports preset or custom accent colors and independently selectable backgrounds. The original names of retired designs identify their saved background and color presets; these presets do not change the selected design's layout or effects.
 
 **Original colors** and **Original background** restore the active design's factory choices. Customization is remembered separately for each design; **Reset design** resets only its colors and background, keeping imported pictures, saved colors and other designs intact. Rounded preview tiles clip their artwork and keep the selected check inside the upper-right corner.
 
@@ -69,7 +69,7 @@ Overview captions are centered in a consistent order below equally sized load di
 
 A startup window follows the saved design and shows the actual preparation stage while hardware discovery, first measurements, cached pictures/specifications and the interface are prepared. Existing data is loaded before the main window opens; missing online data does not hold startup open. Motion-off and Ultra Eco use a static startup view.
 
-**Ultra Eco** temporarily uses a plain skin, CPU rendering and a ten-second sample interval. Turning it off restores the last design and its saved appearance. Quantum Core and Crystal Glass retain static factory backgrounds; logo and instrument motion follow the animation setting.
+**Ultra Eco** temporarily uses a plain skin, CPU rendering and a ten-second sample interval. Turning it off restores the last design and its saved appearance. Quantum Core and Crystal Atrium retain static factory backgrounds; logo and instrument motion follow the animation setting.
 
 
 
@@ -81,7 +81,7 @@ The update bar shows a centered percentage for the complete preparation process.
 
 When a fresh verified check confirms that Stable contains all current Unstable changes and there is no separate test offer, Vitalux automatically installs Stable and restarts into its separate profile. New test builds never move a Stable installation back automatically; entering Unstable remains a manual action.
 
-After a verified update or channel switch, Vitalux finishes background work and **restarts automatically**. The target stays fixed throughout. Temporary restart preparation failures are retried automatically, up to three attempts; persistent failures retain the verified package and show an explicit recovery action. Stable and Unstable use separate profiles; only the first test launch copies Stable preferences. **Restore defaults** in Maintenance fully resets only the active profile and reopens the guide. Upgrading from v0.9.6.2 still requires its existing **Restart now** action once; current versions restart automatically after verified preparation. Notes follow your selected language and remain readable offline. Cached information alone cannot authorize an update.
+After a verified update or channel switch, Vitalux finishes background work and **restarts automatically**. A fresh parity check can promote a prepared Unstable update directly to Stable, including during download and before restarting. Browsing other channels never changes the prepared target. Temporary restart preparation failures are retried automatically, up to three attempts; persistent failures retain the verified package and show an explicit recovery action. Stable and Unstable use separate profiles; only the first test launch copies Stable preferences. **Restore defaults** in Maintenance fully resets only the active profile and reopens the guide. Upgrading from v0.9.6.2 still requires its existing **Restart now** action once; current versions restart automatically after verified preparation. Notes follow your selected language and remain readable offline. Cached information alone cannot authorize an update.
 
 Updates check SHA-256 and preserve recovery data. For manual verification, put the matching release manifest beside your downloads and run:
 

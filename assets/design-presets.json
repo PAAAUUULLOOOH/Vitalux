@@ -304,26 +304,25 @@
       "title": "Crystal Atrium",
       "palette": {
         "title": "Crystal Atrium",
-        "subtitle": "LIQUID GLASS / STATIC LIGHT",
-        "bg": "#050818",
-        "sidebar": "#0a1030",
-        "card": "#0e1536",
-        "border": "#a9bcff",
-        "track": "#16204a",
-        "grid": "#26336a",
-        "text": "#f5f8ff",
-        "muted": "#a9b6dc",
-        "accent": "#7fd6ff",
-        "secondary": "#ff7ad9",
-        "light": "#ffffff",
-        "bloom": "#ffc46b",
-        "shadow": "#02030a",
+        "subtitle": "LIQUID GLASS / BLUE VIOLET",
+        "bg": "#080f26",
+        "sidebar": "#102347",
+        "card": "#182a48",
+        "border": "#b5d4ff",
+        "track": "#294569",
+        "grid": "#405779",
+        "text": "#f2f8ff",
+        "muted": "#c0cce4",
+        "accent": "#94dfff",
+        "secondary": "#baa7ff",
+        "light": "#dff7ff",
+        "bloom": "#8970db",
+        "shadow": "#0b1230",
         "series": [
-          "#7fd6ff",
-          "#ff7ad9",
-          "#ffc46b",
-          "#6bffd0",
-          "#b79bff"
+          "#94dfff",
+          "#baa7ff",
+          "#cdeaff",
+          "#83b1df"
         ]
       },
       "background": "backgrounds/crystal_atrium.png"
@@ -381,6 +380,34 @@
         ]
       },
       "background": "backgrounds/crystal_glass.png"
+    },
+    "crystal_atrium_original": {
+      "title": "Crystal Atrium · Original",
+      "palette": {
+        "title": "Crystal Atrium · Original",
+        "subtitle": "LIQUID GLASS / STATIC LIGHT",
+        "bg": "#050818",
+        "sidebar": "#0a1030",
+        "card": "#0e1536",
+        "border": "#a9bcff",
+        "track": "#16204a",
+        "grid": "#26336a",
+        "text": "#f5f8ff",
+        "muted": "#a9b6dc",
+        "accent": "#7fd6ff",
+        "secondary": "#ff7ad9",
+        "light": "#ffffff",
+        "bloom": "#ffc46b",
+        "shadow": "#02030a",
+        "series": [
+          "#7fd6ff",
+          "#ff7ad9",
+          "#ffc46b",
+          "#6bffd0",
+          "#b79bff"
+        ]
+      },
+      "background": "backgrounds/crystal_atrium.png"
     }
   }
 }

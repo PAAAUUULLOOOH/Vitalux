@@ -8,7 +8,7 @@ from PySide6.QtCore import QPointF, QRectF, Qt, QVariantAnimation, QEasingCurve
 from PySide6.QtGui import (QColor, QFont, QLinearGradient, QPainter,
                            QPainterPath, QPen, QPixmap, QRadialGradient)
 from PySide6.QtWidgets import QWidget, QLabel
-from . import nebula_prism, quantum_core, crystal_glass
+from . import nebula_prism, quantum_core, crystal_atrium
 
 COLLECTIONS = {
     'eclipse_crystal': dict(title='Eclipse Crystal', subtitle='BLACK CRYSTAL / CHAMPAGNE',
@@ -19,7 +19,7 @@ COLLECTIONS = {
 }
 COLLECTIONS['nebula_prism'] = nebula_prism.PALETTE
 COLLECTIONS['quantum_core'] = quantum_core.PALETTE
-COLLECTIONS['crystal_glass'] = crystal_glass.PALETTE
+COLLECTIONS['crystal_atrium'] = crystal_atrium.PALETTE
 KEYS = tuple(COLLECTIONS)
 
 
@@ -37,7 +37,7 @@ def color(value, alpha=255):
 
 
 def shape(rect, mode, compact=False):
-    if mode == crystal_glass.KEY:return crystal_glass.shape(rect,compact)
+    if mode == crystal_atrium.KEY:return crystal_atrium.shape(rect,compact)
     if mode == 'nebula_prism':
         return nebula_prism.shape(rect, compact)
     if mode == 'quantum_core':
@@ -58,7 +58,7 @@ def shape(rect, mode, compact=False):
 
 
 def scene_pixmap(size, mode, phase=0.0):
-    if mode == crystal_glass.KEY:return crystal_glass.scene_pixmap(size,phase)
+    if mode == crystal_atrium.KEY:return crystal_atrium.scene_pixmap(size,phase)
     if mode == 'nebula_prism':
         return nebula_prism.scene_pixmap(size)
     if mode == 'quantum_core':
@@ -112,7 +112,7 @@ def scene_pixmap(size, mode, phase=0.0):
 
 def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
     from . import theme
-    if theme.mode() == crystal_glass.KEY:return crystal_glass.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
+    if theme.mode() == crystal_atrium.KEY:return crystal_atrium.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
     from . import theme
     from .glass import draw_frosted_backdrop
     mode = theme.mode()
@@ -192,7 +192,7 @@ def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
 
 
 def stylesheet(mode):
-    if mode == crystal_glass.KEY:return crystal_glass.stylesheet()
+    if mode == crystal_atrium.KEY:return crystal_atrium.stylesheet()
     if mode=='nebula_prism':
         return nebula_prism.stylesheet()
     if mode=='quantum_core':

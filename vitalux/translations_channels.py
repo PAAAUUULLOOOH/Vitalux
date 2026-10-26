@@ -9,7 +9,7 @@ EN={
 'Für diese Version ist noch kein Changelog verfügbar.':'No release notes are available for this version yet.',
 'Die Versionsauswahl zeigt nur Hinweise und ändert nicht das Installationsziel.':'Browsing versions only shows release notes; it does not change the installation destination.',
 
-'Im Updates-Reiter stehen laufender Stand, Stable/Unstable und dauerhaft sichtbare Changelogs zusammen. Die Versionsauswahl blättert durch die Historie des Kanals, ohne das Installationsziel zu ändern; nur die separate Installationsaktion wechselt den Kanal.':'The Updates tab groups the running version, Stable/Unstable and release notes that always remain visible. The version selector browses the channel’s history without changing the installation destination; only the separate installation action switches channels.',
+'Im Updates-Reiter stehen laufender Stand, Stable/Unstable und dauerhaft sichtbare Changelogs zusammen. Die Versionsauswahl blättert durch die Historie, ohne das Installationsziel zu ändern. Normale Unstable-Updates installieren bei bestätigtem Gleichstand direkt Stable; ein zusätzlicher Kanalwechsel ist nicht nötig.':'The Updates tab groups the running version, Stable/Unstable and release notes that always remain visible. Browsing version history does not change the installation target. Normal Unstable updates directly install Stable after verified parity; no extra channel-switch step is needed.',
 
 'Aktiver Kanal':'Active channel',
 'Update-Kanal':'Update channel',
@@ -44,7 +44,6 @@ EN.update({
 
 'Kanal ansehen':'Browse channel',
 'Ein Klick zeigt den Changelog. Ein Kanalwechsel wird separat vorbereitet und erst nach dem Neustart aktiv.':'Click a channel to read its changelog. Prepare a switch separately; it takes effect after restarting.',
-'Stable ansehen':'View Stable',
 'Deine Teständerungen sind jetzt in Stable verfügbar.':'Your test changes are now available in Stable.',
 'Installation':'Installation',
 'Aktuell':'Current',

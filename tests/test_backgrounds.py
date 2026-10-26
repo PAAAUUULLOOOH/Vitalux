@@ -29,7 +29,8 @@ def run():
             settings.set('theme', 'glass')
             theme.set_mode('glass')
             theme.set_accent('#4f8cff')
-            assert len(backdrops.PRESETS) == 24
+            assert {'crystal_atrium','crystal_atrium_original','crystal_glass'} <= set(backdrops.KEYS)
+            assert len(backdrops.KEYS)==len(set(backdrops.KEYS))
             assert backdrops.resolve('legacy', 'glass') == 'original:glass'
             assert backdrops.resolve('theme_default', 'light') == 'original:light'
             assert backdrops.ANIMATED_PRESETS == frozenset(('animated_sparkle',))

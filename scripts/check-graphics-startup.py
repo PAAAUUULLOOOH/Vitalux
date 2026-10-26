@@ -116,7 +116,7 @@ def child(mode, output):
             win.stack.setCurrentIndex(index)
             QTest.qWait(100)
             sampler = win.sampler
-            for key in ('glass','light','crystal_glass','nebula_prism','quantum_core'):
+            for key in ('glass','light','crystal_atrium','nebula_prism','quantum_core'):
                 preferences.select_design(key)
                 assert win._appearance_overlay is not None
                 overlay = win._appearance_overlay
@@ -127,7 +127,7 @@ def child(mode, output):
                 if mode in renderer.QUICK_MODES:
                     assert not win.centralWidget()._upload_timer.isActive()
                 QTest.qWait(100)
-                if key == 'crystal_glass':
+                if key == 'crystal_atrium':
                     settled(lambda: win._appearance_overlay is None)
                     assert win.grab().save(str(output/(mode+'-'+key+'.png')))
                 if key == 'quantum_core':

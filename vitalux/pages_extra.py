@@ -39,12 +39,8 @@ class UpdatePage(Page):
         self.status=label('', 'strong',wrap=True);self.status.setTextFormat(Qt.PlainText)
         self.check_error=label('', 'muted',wrap=True);self.check_error.setTextFormat(Qt.PlainText)
         overview.body.addWidget(self.status);overview.body.addWidget(self.check_error)
-        promotion=QHBoxLayout()
         self.stable_notice=label('Deine Teständerungen sind jetzt in Stable verfügbar.','muted',wrap=True)
-        self.return_stable=QPushButton('Stable ansehen',self);self.return_stable.setObjectName('ghostBtn')
-        self.return_stable.clicked.connect(lambda:self._channel('stable'))
-        promotion.addWidget(self.stable_notice,1);promotion.addWidget(self.return_stable)
-        overview.body.addLayout(promotion)
+        overview.body.addWidget(self.stable_notice)
         self.check_button=QPushButton('Nach Updates suchen',self);self.check_button.setObjectName('ghostBtn')
         self.check_button.clicked.connect(self.m.check)
         overview.body.addWidget(self.check_button,0,Qt.AlignLeft)
@@ -209,7 +205,6 @@ class UpdatePage(Page):
         automatic=m.automatic_stable_return and m.status=='installing'
         self.stable_notice.setText(tr('Stable enthält alle Teständerungen. Die App wechselt automatisch zu Stable.' if automatic else 'Deine Teständerungen sind jetzt in Stable verfügbar.'))
         self.stable_notice.setVisible((automatic or bool(m.stable_has_test_changes)) and not pending)
-        self.return_stable.setVisible(bool(m.stable_has_test_changes) and not pending and not automatic)
         self.channel_description.setText(tr('Stabile Versionen für den täglichen Einsatz.' if m.channel=='stable'
                                            else 'Testversionen mit neuen Änderungen vor dem Stable-Release.'))
         channel_message=''

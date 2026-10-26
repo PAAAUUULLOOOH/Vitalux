@@ -277,7 +277,7 @@ def _soften(sharp,size):
 
 
 def smooth_glass(sharp, radius=18.):
-    """Full-resolution native blur for Crystal Glass, without enlarged sample blocks."""
+    """Full-resolution native blur for Crystal Atrium, without enlarged sample blocks."""
     from PySide6.QtCore import QRectF
     from PySide6.QtWidgets import QGraphicsBlurEffect,QGraphicsPixmapItem,QGraphicsScene
     scene=QGraphicsScene()

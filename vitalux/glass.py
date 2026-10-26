@@ -39,12 +39,8 @@ class _AmbientSceneCore:
         self.setAutoFillBackground(False)
         # Every theme repaints all its pixels. The application window is opaque.
         self.setAttribute(Qt.WA_OpaquePaintEvent, True)
-        self._asset_mode = None
-        self._wallpaper = QPixmap()
-        self._soft_wallpaper = QPixmap()
         self._sharp_cache = QPixmap()
         self._soft_cache = QPixmap()
-        self._cache_size = None
         self._render_key = None
         self._composed_key = None
         self._composed_sharp = QPixmap()
@@ -57,8 +53,6 @@ class _AmbientSceneCore:
 
     def sync_background(self):
         self._render_key = None
-        self._asset_mode = None
-        self._cache_size = None
         self._composed_key = None
         style = backdrops.resolve(settings.get('background_style', 'theme_default'),
                                   theme.mode())
@@ -90,14 +84,9 @@ class _AmbientSceneCore:
         """Free the atmospheric pixmaps in Minimalistisch; reload only if needed."""
         if enabled and backdrops.resolve(settings.get('background_style', 'theme_default'),
                                          theme.mode()) == 'minimal':
-            # Minimal releases the pixmaps. Reset the asset key as well; otherwise
-            # returning to the same Glass theme skips reloading the cleared images.
-            self._asset_mode = None
-            self._wallpaper = QPixmap()
-            self._soft_wallpaper = QPixmap()
+            # Minimal releases the caches; normal scenes rebuild on return.
             self._sharp_cache = QPixmap()
             self._soft_cache = QPixmap()
-            self._cache_size = None
             self._render_key = None
             self._composed_key = None
         self.sync_background()
@@ -114,26 +103,24 @@ class _AmbientSceneCore:
             fit = settings.get('custom_background_fit', 'cover')
             path = user_background.image_path(chosen)
             stamp = path.stat().st_mtime_ns if path else None
-            ratio=self.devicePixelRatioF() if theme.mode()=='crystal_glass' else 1.0
+            ratio=self.devicePixelRatioF() if theme.mode()=='crystal_atrium' else 1.0
             size=self.size()*ratio
             key = (style, chosen, fit, stamp, theme.BG, size, ratio)
             if key != self._render_key:
                 self._sharp_cache = user_background.draw(size, chosen, fit)
-                self._soft_cache = backdrops.smooth_glass(self._sharp_cache,18*ratio) if theme.mode()=='crystal_glass' else self._sharp_cache
+                self._soft_cache = backdrops.smooth_glass(self._sharp_cache,18*ratio) if theme.mode()=='crystal_atrium' else self._sharp_cache
                 self._sharp_cache.setDevicePixelRatio(ratio);self._soft_cache.setDevicePixelRatio(ratio)
                 self._render_key = key
-                self._asset_mode = None
-                self._cache_size = self.size()
             return
-        ratio=self.devicePixelRatioF() if theme.mode()=='crystal_glass' else 1.0
+        ratio=self.devicePixelRatioF() if theme.mode()=='crystal_atrium' else 1.0
         size=self.size()*ratio
-        key=(style,size,ratio,theme.mode()=='crystal_glass',round(self._phase,3) if style in backdrops.ANIMATED_PRESETS else 0,
+        key=(style,size,ratio,theme.mode()=='crystal_atrium',round(self._phase,3) if style in backdrops.ANIMATED_PRESETS else 0,
              theme.accent() if style in ('adaptive','animated_sparkle') else '')
         if key!=self._render_key:
             self._sharp_cache,self._soft_cache=backdrops.render(size,style,theme.accent(),light=theme.is_light(),phase=self._phase)
-            if theme.mode()=='crystal_glass':self._soft_cache=backdrops.smooth_glass(self._sharp_cache,18*ratio)
+            if theme.mode()=='crystal_atrium':self._soft_cache=backdrops.smooth_glass(self._sharp_cache,18*ratio)
             self._sharp_cache.setDevicePixelRatio(ratio);self._soft_cache.setDevicePixelRatio(ratio)
-            self._render_key=key;self._asset_mode=None;self._cache_size=self.size()
+            self._render_key=key
 
     def _ensure_composed(self):
         style=backdrops.resolve(settings.get('background_style','theme_default'),theme.mode())

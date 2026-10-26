@@ -7,16 +7,19 @@ Run with the bundled Python/PySide6 from the staged application on Linux:
 """
 import os
 import sys
+import tempfile
+from pathlib import Path
+from unittest.mock import patch
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, os.getcwd())
 
 from PySide6.QtWidgets import QApplication
-from vitalux import theme
+from vitalux import theme,settings
 from vitalux.glass import AmbientScene
 
 
-def run():
+def check():
     app = QApplication.instance() or QApplication([])
     scene = AmbientScene()
     scene.resize(960, 720)
@@ -24,13 +27,14 @@ def run():
     app.processEvents()
 
     def select(mode):
+        settings.set_many(dict(ultra_eco=mode=='minimal',background_style='theme_default'))
         theme.set_mode(mode)
         scene.set_low_power(mode == "minimal")
         app.processEvents()
         if mode == "minimal":
-            assert scene._wallpaper.isNull(), "Minimal mode must release sharp image"
-            assert scene._soft_wallpaper.isNull(), "Minimal mode must release blur image"
-            assert scene._asset_mode is None, "Released images still marked as loaded"
+            assert scene._sharp_cache.isNull(), "Minimal mode must release sharp image"
+            assert scene._soft_cache.isNull(), "Minimal mode must release blur image"
+            assert scene._render_key is None, "Released images still marked as loaded"
         else:
             assert not scene.sharp_backdrop().isNull(), f"{mode}: background image missing"
             assert not scene.soft_backdrop().isNull(), f"{mode}: blur image missing"
@@ -39,6 +43,7 @@ def run():
 
     for sequence in (
         ("glass", "minimal", "glass"),
+        ("crystal_atrium", "minimal", "crystal_atrium"),
         ("obsidian_gold", "minimal", "obsidian_gold"),
         ("glass", "minimal", "obsidian_gold", "minimal", "glass"),
         ("glass", "minimal", "glass", "minimal", "glass"),
@@ -50,6 +55,11 @@ def run():
         assert not scene.sharp_backdrop().isNull(), "Wallpaper missing after resizing"
     scene.close()
     print("Theme cache and wallpaper restoration: OK")
+
+
+def run():
+    with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Path(folder)/'settings.json')):
+        check()
 
 
 if __name__ == "__main__":

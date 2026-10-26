@@ -1,5 +1,9 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.4-unstable.1] - 2026-10-25
+- Unstable-Updates wechseln direkt zu Stable, sobald Stable den Teststand enthält. Der Gleichstand wird auch während der Vorbereitung und vor dem Neustart geprüft; ein zusätzlicher Kanalwechsel ist nicht nötig.
+- Design Crystal Atrium: Das bisherige Crystal Glass trägt wieder den Namen Crystal Atrium und nutzt den ursprünglichen statischen Atrium-Hintergrund. Glasflächen, Übersicht-Layouteditor und abgerundete Designauswahl bleiben erhalten. Persönliche Farben und Hintergründe werden übernommen; Crystal Glass bleibt als Farb- und Hintergrundvorlage verfügbar.
+
 ## [v0.9.6.3] - 2026-10-25
 - Die Designauswahl konzentriert sich auf Obsidian Gold, Glass, Crystal Glass, Nebula Prism, Quantum Core und Light. Farben und Hintergründe vieler früherer Designs bleiben als benannte Vorlagen verfügbar. Alle sechs Designs unterstützen getrennt gespeicherte Akzentfarben und Hintergründe mit passenden Original- und Zurücksetzen-Aktionen.
 - Crystal Glass erhält die Glasflächen auf einem durchgehenden statischen Hintergrund und unterstützt den Übersicht-Layouteditor. Nebula Prism ergänzt prismatische Instrumente und ein schwebendes Dock; Quantum Core kantige Neon-Panels und Reaktoranzeigen mit statischem Originalhintergrund.

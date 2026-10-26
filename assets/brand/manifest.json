@@ -370,22 +370,22 @@
     "sha256": "7567e11491aedde966d4110d37639bc5d3884f3d7096f1212f3f5cd054b517b0"
   },
   {
-    "file": "assets/brand/vitalux-pulse-crystal-glass.svg",
+    "file": "assets/brand/vitalux-pulse-crystal-atrium.svg",
     "bytes": 66368,
     "sha256": "571ff1a00713f3f401ad67bebe2537cdae2af1244c3c0c3b4cebcf5b5421d2b6"
   },
   {
-    "file": "assets/brand/vitalux-wordmark-crystal-glass.svg",
+    "file": "assets/brand/vitalux-wordmark-crystal-atrium.svg",
     "bytes": 6622,
     "sha256": "91e984a6ad243e51be386e09fc277b00d94677e20f0d65f73fd9849c9982d008"
   },
   {
-    "file": "assets/brand/animated/vitalux-pulse-crystal-glass.svg",
+    "file": "assets/brand/animated/vitalux-pulse-crystal-atrium.svg",
     "bytes": 67186,
     "sha256": "1811c2e917ab80aae92c6c60c1c507631bc417ba0da3ae500edaee52f58fac50"
   },
   {
-    "file": "assets/brand/animated/vitalux-wordmark-crystal-glass.svg",
+    "file": "assets/brand/animated/vitalux-wordmark-crystal-atrium.svg",
     "bytes": 6968,
     "sha256": "e1adb0333a0689471a2066440d4d2e1063faa7fb2e70680afdad582ea096ee8e"
   }
