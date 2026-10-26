@@ -13,7 +13,7 @@ class DesignShell(QObject):
         self.window=window
         self.mode=None
         self._language_index=window.sidebar_layout.indexOf(window.lang_host)
-        self.header=QWidget()
+        self.header=QWidget(canvas.parentWidget())
         vertical=QVBoxLayout(self.header)
         vertical.setContentsMargins(0,0,0,0)
         vertical.setSpacing(7)
@@ -68,7 +68,6 @@ class DesignShell(QObject):
         dock_row.addStretch(1)
         dock_row.addWidget(self.dock)
         dock_row.addStretch(1)
-        canvas.insertWidget(0,self.header)
         canvas.addWidget(self.footer)
         canvas.addWidget(self.dock_row)
         self.header.hide()
@@ -184,8 +183,37 @@ class DesignShell(QObject):
             page.root.setContentsMargins(*( (18,20,18,26) if signature else (30,24,30,30) ))
         if signature:
             self.header.updateGeometry()
+        self.sync_window_geometry()
         w.pulse_core.sync_theme()
         w.brand_mark.sync_theme()
+
+    def sync_window_geometry(self):
+        """Fixed navigation overlays the scroll surface; page padding scrolls away."""
+        w=self.window
+        frame=getattr(w,'window_frame',None)
+        if frame is None or frame.scene is None:return
+        signature=self.mode in KEYS
+        margin=0 if frame.expanded else 10
+        height=self.header.sizeHint().height() if signature else 0
+        if signature:
+            self.header.setGeometry(margin,frame.titlebar.height(),max(1,w.width()-2*margin),height)
+            self.header.raise_()
+        inset=frame.titlebar.height()+height-margin
+        top=inset+(16 if signature else 2)
+        for index,(_,page) in enumerate(w.pages):
+            if index==0:page._frame_top_margin=top
+            viewport=w.stack.widget(index).viewport()
+            viewport.setProperty('vitaluxTopInset',max(0,inset))
+            if hasattr(page,'search_overlay'):page.search_overlay._position()
+            old=page.root.contentsMargins()
+            if old.top()!=top:page.root.setContentsMargins(old.left(),top,old.right(),old.bottom())
+        if not w.sidebar.isHidden():
+            old=w.sidebar_layout.contentsMargins()
+            side_top=max(55,top) if w._sidebar_collapsed and not signature else top
+            if old.top()!=side_top:w.sidebar_layout.setContentsMargins(old.left(),side_top,old.right(),old.bottom())
+            w.sidebar._toggle_y=max(13,frame.titlebar.height()-margin+2)
+            w.sidebar._position_toggle()
+        frame.titlebar.raise_()
 
     def retranslate(self):
         w=self.window

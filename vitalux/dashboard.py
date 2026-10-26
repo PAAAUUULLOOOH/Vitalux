@@ -179,8 +179,11 @@ class DashboardBoard(QWidget):
 
     def _frame(self,rect):
         x,y,w,h=rect
-        cw=max(1,self.width())/self._cols()
-        return QRect(round(x*cw),y*PITCH,max(28,round(w*cw-GAP)),max(45,h*PITCH-GAP))
+        # Interior gaps consume space between cards; the final column reaches
+        # the right edge instead of leaving an extra unused gap there.
+        cw=(max(1,self.width())+GAP)/self._cols()
+        left=round(x*cw);right=round((x+w)*cw)-GAP
+        return QRect(left,y*PITCH,max(28,right-left),max(45,h*PITCH-GAP))
 
     def refresh_geometry(self,animate=False,order=None,skip_dragged=False):
         targets=self._render_positions(order)

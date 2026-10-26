@@ -78,11 +78,13 @@ class SidebarTransition(QWidget):
     def __init__(self, parent, before, after, old_width, new_width,
                  old_arrow=None, new_arrow=None, old_tiles=None, new_tiles=None,
                  old_viewport=None, new_viewport=None,
-                 before_side=None, after_side=None):
+                 before_side=None, after_side=None, arrow_y=13, blend_tiles=True):
         super().__init__(parent)
         self.old_width = int(old_width)
         self.new_width = int(new_width)
         self.progress = 0.0
+        self._arrow_y = arrow_y
+        self._blend_tiles = blend_tiles
         self._before_sidebar = _transition_cache(_slice(before, 0, self.old_width))
         self._after_sidebar = _transition_cache(_slice(after, 0, self.new_width))
         width = parent.width()
@@ -175,7 +177,7 @@ class SidebarTransition(QWidget):
                          round(_lerp(initial_clip.width(), final_clip.width(), fraction)),
                          round(_lerp(initial_clip.height(), final_clip.height(), fraction)))
             painter.setClipRect(clip, Qt.IntersectClip)
-        for key in (self._old_tiles.keys() | self._new_tiles.keys()):
+        for key in dict.fromkeys((*self._old_tiles,*self._new_tiles)):
             old = self._old_tiles.get(key)
             new = self._new_tiles.get(key)
             if old is None and new is None:
@@ -192,6 +194,11 @@ class SidebarTransition(QWidget):
             # have an empty right edge. The original material covers it at
             # the start, then fades over a short middle interval.
             if old is not None and new is not None:
+                if not self._blend_tiles:
+                    # Wrapped settings/component text changes layout once;
+                    # never superimpose two differently arranged paragraphs.
+                    self._paint_unscaled_tile(painter,frame,(old if fraction<.5 else new)[1],1.0)
+                    continue
                 # Most frames require ONE pixmap, not two alpha-blended
                 # high-resolution surfaces. Blend only around midpoint.
                 if fraction < .42:
@@ -232,7 +239,16 @@ class SidebarTransition(QWidget):
         # The brand has no compact equivalent. Fade its ONE cached sprite in
         # once the rail has enough width; it never competes with duplicate text.
         branding = end if expanding else start
-        opacity = _ease(max(0.0, min(1.0, (expanded_fraction - 0.16) / 0.44)))
+        a, b = start['viewport'], end['viewport']
+        nav_top = _lerp(a.y(),b.y(),fraction)
+        brand = branding['brand']
+        if brand is not None:
+            bottom = brand[0].bottom()+1
+            full_top = branding['viewport'].y()
+            room = (nav_top-bottom)/max(1,full_top-bottom)
+            opacity = _ease(max(0.0,min(1.0,room)))
+        else:
+            opacity = _ease(expanded_fraction)
         if opacity > 0:
             painter.save()
             painter.setOpacity(opacity)
@@ -243,7 +259,6 @@ class SidebarTransition(QWidget):
                     painter.drawPixmap(rect.topLeft(), sprite)
             painter.restore()
 
-        a, b = start['viewport'], end['viewport']
         clip = QRect(round(_lerp(a.x(), b.x(), fraction)),
                      round(_lerp(a.y(), b.y(), fraction)),
                      max(1, round(_lerp(a.width(), b.width(), fraction))),
@@ -288,13 +303,10 @@ class SidebarTransition(QWidget):
         p.restore()
 
         arrow_x = seam - 31
-        arrow_y = 13
-        if self._before_arrow is not None and not self._before_arrow.isNull():
-            p.setOpacity(1.0 - _ease(t))
-            p.drawPixmap(arrow_x, arrow_y, self._before_arrow)
-        if self._after_arrow is not None and not self._after_arrow.isNull():
-            p.setOpacity(_ease(t))
-            p.drawPixmap(arrow_x, arrow_y, self._after_arrow)
+        arrow_y = self._arrow_y
+        arrow = self._before_arrow if t<.5 else self._after_arrow
+        if arrow is not None and not arrow.isNull():
+            p.drawPixmap(arrow_x, arrow_y, arrow)
         p.end()
 
     def closeEvent(self, event):

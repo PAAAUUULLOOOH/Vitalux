@@ -12,7 +12,7 @@ Current Vitalux editions allow one running instance per user, shared across ZIP/
 
 Reopening a sidebar category returns to its page start. The sidebar opens Overview, Processor, Graphics, Memory, Drives, Network, Sensors, Diagnostic Center, System, Settings, Updates and About. The new vector symbols remain recognizable when the sidebar is collapsed. Charts distinguish series by line pattern and identify measurements and timestamps on hover. Sampling interruptions appear as gaps; missing sensors are never replaced with invented readings.
 
-Use **Edit layout** on Overview to arrange cards. Tiles stay stationary when editing opens. Their **Hold to move** captions and X controls stay visible throughout edit mode. Drives loads SMART data asynchronously. Start disk benchmarks or external diagnostics only when needed; writing tests temporarily create files on the selected drive.
+On Overview, use the **Dashboard layout** grid button immediately left of Minimize to arrange cards. Its editing actions appear in the same top strip. Tiles stay stationary when editing opens. Their **Hold to move** captions and X controls stay visible throughout edit mode. Drives loads SMART data asynchronously. Start disk benchmarks or external diagnostics only when needed; writing tests temporarily create files on the selected drive.
 
 ## Designs and backgrounds
 
@@ -143,6 +143,8 @@ Diagnostic report text follows the selected German or English interface language
 
 ## Window controls
 
-The main window has rounded outer corners and its own minimize, maximize/restore and close buttons. Drag the top strip to move it; double-click that strip to maximize or restore. Drag an edge or corner to resize. Right-click the strip for window actions. The buttons are keyboard-accessible, and desktop window shortcuts retain their configured actions. Maximized and full-screen windows fill the display without rounded corner cutouts. The close button follows **Keep running in the system tray**; the tray’s Quit action still exits the app.
+The main window has rounded outer corners and its own minimize, maximize/restore and close buttons. The compact top strip has no application-name caption. Drag its free area to move it; double-click that area to maximize or restore. Drag an edge or corner to resize. Right-click the strip for window actions. Content scrolls beneath the fixed translucent strip; the window controls stay available, and the wheel works over the strip. Authored design headers remain fixed above scrolling content. The buttons are keyboard-accessible, and desktop window shortcuts retain their configured actions. Maximized and full-screen windows fill the display without rounded corner cutouts. The close button follows **Keep running in the system tray**; the tray’s Quit action still exits the app.
+
+Overview cards use the available width with even outer margins, adapt to window resizing and sidebar width, and start close below the top controls. Expanding or collapsing the sidebar animates only its content row, keeping window controls and fixed design navigation in place.
 
 The initialization card stays centered as the display becomes ready, including compositor-managed Wayland placement. Only the small rounded card is visible; its position also follows display geometry changes during login.

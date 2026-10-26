@@ -155,7 +155,8 @@ class FloatingSettingsSearch(QWidget):
 
     def _position(self):
         if self._host is not None:
-            self.move(max(0, (self._host.width()-self.width())//2), 12)
+            inset=self._host.property('vitaluxTopInset') or 0
+            self.move(max(0, (self._host.width()-self.width())//2), 12+inset)
             self.raise_()
 
     def _sync_geometry(self):

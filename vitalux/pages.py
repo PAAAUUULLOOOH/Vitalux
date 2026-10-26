@@ -106,10 +106,8 @@ class OverviewPage(Page):
         self.disks_card = Card("Laufwerke")
         self.disk_meters = {}
 
-        # The editor is an OVERLAY aligned with the left sidebar arrow (y=13).
-        # It takes no layout row, so the original dashboard moves back up.
-        # The overlay arrow ends at y=43; place the first glass card just
-        # below it, without wasting space on an extra header/toolbar row.
+        # Standalone previews keep the page-local editor. The main window
+        # installs its grid button and editing actions in the fixed top strip.
         self.root.setContentsMargins(30,45,30,30)
         self.layout_toggle = SidebarToggle(self, orientation='horizontal')
         self.layout_toggle.setToolTip(tr('Dashboard-Layout'))
@@ -203,11 +201,13 @@ class OverviewPage(Page):
         selected=active()
         for host in self.design_metric_hosts.values():
             host.setCurrentIndex(1 if selected else 0)
-        self.root.setContentsMargins(16 if selected else 30,45,16 if selected else 30,24 if selected else 30)
+        top = getattr(self, '_frame_top_margin', 24) if getattr(self, '_window_layout_toggle', False) else 45
+        horizontal = 16 if selected or getattr(self, '_window_layout_toggle', False) else 30
+        self.root.setContentsMargins(horizontal,top,horizontal,24 if selected else 30)
         self.root.setStretch(0,0)
         self.root.setStretch(1,1)
         self.board.show()
-        self.layout_toggle.show()
+        if not getattr(self, '_window_layout_toggle', False):self.layout_toggle.show()
         self._sync_distro_logo()
         self.distro_logo_host.setFixedSize(76,76)
         for chip in self.chips.chips.values():
@@ -223,13 +223,26 @@ class OverviewPage(Page):
         if hasattr(self,'layout_actions'):
             self._position_editor_controls()
 
+    def set_window_layout_toggle(self, button):
+        """Use the accessible frame control; keep editor actions in the page."""
+        self.layout_toggle.hide()
+        self.layout_toggle.deleteLater()
+        self.layout_toggle = button
+        self._window_layout_toggle = True
+        self.layout_actions.setFixedHeight(button.height())
+        for _,_,_,action in self._editor_buttons:action.setFixedHeight(button.height())
+        button.set_collapsed(self.board.editing)
+        self._position_editor_controls()
+
+    def _editor_strip_x(self):
+        return self.width()-self._strip_width-self.layout_toggle.width()-12
+
     def _position_editor_controls(self):
-        # Dashboard toolbar remains on the outer right edge of content.
-        x = self.width()-self.layout_toggle.width()-5
-        self.layout_toggle.move(x,13)
+        if getattr(self, '_window_layout_toggle', False):return
+        self.layout_toggle.move(self.width()-self.layout_toggle.width()-5,13)
         # Shift just the small action strip, not its children or an animated
         # clipping mask. Widgets retain their full width throughout movement.
-        target_x = x-self._strip_width-7
+        target_x = self._editor_strip_x()
         if self._strip_anim is None:
             self.layout_actions.move(target_x+round(22*(1-self._strip_fraction)),13)
         self.layout_toggle.raise_()
@@ -268,13 +281,15 @@ class OverviewPage(Page):
         fade = QPropertyAnimation(self._strip_effect, b'opacity', self)
         fade.setStartValue(self._strip_effect.opacity())
         fade.setEndValue(finish)
-        travel = QPropertyAnimation(self.layout_actions, b'pos', self)
-        travel.setStartValue(self.layout_actions.pos())
-        x=self.width()-self.layout_toggle.width()-5
-        target=x-self._strip_width-7
-        travel.setEndValue(QPoint(target+round(22*(1-finish)),13))
         group=QParallelAnimationGroup(self)
-        for animation in (fade,travel):
+        animations = [fade]
+        if not getattr(self, '_window_layout_toggle', False):
+            travel = QPropertyAnimation(self.layout_actions, b'pos', self)
+            travel.setStartValue(self.layout_actions.pos())
+            target=self._editor_strip_x()
+            travel.setEndValue(QPoint(target+round(22*(1-finish)),13))
+            animations.append(travel)
+        for animation in animations:
             animation.setDuration(motion.duration(round(235*abs(finish-start))))
             animation.setEasingCurve(QEasingCurve.InOutCubic)
             group.addAnimation(animation)

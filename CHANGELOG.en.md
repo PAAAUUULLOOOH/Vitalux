@@ -1,5 +1,12 @@
 # Vitalux – Changes
 
+## [v0.9.6.4-unstable.4] - 2026-10-26
+
+- All designs: Sidebar expansion and collapse align with the frameless window, with clean transitions and straight edges.
+- Compact window strip without the Vitalux caption. Layout editing sits left of Minimize, with matching controls and editing actions in the top strip.
+- Overview cards start higher, use more width and resize automatically through to the grid's right edge.
+- Cards remain visible while scrolling beneath the fixed translucent window strip; scrolling also works over the strip.
+
 ## [v0.9.6.4-unstable.3] - 2026-10-26
 
 - All designs: Frameless main window with rounded outer corners, integrated window controls, dragging, resizing and maximization.

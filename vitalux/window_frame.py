@@ -1,9 +1,9 @@
 """Native move/resize operations and a rounded, design-aware client window frame."""
-from PySide6.QtCore import QObject, QEvent, QPoint, QRect, QRectF, Qt, QTimer
-from PySide6.QtGui import QColor, QCursor, QPainter, QPainterPath, QPen, QRegion
-from PySide6.QtWidgets import (QAbstractButton, QApplication, QHBoxLayout, QLabel,
+from PySide6.QtCore import QObject, QEvent, QPoint, QPointF, QRect, QRectF, Qt, QTimer
+from PySide6.QtGui import QColor, QCursor, QLinearGradient, QPainter, QPainterPath, QPen, QRegion, QWheelEvent
+from PySide6.QtWidgets import (QAbstractButton, QApplication, QHBoxLayout,
                               QMenu, QStatusBar, QWidget)
-from . import APP_NAME, theme
+from . import theme
 from .i18n import tr
 
 CORNER_RADIUS = 24
@@ -26,13 +26,14 @@ class WindowButton(QAbstractButton):
         self.setFocusPolicy(Qt.StrongFocus)
         self.setCursor(Qt.PointingHandCursor)
         self.setProperty('vitaluxCapabilityHints', True)
-        self.clicked.connect({'minimize': frame.window.showMinimized,
+        handler = {'minimize': frame.window.showMinimized,
                               'maximize': frame.toggle_maximized,
-                              'close': frame.window.close}[action])
+                              'close': frame.window.close}.get(action)
+        if handler:self.clicked.connect(handler)
         self.retranslate()
 
     def retranslate(self):
-        text = {'minimize': 'Fenster minimieren', 'close': 'Fenster schließen',
+        text = {'layout': 'Dashboard-Layout', 'minimize': 'Fenster minimieren', 'close': 'Fenster schließen',
                 'maximize': 'Fenster wiederherstellen' if self.frame.expanded else 'Fenster maximieren'}[self.action]
         self.setAccessibleName(tr(text))
         self.setToolTip(tr(text))
@@ -53,7 +54,7 @@ class WindowButton(QAbstractButton):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
-        if self.underMouse() or self.isDown() or self.hasFocus():
+        if self.underMouse() or self.isDown() or self.hasFocus() or self.isChecked():
             color = QColor(theme.CRIT if self.action == 'close' else theme.accent())
             color.setAlpha(95 if self.isDown() else 44)
             painter.setPen(Qt.NoPen); painter.setBrush(color)
@@ -61,7 +62,10 @@ class WindowButton(QAbstractButton):
         painter.setPen(QPen(QColor(theme.TEXT), 1.35, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
         painter.setBrush(Qt.NoBrush)
         x, y = self.width()/2, self.height()/2
-        if self.action == 'minimize':
+        if self.action == 'layout':
+            for dx,dy in ((-5,-5),(1,-5),(-5,1),(1,1)):
+                painter.drawRoundedRect(QRectF(x+dx,y+dy,4,4),.6,.6)
+        elif self.action == 'minimize':
             painter.drawLine(QPoint(round(x-5), round(y+2)), QPoint(round(x+5), round(y+2)))
         elif self.action == 'close':
             painter.drawLine(QPoint(round(x-4), round(y-4)), QPoint(round(x+4), round(y+4)))
@@ -75,15 +79,45 @@ class WindowButton(QAbstractButton):
         painter.end()
 
 
+class LayoutButton(WindowButton):
+    def __init__(self, frame, overview):
+        super().__init__('layout', frame)
+        self.setCheckable(True)
+        self.clicked.connect(overview.toggle_editor)
+
+    def set_collapsed(self, value):self.setChecked(bool(value))
+
+    def reset_highlight(self):self.clearFocus();self.update()
+
+
 class TitleBar(QWidget):
     def __init__(self, frame):
         super().__init__(frame.window)
         self.frame = frame
         self._drag = None
         self.setObjectName('windowTitleBar')
-        self.setFixedHeight(36)
+        self.setFixedHeight(32)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(lambda _: frame.show_menu(QCursor.pos()))
+
+    def paintEvent(self, event):
+        # Only the small strip is tinted. The live scroll surface remains
+        # visible beneath it; the transparent rounded frame stays untouched.
+        painter=QPainter(self)
+        shade=QLinearGradient(0,0,0,self.height())
+        top=QColor(theme.BG);top.setAlpha(205)
+        bottom=QColor(theme.BG);bottom.setAlpha(100)
+        shade.setColorAt(0,top);shade.setColorAt(1,bottom)
+        painter.fillRect(self.rect().adjusted(0,0 if self.frame.expanded else 10,0,0),shade)
+        painter.end()
+
+    def wheelEvent(self, event):
+        viewport=self.frame.window.stack.currentWidget().viewport()
+        forwarded=QWheelEvent(QPointF(viewport.mapFromGlobal(event.globalPosition().toPoint())),
+            event.globalPosition(),event.pixelDelta(),event.angleDelta(),event.buttons(),
+            event.modifiers(),event.phase(),event.inverted(),event.source(),event.pointingDevice())
+        QApplication.sendEvent(viewport,forwarded)
+        event.setAccepted(forwarded.isAccepted())
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -187,11 +221,9 @@ class WindowFrame(QObject):
         self.scene = self.canvas = self.status = None
         self.titlebar = TitleBar(self)
         layout = QHBoxLayout(self.titlebar)
-        layout.setContentsMargins(10, 6, 4, 2); layout.setSpacing(2)
-        caption = QLabel(APP_NAME)
-        caption.setAttribute(Qt.WA_TransparentForMouseEvents)
-        caption.setObjectName('muted')
-        layout.addWidget(caption); layout.addStretch()
+        self.title_layout = layout
+        layout.setContentsMargins(0, 2, 8, 2); layout.setSpacing(2)
+        layout.addStretch()
         self.buttons = {action: WindowButton(action, self) for action in ('minimize', 'maximize', 'close')}
         for button in self.buttons.values():layout.addWidget(button)
         edges = (Qt.TopEdge, Qt.BottomEdge, Qt.LeftEdge, Qt.RightEdge,
@@ -207,7 +239,14 @@ class WindowFrame(QObject):
         self.scene, self.canvas = scene, canvas
         scene.setProperty('vitaluxRoundedWindow', True)
         scene.setAttribute(Qt.WA_OpaquePaintEvent, False)
-        canvas.insertWidget(0, self.titlebar)
+        self.titlebar.setParent(scene)
+        self.titlebar.show()
+        self.layout_button = LayoutButton(self, self.window.pages[0][1])
+        self.title_layout.insertWidget(self.title_layout.indexOf(self.buttons['minimize']), self.layout_button)
+        self.window.pages[0][1].set_window_layout_toggle(self.layout_button)
+        self.title_layout.insertWidget(self.title_layout.indexOf(self.layout_button), self.window.pages[0][1].layout_actions)
+        self.window.stack.currentChanged.connect(self._sync_page)
+        self._sync_page()
         self.status = ClientStatusBar(scene); canvas.addWidget(self.status)
         self.refresh()
 
@@ -233,10 +272,12 @@ class WindowFrame(QObject):
         radius = 0 if self.expanded else CORNER_RADIUS
         self.scene.setProperty('vitaluxWindowRadius', radius)
         margin = 0 if self.expanded else 10
-        self.canvas.setContentsMargins(margin, 0, margin, margin)
+        self.canvas.setContentsMargins(margin, margin, margin, margin)
         width, height = self.window.width(), self.window.height()
+        self.titlebar.setGeometry(margin,0,max(1,width-2*margin),self.titlebar.height())
+        self.window.design_shell.sync_window_geometry()
         t, c = 5, 12
-        rectangles = (QRect(c, 0, width-2*c, t), QRect(c, height-t, width-2*c, t),
+        rectangles = (QRect(c, 0, width-2*c, 2), QRect(c, height-t, width-2*c, t),
                       QRect(0, c, t, height-2*c), QRect(width-t, c, t, height-2*c),
                       QRect(0, 0, c, c), QRect(width-c, 0, c, c),
                       QRect(0, height-c, c, c), QRect(width-c, height-c, c, c))
@@ -254,3 +295,11 @@ class WindowFrame(QObject):
 
     def retranslate(self):
         for button in self.buttons.values():button.retranslate()
+        if hasattr(self, 'layout_button'):self.layout_button.retranslate()
+
+    def _sync_page(self, *_):
+        overview = self.window.pages[0][1]
+        visible = self.window.stack.currentIndex() == 0
+        if not visible and overview.board.editing:overview.save_editor()
+        self.layout_button.setVisible(visible)
+        if not visible:overview.layout_actions.hide()

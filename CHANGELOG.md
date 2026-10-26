@@ -1,5 +1,12 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.4-unstable.4] - 2026-10-26
+
+- Alle Designs: Seitenleiste beim Ein-/Ausklappen korrekt am rahmenlosen Fenster ausgerichtet; saubere Übergänge und gerade Anschlüsse.
+- Kompakte Fensterleiste ohne Vitalux-Schriftzug. Layout-Bearbeitung links neben Minimieren, mit einheitlichen Knöpfen und Bearbeitungsaktionen in der oberen Leiste.
+- Übersichtskacheln weiter oben, mehr nutzbare Breite und automatisch angepasste Kachelgrößen bis zum rechten Rasterrand.
+- Kacheln bleiben beim Scrollen unter der feststehenden, halbtransparenten Fensterleiste sichtbar; Scrollen funktioniert auch über der Leiste.
+
 ## [v0.9.6.4-unstable.3] - 2026-10-26
 
 - Alle Designs: Rahmenloses Hauptfenster mit echten runden Außenecken, eigenen Fensterknöpfen sowie Verschieben, Größenänderung und Maximieren.

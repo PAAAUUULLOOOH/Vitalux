@@ -27,8 +27,8 @@ SLIDES = [
     ),
     (
         "Die Live-Übersicht",
-        "Der kompakte Systemkopf lässt auf der Startseite mehr Platz für Messwerte und Diagramme.",
-        "Du siehst unter anderem Prozessor, Grafik, RAM, Systemlaufwerk und den Systemzustand.",
+        "Das Raster-Symbol links neben Minimieren öffnet die Layout-Bearbeitung; die Bearbeitungsaktionen erscheinen in der Fensterleiste.",
+        "Du siehst unter anderem Prozessor, Grafik, RAM, Systemlaufwerk und den Systemzustand. Beim Scrollen laufen die Kacheln unter der festen Fensterleiste weiter.",
         "Diagramme zeigen, wie sich die Auslastung im Zeitverlauf verändert.",
         "Übersichtskacheln zeigen mittige Texte in gleicher Reihenfolge. Lange Namen werden gekürzt; beim Darüberfahren erscheint der volle Name. Im Bearbeitungsmodus bleiben Verschieben und das X sichtbar.",
         "overview",

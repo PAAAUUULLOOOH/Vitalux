@@ -395,7 +395,7 @@ class GlassSidebar(QFrame):
     def _position_toggle(self):
         if self._toggle_button is not None:
             self._toggle_button.move(
-                self.width() - self._toggle_button.width() - 5, 13)
+                self.width() - self._toggle_button.width() - 5, getattr(self,'_toggle_y',13))
             self._toggle_button.raise_()
 
     def resizeEvent(self, event):

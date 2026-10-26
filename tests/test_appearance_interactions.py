@@ -82,8 +82,10 @@ def run():
 
             # A changed section reverses its reveal cleanly when reset mid-fade.
             page.alert_boxes['cpu_temp'].setValue(97)
-            QTest.qWait(100)
             reveal = page._reset_reveals['alerts']
+            # Select the midpoint deterministically even on a busy test runner.
+            reveal.animation.pause()
+            reveal.animation.setCurrentTime(reveal.animation.duration()//2)
             assert 0 < reveal.progress < 1
             height = reveal.height()
             page.reset_category('alerts')

@@ -115,6 +115,27 @@ def child(mode, output):
                 QTest.qWait(150)
                 win.window_frame.buttons['maximize'].click()
                 settled(lambda: not win.isMaximized() and win.size()==original_size)
+            controls = [button.geometry() for button in win.window_frame.buttons.values()]
+            for collapsed in (True, False):
+                win.collapse_button.click()
+                assert win._sidebar_motion is not None
+                win._sidebar_motion.pause()
+                overlay = win._sidebar_overlay
+                assert overlay.parentWidget() is win.content_host
+                overlay.set_progress(.5)
+                moving = win.grab().toImage()
+                for x,y in ((0,0),(moving.width()-1,0),(0,moving.height()-1),(moving.width()-1,moving.height()-1)):
+                    assert moving.pixelColor(x,y).alpha()==(255 if expanded else 0)
+                assert [button.geometry() for button in win.window_frame.buttons.values()]==controls
+                win._sidebar_finish()
+                assert win._sidebar_collapsed == collapsed
+                QTest.qWait(30)
+            overview=win.pages[0][1]
+            win.window_frame.layout_button.click()
+            assert overview.board.editing
+            assert overview.layout_actions.parentWidget() is win.window_frame.titlebar
+            win.window_frame.layout_button.click()
+            assert not overview.board.editing
             scene = win.centralWidget()
             if mode in renderer.QUICK_MODES:
                 assert not scene.grabFramebuffer().isNull()

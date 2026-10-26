@@ -5,7 +5,7 @@ import time
 
 from PySide6.QtCore import Qt, QThread, QTimer, Signal, QVariantAnimation, QEasingCurve, QPoint, QRect, QEventLoop
 from PySide6.QtGui import QRegion, QAction
-from PySide6.QtWidgets import (QApplication, QButtonGroup, QFrame, QHBoxLayout, QMainWindow, QScrollArea, QStackedWidget, QVBoxLayout, QWidget, QSystemTrayIcon, QGraphicsDropShadowEffect, QMenu)
+from PySide6.QtWidgets import (QApplication, QButtonGroup, QFrame, QHBoxLayout, QMainWindow, QScrollArea, QStackedWidget, QVBoxLayout, QWidget, QSystemTrayIcon, QGraphicsDropShadowEffect, QMenu, QSizePolicy)
 from .ui_locale import QPushButton, retranslate_widgets
 
 from . import APP_NAME, __version__, i18n, sensors, settings, theme, motion, eco
@@ -220,8 +220,10 @@ class MainWindow(WindowLifecycle, QMainWindow):
         canvas = QVBoxLayout(root)
         canvas.setContentsMargins(0,0,0,0)
         canvas.setSpacing(0)
-        outer = QHBoxLayout()
-        canvas.addLayout(outer,1)
+        self.content_host = QWidget(root)
+        self.content_host.setObjectName('windowContent')
+        outer = QHBoxLayout(self.content_host)
+        canvas.addWidget(self.content_host,1)
         self._outer_layout = outer
         outer.setContentsMargins(0, 0, 0, 0)
         outer.setSpacing(0)
@@ -506,36 +508,61 @@ class MainWindow(WindowLifecycle, QMainWindow):
         """A lightweight image-composited transition; no layout work per tick."""
         self._sidebar_overlay = None
 
-    def _capture_dashboard_layers(self, root):
-        """Grab the visible dashboard tiles separately from their backdrop.
+    def _capture_page_layers(self, root):
+        """Cache visible cards separately, including ordinary component/settings tabs.
 
-        The underlying DashboardBoard uses absolute child positioning, so
-        temporarily hiding its tiles does not modify the grid geometry.
-        Qt's QPixmap.grab() is called only at transition endpoints.
+        Layout-backed widgets retain their size while omitted from the backdrop.
+        Card text is never blended as two differently arranged whole pages.
         """
-        overview = self.pages[0][1]
-        if self.stack.currentIndex() != 0 or not hasattr(overview, 'board'):
-            return root.grab(), {}, None
-        scroll = self.stack.widget(0)
+        index = self.stack.currentIndex()
+        page = self.pages[index][1]
+        if index == 0 and hasattr(page, 'board'):
+            items = page.board.tiles
+        else:
+            items = {}
+            def collect(layout):
+                for i in range(layout.count()):
+                    item = layout.itemAt(i)
+                    widget = item.widget()
+                    if widget is not None:items[id(widget)] = widget
+                    elif item.layout() is not None:collect(item.layout())
+            collect(page.content)
+            if hasattr(page,'search_overlay'):items['search'] = page.search_overlay
+        scroll = self.stack.widget(index)
         viewport = scroll.viewport()
         view_rect = QRect(viewport.mapTo(root, QPoint(0, 0)), viewport.size())
         captured = {}
         hidden = []
-        for key, tile in overview.board.tiles.items():
+        for key, tile in items.items():
             if tile.isVisible() and tile.geometry().isValid():
                 r = QRect(tile.mapTo(root, QPoint(0, 0)), tile.size())
                 if not r.intersects(view_rect):
                     continue
                 captured[key] = (r, tile.grab())
-                hidden.append(tile)
+                hidden.append((tile,tile.sizePolicy()))
         try:
-            for tile in hidden:
+            for tile, previous in hidden:
+                retained = QSizePolicy(previous)
+                retained.setRetainSizeWhenHidden(True)
+                tile.setSizePolicy(retained)
                 tile.hide()
-            frame = root.grab()
+            frame = self._capture_content_frame(root)
         finally:
-            for tile in hidden:
+            for tile, previous in hidden:
                 tile.show()
+                tile.setSizePolicy(previous)
         return frame, captured, view_rect
+
+    def _capture_content_frame(self, host):
+        # Capture the real scene backdrop as well as the transparent child row.
+        # QWidget.grab() of the child alone loses the parent-painted atmosphere.
+        scene = self.centralWidget()
+        chrome=[widget for widget in (self.window_frame.titlebar,self.design_shell.header) if not widget.isHidden()]
+        try:
+            for widget in chrome:widget.hide()
+            return scene.grab(QRect(host.mapTo(scene, QPoint()), host.size()))
+        finally:
+            for widget in chrome:widget.show();widget.raise_()
 
     def _sidebar_visual_layers(self):
         """Capture moving sidebar children individually without affecting Qt layouts.
@@ -580,7 +607,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
         # A second click during an unfinished transition used to remove the
         # live overlay and reveal a different layout in a single frame.
         # Complete the current glide before accepting another request.
-        if self._sidebar_motion is not None:
+        if self._sidebar_motion is not None or self.collapse_button.isHidden():
             return
 
         if not motion.enabled():
@@ -593,14 +620,16 @@ class MainWindow(WindowLifecycle, QMainWindow):
                 overview.board.refresh_geometry(animate=False)
             return
 
-        root = self.centralWidget()
+        # Cached coordinates belong to the sidebar/content row. The window
+        # controls, authored headers/footers and rounded corners stay live.
+        root = self.content_host
         toggle = self.collapse_button
         old_width = self.sidebar.width()
         visible = root.isVisible()
         # Guard the FIRST rendered frame, before even hiding the arrow. Qt's
         # processEvents() is needed to settle QScrollArea, but must NEVER expose
         # the temporarily rebuilt destination layout to the compositor.
-        freeze = SidebarFreeze(root, root.grab()) if visible else None
+        freeze = SidebarFreeze(root, self._capture_content_frame(root)) if visible else None
         old_arrow = toggle.grab()
         before = after = None
         before_side = after_side = None
@@ -614,7 +643,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
                 toggle.hide()
                 freeze.hide()
                 try:
-                    before, old_tiles, old_viewport = self._capture_dashboard_layers(root)
+                    before, old_tiles, old_viewport = self._capture_page_layers(root)
                     before_side = self._sidebar_visual_layers()
                 finally:
                     freeze.show()
@@ -646,7 +675,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
                 toggle.hide()
                 freeze.hide()
                 try:
-                    after, new_tiles, new_viewport = self._capture_dashboard_layers(root)
+                    after, new_tiles, new_viewport = self._capture_page_layers(root)
                     after_side = self._sidebar_visual_layers()
                 finally:
                     freeze.show()
@@ -660,7 +689,8 @@ class MainWindow(WindowLifecycle, QMainWindow):
             overlay = SidebarTransition(root, before, after, old_width, new_width,
                                         old_arrow, new_arrow, old_tiles, new_tiles,
                                         old_viewport, new_viewport,
-                                        before_side=before_side, after_side=after_side)
+                                        before_side=before_side, after_side=after_side, arrow_y=toggle.y(),
+                                        blend_tiles=self.stack.currentIndex()==0)
             self._sidebar_overlay = overlay
             # A single, opaque overlay now owns the whole visible transition;
             # expose the real destination widgets only after the final frame.
@@ -692,8 +722,11 @@ class MainWindow(WindowLifecycle, QMainWindow):
 
     def _sidebar_finish(self):
         overlay = self._sidebar_overlay
+        if overlay is None and self._sidebar_motion is None:return
         self._sidebar_overlay = None
         if overlay is not None:
+            overlay.resized.disconnect(self._sidebar_finish)
+            overlay.parentWidget().removeEventFilter(overlay)
             overlay.hide()
             overlay.deleteLater()
         animation = self._sidebar_motion
@@ -711,8 +744,9 @@ class MainWindow(WindowLifecycle, QMainWindow):
         self.collapse_button.setEnabled(True)
         if self.last_sample is not None:
             self._refresh_visible_page()
-        self.collapse_button.show()
-        self.collapse_button.raise_()
+        from .signature_designs import active
+        self.collapse_button.setVisible(not active())
+        if not self.collapse_button.isHidden():self.collapse_button.raise_()
 
     def _apply_sidebar_state(self):
         """Only for initial construction: no animation before the window shows."""
@@ -730,6 +764,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
         self.sidebar.setFixedWidth(74 if compact else 250)
         self.collapse_button.set_collapsed(compact)
         self.sidebar._position_toggle()
+        if hasattr(self, 'design_shell'):self.design_shell.sync_window_geometry()
 
     @staticmethod
     def _is_scrolling_card(widget):
@@ -776,6 +811,8 @@ class MainWindow(WindowLifecycle, QMainWindow):
 
     def apply_appearance(self):
         """Restyle in-place; keep selected page, benchmark worker and scroll intact."""
+        if self._sidebar_motion is not None:
+            self._sidebar_finish()
         from . import design_catalog
         design_catalog.remember()
         next_key = self._appearance_signature()

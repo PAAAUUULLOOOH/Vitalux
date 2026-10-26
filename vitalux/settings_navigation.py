@@ -68,7 +68,8 @@ class SettingsNavigator(QObject):
         if callable(cancel_wheel):
             cancel_wheel()
         self.page.layout().activate()
-        destination = max(0, target.mapTo(self.page, QPoint(0, 0)).y()-110)
+        inset=self.scroll.viewport().property('vitaluxTopInset') or 0
+        destination = max(0, target.mapTo(self.page, QPoint(0, 0)).y()-max(110,inset+74))
         bar = self.scroll.verticalScrollBar()
         self.animation.stop()
         duration = motion.duration(420)

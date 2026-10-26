@@ -15,7 +15,8 @@ class AppearanceTransition(QWidget):
         self.progress = 0.0
         self.slide=slide
         self.setAttribute(Qt.WA_TransparentForMouseEvents, True)
-        self.setAttribute(Qt.WA_OpaquePaintEvent, True)
+        self._framed = hasattr(parent, 'window_frame')
+        self.setAttribute(Qt.WA_OpaquePaintEvent, not self._framed)
         self.setGeometry(parent.rect())
         parent.installEventFilter(self)
         self.animation = QVariantAnimation(self)
@@ -52,7 +53,13 @@ class AppearanceTransition(QWidget):
         if self.before is None:
             return
         painter = QPainter(self)
+        if self._framed:
+            # Complementary premultiplied layers retain the existing corner
+            # alpha; an opaque overlay fills the rounded window's cutouts.
+            painter.setCompositionMode(QPainter.CompositionMode_Source)
+            painter.setOpacity(1.-self.progress)
         painter.drawPixmap(0, 0, self.before)
+        if self._framed:painter.setCompositionMode(QPainter.CompositionMode_Plus)
         painter.setOpacity(self.progress)
         if self.slide:painter.translate(round(self.slide*(1-self.progress)),0)
         painter.drawPixmap(0, 0, self.after)

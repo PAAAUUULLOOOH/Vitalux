@@ -1137,3 +1137,10 @@ EN_MORE.update({
     'Keine neuen Updates · Wechsel zu Unstable nicht möglich':'No new updates · Switching to Unstable is unavailable',
     'Jede Messgröße hat eine eigene farbige Skala.':'Each measurement has its own colored scale.',
 })
+
+EN_MORE.update({
+    'Das Raster-Symbol links neben Minimieren öffnet die Layout-Bearbeitung; die Bearbeitungsaktionen erscheinen in der Fensterleiste.':
+        'The grid icon left of Minimize opens layout editing; editing actions appear in the window strip.',
+    'Du siehst unter anderem Prozessor, Grafik, RAM, Systemlaufwerk und den Systemzustand. Beim Scrollen laufen die Kacheln unter der festen Fensterleiste weiter.':
+        'See processor, graphics, memory, system drive and system health. Cards scroll beneath the fixed window strip.',
+})
