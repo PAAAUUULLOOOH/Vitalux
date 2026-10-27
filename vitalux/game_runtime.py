@@ -75,7 +75,8 @@ def validate(folder):
         for name in _LIBRARIES:
             key=directory+'/'+name
             if key not in files:raise ValueError('Missing game architecture: '+key)
-    if 'run' not in files or 'layers/VitaluxMangoHud.json' not in files:
+    if ('run' not in files or 'layers/VitaluxMangoHud.json' not in files
+            or 'vulkan/implicit_layer.d/VitaluxMangoHud.json' not in files):
         raise ValueError('Overlay launch integration is missing')
     inventory=json.dumps(files,sort_keys=True,separators=(',',':')).encode()
     if hashlib.sha256(inventory).hexdigest()!=info.get('bundle_id'):

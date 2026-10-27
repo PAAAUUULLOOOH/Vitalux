@@ -22,7 +22,7 @@ class Host(QWidget):
         self.intervals = []
         self.restarts = 0
 
-    def apply_appearance(self):
+    def apply_appearance(self, *, before=None):
         theme.set_mode(eco.theme_name())
 
     def set_interval(self, val):

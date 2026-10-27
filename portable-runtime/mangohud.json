@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "version": "0.8.4",
-  "bundle_id": "4092516e03d728f10d8e64e209b020f2b3e92cb30e6720c1645963aff0950b9c",
+  "bundle_id": "8047a7d53cde9bdaec9cfc4960001c858e5d1510f6d3201e2230790456b82834",
   "architectures": [
     "x86_64",
     "i386"
@@ -10,6 +10,6 @@
   "source_url": "https://github.com/flightlessmango/MangoHud/releases/download/v0.8.4/MangoHud-v0.8.4-Source.tar.xz",
   "source_sha256": "bbe5a2b976313c53f21dc24b98bbed03226589460a0cce20d923cb2c36c9d8b0",
   "archive": "mangohud-0.8.4-linux-x86.tar.xz",
-  "sha256": "e65802abf23c482d2b83ed71bffbd5a5b58fb8a3e38109147ebb19b37e8b0fa9",
-  "bytes": 4207220
+  "sha256": "8301c81785f7328c0be0f6df44f5a99cc26907271b77f90a8dc545eb2840439a",
+  "bytes": 4219836
 }

@@ -16,7 +16,7 @@ from vitalux import game_files,game_profiles,game_reports,game_runtime
 from vitalux.game_sessions import GameSessions
 
 
-def record(probe,api,bits,seconds,output,app,flatpak_app=None,loader32=None):
+def record(probe,api,bits,seconds,output,app,flatpak_app=None,loader32=None,steam_runtime=None):
     name=f'{api}{bits}'
     game=dict(id='steam:'+str(9999999900+(bits if api=='gl' else bits+100)),store='steam',
               appid='9999999900',name='Bundled '+name,installed=True,flatpak=bool(flatpak_app))
@@ -28,6 +28,7 @@ def record(probe,api,bits,seconds,output,app,flatpak_app=None,loader32=None):
     env=dict(os.environ,LIBGL_ALWAYS_SOFTWARE='1',vblank_mode='0')
     env['PATH']=str(output/'shadow')+':'+os.defpath
     payload=([loader32] if bits==32 and loader32 else [])+[str(probe),api,str(seconds)]
+    if steam_runtime:payload=[str(Path(steam_runtime)/'_v2-entry-point'),'--verb=run','--',*payload]
     command=[str(bridge/'launch.sh'),*payload]
     if flatpak_app:
         command=['flatpak','run','--env=LIBGL_ALWAYS_SOFTWARE=1','--env=vblank_mode=0',
@@ -52,6 +53,10 @@ def record(probe,api,bits,seconds,output,app,flatpak_app=None,loader32=None):
                        for y in range(min(240,picture.height())) for x in range(min(420,picture.width())))
             assert bright>40,(name,'Overlay text did not appear',bright)
             assert process.wait(timeout=seconds+20)==0,(name,'Graphics probe failed')
+        except BaseException:
+            log.flush()
+            print((output/(name+'.log')).read_text(errors='replace')[-6000:],flush=True)
+            raise
         finally:
             if process.poll() is None:
                 import signal
@@ -82,7 +87,7 @@ def record(probe,api,bits,seconds,output,app,flatpak_app=None,loader32=None):
     assert math.isclose(report['low_1'],1000/(math.fsum(worst)/len(worst)),rel_tol=1e-5)
     assert GameSessions(output/(name+'-state')).report(report['id'])==report
     result={key:report[key] for key in ('frames','duration','average_fps','low_1','low_01','grade','complete')}
-    result.update(api=api,bits=bits,visible_overlay_pixels=bright,flatpak=bool(flatpak_app))
+    result.update(api=api,bits=bits,visible_overlay_pixels=bright,flatpak=bool(flatpak_app),steam_runtime=bool(steam_runtime))
     print(json.dumps(result),flush=True)
     return result
 
@@ -94,6 +99,7 @@ def main():
     parser.add_argument('--probe32',default=None)
     parser.add_argument('--flatpak-app',default=None)
     parser.add_argument('--loader32',default=None)
+    parser.add_argument('--steam-runtime',default=None)
     parser.add_argument('--short',action='store_true')
     args=parser.parse_args();output=args.output.resolve();output.mkdir(parents=True,exist_ok=True)
     assert game_runtime.available(),'Portable MangoHud payload missing'
@@ -113,7 +119,7 @@ def main():
     for bits in (64,32):
         for api in ('gl','vk'):
             seconds=36 if bits==64 and api=='gl' and not args.short else 7
-            results.append(record(probes[bits],api,bits,seconds,output,app,args.flatpak_app,args.loader32))
+            results.append(record(probes[bits],api,bits,seconds,output,app,args.flatpak_app,args.loader32,args.steam_runtime))
     game_files.write_json(output/'verification.json',dict(bundled_mangohud=True,
         engine=game_runtime.descriptor()['version'],no_system_mangohud=True,cases=results))
     app.quit()

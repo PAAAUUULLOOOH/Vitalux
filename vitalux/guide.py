@@ -77,7 +77,7 @@ SLIDES = [
         "Darstellung und Einstellungen",
         "Sechs Designs stehen zur Auswahl: Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core und Light. Alle unterstützen eigene Akzentfarben und Hintergründe.",
         "Originalfarben und Originalhintergrund stellen die Vorgaben des aktiven Designs wieder her. Farben und Hintergründe früherer Designs bleiben als Vorlagen erhalten. Design zurücksetzen betrifft nur das aktuelle Design. Komponentenbilder anzeigen schaltet die Bilder gemeinsam um und behält den Cache.",
-        "Die Suche erkennt auch unvollständige Namen wie MiniH oder MiniHU und gleitet zum passenden Bereich. Nach einer Auswahl bleibt sie fünf Sekunden sichtbar und schließt weich. Erweiterte Einstellungen öffnen sich bei passenden Treffern automatisch.",
+        "Die Lupe sitzt mittig in der oberen Leiste. Das Suchfeld öffnet sich dort mit der Lupe links neben dem Text. Auch unvollständige Namen wie MiniH oder MiniHU führen zum passenden Bereich. Nach einer Auswahl bleibt die Suche fünf Sekunden sichtbar und schließt weich.",
         "Unter Erweiterte Einstellungen → Wartung setzt „Standardwerte wiederherstellen“ das gesamte aktive Profil zurück. Einstellungen, eigene Farben, Layouts, importierte Bildkopien und Cache werden gelöscht. Originalbilder und das andere Updateprofil bleiben erhalten; Vitalux startet neu und öffnet die Anleitung.",
         "settings",
     ),
@@ -97,7 +97,7 @@ SLIDES = [
         "Die Prozentzahl steht mittig im Update-Ladebalken. Downloads lassen sich abbrechen und bei Fehlern erneut versuchen. Changelogs folgen deiner Sprache und bleiben offline lesbar. Lange Texte haben eine eigene Scrollleiste; passt der Text, bleibt sie unsichtbar. Beim Versionswechsel beginnt der Text oben.",
         "updates",
     ),
-    ('Spiele und MangoHud', 'Der Reiter Spiele erkennt installierte Steam-, Heroic- und Lutris-Spiele automatisch.', 'MangoHud ist für 32- und 64-Bit-Spiele enthalten, auch für Flatpak. Schließe den Launcher und verbinde das Overlay einmal im Spielprofil. Metriken und FPS-Ziel sind pro Spiel wählbar.', 'Lass Vitalux im Hintergrund laufen. Nach Spielende erscheinen FPS, niedrige FPS-Werte, Frametime-Verlauf und frühere Sitzungen beim jeweiligen Spiel.', 'Die Bewertung erklärt ihre Kriterien im Verhältnis zum FPS-Ziel. Zu kurze oder unvollständige Aufnahmen erhalten keine Gesamtnote.', 'hardware'),
+    ('Spiele und MangoHud', 'Der Reiter Spiele erkennt installierte Steam-, Heroic- und Lutris-Spiele automatisch.', 'MangoHud ist für 32- und 64-Bit-Spiele enthalten, auch für Steam-Laufzeit und Flatpak. Schließe den Launcher und speichere das aktivierte Spielprofil, um das Overlay zu verbinden. Metriken und FPS-Ziel sind pro Spiel wählbar.', 'Lass Vitalux im Hintergrund laufen. Nach Spielende erscheinen FPS, niedrige FPS-Werte, Frametime-Verlauf und frühere Sitzungen beim jeweiligen Spiel.', 'Die Bewertung erklärt ihre Kriterien im Verhältnis zum FPS-Ziel. Zu kurze oder unvollständige Aufnahmen erhalten keine Gesamtnote.', 'hardware'),
 ]
 
 

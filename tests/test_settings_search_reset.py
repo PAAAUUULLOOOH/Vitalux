@@ -33,7 +33,7 @@ class Host(QWidget):
         self.hud_refreshes = 0
         self.interval = None
 
-    def apply_appearance(self):
+    def apply_appearance(self, *, before=None):
         theme.set_mode(settings.get('theme', 'glass'))
         theme.set_accent(settings.get('accent', '#4f8cff'))
 

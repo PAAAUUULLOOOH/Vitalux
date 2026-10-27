@@ -30,6 +30,19 @@ def main():
         functions=dict(vkNegotiateLoaderLayerInterfaceVersion='vkNegotiateLoaderLayerInterfaceVersion')))
     (payload/'layers').mkdir(exist_ok=True)
     (payload/'layers/VitaluxMangoHud.json').write_text(json.dumps(layer,indent=2)+'\n')
+    implicit=payload/'vulkan/implicit_layer.d'
+    implicit.mkdir(parents=True,exist_ok=True)
+    imported=json.loads(json.dumps(layer))
+    imported['layer'].update(enable_environment=dict(VITALUX_MANGOHUD='1'),
+                             disable_environment=dict(VITALUX_MANGOHUD_DISABLED='1'))
+    (implicit/'VitaluxMangoHud.json').write_text(json.dumps(imported,indent=2)+'\n')
+    # glibc expands $LIB differently across host distributions and Steam
+    # runtimes. Tiny shim copies cover both layouts without symlinks or loading
+    # a mismatched ELF class into a game. The main libraries stay in lib32/64.
+    for directory,bits in (('lib',32),('lib/x86_64-linux-gnu',64),('lib/i386-linux-gnu',32)):
+        target=payload/directory
+        target.mkdir(parents=True,exist_ok=True)
+        shutil.copy2(payload/f'lib{bits}/libVitaluxMangoHud_shim.so',target/'libVitaluxMangoHud_shim.so')
     for notice in ('embedded-fonts.txt','CC0-1.0.txt','ProggyFonts-MIT.txt'):
         shutil.copy2(ROOT/'licenses/mangohud'/notice,payload/'licenses'/notice)
     files={str(p.relative_to(payload)):dict(bytes=p.stat().st_size,sha256=digest(p))

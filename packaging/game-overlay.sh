@@ -17,6 +17,7 @@ printf '%s\n' "$$" > "$VITALUX_SESSION_DIR/owner.pid"
 cp "/proc/$$/stat" "$VITALUX_SESSION_DIR/owner.stat" 2>/dev/null || :
 export VITALUX_GAME_SESSION="$VITALUX_SESSION_DIR"
 export MANGOHUD_CONFIGFILE="$VITALUX_SESSION_DIR/overlay.conf"
+export PRESSURE_VESSEL_FILESYSTEMS_RW="${PRESSURE_VESSEL_FILESYSTEMS_RW:+$PRESSURE_VESSEL_FILESYSTEMS_RW:}$VITALUX_SESSION_DIR"
 # A launcher's global string would override the dedicated profile file.
 unset MANGOHUD_CONFIG
 "$VITALUX_OVERLAY_ENGINE" "$@"

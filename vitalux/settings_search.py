@@ -1,7 +1,7 @@
 """Small native Qt overlay for settings-only search, pinned above scrolling content."""
 from __future__ import annotations
 
-from PySide6.QtCore import QEvent, QPointF, QRectF, Qt, QTimer, QVariantAnimation, QEasingCurve
+from PySide6.QtCore import QEvent, QPoint, QPointF, QRectF, Qt, QTimer, QVariantAnimation, QEasingCurve
 from PySide6.QtGui import QColor, QPainter, QPen
 from PySide6.QtWidgets import QApplication, QGraphicsOpacityEffect, QToolButton, QWidget
 from . import theme, motion
@@ -27,8 +27,9 @@ class _SearchIcon(QToolButton):
         p.setCapStyle(Qt.RoundCap)
         painter.setPen(p)
         painter.setBrush(Qt.NoBrush)
-        painter.drawEllipse(QRectF(10, 9, 9, 9))
-        painter.drawLine(QPointF(18, 18), QPointF(23, 23))
+        x,y=self.width()/2,self.height()/2
+        painter.drawEllipse(QRectF(x-6.5,y-6.5,9,9))
+        painter.drawLine(QPointF(x+1,y+1), QPointF(x+6.5,y+6.5))
         painter.end()
 
 
@@ -41,6 +42,9 @@ class FloatingSettingsSearch(QWidget):
     def __init__(self, field, suggestions, parent=None):
         super().__init__(parent)
         self._host = parent
+        self._page = parent
+        self._header_mode = False
+        self._viewport = None
         self._expanded = False
         self._closing = False
         self._width = 0
@@ -96,17 +100,32 @@ class FloatingSettingsSearch(QWidget):
     def install_on(self, scroll):
         """Put the overlay in the scroll viewport, not in the scrolling widget."""
         viewport = scroll.viewport()
-        if self._host is not viewport:
+        window=getattr(self._page,'window',None)
+        header_mode=(hasattr(window,'window_frame') and window.window_frame.scene is not None
+                     and hasattr(window,'design_shell'))
+        host=window if header_mode else viewport
+        parent=window.window_frame.scene if header_mode else viewport
+        if self._host is not host:
             if self._host is not None:
                 self._host.removeEventFilter(self)
-            self.setParent(viewport)
-            self._host = viewport
-            viewport.installEventFilter(self)
+            self.setParent(parent)
+            self._host = host
+            host.installEventFilter(self)
             app = QApplication.instance()
             if app is not None:
                 app.installEventFilter(self)
+        self._viewport=viewport
+        self._header_mode=header_mode
+        if header_mode:
+            self.icon.setFixedSize(34,28)
+            if self.home_icon is not None:
+                self.home_icon.parentWidget().hide()
+                self.home_icon=None
+            self._page.search_home=self.icon
+            self._page.installEventFilter(self)
+            self.refresh_theme()
         self._position()
-        if self._expanded:
+        if self._expanded or (header_mode and self._page.isVisible()):
             self.show()
             self.raise_()
 
@@ -120,13 +139,15 @@ class FloatingSettingsSearch(QWidget):
         outline = f'rgba({line.red()}, {line.green()}, {line.blue()}, 190)'
         foreground = text.name()
         selection = accent.name()
+        inset='padding-left: 42px;' if self._header_mode else ''
+        height=self.icon.height()
         self.field.setStyleSheet(
             'QLineEdit#settingsSearch {'
             f'background: {bg}; color: {foreground}; border: 1px solid {outline};'
-            f'border-radius: 16px; padding: 4px 11px; selection-background-color: {selection};'
+            f'border-radius: {height/2:g}px; padding: 3px 11px; {inset} selection-background-color: {selection};'
             '}'
         )
-        self.field.setFixedHeight(32)
+        self.field.setFixedHeight(height)
         self.suggestions.setStyleSheet(
             'QListWidget#settingsSearchResults {'
             f'background: {bg}; color: {foreground}; border: 1px solid {outline};'
@@ -138,6 +159,12 @@ class FloatingSettingsSearch(QWidget):
 
     def eventFilter(self, obj, event):
         kind = event.type()
+        if self._header_mode and obj is self._page:
+            if kind==QEvent.Show:
+                self._sync_geometry();self.show();self.raise_()
+            elif kind==QEvent.Hide:
+                self.animation.stop();self._expanded=False;self._closing=True
+                self._to=(0,0.0,0);self._finished();self.hide()
         if self._expanded and kind == QEvent.KeyPress and event.key() == Qt.Key_Escape:
             self.close_search()
             return True
@@ -155,18 +182,28 @@ class FloatingSettingsSearch(QWidget):
 
     def _position(self):
         if self._host is not None:
-            inset=self._host.property('vitaluxTopInset') or 0
-            self.move(max(0, (self._host.width()-self.width())//2), 12+inset)
+            if self._header_mode:
+                shell=self._host.design_shell
+                anchor=shell.bar if not shell.header.isHidden() else self._host.window_frame.titlebar
+                top=anchor.mapTo(self.parentWidget(),QPoint()).y()
+                self.move((self._host.width()-self.width())//2,top+(anchor.height()-self.icon.height())//2)
+            else:
+                inset=self._host.property('vitaluxTopInset') or 0
+                self.move(max(0, (self._host.width()-self.width())//2), 12+inset)
             self.raise_()
 
     def _sync_geometry(self):
-        width = 32 + (5+self._width if self._width > 0 else 0)
-        self.setFixedSize(width, 32+self._result_height)
+        icon_width,height=self.icon.width(),self.icon.height()
+        width = icon_width + (5+self._width if self._width > 0 else 0)
+        self.setFixedSize(width, height+self._result_height)
         self.icon.move(0, 0)
-        self._content.setGeometry(37, round((1-self._opacity.opacity())*5),
-                                  self._width, 32+self._result_height)
-        self.field.setGeometry(0, 0, self._width, 32)
-        self.suggestions.setGeometry(0, 37, self._width, self.suggestions.height())
+        content_width=width if self._header_mode else self._width
+        self._content.setGeometry(0 if self._header_mode else 37,
+                                  0 if self._header_mode else round((1-self._opacity.opacity())*5),
+                                  content_width, height+self._result_height)
+        self.field.setGeometry(0, 0, content_width, height)
+        self.suggestions.setGeometry(0, height+5, content_width, self.suggestions.height())
+        self.icon.raise_()
         self._position()
 
     def _on_frame(self, progress):
@@ -200,12 +237,27 @@ class FloatingSettingsSearch(QWidget):
             self.field.clear()
             self.field.hide()
             self.suggestions.hide()
-            self.hide()
+            self.setVisible(self._header_mode and self._page.isVisible())
             if self.home_icon is not None:
                 self.home_icon.show()
 
     def _wanted_width(self):
         metrics = self.field.fontMetrics()
+        if self._header_mode:
+            window=self._host;shell=window.design_shell;center=window.width()/2
+            left,right=24,window.width()-24
+            candidates=([shell.brand,window.lang_host,window.window_frame.titlebar]
+                        if not shell.header.isHidden() else [window.window_frame.buttons['minimize']])
+            for widget in candidates:
+                if not widget.isVisible():continue
+                position=widget.mapTo(window,QPoint())
+                if position.x()+widget.width()/2<center:left=max(left,position.x()+widget.width()+12)
+                else:right=min(right,position.x()-12)
+            available=max(self.icon.width(),round(2*min(center-left,right-center)))
+            full=min(self.MAX_WIDTH,available,max(self.DEFAULT_WIDTH,
+                metrics.horizontalAdvance(self.field.placeholderText())+62,
+                metrics.horizontalAdvance(self.field.text())+66))
+            return max(0,full-self.icon.width()-5)
         # Never truncate the complete placeholder to 'Einstellung…' on opening.
         # Reserve room for the caret, borders and the search field's padding.
         placeholder = metrics.horizontalAdvance(self.field.placeholderText()) + 36

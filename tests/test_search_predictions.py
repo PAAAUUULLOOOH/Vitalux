@@ -19,7 +19,7 @@ def wait(ms):
 class Host(QWidget):
     _tray=None
     render_backend_active='software'
-    def apply_appearance(self):theme.set_mode(settings.get('theme','obsidian_gold'))
+    def apply_appearance(self, *, before=None):theme.set_mode(settings.get('theme','obsidian_gold'))
     def set_interval(self,value):pass
 
 with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Path(folder)/'settings.json')):

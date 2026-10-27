@@ -542,7 +542,8 @@ class MainWindow(WindowLifecycle, QMainWindow):
                     if widget is not None:items[id(widget)] = widget
                     elif item.layout() is not None:collect(item.layout())
             collect(page.content)
-            if hasattr(page,'search_overlay'):items['search'] = page.search_overlay
+            if hasattr(page,'search_overlay') and not page.search_overlay._header_mode:
+                items['search'] = page.search_overlay
         scroll = self.stack.widget(index)
         viewport = scroll.viewport()
         view_rect = QRect(viewport.mapTo(root, QPoint(0, 0)), viewport.size())
@@ -572,12 +573,20 @@ class MainWindow(WindowLifecycle, QMainWindow):
         # Capture the real scene backdrop as well as the transparent child row.
         # QWidget.grab() of the child alone loses the parent-painted atmosphere.
         scene = self.centralWidget()
-        chrome=[widget for widget in (self.window_frame.titlebar,self.design_shell.header) if not widget.isHidden()]
+        chrome=[widget for widget in (self.window_frame.titlebar,self.design_shell.header,
+                                      self.design_shell.dock_row) if not widget.isHidden()]
+        chrome.extend(page.search_overlay for _,page in self.pages
+                      if hasattr(page,'search_overlay') and page.search_overlay._header_mode
+                      and not page.search_overlay.isHidden())
+        materials=self.window_frame.materials
+        materials._capture_joined=materials.joined()
         try:
             for widget in chrome:widget.hide()
             return scene.grab(QRect(host.mapTo(scene, QPoint()), host.size()))
         finally:
             for widget in chrome:widget.show();widget.raise_()
+            materials._capture_joined=None
+            self.window_frame.border.raise_()
 
     def _sidebar_visual_layers(self):
         """Capture moving sidebar children individually without affecting Qt layouts.
@@ -829,22 +838,36 @@ class MainWindow(WindowLifecycle, QMainWindow):
             background_style='theme_default', custom_background_selected='',
             custom_background_fit='cover', ultra_eco=False)).values())
 
-    def apply_appearance(self):
+    def apply_appearance(self, *, before=None):
         """Restyle in-place; keep selected page, benchmark worker and scroll intact."""
         if self._sidebar_motion is not None:
             self._sidebar_finish()
         from . import design_catalog
         design_catalog.remember()
         next_key = self._appearance_signature()
-        before = None
         if (self.isVisible() and not self.isMinimized() and motion.duration(300)
                 and getattr(self, '_appearance_key', next_key) != next_key):
-            before = self.grab()
+            if before is None:before = self.grab()
+        else:before=None
         overlay = getattr(self, '_appearance_overlay', None)
+        transition = None
         changed = getattr(self, '_appearance_key', next_key) != next_key
+        if before is not None:
+            from .appearance_transition import AppearanceTransition
+            # Cover the visible window BEFORE any material/layout mutation.
+            # This child of MainWindow is deliberately outside the scene, so
+            # the destination scene can be captured without hiding the cover.
+            transition = AppearanceTransition(self, before, before)
+            self._appearance_overlay = transition
+            transition.show()
+            transition.raise_()
+            def clear_overlay():
+                if self._appearance_overlay is transition:
+                    self._appearance_overlay = None
+            transition.finished.connect(clear_overlay)
         if overlay is not None and (changed or not motion.duration(300) or not self.isVisible()):
             overlay.finish()
-            self._appearance_overlay = None
+            if transition is None:self._appearance_overlay = None
         theme.set_mode(eco.theme_name())
         user_accent = settings.get('accent', '#4f8cff')
         theme.set_accent('#4f8cff' if eco.enabled() else resolve_accent(user_accent, self.distro['color']))
@@ -901,20 +924,17 @@ class MainWindow(WindowLifecycle, QMainWindow):
         if pref is not None and hasattr(pref, 'refresh_appearance'):
             pref.refresh_appearance()
         self._appearance_key = next_key
-        if before is not None and motion.duration(300):
-            from .appearance_transition import AppearanceTransition
+        if transition is not None:
             self.layout().activate()
             scene = self.centralWidget()
+            # Deferred Qt layout changes settle under the frozen source frame.
+            QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
+            self.layout().activate()
             if hasattr(scene, 'finish_background_frame'):
                 scene.finish_background_frame()
-            after = self.grab()
-            overlay = AppearanceTransition(self, before, after)
-            self._appearance_overlay = overlay
-            def clear_overlay():
-                if self._appearance_overlay is overlay:
-                    self._appearance_overlay = None
-            overlay.finished.connect(clear_overlay)
-            overlay.start()
+            if self._appearance_overlay is transition:
+                transition.after = scene.grab()
+                transition.start()
 
     def _network_alert(self,title,message):
         self.statusBar().showMessage(title+' · '+message,16000)

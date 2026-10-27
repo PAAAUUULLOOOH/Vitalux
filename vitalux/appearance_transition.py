@@ -28,6 +28,7 @@ class AppearanceTransition(QWidget):
         self.animation.finished.connect(self.finish)
 
     def start(self):
+        if self.before is None:return
         self.show()
         self.raise_()
         self.animation.start()
@@ -37,6 +38,7 @@ class AppearanceTransition(QWidget):
         self.update()
 
     def finish(self):
+        if self.before is None:return
         self.animation.stop()
         self.hide()
         self.before = self.after = None

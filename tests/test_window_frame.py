@@ -35,7 +35,8 @@ with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',str
    from vitalux.window_frame import outline
    mask=QImage(image.size(),QImage.Format_ARGB32_Premultiplied);mask.fill(0)
    painter=QPainter(mask);painter.setRenderHint(QPainter.Antialiasing)
-   painter.fillPath(outline(window.rect()),QColor('white'));painter.setPen(QPen(QColor('white'),1));painter.drawPath(outline(window.rect()));painter.end()
+   painter.fillPath(outline(window.rect()),QColor('white'));painter.setPen(QPen(QColor('white'),1))
+   painter.drawPath(outline(QRectF(window.rect()).adjusted(-.5,-.5,.5,.5)));painter.end()
    for x in range(27):
     for y in range(27):
      for px,py in ((x,y),(image.width()-1-x,y),(x,image.height()-1-y),(image.width()-1-x,image.height()-1-y)):

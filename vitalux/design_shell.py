@@ -7,6 +7,28 @@ from .widgets import label
 from .signature_designs import KEYS, Surface
 
 
+class FloatingDock(Surface):
+    """Translucent live dock: page cards remain visible through its material."""
+    def paintEvent(self,event):
+        if theme.mode()!='nebula_prism':return super().paintEvent(event)
+        from PySide6.QtCore import QRectF
+        from PySide6.QtGui import QBrush,QColor,QLinearGradient,QPainter,QPen
+        from . import nebula_prism
+        painter=QPainter(self);painter.setRenderHint(QPainter.Antialiasing)
+        rect=QRectF(self.rect()).adjusted(1.5,1.5,-1.5,-1.5)
+        path=nebula_prism.shape(rect,compact=True)
+        wash=QLinearGradient(rect.topLeft(),rect.bottomRight())
+        for position,value in ((0,theme.CARD),(1,theme.BG)):
+            color=QColor(value);color.setAlpha(155);wash.setColorAt(position,color)
+        painter.fillPath(path,QBrush(wash))
+        rim=QLinearGradient(rect.topLeft(),rect.bottomRight())
+        palette=nebula_prism.palette()
+        for index,value in enumerate((palette['accent'],palette['secondary'],palette['accent'])):
+            color=QColor(value);color.setAlpha(210);rim.setColorAt(index/2,color)
+        painter.setBrush(Qt.NoBrush);painter.setPen(QPen(QBrush(rim),1.5))
+        painter.drawPath(path);painter.end()
+
+
 class DesignShell(QObject):
     def __init__(self, window, canvas):
         super().__init__(window)
@@ -54,10 +76,11 @@ class DesignShell(QObject):
         self.bottom.addWidget(self.version)
         self.bottom.addStretch(1)
         # Nebula Prism: a floating, centred dock instead of a sidebar or bar.
-        self.dock_row=QWidget()
+        self.dock_row=QWidget(canvas.parentWidget())
+        self.dock_row.setAutoFillBackground(False)
         dock_row=QHBoxLayout(self.dock_row)
         dock_row.setContentsMargins(0,0,0,0)
-        self.dock=Surface()
+        self.dock=FloatingDock()
         self.dock_layout=QHBoxLayout(self.dock)
         self.dock_layout.setContentsMargins(10,5,10,5)
         self.dock_layout.setSpacing(4)
@@ -65,7 +88,6 @@ class DesignShell(QObject):
         dock_row.addWidget(self.dock)
         dock_row.addStretch(1)
         canvas.addWidget(self.footer)
-        canvas.addWidget(self.dock_row)
         self.header.hide()
         self.footer.hide()
         self.dock_row.hide()
@@ -195,6 +217,14 @@ class DesignShell(QObject):
         if signature:
             self.header.setGeometry(0,0,w.width(),height)
             self.header.raise_()
+        if self.mode=='nebula_prism':
+            count=len(w.nav_buttons)
+            button_width=min(54,max(28,(w.width()-60-(count-1)*4)//max(1,count)))
+            for button in w.nav_buttons:button.setFixedSize(button_width,46)
+            self.dock_layout.activate();self.dock_row.layout().activate()
+            size=self.dock.sizeHint()
+            self.dock_row.setGeometry((w.width()-size.width())//2,w.height()-size.height()-16,size.width(),size.height())
+            self.dock_row.raise_()
         inset=height if signature else frame.titlebar.height()
         top=inset+(16 if signature else 2)
         for index,(_,page) in enumerate(w.pages):
@@ -203,7 +233,8 @@ class DesignShell(QObject):
             viewport.setProperty('vitaluxTopInset',max(0,inset))
             if hasattr(page,'search_overlay'):page.search_overlay._position()
             old=page.root.contentsMargins()
-            if old.top()!=top:page.root.setContentsMargins(old.left(),top,old.right(),old.bottom())
+            bottom=max(26,self.dock_row.height()+32) if self.mode=='nebula_prism' else (26 if signature else 30)
+            if old.top()!=top or old.bottom()!=bottom:page.root.setContentsMargins(old.left(),top,old.right(),bottom)
         if not w.sidebar.isHidden():
             old=w.sidebar_layout.contentsMargins()
             w.sidebar._toggle_y=max(13,inset+2)
@@ -213,6 +244,8 @@ class DesignShell(QObject):
         frame.titlebar.raise_()
         frame.materials.refresh()
         frame._clip_content()
+        for _,page in w.pages:
+            if hasattr(page,'search_overlay') and page.search_overlay.isVisible():page.search_overlay._position()
 
     def retranslate(self):
         w=self.window

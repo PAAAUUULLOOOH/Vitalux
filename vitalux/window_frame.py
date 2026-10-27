@@ -18,6 +18,26 @@ def outline(rect, radius=CORNER_RADIUS):
     return path
 
 
+class WindowOutline(QWidget):
+    """A fixed contour above cached layout animations and GPU backgrounds."""
+    def __init__(self,frame):
+        super().__init__(frame.scene)
+        self.frame=frame
+        self.setAttribute(Qt.WA_TransparentForMouseEvents,True)
+        self.setAutoFillBackground(False)
+        self.show()
+
+    def paintEvent(self,event):
+        painter=QPainter(self);painter.setRenderHint(QPainter.Antialiasing)
+        painter.setBrush(Qt.NoBrush);painter.setPen(QPen(QColor(theme.BORDER),1))
+        # Place the one-pixel contour on pixel centers. A stroke at integer
+        # coordinates only half covers both rows and changes apparent strength
+        # as the dark sidebar passes beneath it.
+        area=QRectF(self.rect()).adjusted(-.5,-.5,.5,.5)
+        painter.drawPath(outline(area,0 if self.frame.expanded else CORNER_RADIUS))
+        painter.end()
+
+
 class WindowButton(QAbstractButton):
     def __init__(self, action, frame):
         super().__init__(frame.titlebar)
@@ -233,6 +253,8 @@ class WindowFrame(QObject):
         scene.installEventFilter(self)
         from .edge_material import EdgeMaterials
         self.materials=EdgeMaterials(self)
+        self.border=WindowOutline(self)
+        scene.setProperty('vitaluxOutlineOverlay',True)
         self.window.sidebar.setProperty('vitaluxEdgeJoined',True)
         self.window.design_shell.bar._window_frame=self
         self.titlebar.setParent(scene)
@@ -248,6 +270,8 @@ class WindowFrame(QObject):
         self.status = ClientStatusBar(status_host);status_layout.addWidget(self.status)
         canvas.addWidget(status_host);status_host.hide()
         for widget in (self.window.design_shell.header,self.window.design_shell.footer,self.window.content_host):widget.installEventFilter(self)
+        for index,(_,page) in enumerate(self.window.pages):
+            if hasattr(page,'search_overlay'):page.search_overlay.install_on(self.window.stack.widget(index))
         self.refresh()
 
     def toggle_maximized(self):
@@ -295,6 +319,7 @@ class WindowFrame(QObject):
                 self._native_mask_key=key
         if hasattr(self.scene, '_schedule_upload'):self.scene._schedule_upload()
         self.scene.update()
+        self.border.setGeometry(self.scene.rect());self.border.raise_();self.border.update()
         self.retranslate()
 
     def retranslate(self):

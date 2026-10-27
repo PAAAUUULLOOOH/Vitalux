@@ -115,6 +115,21 @@ jobs:
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-regressions.py --output "$GITHUB_WORKSPACE/build/regressions"
+      - name: Check the overlay inside Valve's Steam runtime
+        if: steps.prepare.outputs.changed == 'true'
+        timeout-minutes: 8
+        run: |
+          set -euo pipefail
+          mkdir -p build/steam-recording
+          xvfb-run -a -s '-screen 0 1280x800x24' dbus-run-session -- bash scripts/check-steam-game-recording.sh build/steam-recording
+      - name: Check wide Steam capsules and offline reuse
+        if: steps.prepare.outputs.changed == 'true'
+        run: python scripts/check-game-artwork-network.py
+      - name: Check native header search, translucent dock and interrupted appearance transitions
+        if: steps.prepare.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+          xvfb-run -a -s '-screen 0 1600x1050x24' env QT_QPA_PLATFORM=xcb VITALUX_RENDERER=x11_opengl LIBGL_ALWAYS_SOFTWARE=1 LP_NUM_THREADS=2 python tests/test_navigation_surfaces.py
       - name: Check resource budgets, endurance and reference rendering
         if: steps.prepare.outputs.changed == 'true'
         timeout-minutes: 18
@@ -201,6 +216,9 @@ jobs:
             build/game-recording/
             build/flatpak-recording/recording/
             build/flatpak-recording/runtime-list.txt
+            build/steam-recording/recording/
+            build/steam-recording/runtime-source.json
+            build/game-artwork-network/
             build/performance-parity/results.json
             build/render-parity/results.json
             build/ui-endurance/

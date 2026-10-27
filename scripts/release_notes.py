@@ -8,10 +8,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from vitalux.changelog import version_notes
+from vitalux.versions import channel
 
 
 def build(version, path=ROOT / "CHANGELOG.md"):
     ver = str(version).lstrip("v")
+    branch = 'unstable' if channel(ver) == 'unstable' else 'main'
     german = version_notes(ver, path, lang="de")
     english = version_notes(ver, ROOT / "CHANGELOG.en.md", lang="en")
     if not german:
@@ -24,9 +26,9 @@ def build(version, path=ROOT / "CHANGELOG.md"):
             + f"### What's new in Vitalux v{ver}\n\n"
             + "\n".join("- " + item for item in english)
             + "\n\n[Changelog (Deutsch)]"
-              "(https://github.com/PAAAUUULLOOOH/Vitalux/blob/main/CHANGELOG.md)"
+              f"(https://github.com/PAAAUUULLOOOH/Vitalux/blob/{branch}/CHANGELOG.md)"
               " · [Changelog (English)]"
-              "(https://github.com/PAAAUUULLOOOH/Vitalux/blob/main/CHANGELOG.en.md)\n")
+              f"(https://github.com/PAAAUUULLOOOH/Vitalux/blob/{branch}/CHANGELOG.en.md)\n")
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ from vitalux.control import PreferencesPage
 app=QApplication.instance() or QApplication([])
 class Host(QWidget):
     render_backend_active='software';_tray=object()
-    def apply_appearance(self):theme.set_mode(settings.get('theme'))
+    def apply_appearance(self, *, before=None):theme.set_mode(settings.get('theme'))
 with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Path(folder)/'settings.json')):
     settings.set_many(dict(theme='glass',motion='off'))
     host=Host();page=PreferencesPage(host)

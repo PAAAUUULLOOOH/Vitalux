@@ -77,6 +77,13 @@ class GameService(QThread):
                         connection = sessions.connections.get(game['id'])
                         if connection:
                             game_profiles.prepare(connection['game'])
+                        elif game_profiles.load(game['id'])['enabled']:
+                            # Saving an enabled profile also establishes the
+                            # actual launcher connection; a checkmark alone
+                            # cannot inject an overlay into a game's process.
+                            bridge=game_profiles.prepare(game)
+                            game_profiles.connect(game,bridge)
+                            sessions.register(game,bridge)
                     self._catalog(sessions)
                 elif operation == 'report':
                     self.report_ready.emit(sessions.report(payload))

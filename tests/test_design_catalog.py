@@ -12,7 +12,7 @@ from vitalux.design_capabilities import capabilities
 app=QApplication.instance() or QApplication([])
 class Host(QWidget):
     render_backend_active='software';_tray=object()
-    def apply_appearance(self):
+    def apply_appearance(self, *, before=None):
         theme.set_mode(settings.get('theme','obsidian_gold'))
         theme.set_accent(wallpaper_accents.resolve_accent(settings.get('accent','design_default'),'#73ba25'))
         catalog.remember()

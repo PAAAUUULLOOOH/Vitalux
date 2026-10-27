@@ -24,7 +24,7 @@ class FakeWindow:
         self.render_backend_active = 'software'
         self.restarts = 0
 
-    def apply_appearance(self):
+    def apply_appearance(self, *, before=None):
         theme.set_mode(settings.get('theme', 'glass'))
         color = wallpaper_accents.resolve_accent(settings.get('accent', '#4f8cff'),
                                                   self.distro['color'])

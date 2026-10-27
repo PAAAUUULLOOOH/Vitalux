@@ -1,5 +1,11 @@
 """Game library, MangoHud setup and per-game session report translations."""
 EN_GAMES = {
+    'Overlay aktivieren': 'Activate overlay',
+    'Overlay aktiviert und mit dem Spiel verbunden.': 'Overlay enabled and connected to the game.',
+    'Overlay ist deaktiviert.': 'Overlay is disabled.',
+    'Overlay noch nicht mit dem Spiel verbunden.': 'Overlay is not connected to the game yet.',
+    'Noch nicht mit dem Spiel verbunden. Zum Aktivieren den Launcher beenden und das aktivierte Profil speichern.':
+        'Not connected to the game yet. Close the launcher, then save the enabled profile to activate it.',
     'Mehrere Grafikprogramme aufgezeichnet. Ausgewertet wird die längste Aufzeichnung: {process}.':
         'Several graphics programs were recorded. This report uses the longest recording: {process}.',
     'Setzt alle Einstellungen dieses Profils zurück: Design, Farben, Layouts, Sprache, Warnwerte und Grafik-Renderer. Gespeicherte eigene Farben, importierte Bildkopien und der Vitalux-Cache werden gelöscht. Originalbilder und das andere Updateprofil bleiben erhalten. Spielberichte und Launcher-Verbindungen bleiben erhalten; Overlay-Profile werden zurückgesetzt. Danach startet Vitalux neu und zeigt die Anleitung.': 'Resets all preferences in this profile: design, colors, layouts, language, warning thresholds and graphics renderer. Saved custom colors, imported image copies and the Vitalux cache are deleted. Original images and the other update profile are preserved. Game reports and launcher connections are retained; overlay profiles are reset. Vitalux then restarts and opens the guide.',
@@ -7,7 +13,7 @@ EN_GAMES = {
 
     'Spiele und MangoHud': 'Games and MangoHud',
     'Der Reiter Spiele erkennt installierte Steam-, Heroic- und Lutris-Spiele automatisch.': 'Games automatically discovers installed Steam, Heroic and Lutris games.',
-    'MangoHud ist für 32- und 64-Bit-Spiele enthalten, auch für Flatpak. Schließe den Launcher und verbinde das Overlay einmal im Spielprofil. Metriken und FPS-Ziel sind pro Spiel wählbar.': 'MangoHud is included for 32- and 64-bit games, including Flatpak. Close the launcher, then connect the overlay once in the game profile. Choose metrics and a target FPS for each game.',
+    'MangoHud ist für 32- und 64-Bit-Spiele enthalten, auch für Steam-Laufzeit und Flatpak. Schließe den Launcher und speichere das aktivierte Spielprofil, um das Overlay zu verbinden. Metriken und FPS-Ziel sind pro Spiel wählbar.': 'MangoHud is included for 32-bit and 64-bit games, including Steam runtime and Flatpak. Close the launcher and save the enabled game profile to connect the overlay. Metrics and target FPS are configurable per game.',
     'Lass Vitalux im Hintergrund laufen. Nach Spielende erscheinen FPS, niedrige FPS-Werte, Frametime-Verlauf und frühere Sitzungen beim jeweiligen Spiel.': 'Keep Vitalux running in the background. After a game ends, its FPS, lows, frametime history and previous sessions appear under that game.',
     'Die Bewertung erklärt ihre Kriterien im Verhältnis zum FPS-Ziel. Zu kurze oder unvollständige Aufnahmen erhalten keine Gesamtnote.': 'The assessment explains its criteria relative to the target FPS. Short or incomplete recordings receive no overall grade.',
     'Diagnostic Center und Overlay': 'Diagnostic Center and desktop overlay',

@@ -65,9 +65,12 @@ class AppearancePreferences:
     def select_design(self, key):
         if eco.enabled() or key not in dict(theme.CHOICES):
             return
+        # Capture before switching the stored wallpaper as well as the theme.
+        # A later QWidget.grab() would repaint the old design with new settings.
+        before=self.window.grab() if motion.enabled() and self.window.isVisible() else None
         if not design_catalog.switch(key):
             return
-        self.window.apply_appearance()
+        self.window.apply_appearance(before=before)
         self.refresh_appearance()
 
     def change_component_images(self,checked):

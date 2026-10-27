@@ -17,7 +17,7 @@ class Host(QWidget):
     _tray = True
     render_backend_active = "software"
 
-    def apply_appearance(self):
+    def apply_appearance(self, *, before=None):
         theme.set_accent(settings.get("accent", "#4f8cff"))
 
     def set_interval(self, value):

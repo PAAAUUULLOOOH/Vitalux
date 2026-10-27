@@ -1,5 +1,14 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.4-unstable.8] - 2026-10-27
+
+- Spiel-Overlay: Aktivierte Profile verbinden das Spiel beim Speichern mit dem Launcher. Der tatsächliche Verbindungsstatus wird angezeigt. Die mitgelieferte MangoHud-Anbindung funktioniert auch innerhalb der Steam-Laufzeit für OpenGL und Vulkan.
+- Spielebibliothek: breite, hochauflösende Steam-Kapselbilder mit Offline-Cache. Titel, Launcher und Sitzungsstatus stehen einheitlich darunter; ungeeignete kleine oder hochkantige Bilder werden nicht vergrößert.
+- Alle Designs: direkter, weicher Designwechsel ohne zwischendurch aufblinkendes Design. Die obere Fensterkontur bleibt beim Ein- und Ausklappen der Seitenleiste erhalten.
+- Designs mit Kopf- und Seitenleiste: zusammenhängendes Material ohne überlappende Naht. Crystal Atrium erhält passende Rundungen an den Leistenenden und der inneren Verbindung.
+- Nebula Prism: freistehendes, leicht transparentes Dock mit gleichmäßiger Kontur. Kacheln scrollen dahinter und seitlich bis zum unteren Fensterrand.
+- Einstellungen: mittige Suche in der oberen Leiste, passend zu den Fensterknöpfen. Lupe und Text bleiben beim Öffnen und Schließen sauber ausgerichtet.
+
 ## [v0.9.6.4-unstable.7] - 2026-10-27
 
 - MangoHud 0.8.4 ist für 32- und 64-Bit-Spiele mit OpenGL oder Vulkan direkt enthalten, auch für Flatpak-Launcher. Keine separate MangoHud-Installation oder Erweiterung nötig.

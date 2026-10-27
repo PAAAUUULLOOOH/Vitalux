@@ -97,8 +97,12 @@ with tempfile.TemporaryDirectory() as folder, \
             preferences.search_overlay.open_search()
             wait(50)
             header=window.design_shell.header
-            header_bottom=bounds(header).bottom() if not header.isHidden() else bounds(window.window_frame.titlebar).bottom()
-            assert bounds(preferences.search_overlay).top()>header_bottom
+            search=preferences.search_overlay
+            anchor=window.design_shell.bar if not header.isHidden() else window.window_frame.titlebar
+            assert search.parentWidget() is window.window_frame.scene
+            assert abs(bounds(search.icon).center().y()-bounds(anchor).center().y())<=1
+            assert abs(bounds(search).center().x()-window.rect().center().x())<=1
+            assert search.icon.height()==window.window_frame.buttons['minimize'].height()
             preferences.search_overlay.close_search()
             wait(100)
             window._switch_page(0)

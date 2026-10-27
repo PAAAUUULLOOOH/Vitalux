@@ -2,12 +2,12 @@
 from datetime import datetime
 from pathlib import Path
 import math
-from PySide6.QtCore import Qt, Signal, QRectF
-from PySide6.QtGui import QColor, QDesktopServices, QImageReader, QPainter, QPen, QPixmap
+from PySide6.QtCore import Qt, Signal, QRectF, QPoint, QPointF, QEvent
+from PySide6.QtGui import QColor, QDesktopServices, QImageReader, QPainter, QPen, QPixmap, QTextLayout, QTextOption
 from PySide6.QtCore import QUrl
 from PySide6.QtWidgets import (QDialog, QFormLayout, QGridLayout, QLineEdit,
                               QHBoxLayout, QScrollArea, QSpinBox, QTableWidget,
-                              QTableWidgetItem, QVBoxLayout, QWidget)
+                              QTableWidgetItem, QVBoxLayout, QWidget, QSizePolicy)
 from . import game_profiles, theme
 from .choice_combo import ChoiceComboBox
 from .game_service import GameService
@@ -42,98 +42,123 @@ def date_text(stamp):
     return datetime.fromtimestamp(stamp).strftime('%d.%m.%Y · %H:%M' if lang() == 'de' else '%Y-%m-%d · %H:%M')
 
 
+class GameArtwork(QWidget):
+    """Full-width artwork, clipped to the tile's own design and corner shape."""
+    def __init__(self,parent):
+        super().__init__(parent)
+        self._pixmap=QPixmap();self._identity=None
+        self.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed)
+        self.setFixedHeight(120)
+
+    def set_path(self,value):
+        from .game_artwork import dimensions
+        path=Path(value or '')
+        size=dimensions(path)
+        identity=(str(path),path.stat().st_mtime_ns) if size else None
+        if identity==self._identity:return
+        self._identity=identity;self._pixmap=QPixmap()
+        if size:
+            reader=QImageReader(str(path))
+            if size.width()>1232 or size.height()>706:
+                reader.setScaledSize(size.scaled(1232,706,Qt.KeepAspectRatio))
+            image=reader.read()
+            if not image.isNull():self._pixmap=QPixmap.fromImage(image)
+        self.update()
+
+    def paintEvent(self,event):
+        from . import signature_designs
+        painter=QPainter(self);painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform)
+        card=self.parentWidget();rect=QRectF(card.rect()).adjusted(4,4,-4,-4)
+        if signature_designs.active():path=signature_designs.shape(rect,theme.mode())
+        else:
+            from PySide6.QtGui import QPainterPath
+            path=QPainterPath();path.addRoundedRect(rect,17,17)
+        position=self.mapTo(card,QPoint())
+        painter.setClipPath(path.translated(-position.x(),-position.y()))
+        painter.fillRect(self.rect(),QColor(theme.CARD))
+        if not self._pixmap.isNull():
+            size=self._pixmap.size().scaled(self.size(),Qt.KeepAspectRatio)
+            target=QRectF((self.width()-size.width())/2,(self.height()-size.height())/2,size.width(),size.height())
+            painter.drawPixmap(target,self._pixmap,QRectF(self._pixmap.rect()))
+        else:
+            # A quiet, theme-colored gamepad instead of a tiny or stretched icon.
+            x,y=self.width()/2,self.height()/2
+            painter.setBrush(Qt.NoBrush);painter.setPen(QPen(QColor(theme.MUTED),1.8,Qt.SolidLine,Qt.RoundCap))
+            painter.drawRoundedRect(QRectF(x-23,y-13,46,27),9,9)
+            painter.drawLine(QPointF(x-15,y),QPointF(x-5,y));painter.drawLine(QPointF(x-10,y-5),QPointF(x-10,y+5))
+            painter.drawEllipse(QRectF(x+7,y-4,3,3));painter.drawEllipse(QRectF(x+13,y+2,3,3))
+        painter.end()
+
+
 class GameTile(Card):
-    selected = Signal(str)
+    selected=Signal(str)
 
     def __init__(self):
         super().__init__()
-        self.game_id = ''
-        self.checked = False
-        self.setCursor(Qt.PointingHandCursor)
-        self.setFocusPolicy(Qt.StrongFocus)
-        self.layout().setContentsMargins(12, 12, 12, 12)
-        row = QHBoxLayout()
-        row.setSpacing(12)
-        self.cover = QLabel()
-        self.cover.setFixedSize(70, 82)
-        self.cover.setAlignment(Qt.AlignCenter)
-        row.addWidget(self.cover)
-        text = QVBoxLayout()
-        self.name = label('', 'strong', wrap=True)
-        self.name.setTextFormat(Qt.PlainText)
-        self.name.setMaximumHeight(42)
-        self.source = label('', 'muted')
-        self.result = label('', 'strong')
-        text.addWidget(self.name)
-        text.addWidget(self.source)
-        text.addWidget(self.result)
-        row.addLayout(text, 1)
-        self.body.addLayout(row)
+        self.game_id='';self.checked=False;self._title=''
+        self.setCursor(Qt.PointingHandCursor);self.setFocusPolicy(Qt.StrongFocus)
+        self.layout().setContentsMargins(0,0,0,0);self.body.setSpacing(0)
+        self.cover=GameArtwork(self);self.body.addWidget(self.cover)
+        text_host=QWidget(self);text=QVBoxLayout(text_host)
+        text.setContentsMargins(16,12,16,14);text.setSpacing(5)
+        self.name=label('','strong');self.name.setTextFormat(Qt.PlainText)
+        self.name.setSizePolicy(QSizePolicy.Ignored,QSizePolicy.Fixed)
+        self.name.setMinimumWidth(0)
+        self.source=label('','muted');self.result=label('','strong')
+        text.addWidget(self.name);text.addWidget(self.source);text.addWidget(self.result)
+        self.body.addWidget(text_host)
         self.setMinimumWidth(190)
-        self.setMaximumHeight(128)
-        self._cover_identity = None
 
-    def set_game(self, game, checked):
-        self.game_id, self.checked = game['id'], checked
-        self.name.setText(game['name'])
-        self.name.setToolTip(game['name'])
-        self.setAccessibleName(game['name'])
-        self.source.setText(tr('Letzte Sitzung') if game.get('latest') else
-                            ('Steam' if game['store'] == 'steam' else game['store'].title()))
-        self.result.setText(tr(GRADES.get((game.get('latest') or {}).get('grade'), 'Noch keine Sitzung'))
+    def _fit(self):
+        if not hasattr(self,'name'):return
+        width=max(1,self.width()-32)
+        layout=QTextLayout(self._title,self.name.font());option=QTextOption()
+        option.setWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere);layout.setTextOption(option)
+        layout.beginLayout();lines=[]
+        for index in range(2):
+            line=layout.createLine()
+            if not line.isValid():break
+            line.setLineWidth(width)
+            value=self._title[line.textStart():line.textStart()+line.textLength()].strip()
+            if index==1:value=self.name.fontMetrics().elidedText(self._title[line.textStart():],Qt.ElideRight,width)
+            lines.append(value)
+        layout.endLayout();self.name.setText('\n'.join(lines))
+        self.name.setFixedHeight(self.name.fontMetrics().lineSpacing()*2)
+        picture=max(96,round(self.width()*353/616));self.cover.setFixedHeight(picture)
+        height=picture+self.name.height()+self.source.sizeHint().height()+self.result.sizeHint().height()+36
+        if self.height()!=height:self.setFixedHeight(height)
+
+    def set_game(self,game,checked):
+        self.game_id,self.checked=game['id'],checked;self._title=game['name']
+        self.name.setToolTip(self._title);self.setAccessibleName(self._title)
+        self.source.setText('Steam' if game['store']=='steam' else game['store'].title())
+        self.result.setText(tr(GRADES.get((game.get('latest') or {}).get('grade'),'Noch keine Sitzung'))
                             if game.get('installed') else tr('Nicht installiert'))
-        self.setAccessibleName(game['name'])
-        self.setAccessibleDescription(self.result.text())
-        path = Path(game.get('cover') or '')
-        identity = (str(path), path.stat().st_mtime_ns) if path.is_file() else None
-        if identity != self._cover_identity or self.cover.pixmap().isNull():
-            self._cover_identity = identity
-            pixmap = QPixmap()
-            if identity and path.stat().st_size <= 12*1024*1024:
-                reader = QImageReader(str(path))
-                size = reader.size()
-                if size.isValid() and size.width()*size.height() <= 60_000_000:
-                    reader.setScaledSize(size.scaled(140, 164, Qt.KeepAspectRatio))
-                    image = reader.read()
-                    if not image.isNull():
-                        pixmap = QPixmap.fromImage(image)
-                        pixmap.setDevicePixelRatio(2)
-            self.cover.setPixmap(pixmap)
-            self.cover.setText('' if not pixmap.isNull() else '◇')
-        self.update()
+        self.setAccessibleDescription(self.result.text());self.cover.set_path(game.get('cover'))
+        self._fit();self.update()
 
-    def mouseReleaseEvent(self, event):
-        if event.button() == Qt.LeftButton and self.rect().contains(event.position().toPoint()):
-            self.selected.emit(self.game_id)
+    def resizeEvent(self,event):
+        super().resizeEvent(event);self._fit()
+
+    def mouseReleaseEvent(self,event):
+        if event.button()==Qt.LeftButton and self.rect().contains(event.position().toPoint()):self.selected.emit(self.game_id)
         super().mouseReleaseEvent(event)
 
-    def keyPressEvent(self, event):
-        if event.key() in (Qt.Key_Return, Qt.Key_Enter, Qt.Key_Space):
-            self.selected.emit(self.game_id)
-            event.accept()
-            return
-        super().keyPressEvent(event)
+    def keyPressEvent(self,event):
+        if event.key() in (Qt.Key_Return,Qt.Key_Enter,Qt.Key_Space):
+            self.selected.emit(self.game_id);event.accept()
+        else:super().keyPressEvent(event)
 
-    def keyPressEvent(self, event):
-        if event.key() in (Qt.Key_Return, Qt.Key_Enter, Qt.Key_Space):
-            self.selected.emit(self.game_id)
-            event.accept()
-        else:
-            super().keyPressEvent(event)
-
-    def paintEvent(self, event):
+    def paintEvent(self,event):
         super().paintEvent(event)
         if self.checked or self.hasFocus():
-            painter = QPainter(self)
-            painter.setRenderHint(QPainter.Antialiasing)
-            painter.setPen(QPen(QColor(theme.accent()), 1.5))
-            painter.setBrush(Qt.NoBrush)
             from . import signature_designs
-            rect = QRectF(self.rect()).adjusted(3, 3, -3, -3)
-            if signature_designs.active():
-                painter.drawPath(signature_designs.shape(rect, theme.mode()))
-            else:
-                painter.drawRoundedRect(rect, 17, 17)
+            painter=QPainter(self);painter.setRenderHint(QPainter.Antialiasing)
+            painter.setPen(QPen(QColor(theme.accent()),1.5));painter.setBrush(Qt.NoBrush)
+            rect=QRectF(self.rect()).adjusted(3,3,-3,-3)
+            if signature_designs.active():painter.drawPath(signature_designs.shape(rect,theme.mode()))
+            else:painter.drawRoundedRect(rect,17,17)
             painter.end()
 
 
@@ -158,6 +183,7 @@ class OverlayProfile(QDialog):
         profile = game_profiles.load(game['id'])
         self.enabled = QCheckBox('Overlay und Aufzeichnung für dieses Spiel aktivieren')
         self.enabled.setChecked(profile['enabled'])
+        self.enabled.toggled.connect(lambda _checked:self.update_game(self.game))
         form.addWidget(self.enabled)
         choices = QFormLayout()
         self.target = QSpinBox()
@@ -224,9 +250,16 @@ class OverlayProfile(QDialog):
         self.connection.setText(tr('Verbindung entfernen' if connected else 'Mit Launcher verbinden'))
         self.notice.setText(tr('MangoHud ist in Vitalux enthalten. Keine zusätzliche Installation nötig.' if game.get('mangohud_available') else
                               'Die mitgelieferte Overlay-Komponente ist unvollständig. Bitte Vitalux erneut entpacken oder installieren.'))
+        if game.get('mangohud_available'):
+            state=('Overlay aktiviert und mit dem Spiel verbunden.' if connected and game.get('overlay_enabled') else
+                   'Overlay ist deaktiviert.' if connected else
+                   'Noch nicht mit dem Spiel verbunden. Zum Aktivieren den Launcher beenden und das aktivierte Profil speichern.')
+            self.notice.setText(self.notice.text()+'\n'+tr(state))
+        if hasattr(self,'save_button'):
+            self.save_button.setText(tr('Overlay aktivieren' if self.enabled.isChecked() and not connected else 'Speichern'))
         self.connection.setEnabled(connected or bool(game.get('mangohud_available')))
 
-    def _save(self):
+    def _save(self,operation='profile'):
         profile = dict(enabled=self.enabled.isChecked(), target_fps=self.target.value(),
                        position=self.position.currentData(), font_size=self.size.value(),
                        background_alpha=self.opacity.value()/100, warmup=self.warmup.value(),
@@ -242,7 +275,7 @@ class OverlayProfile(QDialog):
         except OSError as error:
             QMessageBox.warning(self, 'Vitalux', str(error))
             return False
-        self.page.service.submit('profile', self.game)
+        self.page.service.submit(operation, self.game)
         return True
 
     def _save_close(self):
@@ -250,8 +283,7 @@ class OverlayProfile(QDialog):
             self.accept()
 
     def _connection(self):
-        if self._save():
-            self.page.service.submit('disconnect' if self.game.get('connected') else 'connect', self.game)
+        self._save('disconnect' if self.game.get('connected') else 'connect')
 
 
 class GamesPage(Page):
@@ -266,8 +298,13 @@ class GamesPage(Page):
         self._tile_columns = 3
         self._dialog = None
         self._closing = False
+        self._covers = {}
+        self._tile_viewport = None
         self.service = GameService(self, initial_games=startup_games)
         self.service.catalog_ready.connect(self._catalog)
+        from .game_artwork import GameArtworkLoader
+        self.artwork = GameArtworkLoader(self)
+        self.artwork.ready.connect(self._artwork_ready)
         self.service.report_ready.connect(self._report)
         self.service.session_finished.connect(self._finished)
         self.service.activity.connect(self._activity)
@@ -318,7 +355,9 @@ class GamesPage(Page):
         names = QVBoxLayout()
         self.game_name = label('', 'bigName', wrap=True);self.game_name.setTextFormat(Qt.PlainText)
         self.session_name = label('', 'muted', wrap=True)
+        self.overlay_state = label('', 'muted', wrap=True)
         names.addWidget(self.game_name);names.addWidget(self.session_name);selected.addLayout(names, 1)
+        names.addWidget(self.overlay_state)
         buttons = QVBoxLayout()
         self.profile_button = QPushButton('Overlay-Profil');self.profile_button.setObjectName('ghostBtn')
         self.profile_button.clicked.connect(self.open_profile)
@@ -373,6 +412,8 @@ class GamesPage(Page):
     def _catalog(self, data):
         if self._closing:return
         self.games, self.summaries = data['games'], data['sessions']
+        for game in self.games:
+            if self._covers.get(game['id']):game['cover']=self._covers[game['id']]
         self.status.setText(tr('MangoHud · Bereit') if game_profiles.available({})
                             else tr('MangoHud · Nicht eingerichtet'))
         self.empty.setVisible(not self.games)
@@ -409,10 +450,36 @@ class GamesPage(Page):
             tile.setVisible(visible)
             if visible:tile.set_game(games[position], games[position]['id']==self.selected_id)
         self.tile_host.setVisible(bool(games))
+        if self.isVisible():self.artwork.request(games[self.offset:self.offset+self._tile_columns])
         self.previous.setEnabled(self.offset > 0)
         self.next.setEnabled(self.offset+self._tile_columns < len(games))
         self.counter.setText(tr('{start}–{end} von {count} Spielen').format(
             start=self.offset+1 if games else 0, end=min(len(games), self.offset+self._tile_columns), count=len(games)))
+
+    def _artwork_ready(self,game_id,path):
+        if self._closing or not path:return
+        self._covers[game_id]=path
+        for game in self.games:
+            if game['id']==game_id:game['cover']=path
+        self._tiles()
+
+    def showEvent(self,event):
+        super().showEvent(event)
+        host=self.parentWidget()
+        if host is not self._tile_viewport:
+            if self._tile_viewport is not None:self._tile_viewport.removeEventFilter(self)
+            self._tile_viewport=host
+            if host is not None:host.installEventFilter(self)
+        if hasattr(self,'metric_cards'):self._arrange()
+        if hasattr(self,'artwork'):self._tiles()
+
+    def eventFilter(self,obj,event):
+        if obj is self._tile_viewport and event.type()==QEvent.Resize:self._arrange()
+        return super().eventFilter(obj,event)
+
+    def hideEvent(self,event):
+        if hasattr(self,'artwork'):self.artwork.request([])
+        super().hideEvent(event)
 
     def select_game(self, game_id):
         if game_id != self.selected_id:
@@ -426,6 +493,10 @@ class GamesPage(Page):
         self.details.setVisible(game is not None)
         if not game:return
         self.game_name.setText(game['name'])
+        self.overlay_state.setText(tr('Overlay aktiviert und mit dem Spiel verbunden.'
+            if game.get('connected') and game.get('overlay_enabled') else
+            'Overlay ist deaktiviert.' if game.get('connected') else
+            'Overlay noch nicht mit dem Spiel verbunden.'))
         self.start_button.setEnabled(bool(game.get('installed')))
         history = [row for row in self.summaries if row['game_id']==self.selected_id]
         self._history_table(history)
@@ -549,6 +620,10 @@ class GamesPage(Page):
         self.notice.setText(tr(message))
         self.notice.show()
         self.notice.setTextFormat(Qt.PlainText)
+        if self._dialog is not None:
+            import shiboken6
+            if shiboken6.isValid(self._dialog):
+                self._dialog.notice.setText(tr(message))
 
     def _busy(self, busy):
         self.profile_button.setEnabled(not busy)
@@ -560,7 +635,8 @@ class GamesPage(Page):
                     (self._dialog.game.get('connected') or self._dialog.game.get('mangohud_available')))
 
     def _arrange(self):
-        width = self.width()
+        host=self.parentWidget()
+        width = min(self.width(),host.width()) if host is not None else self.width()
         self._tile_columns = 3 if width >= 1000 else 2 if width >= 680 else 1
         for index, card in enumerate(self.metric_cards):
             columns = 4 if width >= 760 else 2
@@ -579,9 +655,11 @@ class GamesPage(Page):
 
     def shutdown(self):
         self._closing = True
-        return self.service.shutdown()
+        artwork_stopped=self.artwork.shutdown()
+        return self.service.shutdown() and artwork_stopped
 
     def resume_after_shutdown(self):
+        self.artwork.resume()
         if not self.service.isRunning():
             from threading import Event
             from queue import Queue

@@ -75,7 +75,7 @@ def main():
             assert diag.report_source.count() == len(diag.SECTIONS)
             window.nav_buttons[9].click()
             app.processEvents()
-            assert pref.search_overlay.parentWidget() is window.stack.currentWidget().viewport()
+            assert pref.search_overlay.parentWidget() is window.window_frame.scene
             assert pref.search_home.isVisible()
             assert not pref.search_overlay.expanded
             pref.search_home.click()

@@ -24,6 +24,8 @@ with tempfile.TemporaryDirectory(prefix='vitalux-overlay-') as folder:
         for name in game_runtime._LIBRARIES:(payload/directory/name).write_text(directory+' fixture')
     (payload/'run').write_text('#!/bin/sh\nexec "$@"\n');(payload/'run').chmod(0o755)
     (payload/'layers').mkdir();(payload/'layers/VitaluxMangoHud.json').write_text('{}')
+    (payload/'vulkan/implicit_layer.d').mkdir(parents=True)
+    (payload/'vulkan/implicit_layer.d/VitaluxMangoHud.json').write_text('{}')
     files={str(p.relative_to(payload)):dict(bytes=p.stat().st_size,sha256=digest(p))
            for p in sorted(payload.rglob('*')) if p.is_file()}
     identifier=hashlib.sha256(json.dumps(files,sort_keys=True,separators=(',',':')).encode()).hexdigest()

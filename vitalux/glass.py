@@ -159,8 +159,9 @@ class _AmbientSceneCore:
             from .window_frame import outline
             p.setRenderHint(QPainter.Antialiasing)
             p.fillPath(outline(self.rect(), self.property('vitaluxWindowRadius') or 0), background)
-            p.setPen(QPen(QColor(theme.BORDER), 1))
-            p.drawPath(outline(self.rect(), self.property('vitaluxWindowRadius') or 0))
+            if not self.property('vitaluxOutlineOverlay'):
+                p.setPen(QPen(QColor(theme.BORDER), 1))
+                p.drawPath(outline(self.rect(), self.property('vitaluxWindowRadius') or 0))
         elif style=='minimal' and theme.mode()=='minimal':
             p.fillRect(self.rect(), background)
         else:
