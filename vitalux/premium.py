@@ -40,10 +40,7 @@ def color(value, alpha=255):
     return result
 
 
-def rounded(rect, radius):
-    path = QPainterPath()
-    path.addRoundedRect(rect, radius, radius)
-    return path
+from .paint_geometry import rounded
 
 
 def scene_pixmap(size, mode, phase=0.0):

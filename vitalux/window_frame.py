@@ -277,8 +277,6 @@ class WindowFrame(QObject):
         width, height = self.window.width(), self.window.height()
         self.sync_controls()
         self.window.design_shell.sync_window_geometry()
-        self.materials.refresh()
-        self._clip_content()
         t, c = 5, 12
         rectangles = (QRect(c, 0, width-2*c, 2), QRect(c, height-t, width-2*c, t),
                       QRect(0, c, t, height-2*c), QRect(width-t, c, t, height-2*c),
@@ -291,7 +289,10 @@ class WindowFrame(QObject):
             # Outset input shape preserves the antialiased painted boundary.
             path = QPainterPath()
             path.addRoundedRect(QRectF(self.window.rect()).adjusted(-2,-2,2,2), radius, radius)
-            native.setMask(QRegion(path.toFillPolygon().toPolygon()) if radius else QRegion())
+            key=(width,height,radius,self.window.devicePixelRatioF())
+            if key!=getattr(self,'_native_mask_key',None):
+                native.setMask(QRegion(path.toFillPolygon().toPolygon()) if radius else QRegion())
+                self._native_mask_key=key
         if hasattr(self.scene, '_schedule_upload'):self.scene._schedule_upload()
         self.scene.update()
         self.retranslate()
@@ -334,7 +335,10 @@ class WindowFrame(QObject):
         path.addRoundedRect(QRectF(self.scene.rect()).adjusted(3,3,-3,-3),22,22)
         for widget in (self.window.content_host,self.window.design_shell.header,self.window.design_shell.footer):
             position=widget.mapTo(self.scene,QPoint())
-            widget.setMask(QRegion() if self.expanded else QRegion(path.translated(-position.x(),-position.y()).toFillPolygon().toPolygon()))
+            key=(self.scene.width(),self.scene.height(),position.x(),position.y(),self.expanded)
+            if key!=getattr(widget,'_vitalux_clip_key',None):
+                widget.setMask(QRegion() if self.expanded else QRegion(path.translated(-position.x(),-position.y()).toFillPolygon().toPolygon()))
+                widget._vitalux_clip_key=key
 
     def _sync_page(self, *_):
         overview = self.window.pages[0][1]

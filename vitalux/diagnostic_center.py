@@ -11,7 +11,7 @@ from .ui_locale import QPushButton, QCheckBox, QMessageBox
 from .widgets import Card, label
 from . import diagnostic_engine as engine, settings, events
 from .i18n import tr
-from .pages import Page
+from .page_base import Page
 from .work_result import WorkResult
 
 

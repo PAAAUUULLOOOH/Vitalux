@@ -78,9 +78,13 @@ class EdgeMaterials(QWidget):
         # the outer antialiased highlight owned by the root window unchanged.
         painter.save()
         if not self.frame.expanded:
-            path=QPainterPath()
-            path.addRoundedRect(QRectF(self.frame.scene.rect()).adjusted(3,3,-3,-3),22,22)
-            painter.setClipRegion(QRegion(path.toFillPolygon().toPolygon()))
+            key=(self.frame.scene.width(),self.frame.scene.height())
+            if key!=getattr(self,'_header_clip_key',None):
+                path=QPainterPath()
+                path.addRoundedRect(QRectF(self.frame.scene.rect()).adjusted(3,3,-3,-3),22,22)
+                self._header_clip=QRegion(path.toFillPolygon().toPolygon())
+                self._header_clip_key=key
+            painter.setClipRegion(self._header_clip)
         painter.setOpacity(.86)
         painter.drawImage(0,0,self._image('header',widget))
         painter.restore()

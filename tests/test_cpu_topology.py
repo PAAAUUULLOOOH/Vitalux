@@ -8,7 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from PySide6.QtWidgets import QApplication, QScrollArea
 from vitalux.cpu_topology import cpu_ids, logical_cpus
 from vitalux import i18n, theme
-from vitalux.pages import CpuPage
+from vitalux.component_pages import CpuPage
 
 assert cpu_ids('0-3,8,10-11') == [0, 1, 2, 3, 8, 10, 11]
 assert cpu_ids('bad,1000000-2000000') == []

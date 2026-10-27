@@ -19,7 +19,7 @@ from vitalux.diagnostic_center import DiagnosticCenter
 from vitalux.sample_clock import sampling_gap
 from vitalux.ui_locale import QMessageBox
 from vitalux.update_manager import UpdateManager
-from vitalux.widgets import ChartPanel
+from vitalux.charts import ChartPanel
 from vitalux.window import MainWindow, Sampler
 
 
@@ -90,8 +90,8 @@ def run():
             height = reveal.height()
             page.reset_category('alerts')
             assert reveal.height() == height
-            QTest.qWait(300)
-            assert reveal.isHidden() and not window.restart_requested
+            settled(lambda: reveal.isHidden())
+            assert not window.restart_requested
 
             # Return to a category always begins at the top, even after animations.
             window.nav_buttons[1].click()

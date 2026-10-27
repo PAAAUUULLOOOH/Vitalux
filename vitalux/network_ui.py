@@ -145,6 +145,7 @@ class NetworkWatch(QWidget):
         layout.addWidget(self.details_reveal)
         self.advanced.animation.valueChanged.connect(lambda _value:self.details_reveal._frame(self.details_reveal.progress))
         self.advanced.settled.connect(lambda:self.details_reveal._frame(self.details_reveal.progress))
+        self.advanced.settled.connect(self._render_connections)
         self.retranslate()
         self._selection()
 
@@ -287,7 +288,7 @@ class NetworkWatch(QWidget):
         self._render_connections()
 
     def _render_connections(self):
-        if not self.isVisible():return
+        if not self.isVisible() or not self.connections.isVisible():return
         scroll=(self.connections.verticalScrollBar().value(),self.connections.horizontalScrollBar().value())
         current=self._selected_connection()
         selected=current.get('cookie') if current else None

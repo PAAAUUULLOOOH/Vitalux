@@ -47,7 +47,7 @@ def main():
             window.resize(1280, 780)
             window.show()
             app.processEvents()
-            assert len(window.pages) == 12
+            assert len(window.pages) == 13
             pref = next(page for title,page in window.pages if title == 'Einstellungen')
             diag = next(page for title,page in window.pages if title == 'Diagnostic Center')
             gpu = next(page for title,page in window.pages if title == 'Grafik')

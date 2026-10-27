@@ -9,18 +9,17 @@ from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QLabel, QLineEdit, QList
 from .ui_locale import QCheckBox, QComboBox, QListWidgetItem, QMessageBox, QPushButton
 
 from . import settings, theme, backdrops, user_background, wallpaper_accents, renderer, eco, premium, design_catalog
-from .pages import Page
+from .page_base import Page
 from .widgets import Card, label
 from .i18n import tr
-from .mini_hud import DEFAULT_KEYS
+from .desktop_overlay import DEFAULT_KEYS
 from .settings_search import FloatingSettingsSearch, _SearchIcon
 from .choice_combo import ChoiceComboBox
 from .settings_navigation import SettingsNavigator
 from .soft_controls import AccentSwatch, ResponsiveActions, SoftReveal
 
 
-from .sensor_page import SensorsPage
-from .threshold_field import _ThresholdNumberEdit, AlertThresholdField
+from .threshold_field import AlertThresholdField
 
 
 class PreferencesPage(AppearancePreferences, Page):
@@ -324,7 +323,8 @@ class PreferencesPage(AppearancePreferences, Page):
             'Setzt alle Einstellungen dieses Profils zurück: Design, Farben, Layouts, Sprache, '
             'Warnwerte und Grafik-Renderer. Gespeicherte eigene Farben, importierte Bildkopien '
             'und der Vitalux-Cache werden gelöscht. Originalbilder und das andere Updateprofil '
-            'bleiben erhalten. Danach startet Vitalux neu und zeigt die Anleitung.',
+            'bleiben erhalten. '
+            'Spielberichte und Launcher-Verbindungen bleiben erhalten; Overlay-Profile werden zurückgesetzt. Danach startet Vitalux neu und zeigt die Anleitung.',
             'muted', wrap=True)
         maintenance.body.addWidget(self.reset_description)
         self.restore_button = QPushButton('Standardwerte wiederherstellen', self)
@@ -353,12 +353,12 @@ class PreferencesPage(AppearancePreferences, Page):
         self.close_to_tray.setEnabled(self.window._tray is not None)
         self.close_to_tray.toggled.connect(lambda enabled: self._set_preference('close_to_tray', enabled))
         tray.body.addWidget(self.close_to_tray)
-        tray.body.addWidget(label('Tray-Hover zeigt CPU-, GPU- und RAM-Auslastung sowie Temperaturen. Das Kontextmenü bietet Fenster-, MiniHUD- und Beenden-Aktionen.', 'muted', wrap=True))
+        tray.body.addWidget(label('Tray-Hover zeigt CPU-, GPU- und RAM-Auslastung sowie Temperaturen. Das Kontextmenü bietet Fenster-, Overlay- und Beenden-Aktionen.', 'muted', wrap=True))
         self._settings_cards['hud'].append(tray)
 
-        hud = Card('MiniHUD · kompakte Live-Anzeige')
+        hud = Card('Vitalux Overlay · Desktop')
         hud.body.addWidget(label('Separates Desktop-Fenster mit den vorhandenen Vitalux-Messwerten. '                                 'Auch bei verborgenem Hauptfenster nutzbar; keine zusätzliche Sensorabfrage.', 'muted', wrap=True))
-        self.hud_on = QCheckBox('MiniHUD anzeigen')
+        self.hud_on = QCheckBox('Desktop-Overlay anzeigen')
         self.hud_on.setChecked(bool(settings.get('mini_hud_enabled', False)))
         self.hud_on.toggled.connect(self.set_hud_enabled)
         hud.body.addWidget(self.hud_on)
@@ -382,10 +382,10 @@ class PreferencesPage(AppearancePreferences, Page):
         opacity_row.addWidget(self.hud_opacity)
         opacity_row.addStretch()
         hud.body.addLayout(opacity_row)
-        hud.body.addWidget(label('Messwerte im MiniHUD', 'strong'))
+        hud.body.addWidget(label('Messwerte im Desktop-Overlay', 'strong'))
         self.hud_metrics = {}
         metric_grid = QGridLayout()
-        from .mini_hud import METRIC_OPTIONS, DEFAULT_KEYS
+        from .desktop_overlay import METRIC_OPTIONS, DEFAULT_KEYS
         selections = settings.get('mini_hud_metrics', DEFAULT_KEYS)
         for idx, (key, title, _unit) in enumerate(METRIC_OPTIONS):
             box = QCheckBox(title)
@@ -395,9 +395,10 @@ class PreferencesPage(AppearancePreferences, Page):
             metric_grid.addWidget(box, idx // 2, idx % 2)
             self.hud_metrics[key] = box
         hud.body.addLayout(metric_grid)
-        hud.body.addWidget(label('Das MiniHUD ist ein eigenständiges Desktop-Fenster. KDE/Wayland legt die Fensterreihenfolge fest; über Vollbildspielen ist keine Einblendung garantiert. Ultra Eco reduziert auch die HUD-Darstellung.',
+        hud.body.addWidget(label('Das Desktop-Overlay ist ein eigenständiges Desktop-Fenster. KDE/Wayland legt die Fensterreihenfolge fest; über Vollbildspielen ist keine Einblendung garantiert. Ultra Eco reduziert auch die HUD-Darstellung.',
                                  'muted', wrap=True))
-        self._add_section_reset(hud.body, 'hud', 'MiniHUD zurücksetzen')
+        hud.body.addWidget(label('Für Spiele mit FPS und automatischer Auswertung: Öffne den Reiter Spiele und richte dort MangoHud ein.', 'muted', wrap=True))
+        self._add_section_reset(hud.body, 'hud', 'Desktop-Overlay zurücksetzen')
         self._settings_cards['hud'].append(hud)
 
         notifications = Card('Hardware-Warnungen')
@@ -439,9 +440,9 @@ class PreferencesPage(AppearancePreferences, Page):
             ('appearance', 'Akzentfarbe Eigene Farben Bearbeiten Löschen', self.accent_combo),
             ('appearance', 'Hintergrund Bild Hintergrundfarbe automatisch', self.background_combo),
             ('appearance', 'Animationen Bewegung Übergang', self.motion_combo),
-            ('hud', 'MiniHUD Anzeigen Einblenden', self.hud_on),
-            ('hud', 'MiniHUD Größe Layout', self.hud_size),
-            ('hud', 'MiniHUD Deckkraft Transparenz', self.hud_opacity),
+            ('hud', 'MiniHUD Overlay Anzeigen Einblenden', self.hud_on),
+            ('hud', 'MiniHUD Overlay Größe Layout', self.hud_size),
+            ('hud', 'MiniHUD Overlay Deckkraft Transparenz', self.hud_opacity),
             ('hud', 'Systemleiste Tray Schließen', self.close_to_tray),
             ('monitoring', 'Aktualisierungsintervall Live Monitoring', self.interval),
             ('monitoring', 'Warnungen Grenzwerte CPU GPU Temperatur RAM Laufwerk', self.alert_toggle),
@@ -476,7 +477,7 @@ class PreferencesPage(AppearancePreferences, Page):
 
     SEARCH_CATEGORIES = {
         'appearance': 'Darstellung', 'general': 'Allgemein',
-        'hud': 'MiniHUD & Fenster', 'monitoring': 'Monitoring & Warnungen',
+        'hud': 'Overlay & Fenster', 'monitoring': 'Monitoring & Warnungen',
         'energy': 'Leistung & Energie', 'render': 'Grafik-Rendering',
         'maintenance': 'Wartung', 'advanced': 'Erweiterte Einstellungen',
     }
@@ -544,8 +545,8 @@ class PreferencesPage(AppearancePreferences, Page):
                     bonus=1
                 ranked.append((sum(matches)+bonus, index, key, terms))
         ranked.sort(key=lambda entry: (-entry[0], entry[1]))
-        titles = {self.hud_on: 'MiniHUD anzeigen', self.hud_size: 'MiniHUD-Größe',
-                  self.hud_opacity: 'MiniHUD-Deckkraft',
+        titles = {self.hud_on: 'Desktop-Overlay anzeigen', self.hud_size: 'Desktop-Overlay-Größe',
+                  self.hud_opacity: 'Desktop-Overlay-Deckkraft',
                   self.restore_button: 'Standardwerte wiederherstellen',
                   self.accent_combo: 'Akzentfarbe', self.background_combo: 'Hintergrund',
                   self.motion_combo: 'Animationen', self.design_tiles[0]: 'Design',
@@ -789,7 +790,7 @@ class PreferencesPage(AppearancePreferences, Page):
                'importierte Hintergrundbildkopien und den Vitalux-Cache löschen? '
                'Design, Sprache, Warnwerte und Grafik-Renderer werden auf Standard gesetzt. '
                'Originalbilder und das andere Updateprofil bleiben erhalten. '
-               'Vitalux startet anschließend neu und zeigt die Anleitung.'),
+               'Spielberichte und Launcher-Verbindungen bleiben erhalten; Overlay-Profile werden zurückgesetzt. Vitalux startet anschließend neu und zeigt die Anleitung.'),
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if answer != QMessageBox.Yes:
             return

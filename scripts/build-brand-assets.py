@@ -238,7 +238,7 @@ def write(path, root):
 
 def main():
     files = []
-    for animated in (False, True):
+    for animated in (False,):
         directory = BRAND/'animated' if animated else BRAND
         prefix = directory if animated else ROOT/'assets'
         for key, pal in PALETTES.items():
@@ -264,7 +264,7 @@ def main():
         manifest.append(dict(file=str(path.relative_to(ROOT)), bytes=len(data),
                              sha256=hashlib.sha256(data).hexdigest()))
     (BRAND/'manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
-    print(f'Built {len(files)} genuine vector SVGs: static and animated variants.')
+    print(f'Built {len(files)} static vector sources for native Qt animation.')
 
 
 if __name__ == '__main__':

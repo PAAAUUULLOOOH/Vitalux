@@ -8,6 +8,7 @@ class ElidedLabel(QLabel):
     def __init__(self,text='',parent=None):
         super().__init__('',parent)
         self.original_text=''
+        self._caption_key=None
         self.setObjectName('muted')
         self.setAlignment(Qt.AlignCenter)
         self.setTextFormat(Qt.PlainText)
@@ -19,12 +20,17 @@ class ElidedLabel(QLabel):
         self.set_caption(text)
 
     def set_caption(self,text):
-        self.original_text=tr(str(text))
-        self.setAccessibleName(self.original_text)
+        translated=tr(str(text))
+        if translated != self.original_text:
+            self.original_text=translated
+            self.setAccessibleName(self.original_text)
         self._elide()
 
     def _elide(self):
         if not hasattr(self,'original_text'):return
+        key=(self.original_text,self.contentsRect().width(),self.font().key())
+        if key==self._caption_key:return
+        self._caption_key=key
         metrics=QFontMetrics(self.font())
         full=' · '.join(self.original_text.splitlines())
         shown=metrics.elidedText(full,Qt.ElideRight,max(1,self.contentsRect().width()))

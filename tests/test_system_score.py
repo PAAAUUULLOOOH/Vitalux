@@ -1,7 +1,7 @@
 """Evidence-based health score: no fabricated SMART or benchmark expectations."""
 import os
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
-from vitalux.pages import _system_state
+from vitalux.page_base import _system_state
 
 
 def sample():

@@ -24,11 +24,11 @@ class WallpaperProvider(QQuickImageProvider):
     def replace(self, image):
         if not image.isNull():
             with QMutexLocker(self._lock):
-                self._image = image.copy()
+                self._image = QImage(image)
 
     def requestImage(self, identifier, size, requestedSize):
         with QMutexLocker(self._lock):
-            image = self._image.copy()
+            image = QImage(self._image)
         if size is not None:
             size.setWidth(image.width())
             size.setHeight(image.height())

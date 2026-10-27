@@ -6,11 +6,25 @@ from .sensors import fmt_bytes
 
 
 class Page(QWidget):
+    def charts(self):
+        """Discover once; dynamic component cards explicitly extend the registry."""
+        if self._charts is None:
+            from .charts import ChartPanel
+            self._charts=tuple(self.findChildren(ChartPanel))
+        return self._charts
+
+    def register_charts(self, host):
+        from .charts import ChartPanel
+        if self._charts is not None:
+            added=(host,) if isinstance(host,ChartPanel) else tuple(host.findChildren(ChartPanel))
+            self._charts+=tuple(chart for chart in added if chart not in self._charts)
+
     def refresh(self, d, h):
         pass
 
     def __init__(self, title, sub=""):
         super().__init__()
+        self._charts=None
         self.setProperty('page_key', title)
         self.root = QVBoxLayout(self)
         self.root.setContentsMargins(30, 24, 30, 30)

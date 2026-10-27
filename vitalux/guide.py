@@ -82,11 +82,11 @@ SLIDES = [
         "settings",
     ),
     (
-        "Diagnostic Center und MiniHUD",
+        "Diagnostic Center und Overlay",
         "Die letzten fünf App-Ereignisse stehen im Diagnosezentrum: Warnwerte, Updatefehler und automatische Renderer-Wechsel.",
         "Im Diagnostic Center kannst du System- und Fehlerberichte lokal als TXT/JSON exportieren. Externer Ping nur per Klick.",
-        "Das MiniHUD lässt sich in den Einstellungen oder über die Systemleiste aktivieren. Drei Größen, Sensoren und 50–100 % Deckkraft sind wählbar.",
-        "Das MiniHUD nutzt bestehende Messwerte. Wayland/KWin entscheidet, ob es über einem Vollbildspiel sichtbar bleibt.",
+        "Das Desktop-Overlay lässt sich in den Einstellungen oder über die Systemleiste aktivieren. Drei Größen, Sensoren und 50–100 % Deckkraft sind wählbar.",
+        "Das Desktop-Overlay nutzt bestehende Messwerte. Wayland/KWin entscheidet, ob es über einem Vollbildspiel sichtbar bleibt.",
         "diagnostics",
     ),
     (
@@ -97,6 +97,7 @@ SLIDES = [
         "Die Prozentzahl steht mittig im Update-Ladebalken. Downloads lassen sich abbrechen und bei Fehlern erneut versuchen. Changelogs folgen deiner Sprache und bleiben offline lesbar. Lange Texte haben eine eigene Scrollleiste; passt der Text, bleibt sie unsichtbar. Beim Versionswechsel beginnt der Text oben.",
         "updates",
     ),
+    ('Spiele und MangoHud', 'Der Reiter Spiele erkennt installierte Steam-, Heroic- und Lutris-Spiele automatisch.', 'Schließe den Launcher und verbinde MangoHud einmal im Overlay-Profil des Spiels. Metriken und FPS-Ziel sind pro Spiel wählbar.', 'Lass Vitalux im Hintergrund laufen. Nach Spielende erscheinen FPS, niedrige FPS-Werte, Frametime-Verlauf und frühere Sitzungen beim jeweiligen Spiel.', 'Die Bewertung erklärt ihre Kriterien im Verhältnis zum FPS-Ziel. Zu kurze oder unvollständige Aufnahmen erhalten keine Gesamtnote.', 'hardware'),
 ]
 
 

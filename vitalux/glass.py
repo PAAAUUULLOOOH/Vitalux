@@ -25,10 +25,7 @@ def rgba(r, g, b, a):
     return QColor(r, g, b, a)
 
 
-def rounded(rect, radius):
-    path = QPainterPath()
-    path.addRoundedRect(rect, radius, radius)
-    return path
+from .paint_geometry import rounded
 
 
 class _AmbientSceneCore:

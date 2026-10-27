@@ -17,7 +17,7 @@ from vitalux import versions as release_versions
 from vitalux.control import PreferencesPage, AlertThresholdField
 from vitalux.pages_extra import UpdatePage
 from vitalux.update_manager import UpdateManager
-from vitalux.widgets import ChartSeriesCheckBox
+from vitalux.charts import ChartSeriesCheckBox
 from vitalux.smart_ui import SmartPane
 
 

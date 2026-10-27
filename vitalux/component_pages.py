@@ -9,7 +9,8 @@ from . import theme
 from .ui_locale import QPushButton
 from .i18n import tr
 from .sensors import fmt_bytes, system_static
-from .widgets import Card, GaugeCard, ChartPanel, KeyValue, Meter, label
+from .widgets import Card, GaugeCard, KeyValue, Meter, label
+from .charts import ChartPanel
 from .sensor_ui import SensorPanel, optional, reflow
 from .hardware_sensors import number
 from .power_display import component_power, gpu_power, power_limit, source_text
@@ -290,7 +291,7 @@ class GpuPage(Page):
         self.primary_choice = QComboBox()
         self.primary_choice.currentIndexChanged.connect(self._select_primary)
         self.primary_card.body.addWidget(self.primary_choice)
-        self.primary_card.body.addWidget(label('Für Übersicht, MiniHUD und Diagnosen. Alle Grafikkarten bleiben hier sichtbar.', 'muted', wrap=True))
+        self.primary_card.body.addWidget(label('Für Übersicht, Desktop-Overlay und Diagnosen. Alle Grafikkarten bleiben hier sichtbar.', 'muted', wrap=True))
         self.content.addWidget(self.primary_card)
         self.primary_card.hide()
         self._mesa = system_static().get("mesa")
@@ -326,6 +327,8 @@ class GpuPage(Page):
             card = GpuCard()
             self.content.insertWidget(1 + len(self.cards), card)
             self.cards.append(card)
+            self.register_charts(card)
+            for chart in card.findChildren(ChartPanel):chart.set_timeline(h.get("time", []))
         recorder=getattr(self.window(),'gpu_history',None)
         for i, card in enumerate(self.cards):
             card.setVisible(i < len(gpus))

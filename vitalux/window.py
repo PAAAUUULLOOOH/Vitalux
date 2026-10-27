@@ -10,11 +10,16 @@ from .ui_locale import QPushButton, retranslate_widgets
 
 from . import APP_NAME, __version__, i18n, sensors, settings, theme, motion, eco
 from .i18n import tr
-from .pages import CpuPage, DiskPage, GpuPage, MemoryPage, NetworkPage, OverviewPage, SystemPage
+from .component_pages import CpuPage, GpuPage, MemoryPage
+from .storage_page import DiskPage
+from .system_pages import NetworkPage, SystemPage
+from .pages import OverviewPage
 from .pages_extra import InfoPage, UpdatePage
-from .control import SensorsPage, PreferencesPage
+from .sensor_page import SensorsPage
+from .control import PreferencesPage
 from .brand import PulseCore, TrayPulse, Wordmark, app_icon, sync_installed_icon
-from .widgets import NavButton, SidebarToggle, ChartPanel, Gauge, label
+from .widgets import NavButton, SidebarToggle, Gauge, label
+from .charts import ChartPanel
 from .glass import GlassSidebar, GlassSurface, create_ambient_scene
 from .sidebar_transition import SidebarTransition, SidebarFreeze
 from .smooth_scroll import AdaptiveScrollArea
@@ -25,8 +30,9 @@ from .monitoring import GpuHistory, SessionExtrema
 from .diagnostics import log_exception
 from .diagnostic_center import DiagnosticCenter
 from .diagnostic_engine import BlackboxRecorder
-from .mini_hud import MiniHUD
+from .desktop_overlay import DesktopOverlay
 from .sample_clock import sampling_gap
+from .games_page import GamesPage
 
 
 class Sampler(QThread):
@@ -76,7 +82,7 @@ class Sampler(QThread):
 
 
 class MainWindow(WindowLifecycle, QMainWindow):
-    def __init__(self, distro, logo, manager, *, startup_sample=None, preparing=None):
+    def __init__(self, distro, logo, manager, *, startup_sample=None, startup_games=None, preparing=None):
         super().__init__()
         self.setWindowFlag(Qt.FramelessWindowHint, True)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
@@ -86,6 +92,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
         self.window_frame = WindowFrame(self)
         self.distro, self.logo, self.manager = distro, logo, manager
         self._startup_progress=preparing
+        self._startup_games=startup_games
         self.setWindowTitle(APP_NAME)
         # Accommodate KDE fractional scaling and smaller logical desktops.
         self.setMinimumSize(800, 560)
@@ -101,7 +108,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
             "cpu_temp", "cpu_clock", "time")}
         self._extrema = SessionExtrema()
         self.gpu_history=GpuHistory()
-        self._mini_hud = MiniHUD()
+        self._mini_hud = DesktopOverlay()
         self._mini_hud.hidden_by_user.connect(self._mini_hud_closed)
         self._blackbox = BlackboxRecorder()
         self.last_sample = None
@@ -137,7 +144,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
         self._tray_open_action.triggered.connect(self.show_from_tray)
         self._tray_quit_action.triggered.connect(self.quit_from_tray)
         self._tray_menu.addAction(self._tray_open_action)
-        self._tray_hud_action = QAction(tr('MiniHUD anzeigen'), self._tray_menu)
+        self._tray_hud_action = QAction(tr('Desktop-Overlay anzeigen'), self._tray_menu)
         self._tray_hud_action.setCheckable(True)
         self._tray_hud_action.setChecked(bool(settings.get('mini_hud_enabled', False)))
         self._tray_hud_action.toggled.connect(self.set_mini_hud_enabled)
@@ -182,7 +189,8 @@ class MainWindow(WindowLifecycle, QMainWindow):
         if startup_sample is not None:
             self.on_sample(startup_sample)
             for _,page in self.pages:
-                for chart in page.findChildren(ChartPanel):chart.set_timeline(self.hist['time'])
+                if not page.property('uses_session_timeline'):
+                    for chart in page.charts():chart.set_timeline(self.hist['time'])
                 page.refresh(startup_sample,self.hist)
                 page.ensurePolished()
                 if page.layout():page.layout().activate()
@@ -257,7 +265,8 @@ class MainWindow(WindowLifecycle, QMainWindow):
             ('Übersicht',lambda:OverviewPage(distro,logo)),('Prozessor',CpuPage),('Grafik',GpuPage),
             ('Arbeitsspeicher',MemoryPage),('Laufwerke',DiskPage),('Netzwerk',NetworkPage),
             ('Sensoren',SensorsPage),('Diagnostic Center',DiagnosticCenter),('System',lambda:SystemPage(distro)),
-            ('Einstellungen',lambda:PreferencesPage(self)),('Updates',lambda:UpdatePage(self.manager)),('Info',lambda:InfoPage(distro))]
+            ('Einstellungen',lambda:PreferencesPage(self)),('Updates',lambda:UpdatePage(self.manager)),('Info',lambda:InfoPage(distro)),
+            ('Spiele',lambda:GamesPage(self._startup_games))]
         self.pages=[]
         for title,factory in factories:
             self.pages.append((title,factory()))
@@ -285,7 +294,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
         self.nav_buttons = []
         glyph = {"Übersicht":"◈", "Prozessor":"◉", "Grafik":"▣", "Arbeitsspeicher":"▤",
                  "Netzwerk":"◎", "Laufwerke":"▱", "Sensoren":"♨", "Diagnostic Center":"⌕", "System":"⚙",
-                 "Einstellungen":"≡", "Updates":"↻", "Info":"ⓘ"}
+                 "Einstellungen":"≡", "Updates":"↻", "Info":"ⓘ", "Spiele":"🎮"}
         for i, (name, page) in enumerate(self.pages):
             btn = NavButton(glyph.get(name, '•') + '    ' + tr(name))
             btn.setObjectName("navBtn")
@@ -357,6 +366,14 @@ class MainWindow(WindowLifecycle, QMainWindow):
         if theme.mode() == "minimal":
             self.apply_appearance()
 
+    def navigation_indices(self):
+        # Keep page IDs stable for existing consumers while placing games next
+        # to System in the visible navigation, as in the approved preview.
+        games = next((index for index, (title, _) in enumerate(self.pages) if title == 'Spiele'), None)
+        order = [index for index in range(len(self.pages)) if index != games]
+        if games is not None:order.insert(9, games)
+        return order
+
     def _switch_page(self, index):
         # Leaving edit mode commits the layout; neither the editor nor its
         # unsaved arrangement is silently destroyed on navigation.
@@ -402,7 +419,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
         settings.set('lang',code)
         self._tray_open_action.setText(tr('Vitalux öffnen'))
         self._tray_quit_action.setText(tr('Beenden'))
-        self._tray_hud_action.setText(tr('MiniHUD anzeigen'))
+        self._tray_hud_action.setText(tr('Desktop-Overlay anzeigen'))
         self.refresh_mini_hud()
         self._tray.setToolTip(tray_tooltip(self.last_sample))
         retranslate_widgets(self.centralWidget())
@@ -413,7 +430,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
             diagnosis.retranslate()
         glyph = {"Übersicht":"◈", "Prozessor":"◉", "Grafik":"▣", "Arbeitsspeicher":"▤",
                  "Netzwerk":"◎", "Laufwerke":"▱", "Sensoren":"♨", "Diagnostic Center":"⌕", "System":"⚙",
-                 "Einstellungen":"≡", "Updates":"↻", "Info":"ⓘ"}
+                 "Einstellungen":"≡", "Updates":"↻", "Info":"ⓘ", "Spiele":"🎮"}
         for btn, (name, _) in zip(self.nav_buttons,self.pages):
             btn.setText(glyph.get(name,'•') + '    ' + tr(name))
             btn.setToolTip('')
@@ -422,6 +439,8 @@ class MainWindow(WindowLifecycle, QMainWindow):
             btn.setChecked(btn.text().lower() == code)
         if hasattr(self.pages[0][1], 'retranslate'):
             self.pages[0][1].retranslate()
+        for _, page in self.pages:
+            if isinstance(page, GamesPage):page.retranslate()
         disk = next((p for name, p in self.pages if name == 'Laufwerke'), None)
         if disk is not None and hasattr(disk, 'retranslate'):
             disk.retranslate()
@@ -793,8 +812,9 @@ class MainWindow(WindowLifecycle, QMainWindow):
             return
         page = self.pages[self.stack.currentIndex()][1]
         try:
-            for chart in page.findChildren(ChartPanel):
-                chart.set_timeline(self.hist['time'])
+            if not page.property('uses_session_timeline'):
+                for chart in page.charts():
+                    chart.set_timeline(self.hist['time'])
             page.refresh(self.last_sample, self.hist)
             self._last_refresh_error = None
         except (AttributeError, KeyError, TypeError, ValueError) as exc:

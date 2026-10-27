@@ -1,4 +1,4 @@
-"""Overview page and compatibility exports for the component page families."""
+"""Overview dashboard and its layout editor."""
 from PySide6.QtCore import Qt, QPoint, QTimer, QPropertyAnimation, QParallelAnimationGroup, QEasingCurve
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QMenu, QToolButton, QGraphicsOpacityEffect, QStackedWidget
 
@@ -7,15 +7,13 @@ from .dashboard import DashboardBoard, TITLES
 from .i18n import tr
 from .sensors import fmt_bytes, fmt_duration, fmt_rate, system_static
 from PySide6.QtWidgets import QLabel, QSizePolicy
-from .widgets import Card, ChipsGrid, GaugeCard, ChartPanel, label, SidebarToggle
+from .widgets import Card, ChipsGrid, GaugeCard, label, SidebarToggle
+from .charts import ChartPanel
 from .sensor_ui import power_text
 from .power_display import component_power, disk_power, gpu_power, source_text
 
 
-from .component_pages import CpuPage, GpuCard, GpuPage, MemoryPage
-from .page_base import Page, _row, _temp_freq, _vram_text, _system_state
-from .storage_page import SmartWorker, DiskPage
-from .system_pages import NetworkPage, SystemPage
+from .page_base import Page, _temp_freq, _vram_text, _system_state
 
 
 # ------------------------------------------------------------------ Übersicht
@@ -201,6 +199,9 @@ class OverviewPage(Page):
     def refresh_design(self):
         from .signature_designs import active
         selected=active()
+        changed=any(host.currentIndex()!=(1 if selected else 0) for host in self.design_metric_hosts.values())
+        if changed and hasattr(self,'_last_overview_sample'):
+            self.refresh(*self._last_overview_sample,_variant=1 if selected else 0)
         for host in self.design_metric_hosts.values():
             host.setCurrentIndex(1 if selected else 0)
         top = getattr(self, '_frame_top_margin', 24) if getattr(self, '_window_layout_toggle', False) else 45
@@ -350,7 +351,8 @@ class OverviewPage(Page):
             item=menu.addAction(tr('Alle Kacheln sind bereits sichtbar'))
             item.setEnabled(False)
         add = next(a for k,_,_,a in self._editor_buttons if k=='add')
-        menu.exec(add.mapToGlobal(QPoint(0,add.height())))
+        try:menu.exec(add.mapToGlobal(QPoint(0,add.height())))
+        finally:menu.deleteLater()
         self._refresh_editor_actions()
 
     def _undo_layout(self):
@@ -409,7 +411,10 @@ class OverviewPage(Page):
         if not self.board.editing:
             self.board.refresh_geometry()
 
-    def refresh(self, d, h):
+    def refresh(self, d, h, _variant=None):
+        initial=not hasattr(self,'_last_overview_sample')
+        self._last_overview_sample=(d,h)
+        variant=next(iter(self.design_metric_hosts.values())).currentIndex() if _variant is None else _variant
         c, r, gpus, disks = d["cpu"], d["ram"], d["gpus"], d["disks"]
         records=d.get('hardware') or []
         root = next((x for x in disks if x['mount']=='/'),disks[0] if disks else None)
@@ -418,7 +423,7 @@ class OverviewPage(Page):
         for key,widgets in self.power_labels.items():
             record=readings[key]
             text=power_text(record)
-            for widget in widgets:
+            for widget in widgets if initial or not text else widgets[variant:variant+1]:
                 widget.setText(text);widget.setVisible(bool(text))
                 widget.setToolTip(source_text(record) if text else '')
         net = d["net"]
@@ -433,33 +438,37 @@ class OverviewPage(Page):
         self.chips.set("Treiber", driver)
         self.chips.set("Laufzeit", fmt_duration(d['uptime']))
 
-        self.g_cpu.set(c["usage"], _temp_freq(c))
-        if gpus:
-            g = gpus[0]
-            vt = _vram_text(g)
-            self.g_gpu.set(g["usage"], g["name"] + (f"\nVRAM {vt}" if vt else ""))
-            self.g_gpu.box.sub.setToolTip(g["name"] + (f"\nVRAM {vt}" if vt else ""))
-        else:
-            self.g_gpu.set(None, "Keine GPU-Daten verfügbar")
-        self.g_ram.set(r["percent"], f"{fmt_bytes(r['used'])} / {fmt_bytes(r['total'])}")
-        root = next((x for x in disks if x["mount"] == "/"), disks[0] if disks else None)
-        if root:
-            self.g_disk.set(root["percent"], f"{fmt_bytes(root['used'])} / {fmt_bytes(root['total'])}")
-        else:
-            self.g_disk.set(None, 'Keine Laufwerksdaten verfügbar')
-
-        score, state, detail = _system_state(d)
-        self.g_health.set(score, f"{state}\n{detail}",
-                          text=f"{score:.0f}" if score is not None else "–")
-        self.design_metrics['cpu'].set(c['usage'],_temp_freq(c),extra=c.get('model',''),history=h['cpu'])
         gpu=gpus[0] if gpus else {}
-        self.design_metrics['gpu'].set(gpu.get('usage'),
-            f"{gpu['temp']:.0f} °C" if gpu.get('temp') is not None else tr('Keine GPU-Daten verfügbar'),
-            extra=gpu.get('name',tr('Keine GPU-Daten verfügbar')),history=h['gpu'])
-        self.design_metrics['ram'].set(r['percent'],f"{fmt_bytes(r['used'])} / {fmt_bytes(r['total'])}")
-        self.design_metrics['disk'].set(root['percent'] if root else None,
-            f"{fmt_bytes(root['used'])} / {fmt_bytes(root['total'])}" if root else tr('Keine Laufwerksdaten verfügbar'))
-        self.design_metrics['health'].set(score,f'{state} · {detail}')
+        score, state, detail = _system_state(d)
+        if initial or variant==0:
+            self.g_cpu.set(c["usage"], _temp_freq(c))
+            if gpus:
+                g = gpus[0]
+                vt = _vram_text(g)
+                self.g_gpu.set(g["usage"], g["name"] + (f"\nVRAM {vt}" if vt else ""))
+                self.g_gpu.box.sub.setToolTip(g["name"] + (f"\nVRAM {vt}" if vt else ""))
+            else:
+                self.g_gpu.set(None, "Keine GPU-Daten verfügbar")
+            self.g_ram.set(r["percent"], f"{fmt_bytes(r['used'])} / {fmt_bytes(r['total'])}")
+            root = next((x for x in disks if x["mount"] == "/"), disks[0] if disks else None)
+            if root:
+                self.g_disk.set(root["percent"], f"{fmt_bytes(root['used'])} / {fmt_bytes(root['total'])}")
+            else:
+                self.g_disk.set(None, 'Keine Laufwerksdaten verfügbar')
+
+            score, state, detail = _system_state(d)
+            self.g_health.set(score, f"{state}\n{detail}",
+                              text=f"{score:.0f}" if score is not None else "–")
+        if initial or variant==1:
+            self.design_metrics['cpu'].set(c['usage'],_temp_freq(c),extra=c.get('model',''),history=h['cpu'])
+            gpu=gpus[0] if gpus else {}
+            self.design_metrics['gpu'].set(gpu.get('usage'),
+                f"{gpu['temp']:.0f} °C" if gpu.get('temp') is not None else tr('Keine GPU-Daten verfügbar'),
+                extra=gpu.get('name',tr('Keine GPU-Daten verfügbar')),history=h['gpu'])
+            self.design_metrics['ram'].set(r['percent'],f"{fmt_bytes(r['used'])} / {fmt_bytes(r['total'])}")
+            self.design_metrics['disk'].set(root['percent'] if root else None,
+                f"{fmt_bytes(root['used'])} / {fmt_bytes(root['total'])}" if root else tr('Keine Laufwerksdaten verfügbar'))
+            self.design_metrics['health'].set(score,f'{state} · {detail}')
 
         captions={
             'cpu':(c.get('model',''),_temp_freq(c)),
@@ -472,7 +481,7 @@ class OverviewPage(Page):
         }
         for key,infos in self.overview_info.items():
             name,details=captions[key]
-            for info in infos:info.set(name,details,power_text(readings.get(key)) if key in self.power_labels else '')
+            for info in infos if initial else infos[variant:variant+1]:info.set(name,details,power_text(readings.get(key)) if key in self.power_labels else '')
 
         self.graph_load.set_series([(h["cpu"], theme.accent()), (h["gpu"], theme.secondary_accent()), (h["ram"], theme.TEAL)])
         self.graph_net.set_series([(h["net_down"], theme.accent()), (h["net_up"], theme.secondary_accent())])

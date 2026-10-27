@@ -6,8 +6,8 @@ os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from PySide6.QtCore import QRectF
 from vitalux import settings,theme,i18n
-from vitalux.pages import CpuPage
-from vitalux.widgets import ChartPanel
+from vitalux.component_pages import CpuPage
+from vitalux.charts import ChartPanel
 ns={'__file__':str(Path(__file__).with_name('test_component_charts.py'))}
 src=Path(ns['__file__']).read_text();exec(src[:src.index('with tempfile.TemporaryDirectory()')],ns)
 app=ns['app'];sample=ns['sample']

@@ -3,7 +3,7 @@ from dataclasses import dataclass,field
 from html.parser import HTMLParser
 import json,re,time,math
 from pathlib import Path
-from urllib.parse import urljoin,urlsplit
+from urllib.parse import urlsplit
 from . import profiles
 from .product_images import (product_key,search_model,matches_product,ProductPage,ProductCache,
                             domains,allowed_url,manufacturer_pages,search_pages,fetch,MAX_PAGE,_atomic_bytes)

@@ -181,7 +181,8 @@ class ProductHeader(QWidget):
         menu.addAction(tr('Falsches Bild verwerfen'), self.discard_image)
         menu.addAction(tr('Eigenes Komponentenbild auswählen …'), self.choose_image)
         menu.addAction(tr('Details anzeigen'), self.lookup_details)
-        menu.exec(self.mapToGlobal(position))
+        try:menu.exec(self.mapToGlobal(position))
+        finally:menu.deleteLater()
 
     def refresh_component(self):
         from . import product_specs

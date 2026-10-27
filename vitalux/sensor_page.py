@@ -1,5 +1,5 @@
 """Complete read-only hardware sensor lists, keyed by physical sensor identity."""
-from .pages import Page
+from .page_base import Page
 from .widgets import Card, KeyValue, label
 from .i18n import tr
 

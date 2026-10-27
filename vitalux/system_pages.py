@@ -10,7 +10,8 @@ from .ui_locale import QPushButton
 from .i18n import tr
 from .sensors import fmt_bytes, fmt_duration, fmt_rate, system_static
 from .monitor_extra import graphics_runtime, system_gpu_device
-from .widgets import Card, ChartPanel, KeyValue, label
+from .widgets import Card, KeyValue, label
+from .charts import ChartPanel
 from .sensor_ui import SensorPanel
 from .product_ui import ProductHeader
 

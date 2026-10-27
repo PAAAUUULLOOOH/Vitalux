@@ -125,19 +125,50 @@ class RaplReader:
         return records
 
 
-def hwmon_readings(sysroot='/sys', gpus=()):
+class HwmonTopology:
+    """Cache device paths, never live readings; directory changes invalidate it."""
+    def __init__(self, root):
+        self.root=Path(root)
+        self.entries=[]
+        self._signature=None
+        self.invalid=False
+
+    @staticmethod
+    def _stamp(path):
+        try:
+            value=path.stat()
+            return value.st_ino,value.st_mtime_ns,value.st_ctime_ns
+        except OSError:return None
+
+    def snapshot(self):
+        roots=[self.root/'class/hwmon',self.root/'block',self.root/'class/net']
+        signature=tuple(self._stamp(path) for path in roots)+tuple(
+            (str(hw),self._stamp(hw),self._stamp(hw/'device'),self._stamp(hw/'name')) for hw,*_ in self.entries)
+        if signature!=self._signature or self.invalid:
+            self.disks=[p.resolve() for p in (self.root/'block').glob('*/device')]
+            self.network=[p.resolve() for p in (self.root/'class/net').glob('*/device')]
+            entries=[]
+            for hw in sorted((self.root/'class/hwmon').glob('hwmon*')):
+                try:
+                    resolved=hw.resolve()
+                    device=(hw/'device').resolve() if (hw/'device').exists() else resolved.parent.parent
+                    entries.append((hw,read(hw/'name') or hw.name,device,resolved,list(hw.iterdir())))
+                except (OSError,RuntimeError):continue
+            self.entries=entries
+            self.invalid=False
+            self._signature=tuple(self._stamp(path) for path in roots)+tuple(
+                (str(hw),self._stamp(hw),self._stamp(hw/'device'),self._stamp(hw/'name')) for hw,*_ in entries)
+        return self.entries,self.disks,self.network
+
+
+def hwmon_readings(sysroot='/sys', gpus=(), topology=None):
     root = Path(sysroot)
+    topology=topology or HwmonTopology(root)
+    entries,disks,network=topology.snapshot()
     gpu_devices = {str(Path(g['device_path']).resolve()): g for g in gpus if g.get('device_path')}
-    disks = [p.resolve() for p in (root/'block').glob('*/device')]
-    network = [p.resolve() for p in (root/'class/net').glob('*/device')]
     records, seen = [], set()
-    for hw in sorted((root/'class/hwmon').glob('hwmon*')):
-        chip = read(hw/'name') or hw.name
-        device = (hw/'device').resolve() if (hw/'device').exists() else hw.resolve().parent.parent
+    for hw,chip,device,resolved_hw,channels in entries:
         gpu = gpu_devices.get(str(device))
-        resolved_hw=hw.resolve()
-        try:channels=list(hw.iterdir())
-        except OSError:channels=[]
         if gpu:
             component = 'gpu:'+gpu['id']
         elif chip.lower() in ('coretemp', 'k10temp', 'zenpower', 'cpu_thermal', 'amd_energy'):
@@ -169,6 +200,7 @@ def hwmon_readings(sysroot='/sys', gpus=()):
                 value = None if path.stem.endswith('_cap') else scaled(path, divisor, low, high)
                 limit = scaled(hw/(prefix+'_cap'), 1e6) if kind == 'powers' else None
                 if value is None and limit is None:
+                    topology.invalid=True
                     continue
                 if value is None and not path.stem.endswith('_cap'):
                     continue  # Try a readable average before retaining just the limit.
@@ -277,6 +309,7 @@ class HardwareMonitor:
     def __init__(self, sysroot='/sys'):
         self.sysroot = Path(sysroot)
         self.rapl = RaplReader(sysroot)
+        self.topology = HwmonTopology(sysroot)
 
     def reset_baselines(self):
         """Start a fresh energy-counter baseline after missed samples."""
@@ -284,7 +317,7 @@ class HardwareMonitor:
 
     def sample(self, gpus, now=None):
         now = time.monotonic() if now is None else now
-        records = hwmon_readings(self.sysroot, gpus) + self.rapl.sample(now)
+        records = hwmon_readings(self.sysroot, gpus, self.topology) + self.rapl.sample(now)
         for gpu in gpus:
             ident = 'gpu:'+gpu['id']
             own = [r for r in records if r['component'] == ident]

@@ -11,7 +11,7 @@ from vitalux.sensor_page import SensorsPage
 from vitalux.image_cache import ImageCache
 from vitalux.sample_state import SamplingState
 from vitalux.page_base import Page
-from vitalux.widgets import ChartPanel
+from vitalux.charts import ChartPanel
 from vitalux.monitoring import SessionExtrema
 from vitalux.gpu_selection import ordered
 app=QApplication.instance() or QApplication([])

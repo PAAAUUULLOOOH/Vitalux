@@ -7,9 +7,9 @@ os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from PySide6.QtWidgets import QApplication
 from vitalux import appearance, i18n, theme, profiles, pages_extra
-from vitalux.pages import GpuCard
+from vitalux.component_pages import GpuCard
 from vitalux.sensor_ui import SensorPanel
-from vitalux.widgets import HistoryGraph
+from vitalux.charts import HistoryGraph
 from vitalux.update_manager import UpdateManager
 
 app=QApplication.instance() or QApplication([])

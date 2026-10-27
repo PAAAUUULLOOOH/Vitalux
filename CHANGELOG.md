@@ -1,5 +1,12 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.4-unstable.6] - 2026-10-27
+
+- Neuer Reiter Spiele: installierte Spiele aus Steam (auch Flatpak und zusätzliche Bibliotheken), Heroic und Lutris automatisch erkennen, durchsuchen und starten. Bisherige Auswertungen bleiben auch nach der Deinstallation erhalten.
+- MangoHud pro Spiel einrichten: auswählbare Metriken, Position, Größe, Deckkraft, Tastenkürzel und FPS-Ziel. Bestehende Launcher-Startargumente bleiben erhalten; die Verbindung lässt sich entfernen. Das bisherige MiniHUD bleibt als Vitalux Overlay für den Desktop verfügbar.
+- Nach Spielende automatisch eine lokale Auswertung mit Durchschnitts-FPS, 1%- und 0,1%-Low, auswählbarem FPS-/Frametime-Verlauf, verfügbaren Hardware-Spitzenwerten und Sitzungshistorie anzeigen. Zielabhängige Bewertungen erläutern ihre Kriterien; unvollständige oder zu kurze Messungen erhalten keine Gesamtnote.
+- Geringerer Aufwand bei Übersicht, Diagramm-Hover, Sensorerkennung und geschlossenen Netzwerkdetails; weniger Speicherbedarf bei wiederholt geöffneten Kontextmenüs und experimentellen Grafik-Hintergründen. Vorhandene Designs, Animationen und Messintervalle bleiben erhalten.
+
 ## [v0.9.6.4-unstable.5] - 2026-10-26
 
 - Alle Designs: zusätzliche Abdunklung der Fensterleiste und doppelte Distro-/Designnamen aus den Navigationsleisten entfernt. Der Distributionsname bleibt in der Übersicht.

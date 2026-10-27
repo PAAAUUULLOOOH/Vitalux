@@ -56,7 +56,10 @@ def run():
         QTest.qWait(230)
         assert advanced.panel.isVisible()
         navigation = page.search_navigation
-        navigation.animation.setCurrentTime(180)
+        import time
+        deadline=time.monotonic()+3
+        while scroll.verticalScrollBar().value()==0 and time.monotonic()<deadline:
+            QTest.qWait(20)
         assert scroll.verticalScrollBar().value() > 0
         assert page.search.hasFocus() and floating.expanded
         page.choose_search_result(page.search_results.item(0))

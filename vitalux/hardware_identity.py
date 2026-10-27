@@ -146,14 +146,34 @@ def retail_model(value, partner):
     return value if set(re.findall(r'[a-z]+', value.lower())) - generic else ''
 
 
+@functools.lru_cache(maxsize=64)
+def _device_ids(path, stamp):
+    raw=[_read(Path(path)/field).lower().removeprefix('0x')
+         for field in ('vendor','device','subsystem_vendor','subsystem_device')]
+    return tuple(value if re.fullmatch(r'[0-9a-f]{4}',value) else '' for value in raw)
+
+
+def _gpu_ids(path):
+    if not path:return ('',)*4
+    try:
+        info=Path(path).stat()
+        attributes=[(Path(path)/field).stat() for field in
+                    ('vendor','device','subsystem_vendor','subsystem_device')]
+        stamp=(info.st_ino,info.st_mtime_ns,info.st_ctime_ns,
+               *((item.st_ino,item.st_mtime_ns,item.st_ctime_ns,item.st_mode) for item in attributes))
+    except OSError:
+        return _device_ids.__wrapped__(path,None)
+    result=_device_ids(path,stamp)
+    if not all(result):_device_ids.cache_clear()
+    return result
+
+
 def gpu_identity(gpu):
     path = gpu.get('device_path')
     if not path:
         slot = pci_slot(gpu.get('pci_slot'))
         path = '/sys/bus/pci/devices/' + slot if slot else ''
-    raw_ids = [_read(Path(path) / field).lower().removeprefix('0x') if path else ''
-               for field in ('vendor', 'device', 'subsystem_vendor', 'subsystem_device')]
-    ids = tuple(value if re.fullmatch(r'[0-9a-f]{4}', value) else '' for value in raw_ids)
+    ids = _gpu_ids(path)
     vendor, device, subvendor, subdevice = ids
     db_vendor, db_model = _pci_names(*ids) if all(ids) else ('', '')
     partner = BOARD_VENDORS.get(subvendor) or db_vendor

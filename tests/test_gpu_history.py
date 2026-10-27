@@ -8,7 +8,7 @@ sys.path.insert(0, os.getcwd())
 
 from PySide6.QtWidgets import QApplication
 from vitalux import theme
-from vitalux.pages import GpuCard
+from vitalux.component_pages import GpuCard
 from vitalux.monitoring import GpuHistory
 
 

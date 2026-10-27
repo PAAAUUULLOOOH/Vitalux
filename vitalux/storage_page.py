@@ -6,7 +6,8 @@ from .benchmark_ui import BenchmarkPanel
 from .sensors import drives, fmt_bytes, fmt_rate
 from . import smart_monitor
 from .smart_ui import SmartPane
-from .widgets import Card, ChartPanel, KeyValue, Meter
+from .widgets import Card, KeyValue, Meter
+from .charts import ChartPanel
 from .sensor_ui import SensorPanel
 
 

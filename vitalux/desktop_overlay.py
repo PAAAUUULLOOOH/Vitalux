@@ -17,7 +17,7 @@ METRIC_OPTIONS = (
 DEFAULT_KEYS = ['cpu_usage', 'gpu_usage', 'ram_usage', 'cpu_temp', 'gpu_temp']
 
 
-class MiniHUD(QWidget):
+class DesktopOverlay(QWidget):
     hidden_by_user = Signal()
 
     def __init__(self):
@@ -25,8 +25,8 @@ class MiniHUD(QWidget):
         # windows, especially fullscreen apps. Do not expose a broken toggle.
         flags = Qt.Tool | Qt.FramelessWindowHint
         super().__init__(None, flags)
-        self.setWindowTitle('Vitalux · MiniHUD')
-        self.setObjectName('vitaluxMiniHUD')
+        self.setWindowTitle('Vitalux Overlay · Desktop')
+        self.setObjectName('vitaluxDesktopOverlay')
         self.setAttribute(Qt.WA_DeleteOnClose, False)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
         self.latest = None
@@ -44,12 +44,12 @@ class MiniHUD(QWidget):
         self.inner.setSpacing(6)
         self.header = QHBoxLayout()
         self.header.setSpacing(4)
-        self.brand = QLabel('◈  VITALUX   ·   MINI HUD')
+        self.brand = QLabel('◈  VITALUX   ·   OVERLAY')
         self.brand.setObjectName('hudBrand')
         self.brand.installEventFilter(self)
         self.header.addWidget(self.brand, 1)
         self.close_btn = QPushButton('×')
-        self.close_btn.setToolTip('MiniHUD ausblenden')
+        self.close_btn.setToolTip('Desktop-Overlay ausblenden')
         self.close_btn.setFixedSize(24, 22)
         self.close_btn.clicked.connect(self.hide_by_user)
         self.header.addWidget(self.close_btn)
@@ -142,7 +142,7 @@ class MiniHUD(QWidget):
         valuecolor = theme.TEXT if not eco.enabled() else '#f3f5f9'
         closecolor = theme.MUTED if not eco.enabled() else '#b7c4d0'
         self.setStyleSheet('''
-            QWidget#vitaluxMiniHUD { background: transparent; }
+            QWidget#vitaluxDesktopOverlay { background: transparent; }
             QFrame#hudSurface { background-color: %s; border: 1px solid %s; border-radius: %spx; }
             QFrame#hudCell { background-color: %s; border: none; border-radius: 5px; }
             QLabel#hudBrand { color: %s; font-size: 11px; font-weight: bold; border: none; }

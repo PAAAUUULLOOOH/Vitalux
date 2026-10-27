@@ -6,7 +6,8 @@ from PySide6.QtWidgets import QApplication, QSystemTrayIcon
 
 from . import APP_NAME, settings, motion, eco
 from .i18n import tr
-from .pages import DiskPage, NetworkPage
+from .storage_page import DiskPage
+from .system_pages import NetworkPage
 from .control import PreferencesPage
 from .diagnostics import log_exception
 from .diagnostic_center import DiagnosticCenter
@@ -88,6 +89,7 @@ class WindowLifecycle:
         if not self.sampler.isRunning():self.sampler.start()
         for _title,page in self.pages:
             if isinstance(page,NetworkPage):page.watcher.resume_after_shutdown()
+            elif hasattr(page,'service') and hasattr(page,'resume_after_shutdown'):page.resume_after_shutdown()
         self.manager.resume_after_shutdown()
         from .lifecycle import resume_product_workers
         resume_product_workers()
@@ -129,6 +131,8 @@ class WindowLifecycle:
             self.sampler.stop()
             self.manager.shutdown()
             for _title, page in self.pages:
+                if hasattr(page,'service') and hasattr(page,'shutdown'):
+                    page.shutdown()
                 if isinstance(page,NetworkPage):
                     page.shutdown()
                 if isinstance(page, DiskPage):

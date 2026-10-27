@@ -12,7 +12,7 @@ from PySide6.QtCore import QThread
 from PySide6.QtGui import QImage,QPainter,QColor
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
-from vitalux import i18n, product_ui, theme, pages, system_pages
+from vitalux import i18n, product_ui, theme, component_pages, system_pages
 from vitalux.product_images import product_key
 from vitalux.widgets import label
 from vitalux.ui_locale import retranslate_widgets
@@ -69,17 +69,17 @@ with tempfile.TemporaryDirectory() as directory:
                   bios='1', plasma='6', kwin='6', frameworks='6', mesa='25',
                   board_product=dict(kind='mainboard', vendor='ASUS', model='ROG STRIX B650-A GAMING WIFI', revision='1.0', exact=True))
     with patch.object(system_pages, 'system_static', return_value=static):
-        board = pages.SystemPage(dict(name='Linux'))
+        board = system_pages.SystemPage(dict(name='Linux'))
         assert board.board_name.text() == static['board_product']['model']
         assert board.board_header.product['kind'] == 'mainboard'
         assert board.content.itemAt(0).widget() is board.board_card
         board.close()
-    from vitalux.widgets import ChartPanel
+    from vitalux.charts import ChartPanel
     gpu = dict(id='A', name=product['model'], board_vendor='SAPPHIRE', product=product, vendor='AMD',
                driver='amdgpu', usage=0, vram_used=0, vram_total=16*2**30, power=83, temp=52,
                hardware=[dict(id='p', component='gpu:A', kind='powers', name='PPT', value=83, unit='W',
                               limits=[('Leistungsgrenze', 317)])])
-    card = pages.GpuCard()
+    card = component_pages.GpuCard()
     card.refresh(gpu)
     assert card.name.text() == product['model'] and 'SAPPHIRE' in card.meta.text()
     assert card.kv['Leistung'].v.text() == '83 W' and card.kv['Leistungsgrenze'].v.text() == '317 W'

@@ -1,4 +1,4 @@
-"""Twelve coherent, cached vector symbols; no platform-dependent font glyphs."""
+"""Coherent cached navigation vectors, including the games controller."""
 import math
 from functools import lru_cache
 from PySide6.QtCore import QPointF, QRectF, Qt
@@ -6,10 +6,10 @@ from PySide6.QtGui import QColor, QPainterPath, QPen
 
 GLYPHS = {'◈':'overview', '◉':'cpu', '▣':'gpu', '▤':'memory', '▱':'drives',
           '◎':'network', '♨':'sensors', '⌕':'diagnostics', '⚙':'system',
-          '≡':'settings', '↻':'updates', 'ⓘ':'info'}
+          '≡':'settings', '↻':'updates', 'ⓘ':'info', '🎮':'games'}
 
 
-@lru_cache(maxsize=12)
+@lru_cache(maxsize=32)
 def geometry(key):
     path = QPainterPath()
     def line(*points):
@@ -17,7 +17,15 @@ def geometry(key):
         for point in points[1:]: path.lineTo(*point)
     def box(x,y,w,h,r=1.5): path.addRoundedRect(QRectF(x,y,w,h),r,r)
     def circle(x,y,r): path.addEllipse(QPointF(x,y),r,r)
-    if key == 'overview':
+    if key == 'games':
+        path.moveTo(7, 7);path.lineTo(17, 7)
+        path.cubicTo(20, 7, 23, 18, 20, 19)
+        path.cubicTo(18, 20, 16, 16, 14, 16)
+        path.lineTo(10, 16);path.cubicTo(8, 16, 6, 20, 4, 19)
+        path.cubicTo(1, 18, 4, 7, 7, 7)
+        line((6, 11), (10, 11));line((8, 9), (8, 13))
+        circle(16, 10, .8);circle(18, 13, .8)
+    elif key == 'overview':
         for x,y,w,h in ((3,3,7,10),(14,3,7,6),(3,17,7,4),(14,13,7,8)): box(x,y,w,h)
     elif key == 'cpu':
         box(6,6,12,12,2); box(9,9,6,6,1)

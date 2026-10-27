@@ -54,14 +54,32 @@ Click the magnifier in Settings. Search grows with the text, adapts to the avail
 
 Partial names such as **Mini**, **MiniH**, **MiniHU** and **MiniHUD** predict the same section. Layout and opacity results have distinct labels; adding those words selects the specific control. Tied matches for one subject no longer suppress automatic navigation. Predictions preserve input focus and the selected language. A closed dropdown ignores the mouse wheel, so page scrolling cannot accidentally change a setting. Click sounds and their controls have been removed.
 
-## Graphics and MiniHUD
+## Graphics and desktop overlay
 
 **Advanced settings** is near the bottom of Settings, and contains the full **Restore defaults** action under Maintenance. Its contents are permanently visible; there is no expand/collapse action. It contains graphics rendering and **Maintenance** (full active-profile reset). Searching for these controls scrolls directly to the matching setting.
 
 CPU rendering is the stable default. Experimental OpenGL, X11/OpenGL, Wayland/OpenGL and Wayland/Vulkan profiles depend on working drivers and a suitable session. Apply a renderer change with **Restart now**. Closing and restarting retain a responsive window until background work finishes safely. A failed startup falls back to CPU. X11 and Wayland select a window-system plugin; they do not change your desktop login session.
 
-MiniHUD reuses the main sensor stream and offers three layouts and adjustable opacity. Your desktop compositor determines its placement relative to fullscreen applications.
+Vitalux Overlay for the desktop (formerly MiniHUD) reuses the main sensor stream and offers three layouts and adjustable opacity. Your desktop compositor determines its placement relative to fullscreen applications.
 
+
+## Games and MangoHud
+
+**Games** automatically reads installed games from native and Flatpak Steam libraries (including additional library folders), Heroic Epic/GOG inventories and Lutris. Discovery reads launcher data without changing it. Use **Scan again** after installing a game, or wait for the next one-minute scan. Search and page through the library; locally cached covers appear when available. No cover or telemetry uploads are made. Games with previous reports remain listed after uninstalling them.
+
+Install MangoHud separately before enabling a game overlay. Native launchers need the `mangohud` command, with the appropriate game architectures. Flatpak launchers need the MangoHud Vulkan-layer extension matching their Freedesktop runtime branch. This integration supports the Vulkan layer inside Flatpak; OpenGL games need a working MangoHud wrapper inside that sandbox. Vitalux does not install packages or change Flatpak permissions. Driver/API, anti-cheat and launcher compatibility can affect availability.
+
+Select a game, open **Overlay profile**, then choose metrics, position, size, opacity, horizontal layout, shortcuts, recording delay and your target FPS. Close the launcher and select **Connect to launcher** once. Vitalux adds its persistent launch wrapper to the game's Steam launch options, Heroic wrapper settings or Lutris command prefix. Existing arguments and wrappers are retained. Heroic requires an existing saved game configuration; unfamiliar Lutris configuration formats are left untouched. **Remove connection** removes only Vitalux's managed prefix. Saving profile choices alone does not connect a launcher. Start through the launcher or **Start game** afterwards.
+
+Keep Vitalux running, including in the tray, for automatic reports. MangoHud starts frame logging after the selected delay (default five seconds). Menus and loading screens count too; use the logging shortcut to pause/resume recording. The default shortcuts are right Shift+F12 for the overlay and left Shift+F2 for logging. Profile changes apply on the next launch. Turning off a game profile bypasses the wrapper while preserving the launcher connection. If native MangoHud or the managed configuration disappears, the original game command still runs.
+
+After the tracked game processes finish and their logs settle, Vitalux opens that game's report. Average FPS is the number of valid frames divided by their total frame time. **1% Low** is the reciprocal of the mean of the slowest 1% of frame times; **0.1% Low** uses the slowest 0.1% and requires at least 10,000 frames. These definitions may differ from another tool's percentile method. The selectable FPS/frametime chart represents the whole session or its selected final time window; long charts retain frame-time extrema in a bounded display. Statistics use all accepted frames of the selected graphics executable. If a launcher and another graphics executable both produced logs, Vitalux uses the longest recording, combines its recording segments and names that executable in the report rather than mixing their FPS. Hardware peaks appear only for metrics actually reported by MangoHud.
+
+Assessments compare the recording with its saved FPS target. **Very good** requires average FPS ≥99% of target, 1% Low ≥95% and at most 1% long frames. **Good** requires 90% / 70% / at most 3%; **Adequate** requires 70% / 45% / at most 8%. Other complete recordings indicate room for improvement. A long frame exceeds both 50 ms and twice the target frame budget. Sessions shorter than 30 seconds, missing frame data, sampled logs or incomplete recordings receive no overall grade. **Explain assessment** shows these criteria inside the app; they describe frame delivery, not hardware health.
+
+Reports and profiles stay local and separate for Stable/Unstable. The latest 200 session reports are retained. Completed raw CSV logs have a 512 MiB budget; active logs are never pruned. Recording is limited to four hours, and analysis accepts at most eight million frames and 1 GiB per CSV; affected reports are marked incomplete. Startup imports finished logs left from earlier runs without presenting them as a newly completed game. Restoring default preferences resets overlay choices but retains reports and reversible launcher connections; their profiles return to defaults. Remove connections in Games before deleting Vitalux's game-data directory manually.
+
+The desktop overlay remains available in **Settings → Overlay & window** and the tray. It uses the existing sensor stream. For FPS inside games and automatic game reports, use the MangoHud integration in **Games**.
 
 ## Reset settings
 
@@ -121,7 +139,7 @@ Pictures are looked up in background workers using manufacturer model routes, pr
 
 Right-click a component header to **Reload component data**, **Discard incorrect picture**, **Choose a component picture** or view lookup details. These actions affect only that component. Rejected image URLs are excluded from future searches; a local picture is copied into the active profile and remains available offline. Refreshing returns to automatic lookup.
 
-With several GPUs, **Preferred graphics card** selects the device used by the overview, MiniHUD, alerts and diagnostics. All GPUs retain their own histories and remain visible on Graphics. An unavailable preference falls back to the first available GPU.
+With several GPUs, **Preferred graphics card** selects the device used by the overview, desktop overlay, alerts and diagnostics. All GPUs retain their own histories and remain visible on Graphics. An unavailable preference falls back to the first available GPU.
 
 ## Hardware sensors and measured power
 

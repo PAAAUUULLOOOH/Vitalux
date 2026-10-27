@@ -34,7 +34,11 @@ class StartupWorker(QThread):
                     if cached:images[lookup_key(product)]=cached
                 cached=SpecCache().load(product)
                 if cached:specs[product_key(product)]=cached
-            self.prepared.emit(dict(sample=sample,images=images,specs=specs))
+            self.stage.emit('Installierte Spiele erkennen …')
+            from .game_library import discover
+            games=discover()
+            if self.isInterruptionRequested():return
+            self.prepared.emit(dict(sample=sample,images=images,specs=specs,games=games))
         except Exception as exc:
             from .diagnostics import log_exception
             log_exception(type(exc),exc,exc.__traceback__)
@@ -201,7 +205,7 @@ class StartupController(QObject):
         def progress():
             # Only already-built widgets process events; sampling starts after warmup.
             self.app.processEvents()
-        self.window=MainWindow(self.info,self.logo,manager,startup_sample=bundle['sample'],preparing=progress)
+        self.window=MainWindow(self.info,self.logo,manager,startup_sample=bundle['sample'],startup_games=bundle.get('games'),preparing=progress)
         self.app.aboutToQuit.connect(lambda:self.instance.mark_restarting() if self.window.restart_requested or manager.pending_restart else None)
         self.window.ensurePolished();self.window.centralWidget().ensurePolished();self.window.layout().activate()
         self.window.grab()  # Populate real painter/backdrop caches before the first map.

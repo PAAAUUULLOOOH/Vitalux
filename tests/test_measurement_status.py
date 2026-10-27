@@ -8,8 +8,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 from PySide6.QtWidgets import QApplication
 from vitalux import sensors,i18n
-from vitalux.pages import CpuPage,GpuCard
-from vitalux.measurement_status import unavailable
+from vitalux.component_pages import CpuPage, GpuCard
 app=QApplication.instance() or QApplication([])
 
 for result,reason in (({},'no_sensor'),(PermissionError('denied'),'permission'),
@@ -35,8 +34,6 @@ for language,no_sensor,permission in (('de','Kein Sensor erkannt','Berechtigung 
     assert page.graph.live_labels[2].text().endswith('–')
     card=GpuCard();card.refresh(gpu)
     assert card.kv['Temperatur'].isHidden() and card.kv['Temperatur'].v.text()==''
-    assert 'driver' in unavailable('driver_no_data').lower() if language=='en' else 'Treiber' in unavailable('driver_no_data')
-    assert unavailable('invented reason')==unavailable()
     cpu['temp']=54;page.refresh(dict(cpu=cpu),dict(cpu=[0],cpu_temp=[None,54]))
     assert '54.0 °C' in page.graph.live_labels[1].text()
     cpu['temp']=None

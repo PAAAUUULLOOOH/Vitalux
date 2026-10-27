@@ -151,5 +151,28 @@ def run():
     print('Approved vector colors, stationary core, clear pulse, seamless boundaries, DPR cache and motion controls PASS')
 
 
+def check_rebuild():
+    """Removed export copies must not break rebuilding the README animation."""
+    import shutil
+    import subprocess
+    with tempfile.TemporaryDirectory(prefix='vitalux-brand-rebuild-') as directory:
+        root=Path(directory)
+        (root/'scripts').mkdir();(root/'assets/brand').mkdir(parents=True)
+        for filename in ('palettes.json','geometry.json'):
+            shutil.copy2(ASSETS/'brand'/filename,root/'assets/brand'/filename)
+        for filename in ('build-brand-assets.py','build-readme-brand.py'):
+            shutil.copy2(ASSETS.parent/'scripts'/filename,root/'scripts'/filename)
+            subprocess.run([sys.executable,str(root/'scripts'/filename)],check=True,timeout=20)
+        manifest=json.loads((root/'assets/brand/manifest.json').read_text())
+        assert not (root/'assets/brand/animated').exists()
+        for entry in manifest:
+            assert (root/entry['file']).read_bytes()==(ASSETS.parent/entry['file']).read_bytes()
+        for variant in ('dark','light'):
+            filename=f'vitalux-readme-{variant}-animated.svg'
+            assert (root/'assets'/filename).read_bytes()==(ASSETS/filename).read_bytes()
+    print('Static brand assets and animated README rebuild byte-for-byte without unused SVG exports PASS')
+
+
 if __name__ == '__main__':
     run()
+    check_rebuild()

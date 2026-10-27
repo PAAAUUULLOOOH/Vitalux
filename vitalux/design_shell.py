@@ -130,7 +130,8 @@ class DesignShell(QObject):
                 w.brand_mark.show()
             eclipse=mode=='eclipse_crystal'
             nebula=mode=='nebula_prism'
-            for index,button in enumerate(w.nav_buttons):
+            for position,index in enumerate(w.navigation_indices()):
+                button=w.nav_buttons[index]
                 if nebula:
                     button.set_compact(True)
                     button.setFixedSize(54,46)
@@ -139,7 +140,7 @@ class DesignShell(QObject):
                     button.setFixedWidth(max(108,button.fontMetrics().horizontalAdvance(tr(w.pages[index][0]))+57))
                     (self.primary if index<8 else self.bottom).addWidget(button)
                 else:
-                    w.nav_host.layout().insertWidget(index,button)
+                    w.nav_host.layout().insertWidget(position,button)
                 button.show()
             self.bottom.removeWidget(w.lang_host)
             self.top.removeWidget(w.lang_host)

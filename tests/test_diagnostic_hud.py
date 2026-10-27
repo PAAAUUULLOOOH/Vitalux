@@ -23,7 +23,7 @@ w=MainWindow(i,load_logo(i,96),Dummy())
 w.show()
 app.processEvents()
 assert 'Diagnostic Center' in [name for name,page in w.pages]
-assert len(w.pages)==12
+assert len(w.pages)==13 and w.pages[12][0]=='Spiele'
 assert w.render_backend_active=='software'
 assert not hasattr(w, '_tray_preview')
 assert not hasattr(w, 'lab')
@@ -63,8 +63,8 @@ assert 'SYSTEMCHECK' in diagnostic_engine.systemcheck({}).upper()
 assert set(cent.texts)=={section[0] for section in cent.SECTIONS}
 assert not cent.worker
 assert not settings.get('diag_blackbox_enabled',False)
-assert any('CPU' in entry[1] for entry in __import__('vitalux.mini_hud',fromlist=['METRIC_OPTIONS']).METRIC_OPTIONS)
-print('QA: native window + 12 pages + Glass + MiniHUD + saved renderer + diagnostics OK')
+assert any('CPU' in entry[1] for entry in __import__('vitalux.desktop_overlay',fromlist=['METRIC_OPTIONS']).METRIC_OPTIONS)
+print('QA: native window + 13 pages + Glass + Desktop Overlay + saved renderer + diagnostics OK')
 w._force_quit=True
 w.close()
 from PySide6.QtTest import QTest

@@ -102,7 +102,7 @@ def check_gui():
         print("CHECK GUI: after show", flush=True)
         app.processEvents()
         assert guide.windowTitle() == tr("Vitalux-Anleitung")
-        assert len(SLIDES) == 10
+        assert len(SLIDES) == 11
         for idx, (title, intro, *_rest) in enumerate(SLIDES):
             print("CHECK GUI: slide", locale, idx, flush=True)
             guide.show_step(idx)
@@ -140,7 +140,7 @@ def check_gui():
     assert "Danke an:" in page.support_credit.text()
     page.close()
 
-    print("Native guide UI: passed (10 slides, arrows, screenshots, DE/EN)")
+    print("Native guide UI: passed (11 slides, arrows, screenshots, DE/EN)")
 
 
 if __name__ == "__main__":

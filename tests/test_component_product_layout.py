@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QImage,QPainter,QColor
 from PySide6.QtWidgets import QApplication,QScrollArea
 from vitalux import theme
-from vitalux.pages import CpuPage,MemoryPage
+from vitalux.component_pages import CpuPage, MemoryPage
 from vitalux.product_ui import ProductHeader,loader
 from vitalux.product_images import lookup_key
 from vitalux.widgets import label

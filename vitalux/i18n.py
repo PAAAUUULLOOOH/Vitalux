@@ -115,6 +115,8 @@ EN = {
 }
 
 from .translations_extra import EN_MORE
+from .translations_games import EN_GAMES
+EN_MORE.update(EN_GAMES)
 
 # User-visible improvements for component recovery and monitoring state.
 EN_MORE.update({

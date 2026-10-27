@@ -7,9 +7,12 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QApplication
 from vitalux import i18n,settings,theme
-from vitalux.pages import OverviewPage,GpuCard,CpuPage,MemoryPage,DiskPage,NetworkPage,SystemPage
-from vitalux.control import SensorsPage
-from vitalux.widgets import ChartPanel,HistoryGraph
+from vitalux.pages import OverviewPage
+from vitalux.component_pages import GpuCard, CpuPage, MemoryPage
+from vitalux.storage_page import DiskPage
+from vitalux.system_pages import NetworkPage, SystemPage
+from vitalux.sensor_page import SensorsPage
+from vitalux.charts import ChartPanel, HistoryGraph
 
 app=QApplication.instance() or QApplication([])
 power=dict(id='ppt',component='gpu:A',kind='powers',name='amdgpu · PCI · PPT',

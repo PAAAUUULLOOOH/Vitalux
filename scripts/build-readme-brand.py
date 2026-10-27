@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Compose the approved slim identity from its Obsidian Gold vector files."""
+"""Compose README animation in memory without shipping per-design SVG copies."""
 from copy import deepcopy
 from pathlib import Path
 import re
+import runpy
 import sys
 import xml.etree.ElementTree as ET
 
@@ -12,10 +13,12 @@ from PySide6.QtGui import QColor
 
 NS = 'http://www.w3.org/2000/svg'
 ET.register_namespace('', NS)
+BUILDER = runpy.run_path(str(ROOT/'scripts/build-brand-assets.py'))
 
 
-def layer(filename, light, prefix):
-    source = (ROOT/'assets/brand'/filename).read_text()
+def layer(kind, light, prefix):
+    vector=BUILDER['logo' if kind=='pulse' else 'wordmark'](BUILDER['PALETTES']['obsidian-gold'],animated=True)
+    source=ET.tostring(vector,encoding='unicode')
     if light:
         def readable(match):
             ink = QColor(match.group())
@@ -35,10 +38,10 @@ def compose(variant):
                       role='img', attrib={'aria-labelledby': 'title desc'})
     ET.SubElement(root, '{'+NS+'}title', id='title').text = 'Vitalux'
     ET.SubElement(root, '{'+NS+'}desc', id='desc').text = 'Slim circular logo and sculpted uppercase VITALUX wordmark in Obsidian Gold.'
-    for filename, transform, prefix in (('vitalux-pulse-obsidian-gold.svg', 'translate(175 8) scale(0.1993620415)', 'icon-'),
-                                        ('vitalux-wordmark-obsidian-gold.svg', 'translate(50 282) scale(0.3888024883)', 'mark-')):
+    for kind, transform, prefix in (('pulse', 'translate(175 8) scale(0.1993620415)', 'icon-'),
+                                    ('wordmark', 'translate(50 282) scale(0.3888024883)', 'mark-')):
         group = ET.SubElement(root, '{'+NS+'}g', transform=transform)
-        group.extend(layer('animated/'+filename, variant == 'light', prefix))
+        group.extend(layer(kind, variant == 'light', prefix))
     ET.indent(root)
     (ROOT/'assets'/f'vitalux-readme-{variant}-animated.svg').write_text(ET.tostring(root, encoding='unicode')+'\n')
     print('README identity:', variant, 'animated')
