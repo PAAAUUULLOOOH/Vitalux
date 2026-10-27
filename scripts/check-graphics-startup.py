@@ -191,8 +191,8 @@ def child(mode, output):
             assert search.expanded and search._opacity.opacity() == 1
             assert win.grab().save(str(output/(mode+'-settings.png')))
             search.close_search()
-            settled(search.isHidden)
-            assert search.isHidden()
+            settled(lambda: search.field.isHidden() and search.icon.isVisible())
+            assert not search.expanded and search.width()==search.icon.width()
             renderer.successful_start()
             print(json.dumps({'mode': mode, 'active': win.render_backend_active,
                   'platform': app.platformName(), 'live_sample': True,
