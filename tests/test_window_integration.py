@@ -8,9 +8,11 @@ from __future__ import annotations
 import os
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+os.environ["VITALUX_SPEC_OFFLINE"] = "1"
 sys.path.insert(0, os.getcwd())
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QPixmap, QColor
@@ -55,8 +57,13 @@ def check_window():
             window.set_language("en")
             window.set_language("de")
             window._force_quit = True
-            assert window.close()
-            app.processEvents()
+            window.close()
+            deadline = time.monotonic() + 5
+            while window.isVisible() and time.monotonic() < deadline:
+                app.processEvents()
+                time.sleep(.01)
+            assert window.isHidden(), "Window did not finish its asynchronous shutdown"
+            assert not window._close_retry.isActive()
             print("Main window integration, sampling, languages, GPU and diagnostics PASS")
         finally:
             Sampler.start = previous_start

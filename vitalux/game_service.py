@@ -64,7 +64,7 @@ class GameService(QThread):
                     game = payload
                     if operation == 'connect':
                         if not game_profiles.available(game):
-                            raise ValueError('MangoHud fehlt. Installiere MangoHud bzw. die passende Flatpak-Erweiterung und prüfe erneut.')
+                            raise ValueError('Die mitgelieferte Overlay-Komponente ist unvollständig. Bitte Vitalux erneut entpacken oder installieren.')
                         bridge = game_profiles.prepare(game)
                         game_profiles.connect(game, bridge)
                         sessions.register(game, bridge)

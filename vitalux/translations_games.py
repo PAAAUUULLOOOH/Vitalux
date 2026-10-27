@@ -7,7 +7,7 @@ EN_GAMES = {
 
     'Spiele und MangoHud': 'Games and MangoHud',
     'Der Reiter Spiele erkennt installierte Steam-, Heroic- und Lutris-Spiele automatisch.': 'Games automatically discovers installed Steam, Heroic and Lutris games.',
-    'Schließe den Launcher und verbinde MangoHud einmal im Overlay-Profil des Spiels. Metriken und FPS-Ziel sind pro Spiel wählbar.': 'Close the launcher, then connect MangoHud once in the game’s overlay profile. Choose metrics and a target FPS for each game.',
+    'MangoHud ist für 32- und 64-Bit-Spiele enthalten, auch für Flatpak. Schließe den Launcher und verbinde das Overlay einmal im Spielprofil. Metriken und FPS-Ziel sind pro Spiel wählbar.': 'MangoHud is included for 32- and 64-bit games, including Flatpak. Close the launcher, then connect the overlay once in the game profile. Choose metrics and a target FPS for each game.',
     'Lass Vitalux im Hintergrund laufen. Nach Spielende erscheinen FPS, niedrige FPS-Werte, Frametime-Verlauf und frühere Sitzungen beim jeweiligen Spiel.': 'Keep Vitalux running in the background. After a game ends, its FPS, lows, frametime history and previous sessions appear under that game.',
     'Die Bewertung erklärt ihre Kriterien im Verhältnis zum FPS-Ziel. Zu kurze oder unvollständige Aufnahmen erhalten keine Gesamtnote.': 'The assessment explains its criteria relative to the target FPS. Short or incomplete recordings receive no overall grade.',
     'Diagnostic Center und Overlay': 'Diagnostic Center and desktop overlay',
@@ -47,9 +47,9 @@ EN_GAMES = {
     'MangoHud · Bereit': 'MangoHud · Ready',
     'MangoHud · Nicht eingerichtet': 'MangoHud · Not configured',
     'MangoHud · Spielsitzung aktiv': 'MangoHud · Game session active',
-    'MangoHud bereit': 'MangoHud ready',
-    'MangoHud fehlt. Installiere MangoHud bzw. die passende Flatpak-Erweiterung und prüfe erneut.':
-        'MangoHud is missing. Install MangoHud or its matching Flatpak extension, then scan again.',
+    'MangoHud ist in Vitalux enthalten. Keine zusätzliche Installation nötig.': 'MangoHud is included in Vitalux. No additional installation is needed.',
+    'Die mitgelieferte Overlay-Komponente ist unvollständig. Bitte Vitalux erneut entpacken oder installieren.':
+        'The bundled overlay component is incomplete. Extract or reinstall Vitalux.',
     'Overlay und Aufzeichnung für dieses Spiel aktivieren': 'Enable the overlay and recording for this game',
     'FPS-Ziel für die Bewertung': 'Target FPS for the assessment',
     'Oben links': 'Top left',
@@ -75,8 +75,8 @@ EN_GAMES = {
         'Recording begins after the selected delay. Menus and loading screens remain part of the measurement; use the recording shortcut to pause it.',
     'Mit Launcher verbinden': 'Connect to launcher',
     'Verbindung entfernen': 'Remove connection',
-    'Beende den Launcher zum Einrichten oder Entfernen der Verbindung. Vorhandene Startargumente bleiben erhalten. Für Flatpak wird die passende MangoHud-Erweiterung benötigt.':
-        'Close the launcher before setting up or removing its connection. Existing launch arguments are preserved. Flatpak requires the matching MangoHud extension.',
+    'Beende den Launcher zum Einrichten oder Entfernen der Verbindung. Vorhandene Startargumente bleiben erhalten. MangoHud für 32- und 64-Bit-Spiele ist bereits enthalten, auch für Flatpak.':
+        'Close the launcher before setting up or removing its connection. Existing launch arguments are preserved. MangoHud for 32-bit and 64-bit games is already included, also for Flatpak.',
     'Beende den Spiele-Launcher vor dem Einrichten oder Entfernen der Verbindung.':
         'Close the game launcher before setting up or removing its connection.',
     'Ungültiges Tastenkürzel. Beispiel: Shift_R+F12': 'Invalid shortcut. Example: Shift_R+F12',

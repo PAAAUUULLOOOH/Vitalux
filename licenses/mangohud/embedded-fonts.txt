@@ -1,0 +1,24 @@
+MangoHud embedded fonts
+
+Unispace Bold
+Original embedded metadata: (c) 2000-2014 Typodermic Fonts Inc.
+Creator: Raymond Larabie / Typodermic Fonts Inc.
+The author placed Unispace in the public domain on 2024-04-15.
+Typodermic identifies its public-domain collection as CC0 1.0 Universal.
+The unchanged upstream font remains embedded in MangoHud src/font_unispace.c;
+no font substitutions or visual changes are made by Vitalux.
+Primary source and dedication checked 2026-10-27:
+https://typodermicfonts.com/between-the-lines/stories/unispace/
+https://typodermicfonts.com/downloads/
+https://creativecommons.org/publicdomain/zero/1.0/
+Full CC0 legal code: CC0-1.0.txt in this directory.
+
+ProggyClean fallback in Dear ImGui
+Copyright (c) 2004, 2005 Tristan Grimmer.
+Upstream imgui_draw.cpp identifies the embedded ProggyClean.ttf as MIT-licensed.
+Official font project: https://github.com/bluescan/proggyfonts
+Full project license: ProggyFonts-MIT.txt in this directory.
+
+Other fonts present in the upstream source archive are not installed as
+standalone fonts or selected by Vitalux. Normal Vitalux interface text continues
+to use the desktop's available fonts.

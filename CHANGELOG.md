@@ -1,5 +1,10 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.4-unstable.7] - 2026-10-27
+
+- MangoHud 0.8.4 ist für 32- und 64-Bit-Spiele mit OpenGL oder Vulkan direkt enthalten, auch für Flatpak-Launcher. Keine separate MangoHud-Installation oder Erweiterung nötig.
+- Bestehende Spielverbindungen nutzen das mitgelieferte Overlay automatisch. Profile und lokale Auswertungen bleiben erhalten; die Spielanbindung bleibt auch nach dem Schließen oder Aktualisieren der App verfügbar.
+
 ## [v0.9.6.4-unstable.6] - 2026-10-27
 
 - Neuer Reiter Spiele: installierte Spiele aus Steam (auch Flatpak und zusätzliche Bibliotheken), Heroic und Lutris automatisch erkennen, durchsuchen und starten. Bisherige Auswertungen bleiben auch nach der Deinstallation erhalten.

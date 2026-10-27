@@ -96,5 +96,12 @@
     "filename": "fio-3.43-build-source.tar.gz",
     "local_path": "licenses/source/fio-3.43-build-source.tar.gz",
     "sha256": "b5d7ab469eecb897ca6cb50782b4752ccd9eb63b34399d8a28431ab562fb011a"
+  },
+  {
+    "name": "MangoHud",
+    "version": "0.8.4",
+    "filename": "MangoHud-v0.8.4-Source.tar.xz",
+    "url": "https://github.com/flightlessmango/MangoHud/releases/download/v0.8.4/MangoHud-v0.8.4-Source.tar.xz",
+    "sha256": "bbe5a2b976313c53f21dc24b98bbed03226589460a0cce20d923cb2c36c9d8b0"
   }
 ]

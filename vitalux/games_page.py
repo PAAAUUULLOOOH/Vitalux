@@ -207,7 +207,7 @@ class OverlayProfile(QDialog):
         self.connection.clicked.connect(self._connection)
         form.addWidget(self.connection)
         form.addWidget(label('Beende den Launcher zum Einrichten oder Entfernen der Verbindung. '
-                            'Vorhandene Startargumente bleiben erhalten. Für Flatpak wird die passende MangoHud-Erweiterung benötigt.',
+                            'Vorhandene Startargumente bleiben erhalten. MangoHud für 32- und 64-Bit-Spiele ist bereits enthalten, auch für Flatpak.',
                             'muted', wrap=True))
         scroll.setWidget(body)
         root.addWidget(scroll, 1)
@@ -222,8 +222,8 @@ class OverlayProfile(QDialog):
         self.game = game
         connected = bool(game.get('connected'))
         self.connection.setText(tr('Verbindung entfernen' if connected else 'Mit Launcher verbinden'))
-        self.notice.setText(tr('MangoHud bereit' if game.get('mangohud_available') else
-                              'MangoHud fehlt. Installiere MangoHud bzw. die passende Flatpak-Erweiterung und prüfe erneut.'))
+        self.notice.setText(tr('MangoHud ist in Vitalux enthalten. Keine zusätzliche Installation nötig.' if game.get('mangohud_available') else
+                              'Die mitgelieferte Overlay-Komponente ist unvollständig. Bitte Vitalux erneut entpacken oder installieren.'))
         self.connection.setEnabled(connected or bool(game.get('mangohud_available')))
 
     def _save(self):
@@ -373,7 +373,7 @@ class GamesPage(Page):
     def _catalog(self, data):
         if self._closing:return
         self.games, self.summaries = data['games'], data['sessions']
-        self.status.setText(tr('MangoHud · Bereit') if any(g.get('mangohud_available') for g in self.games)
+        self.status.setText(tr('MangoHud · Bereit') if game_profiles.available({})
                             else tr('MangoHud · Nicht eingerichtet'))
         self.empty.setVisible(not self.games)
         if not self.selected_id or not any(g['id']==self.selected_id for g in self.games):
@@ -529,7 +529,7 @@ class GamesPage(Page):
         if active:
             self.status.setText(tr('MangoHud · Spielsitzung aktiv'))
         else:
-            self.status.setText(tr('MangoHud · Bereit') if any(g.get('mangohud_available') for g in self.games)
+            self.status.setText(tr('MangoHud · Bereit') if game_profiles.available({})
                                 else tr('MangoHud · Nicht eingerichtet'))
 
     def _finished(self, report):

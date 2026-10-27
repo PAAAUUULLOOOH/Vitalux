@@ -37,6 +37,10 @@ def prepare(target):
                  'LICENSE-NOTICE.md', 'THIRD-PARTY.md'):
         shutil.copy2(source/name, target/name)
     shutil.copy2(source/'bin/fio', target/'bin/fio')
+    # Game overlays carry both native library architectures, with their own
+    # names and loader path; users need no mangohud command or Flatpak extension.
+    from vitalux.game_runtime import materialize
+    materialize(target/'mangohud-runtime', source)
     # Matching development modules allow the exact shipped interpreter to run
     # the complete regression suite; users need no system Python or pip.
     stdlib = target/'runtime/lib/python3.12'

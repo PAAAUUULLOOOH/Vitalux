@@ -63,6 +63,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build/setup
+          sudo dpkg --add-architecture i386
           # Use the official HTTPS mirrors; the runner's Azure mirror can stall.
           printf '%s\n' 'https://archive.ubuntu.com/ubuntu' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
           printf '%s\n' 'https://security.ubuntu.com/ubuntu' | sudo tee /etc/apt/apt-mirrors-security.txt >/dev/null
@@ -74,7 +75,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build/setup
-          sudo apt-get -o Acquire::ForceIPv4=true -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=120 install -y --no-install-recommends xvfb weston libegl1 libgl1 libopengl0 libgl1-mesa-dri libglx-mesa0 mesa-vulkan-drivers libvulkan1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-util1 libxcb-shape0 curl squashfs-tools unzip file mangohud mesa-utils xdotool 2>&1 | tee build/setup/desktop.log
+          sudo apt-get -o Acquire::ForceIPv4=true -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=120 install -y --no-install-recommends xvfb weston libegl1 libgl1 libopengl0 libgl1-mesa-dri libglx-mesa0 mesa-vulkan-drivers libvulkan1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-util1 libxcb-shape0 curl squashfs-tools unzip file mesa-utils xdotool flatpak g++-multilib libx11-dev libx11-dev:i386 libgl-dev libgl-dev:i386 libvulkan-dev libvulkan-dev:i386 libgl1-mesa-dri:i386 libglx-mesa0:i386 mesa-vulkan-drivers:i386 2>&1 | tee build/setup/desktop.log
       - name: Expose dependency setup failures
         if: failure() && (steps.prepare.outcome == 'failure' || steps.python_deps.outcome == 'failure' || steps.ubuntu_index.outcome == 'failure' || steps.desktop_deps.outcome == 'failure')
         run: |
@@ -91,12 +92,20 @@ jobs:
           set -euo pipefail
           python -m compileall -q vitalux tests scripts packaging
           bash -n run.sh packaging/AppRun
-      - name: Check actual MangoHud frame recording and local report import
+      - name: Check bundled OpenGL and Vulkan game recording in both architectures
         if: steps.prepare.outputs.changed == 'true'
-        timeout-minutes: 3
+        timeout-minutes: 6
         run: |
           set -euo pipefail
           xvfb-run -a -s '-screen 0 1280x800x24' python scripts/check-game-recording.py --output build/game-recording
+      - name: Check bundled overlay inside a real Flatpak sandbox
+        if: steps.prepare.outputs.changed == 'true'
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          mkdir -p build/flatpak-recording
+          xvfb-run -a -s '-screen 0 1280x800x24' dbus-run-session -- bash scripts/check-flatpak-game-recording.sh build/flatpak-recording
       - name: Assemble and validate the portable runtime
         if: steps.prepare.outputs.changed == 'true'
         run: |
@@ -190,6 +199,8 @@ jobs:
             build/setup/
             build/regressions/
             build/game-recording/
+            build/flatpak-recording/recording/
+            build/flatpak-recording/runtime-list.txt
             build/performance-parity/results.json
             build/render-parity/results.json
             build/ui-endurance/

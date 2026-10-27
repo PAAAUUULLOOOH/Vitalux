@@ -8,6 +8,11 @@ import re
 
 
 def check(root):
+    import sys
+    sys.path.insert(0,str(root))
+    from vitalux.game_runtime import validate
+    overlay=validate(root/'mangohud-runtime')
+    assert set(overlay['architectures'])=={'x86_64','i386'}
     required = ('README.md', 'USER-GUIDE.md', 'THIRD-PARTY.md', 'LICENSE-NOTICE.md',
                 'packaging/logging.sh', 'vitalux/logfiles.py',
                 'third_party/sources.lock.json', 'licenses/README.md', 'licenses/GPL-2.0.txt',

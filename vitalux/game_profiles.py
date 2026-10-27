@@ -5,10 +5,8 @@ import os
 from pathlib import Path
 import re
 import shlex
-import shutil
-import subprocess
 import psutil
-from . import game_files, profiles, settings
+from . import game_files, game_runtime, profiles, settings
 from .game_library import file_key
 
 METRICS = ('fps', 'frametime', 'frame_timing', 'cpu_stats', 'cpu_temp', 'cpu_power',
@@ -60,12 +58,11 @@ def save(game_id, value):
 
 def config_text(profile):
     profile = normalize(profile)
-    values = ['legacy_layout=false', 'log_interval=0', 'log_duration=14400',
+    values = ['permit_upload=0', 'legacy_layout=false', 'log_interval=0', 'log_duration=14400',
               'autostart_log='+str(max(1, profile['warmup'])),
               'position='+profile['position'], 'font_size='+str(profile['font_size']),
               'background_alpha='+str(profile['background_alpha']),
-              'toggle_hud='+profile['toggle_hud'], 'toggle_logging='+profile['toggle_logging'],
-              'benchmark_percentiles=AVG,1,0.1']
+              'toggle_hud='+profile['toggle_hud'], 'toggle_logging='+profile['toggle_logging']]
     values.extend(profile['metrics'])
     if profile['horizontal']:
         values.append('horizontal')
@@ -86,25 +83,7 @@ def launcher_running(store):
 
 
 def available(game):
-    if not game.get('flatpak'):
-        return bool(shutil.which('mangohud'))
-    if not shutil.which('flatpak'):
-        return False
-    # Match the installed launcher's platform branch, rather than accepting an
-    # unrelated MangoHud extension from a different Flatpak runtime.
-    application = {'steam': 'com.valvesoftware.Steam', 'heroic': 'com.heroicgameslauncher.hgl',
-                   'lutris': 'net.lutris.Lutris'}[game['store']]
-    try:
-        runtime = subprocess.run(['flatpak', 'info', '--show-runtime', application],
-                                 capture_output=True, text=True, timeout=3)
-        branch = runtime.stdout.strip().rsplit('/', 1)[-1]
-        if runtime.returncode or not re.fullmatch(r'[\w.-]+', branch):
-            return False
-        extension = 'org.freedesktop.Platform.VulkanLayer.MangoHud//'+branch
-        probe = subprocess.run(['flatpak', 'info', extension], capture_output=True, timeout=3)
-        return probe.returncode == 0
-    except (OSError, subprocess.SubprocessError):
-        return False
+    return game_runtime.available()
 
 
 def bridge_root(game, base=None):
@@ -123,6 +102,7 @@ def prepare(game, profile=None, base=None):
     profile = normalize(profile if profile is not None else load(game['id']))
     root = bridge_root(game, base)
     root.mkdir(parents=True, exist_ok=True, mode=0o700)
+    engine=game_runtime.ensure(root.parent/'engine')
     game_files.atomic_write(root/'profile.conf', config_text(profile).encode())
     game_files.write_json(root/'game.json', dict(game=game, profile=profile, per_frame=True, recording_limit=14400))
     if profile['enabled']:
@@ -133,7 +113,7 @@ def prepare(game, profile=None, base=None):
                   VITALUX_OVERLAY_META=str(root/'game.json'),
                   VITALUX_OVERLAY_ENABLED=str(root/'enabled'),
                   VITALUX_OVERLAY_SESSIONS=str(root/'sessions'),
-                  VITALUX_OVERLAY_FLATPAK='1' if game.get('flatpak') else '0')
+                  VITALUX_OVERLAY_ENGINE=str(engine/'run'))
     template = (Path(__file__).resolve().parents[1]/'packaging/game-overlay.sh').read_text()
     script = '#!/bin/sh\n'+''.join(key+'='+shlex.quote(value)+'\n' for key, value in values.items())
     script += template.partition('\n')[2]

@@ -2,6 +2,7 @@
 
 The files in this directory reproduce upstream notices without rewriting their license terms. [THIRD-PARTY.md](../THIRD-PARTY.md) maps them to shipped components. [LICENSE-NOTICE.md](../LICENSE-NOTICE.md) describes the separate status of Vitalux's original code and branding.
 
+- `mangohud/`: MangoHud 0.8.4, embedded dependencies/fonts, NVML interface and private helper notices, including the GCC Runtime Library Exception; `build-packages.txt` records the build environment.
 - `runtime/`: CPython and psutil notices.
 - `branding-build-tools/`: verbatim vtracer, NumPy and fontTools notices for local conversion of the approved branding concepts. Their code is not shipped or required at runtime.
 - `upstream/`: verbatim licenses, copyright files and Qt attribution records from the exact source archives in `third_party/sources.lock.json`. This conservative collection can include notices for upstream optional or test components that are not distributed as binaries.
@@ -21,6 +22,8 @@ The files in this directory reproduce upstream notices without rewriting their l
 **fio 3.43:** unpack the preserved build-source archive, read its `README` and `HOWTO`, and use its `configure`/`make` build system. Vitalux invokes fio as a separate process through `bin/fio`; it does not link fio into the Python application.
 
 **libaio 0.3.113:** unpack the locked source archive and run `make -j2` on Linux x86-64 with GCC. The unmodified upstream Makefile builds `src/libaio.so.1.0.2` with SONAME `libaio.so.1`; Vitalux supplies that shared object as `tools-lib/libaio.so.1`.
+
+**MangoHud 0.8.4:** verify and unpack the complete source archive pinned in `third_party/sources.lock.json`. Copy `packaging/build-mangohud.sh` as `vitalux-build.sh` and `packaging/mangohud-i386.ini` as `vitalux-i386.ini` into that source directory. Use it as the Docker build context with `packaging/Dockerfile.mangohud`; provide the `proxy_ca` build secret with your trusted CA bundle. Export `/out/mangohud-runtime` from the built image, then run `python scripts/build-mangohud-archive.py EXPORTED_DIRECTORY` to create the inventory and compressed payload. The recipe builds both game architectures on glibc 2.31 with unique private library names. Compatible replacement libraries can be used in the extracted `mangohud-runtime/` after rebuilding its inventory/archive; Vitalux installs an independent versioned copy when connecting a game.
 
 **AppImage runtime:** the pinned `type2-runtime` source includes its build scripts, Alpine environment and libfuse patch. Use those instructions with the included libfuse/squashfuse source versions. Vitalux's `packaging/runtime/SHA256SUMS` identifies the embedded runtime binary. To inspect or replace the application payload without FUSE, use `./Vitalux.AppImage --appimage-extract` and run `squashfs-root/AppRun --portable`.
 

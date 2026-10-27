@@ -47,15 +47,17 @@ with tempfile.TemporaryDirectory(prefix='vitalux-games-') as directory:
         assert connection['applied'].endswith('%command% -novid')
         overlay.disconnect(game,bridge,check_running=False)
         assert configuration.read_text()==source.replace('gamemoderun %command% -novid','-novid')
-        # Simulate a local MangoHud executable, exercising the real shell body.
+        # A deliberately unusable host command must not be used by the real wrapper.
         binary = root/'bin';binary.mkdir()
-        executable = binary/'mangohud';executable.write_text('#!/bin/sh\n[ "$1" = --dlsym ] && shift\nexec "$@"\n');executable.chmod(0o755)
+        executable = binary/'mangohud';executable.write_text('#!/bin/sh\necho SYSTEM_MANGOHUD_MUST_NOT_BE_USED >&2\nexit 97\n');executable.chmod(0o755)
         bridge = overlay.prepare(game, profile, root/"Game's data")
         payload = 'literal; echo unintended'
         env=dict(os.environ,PATH=str(binary)+':'+os.defpath)
         command=[str(bridge/'launch.sh'),'/bin/sh','-c','printf "%s" "$1" > "$2"; exit 7','game',payload,str(root/'argument.txt')]
         completed=subprocess.run(command,env=env,capture_output=True,text=True,timeout=10)
         assert completed.returncode==7,completed.stderr
+        assert 'SYSTEM_MANGOHUD_MUST_NOT_BE_USED' not in completed.stderr
+        assert overlay.available(game)
         assert (root/'argument.txt').read_text()==payload
         sessions=list((bridge/'sessions').iterdir());assert len(sessions)==1
         assert (sessions[0]/'exit-code').read_text().strip()=='7'
