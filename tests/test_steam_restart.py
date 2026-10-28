@@ -17,7 +17,7 @@ def wait(predicate,seconds=15):
 with tempfile.TemporaryDirectory(prefix='vitalux-steam-restart-') as folder:
  root=Path(folder);binary=root/'bin';binary.mkdir();driver=binary/'steam'
  driver.write_text('#!'+sys.executable+'\n'+r'''
-import ctypes,json,os,subprocess,sys,time
+import ctypes,json,os,psutil,subprocess,sys,time
 from pathlib import Path
 root=Path(os.environ['TEST_STEAM_ROOT']);args=sys.argv[1:]
 if args and args[0]=='run':
@@ -36,7 +36,6 @@ if pid.exists():
  try:
   os.kill(int(pid.read_text()),0)
   # A dead unreaped daemon is not a live Steam instance.
-  import psutil
   if psutil.Process(int(pid.read_text())).status()!=psutil.STATUS_ZOMBIE:sys.exit(0)
  except (ProcessLookupError,psutil.Error):pass
 (root/'shutdown').unlink(missing_ok=True)

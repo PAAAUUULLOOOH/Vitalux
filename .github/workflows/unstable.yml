@@ -101,6 +101,7 @@ jobs:
           set -euo pipefail
           python -m compileall -q vitalux tests scripts packaging
           bash -n run.sh packaging/AppRun
+          python tests/test_desktop_runtime.py
       - name: Check bundled OpenGL and Vulkan game recording in both architectures
         if: steps.prepare.outputs.changed == 'true' && steps.validation.outputs.overlay == 'true'
         timeout-minutes: 6

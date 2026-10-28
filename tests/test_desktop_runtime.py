@@ -8,6 +8,22 @@ from desktop_runtime import check,manifest
 meta=manifest(ROOT)
 assert {'libgthread-2.0.so.0','libglib-2.0.so.0','libxkbcommon.so.0'}<={entry['name'] for entry in meta['libraries']}
 archive=ROOT/'portable-runtime'/meta['archive']
+def check_preference(root):
+ for entry in meta['libraries']:
+  if 'path' in entry:assert not (root/'lib'/entry['name']).exists(),'Fallback shadows the graphics driver'
+ if all(ctypes.util.find_library(name) for name in ('wayland-client','wayland-cursor','drm')):
+  selected=subprocess.check_output([sys.executable,str(ROOT/'packaging/runtime-libraries.py'),str(root)],
+      env=dict(os.environ,LD_LIBRARY_PATH=str(root/'lib')),text=True).strip()
+  assert 'fallback-libraries' not in selected,selected
+
+# The binary package contains expanded libraries, without redundant archives.
+# Its regression pass verifies those actual files; source bootstrap is tested
+# separately before assembly and again by the full offline source-ZIP check.
+if not archive.exists():
+ assert (ROOT/'runtime/bin/python3.12').is_file(),'Missing source supplement'
+ check(ROOT,ROOT);check_preference(ROOT)
+ print('Expanded packaged desktop libraries and native driver interface preference PASS')
+ sys.exit(0)
 with archive.open('rb') as stream:assert hashlib.file_digest(stream,'sha256').hexdigest()==meta['sha256']
 with tempfile.TemporaryDirectory(prefix='vitalux-offline-desktop-') as folder:
  root=Path(folder)
@@ -20,13 +36,8 @@ with tempfile.TemporaryDirectory(prefix='vitalux-offline-desktop-') as folder:
  result=subprocess.run(['bash',str(root/'scripts/ensure-runtime.sh')],capture_output=True,text=True)
  assert result.returncode==0,result.stderr
  check(root,ROOT)
- for entry in meta['libraries']:
-  if 'path' in entry:assert not (root/'lib'/entry['name']).exists(),'Fallback shadows the graphics driver'
  # On a desktop that provides these interfaces, prefer the actual host ABI.
- if all(ctypes.util.find_library(name) for name in ('wayland-client','wayland-cursor','drm')):
-  selected=subprocess.check_output([sys.executable,str(ROOT/'packaging/runtime-libraries.py'),str(root)],
-      env=dict(os.environ,LD_LIBRARY_PATH=str(root/'lib')),text=True).strip()
-  assert 'fallback-libraries' not in selected,selected
+ check_preference(root)
  dll=root/'lib/libgthread-2.0.so.0';before=dll.stat().st_mtime_ns
  subprocess.run(['bash',str(root/'scripts/ensure-runtime.sh')],check=True,capture_output=True)
  assert dll.stat().st_mtime_ns==before,'Re-extracted unchanged libraries'
