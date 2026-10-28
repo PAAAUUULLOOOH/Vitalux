@@ -19,6 +19,9 @@ PRODUCTS=(
  ('cpu','Intel','Intel(R) Core(TM) i5-14600KF'),
  ('mainboard','MSI','MAG B650 TOMAHAWK WIFI (MS-7D75)'),
  ('ram','Kingston','KF560C30BB-16'),
+ ('ram','Corsair','CMK32GX5M2B6000C36'),
+ ('ram','Crucial','CT16G4DFRA32A'),
+ ('ram','G.Skill','F5-6000J3038F16GX2-TZ5N'),
 )
 
 def main():
