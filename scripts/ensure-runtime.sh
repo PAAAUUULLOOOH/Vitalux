@@ -34,6 +34,8 @@ install_desktop_libraries() (
   tar --extract --xz --file portable-runtime/desktop-libraries-linux-x86_64.tar.xz --directory "$stage" --no-same-owner --no-same-permissions
   mkdir -p lib licenses/system-libraries
   cp --remove-destination -- "$stage"/lib/* lib/
+  cp --recursive --remove-destination -- "$stage/fallback-libraries" .
+  rm -f -- lib/libwayland-client.so.0 lib/libwayland-cursor.so.0 lib/libdrm.so.2
   cp --remove-destination -- "$stage"/licenses/system-libraries/* licenses/system-libraries/
   cp -- "$checksum" "$marker"
 )

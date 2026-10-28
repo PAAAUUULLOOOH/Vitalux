@@ -72,6 +72,10 @@ if [ ! -x "$PY" ]; then
   notify_error 'Die gebündelte Python-Laufzeit fehlt oder ist nicht ausführbar.'
   exit 1
 fi
+if [[ -r "$HERE/packaging/runtime-libraries.py" ]]; then
+  LD_LIBRARY_PATH="$("$PY" "$HERE/packaging/runtime-libraries.py" "$HERE")" || exit $?
+  export LD_LIBRARY_PATH
+fi
 if ! "$PY" -c 'import PySide6.QtWidgets; import PySide6.QtSvg; import psutil' 2>"$QT_CHECK"; then
   log_line '=== Python/Qt konnte nicht geladen werden ==='
   while IFS= read -r line || [[ -n "$line" ]]; do

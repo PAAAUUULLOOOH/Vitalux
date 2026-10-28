@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "archive": "desktop-libraries-linux-x86_64.tar.xz",
-  "sha256": "7e3f9c1e5b6ea4789e59b914100977666b5ab6bdcf26ed808d19064abf27a3fa",
+  "sha256": "f0599dd19263cd68702b590a095e44c12e6ba7d0b2f6c9aceb5e43752f5bd412",
   "architecture": "x86_64",
   "build_base": "Ubuntu 22.04",
   "libraries": [
@@ -131,7 +131,8 @@
       "package": "libdrm2:amd64",
       "source": "libdrm",
       "version": "2.4.113-2~ubuntu0.22.04.1",
-      "file": "usr/lib/x86_64-linux-gnu/libdrm.so.2.4.0"
+      "file": "usr/lib/x86_64-linux-gnu/libdrm.so.2.4.0",
+      "path": "fallback-libraries/libdrm.so.2/libdrm.so.2"
     },
     {
       "name": "libexpat.so.1",
@@ -299,7 +300,8 @@
       "package": "libwayland-client0:amd64",
       "source": "wayland",
       "version": "1.20.0-1ubuntu0.1",
-      "file": "usr/lib/x86_64-linux-gnu/libwayland-client.so.0.20.0"
+      "file": "usr/lib/x86_64-linux-gnu/libwayland-client.so.0.20.0",
+      "path": "fallback-libraries/libwayland-client.so.0/libwayland-client.so.0"
     },
     {
       "name": "libwayland-cursor.so.0",
@@ -307,7 +309,8 @@
       "package": "libwayland-cursor0:amd64",
       "source": "wayland",
       "version": "1.20.0-1ubuntu0.1",
-      "file": "usr/lib/x86_64-linux-gnu/libwayland-cursor.so.0.20.0"
+      "file": "usr/lib/x86_64-linux-gnu/libwayland-cursor.so.0.20.0",
+      "path": "fallback-libraries/libwayland-cursor.so.0/libwayland-cursor.so.0"
     },
     {
       "name": "libxcb-cursor.so.0",

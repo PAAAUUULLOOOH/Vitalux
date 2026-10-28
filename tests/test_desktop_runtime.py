@@ -1,5 +1,5 @@
 """Offline supplementary libraries also repair an already-expanded runtime."""
-import hashlib,json,shutil,subprocess,sys,tempfile
+import ctypes.util,hashlib,json,os,shutil,subprocess,sys,tempfile
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
@@ -20,6 +20,13 @@ with tempfile.TemporaryDirectory(prefix='vitalux-offline-desktop-') as folder:
  result=subprocess.run(['bash',str(root/'scripts/ensure-runtime.sh')],capture_output=True,text=True)
  assert result.returncode==0,result.stderr
  check(root,ROOT)
+ for entry in meta['libraries']:
+  if 'path' in entry:assert not (root/'lib'/entry['name']).exists(),'Fallback shadows the graphics driver'
+ # On a desktop that provides these interfaces, prefer the actual host ABI.
+ if all(ctypes.util.find_library(name) for name in ('wayland-client','wayland-cursor','drm')):
+  selected=subprocess.check_output([sys.executable,str(ROOT/'packaging/runtime-libraries.py'),str(root)],
+      env=dict(os.environ,LD_LIBRARY_PATH=str(root/'lib')),text=True).strip()
+  assert 'fallback-libraries' not in selected,selected
  dll=root/'lib/libgthread-2.0.so.0';before=dll.stat().st_mtime_ns
  subprocess.run(['bash',str(root/'scripts/ensure-runtime.sh')],check=True,capture_output=True)
  assert dll.stat().st_mtime_ns==before,'Re-extracted unchanged libraries'

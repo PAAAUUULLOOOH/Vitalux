@@ -50,7 +50,11 @@ if [[ -n "${APPIMAGE:-}" && -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]] && ! integr
   mkdir -p "$STATE"
   printf '%s\n' "First-run desktop installation dialog started." | stamp_install
   set +e
-  LD_LIBRARY_PATH="$BASE/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" "$BASE/runtime/bin/python3.12" "$BASE/packaging/appimage-first-run.py" 2>&1 | stamp_install
+  DIALOG_LIBRARIES="$BASE/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+  if [[ -r "$BASE/packaging/runtime-libraries.py" ]]; then
+    DIALOG_LIBRARIES="$(LD_LIBRARY_PATH="$DIALOG_LIBRARIES" "$BASE/runtime/bin/python3.12" "$BASE/packaging/runtime-libraries.py" "$BASE")"
+  fi
+  LD_LIBRARY_PATH="$DIALOG_LIBRARIES" "$BASE/runtime/bin/python3.12" "$BASE/packaging/appimage-first-run.py" 2>&1 | stamp_install
   CHOICE=${PIPESTATUS[0]}
   set -e
   if [[ "$CHOICE" == 80 ]]; then

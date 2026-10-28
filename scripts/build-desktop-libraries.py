@@ -34,7 +34,8 @@ def build(output,cache):
         notices=payload/'licenses/system-libraries';notices.mkdir(parents=True)
         for package in packages:subprocess.run(['dpkg-deb','--extract',str(package),str(source)],check=True)
         for entry in metadata['libraries']:
-            target=payload/'lib'/entry['name'];shutil.copyfile(source/entry['file'],target)
+            target=payload/entry.get('path','lib/'+entry['name']);target.parent.mkdir(parents=True,exist_ok=True)
+            shutil.copyfile(source/entry['file'],target)
             if hashlib.sha256(target.read_bytes()).hexdigest()!=entry['sha256']:
                 raise ValueError('Extracted library checksum mismatch: '+target.name)
             package=entry['package'].split(':')[0]

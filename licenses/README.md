@@ -32,3 +32,5 @@ All third-party license rights, source obligations and warranty disclaimers cont
 The complete PCI ID Database source is retained in `assets/hardware/pci.ids`, copyright Martin Mares and Albert Pool, distributed under GPL-2.0-or-later. Its provenance is in `assets/hardware/provenance.json`; the complete GPL-2.0 text is included here.
 
 **Desktop runtime libraries:** `scripts/build-desktop-libraries.py` reproduces the small supplemental archive from the locked Ubuntu packages in [system-libraries/desktop-libraries.json](system-libraries/desktop-libraries.json). The complete corresponding source archives, distribution patches and source descriptors are pinned in `third_party/sources.lock.json` and included in the release’s separate source download. Compatible replacement libraries can be placed in `lib/`. No development tools or GPU drivers are added to the application.
+
+Wayland client/cursor and DRM interfaces prefer the desktop’s installed libraries, preserving compatibility with newer graphics drivers. Verified offline copies are held separately under `fallback-libraries/` and selected only when the host interface is absent.
