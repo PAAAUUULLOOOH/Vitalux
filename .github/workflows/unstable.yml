@@ -102,6 +102,10 @@ jobs:
           python -m compileall -q vitalux tests scripts packaging
           bash -n run.sh packaging/AppRun
           python tests/test_desktop_runtime.py
+      - name: Check manufacturer images, specifications and translations in isolated profiles
+        if: steps.prepare.outputs.changed == 'true' && steps.validation.outputs.hardware_network == 'true'
+        timeout-minutes: 11
+        run: python scripts/check-hardware-network.py
       - name: Check bundled OpenGL and Vulkan game recording in both architectures
         if: steps.prepare.outputs.changed == 'true' && steps.validation.outputs.overlay == 'true'
         timeout-minutes: 6
@@ -158,10 +162,6 @@ jobs:
           git worktree add --detach build/performance-reference 1a74b85a6ff427ca2e7cf672e26b2efe0f6ca6e8
           python scripts/check-performance-render.py --reference build/performance-reference --output build/performance-parity
           git worktree remove build/performance-reference
-      - name: Check manufacturer images, specifications and translations in isolated profiles
-        if: steps.prepare.outputs.changed == 'true' && steps.validation.outputs.hardware_network == 'true'
-        timeout-minutes: 11
-        run: python scripts/check-hardware-network.py
       - name: Exercise real kernel and desktop paths
         if: steps.prepare.outputs.changed == 'true'
         id: native
