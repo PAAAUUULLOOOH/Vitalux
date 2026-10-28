@@ -460,13 +460,6 @@ def manufacturer_pages(product):
     if product['kind']=='ram' and vendor=='kingston':
         return ['https://www.kingston.com/en/memory/search?'+urlencode({'partid':model}),
                 'https://www.kingston.com/en/memory/search/discontinuedmodels?'+urlencode({'partid':model})]
-    if product['kind']=='ram' and vendor=='crucial' and re.fullmatch(r'(?:CT|CP|BL)[A-Z0-9]+',model,re.I):
-        # Firmware often provides only a part number, which search engines
-        # may not index. The returned page must still identify this exact SKU.
-        return [f'https://www.crucial.com/memory/{generation}/{model.lower()}'
-                for generation in ('ddr5','ddr4')]
-    if product['kind']=='ram' and vendor=='corsair' and re.fullmatch(r'CM[A-Z0-9]+',model,re.I):
-        return ['https://www.corsair.com/us/en/p/memory/'+model.lower()]
     if product['kind']=='cpu' and vendor=='amd':
         match=re.search(r'\bRyzen\s+(\d)\s+(\d{4}[a-z0-9]*)\b',model,re.I)
         if match:

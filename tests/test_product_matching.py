@@ -55,26 +55,6 @@ with tempfile.TemporaryDirectory() as directory:
     assert not images.allowed_url('https://127.0.0.1/private')
     assert not images.allowed_url('https://localhost/private')
 with tempfile.TemporaryDirectory() as directory:
-    for vendor,sku in (('Crucial','CT16G4DFRA32A'),('Corsair','CMK32GX5M2B6000C36')):
-        product=dict(kind='ram',vendor=vendor,model=sku,revision='',exact=True)
-        pages=images.manufacturer_pages(product);photo='https://cdn.example.org/'+sku+'.png'
-        wrong='https://cdn.example.org/wrong-memory.png';requests=[]
-        def ram_download(url,limit,hosts):
-            requests.append(url)
-            if url in pages:
-                # A different generation/model must not supply an image even
-                # when the manufacturer route itself exists.
-                code='CT32G48C40U5' if vendor=='Crucial' and url==pages[0] else sku
-                graph={'@type':'Product','name':'Memory module','sku':code,
-                       'image':wrong if code!=sku else photo}
-                return ('<script type="application/ld+json">'+json.dumps(graph)+'</script>').encode()
-            assert url==photo,'Used a search service or the wrong RAM variant'
-            return png
-        saved=images.resolve(product,images.ProductCache(Path(directory)/sku),ram_download)
-        assert saved and saved['source']==pages[-1] and saved['image_url']==photo
-        assert wrong not in requests
-        assert images.resolve(product,images.ProductCache(Path(directory)/sku),offline)['cached']
-with tempfile.TemporaryDirectory() as directory:
     root=Path(directory)
     for name,value in (('vendor','1002'),('device','7590'),('subsystem_vendor','1458'),('subsystem_device','2429')):
         (root/name).write_text('0x'+value)

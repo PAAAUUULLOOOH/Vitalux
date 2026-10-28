@@ -8,7 +8,6 @@
 - The game tile, current session and history update together after a game ends, without restarting Vitalux.
 - Assessments use matching colors: green for Very good/Good, amber for Adequate and red for Needs improvement. Incomplete or short recordings remain neutral.
 - Game covers fill the same compact tiles proportionally. Names and session details stay readable inside each tile.
-- RAM pictures: direct Crucial and Corsair model pages supplement exact part-number searches; mismatched models are still rejected.
 
 ## [v0.9.6.4-unstable.11] - 2026-10-28
 

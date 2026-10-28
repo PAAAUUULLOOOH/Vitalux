@@ -8,7 +8,6 @@
 - Spielkachel, aktuelle Sitzung und Historie aktualisieren sich nach Spielende gemeinsam, ohne Vitalux-Neustart.
 - Bewertungen verwenden passende Farben: Grün für sehr gut/gut, Gelb für ausreichend und Rot für Verbesserungsbedarf. Unvollständige oder zu kurze Messungen bleiben neutral.
 - Spielcover füllen die gleich großen Kacheln proportional aus. Namen und Sitzungsangaben bleiben lesbar innerhalb der Kachel.
-- RAM-Bilder: Direkte Crucial- und Corsair-Modellseiten ergänzen die Suche nach genauen Teilenummern; abweichende Modelle werden weiterhin verworfen.
 
 ## [v0.9.6.4-unstable.11] - 2026-10-28
 
