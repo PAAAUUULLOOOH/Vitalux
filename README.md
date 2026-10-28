@@ -11,7 +11,7 @@
 
 ![Vitalux running in English with Obsidian Gold and real system measurements](assets/vitalux-dashboard-preview.png)
 
-**Unstable v0.9.6.4-unstable.8.** Download this test build from the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest) for daily use.
+**Unstable v0.9.6.4-unstable.9.** Download this test build from the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest) for daily use.
 
 ## Features
 
@@ -64,6 +64,8 @@ Keep the runtime, libraries, assets and launcher together. **Code → Download Z
 ## Appearance and controls
 
 Choose **Obsidian Gold**, **Glass**, **Crystal Atrium**, **Nebula Prism**, **Quantum Core** or **Light** in **Settings → Appearance**. Each design supports preset or custom accent colors and independently selectable backgrounds. The original names of retired designs identify their saved background and color presets; these presets do not change the selected design's layout or effects.
+
+All designs share readable card interiors, consistent value hierarchy, adaptive content gutters and matching in-app dialogs. Hover, search and navigation use coordinated motion. Available updates have a clearly visible navigation marker; reduced motion, animations off and Ultra Eco retain a static marker. Appearance transitions blend at their original brightness.
 
 **Original colors** and **Original background** restore the active design's factory choices. Customization is remembered separately for each design; **Reset design** resets only its colors and background, keeping imported pictures, saved colors and other designs intact. Rounded preview tiles clip their artwork and keep the selected check inside the upper-right corner.
 

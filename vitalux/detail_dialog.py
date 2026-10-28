@@ -1,7 +1,7 @@
 """Explicit, selectable details for information that must not depend on hover."""
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QPlainTextEdit, QHBoxLayout, QApplication
+from PySide6.QtWidgets import QVBoxLayout, QPlainTextEdit, QHBoxLayout, QApplication
 from PySide6.QtCore import Qt
-from .ui_locale import QPushButton
+from .ui_locale import QDialog, QPushButton
 from .i18n import tr
 
 

@@ -7,6 +7,12 @@ from . import DEFAULT_THEME
 from . import settings, eco
 
 MODES = ("smooth", "reduced", "off")
+TIMINGS = dict(hover=160, transition=300, search=300, reflow=300)
+
+
+def timing(action):
+    """One rhythm for navigation, galleries and fixed header controls."""
+    return duration(TIMINGS[action])
 
 
 def level():

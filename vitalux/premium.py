@@ -302,7 +302,7 @@ class DesignTile(QAbstractButton):
         self._background = QPixmap()
         self._hover = 0.0
         self._hover_animation = QVariantAnimation(self)
-        self._hover_animation.setEasingCurve(QEasingCurve.OutCubic)
+        self._hover_animation.setEasingCurve(QEasingCurve.InOutCubic)
         self._hover_animation.valueChanged.connect(self._hover_frame)
 
     def _hover_frame(self, value):
@@ -312,7 +312,7 @@ class DesignTile(QAbstractButton):
     def _hover_to(self, value):
         from . import motion
         self._hover_animation.stop()
-        duration = motion.duration(220)
+        duration = motion.timing('hover')
         if not duration:
             self._hover_frame(value)
             return

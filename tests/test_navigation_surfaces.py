@@ -85,6 +85,18 @@ with tempfile.TemporaryDirectory() as temporary,patch.object(settings,'PATH',tem
         transition=window._appearance_overlay;assert transition is not None
         transition.animation.pause()
         assert transition.before.toImage()==source,'Source was repainted after changing wallpaper settings'
+        for progress in (.25,.5,.75,1.):
+            transition._frame(progress)
+            composed=window.grab().toImage()
+            first=transition.before.toImage();last=transition.after.toImage()
+            for fx in (.1,.5,.9):
+                for fy in (.2,.5,.8):
+                    x=round(composed.width()*fx);y=round(composed.height()*fy)
+                    a,b,c=first.pixelColor(x,y),last.pixelColor(x,y),composed.pixelColor(x,y)
+                    if min(a.alpha(),b.alpha())<255:continue
+                    for channel in ('red','green','blue'):
+                        expected=getattr(a,channel)()*(1-progress)+getattr(b,channel)()*progress
+                        assert abs(getattr(c,channel)()-expected)<=2,('Appearance brightness jumped',progress,channel)
         transition._frame(.4);wait(10)
         visible=window.grab().toImage();page.select_design('crystal_atrium')
         current=window._appearance_overlay;assert current is not transition

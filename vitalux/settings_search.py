@@ -85,7 +85,7 @@ class FloatingSettingsSearch(QWidget):
         self._opacity.setOpacity(0)
         self.animation = QVariantAnimation(self)
         self.animation.setDuration(340)
-        self.animation.setEasingCurve(QEasingCurve.OutCubic)
+        self.animation.setEasingCurve(QEasingCurve.InOutCubic)
         self.animation.valueChanged.connect(self._on_frame)
         self.animation.finished.connect(self._finished)
         self.idle_timer = QTimer(self)
@@ -218,7 +218,7 @@ class FloatingSettingsSearch(QWidget):
         self._from = (self._width, self._opacity.opacity(), self._result_height)
         result_height = self.suggestions.height()+5 if self._expanded and not self.suggestions.isHidden() else 0
         self._to = (int(end), 1.0 if self._expanded else 0.0, result_height)
-        duration = motion.duration(340 if self._closing or self._opacity.opacity() < .99 else 230)
+        duration = motion.timing('search')
         if not duration or self._from == self._to:
             self._on_frame(1.0)
             self._finished()

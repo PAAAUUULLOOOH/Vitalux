@@ -50,10 +50,10 @@ class QPushButton(_QPushButton):
         from . import motion
         if self._edge_animation is None:
             self._edge_animation = QVariantAnimation(self)
-            self._edge_animation.setEasingCurve(QEasingCurve.OutCubic)
+            self._edge_animation.setEasingCurve(QEasingCurve.InOutCubic)
             self._edge_animation.valueChanged.connect(self._edge_frame)
         self._edge_animation.stop()
-        duration = motion.duration(160)
+        duration = motion.timing('hover')
         if not duration:
             self._edge_frame(value)
             return
@@ -338,6 +338,15 @@ class QComboBox(_QComboBox):
         self._update_selection_tooltip()
 
 class QDialog(_QDialog):
+    def showEvent(self, event):
+        from .presentation import prepare_dialog
+        prepare_dialog(self)
+        super().showEvent(event)
+
+    def paintEvent(self, event):
+        from .presentation import paint_dialog
+        paint_dialog(self)
+
     def setWindowTitle(self, text):
         return super().setWindowTitle(localized(text))
 
@@ -353,9 +362,18 @@ class QMessageBox(_QMessageBox):
     application labels are German. Use standard buttons with explicit text.
     """
 
+    def showEvent(self, event):
+        from .presentation import prepare_dialog
+        prepare_dialog(self)
+        super().showEvent(event)
+
+    def paintEvent(self, event):
+        from .presentation import paint_dialog
+        paint_dialog(self)
+
     @staticmethod
     def _localized_dialog(icon, parent, title, message, buttons, default):
-        dialog = _QMessageBox(parent)
+        dialog = QMessageBox(parent)
         dialog.setIcon(icon)
         dialog.setWindowTitle(localized(title))
         dialog.setText(localized(message))

@@ -5,7 +5,7 @@ import math
 from PySide6.QtCore import Qt, Signal, QRectF, QPoint, QPointF, QEvent
 from PySide6.QtGui import QColor, QDesktopServices, QImageReader, QPainter, QPen, QPixmap, QTextLayout, QTextOption
 from PySide6.QtCore import QUrl
-from PySide6.QtWidgets import (QDialog, QFormLayout, QGridLayout, QLineEdit,
+from PySide6.QtWidgets import (QFormLayout, QGridLayout, QLineEdit,
                               QHBoxLayout, QScrollArea, QSpinBox, QTableWidget,
                               QTableWidgetItem, QVBoxLayout, QWidget, QSizePolicy)
 from . import game_profiles, theme
@@ -13,7 +13,7 @@ from .choice_combo import ChoiceComboBox
 from .game_service import GameService
 from .i18n import tr
 from .page_base import Page
-from .ui_locale import QCheckBox, QLabel, QPushButton, QMessageBox
+from .ui_locale import QDialog, QCheckBox, QLabel, QPushButton, QMessageBox
 from .widgets import Card, label
 from .charts import ChartPanel
 

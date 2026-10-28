@@ -3,8 +3,8 @@ from threading import Event
 import time
 from PySide6.QtCore import QObject,QRunnable,QThreadPool,Signal,Qt,QUrl
 from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QApplication,QDialog,QVBoxLayout,QHBoxLayout,QScrollArea,QWidget,QSizePolicy
-from .ui_locale import QLabel,QPushButton
+from PySide6.QtWidgets import QApplication,QVBoxLayout,QHBoxLayout,QScrollArea,QWidget,QSizePolicy
+from .ui_locale import QDialog,QLabel,QPushButton
 from . import product_specs,theme,i18n,spec_language
 from .i18n import tr
 
@@ -118,7 +118,6 @@ class SpecificationDialog(QDialog):
         super().__init__(header.window());self.header=header;self.key=header.key;self.local_specs=list(header._local_specs)
         self.product=dict(header.product)
         self.setWindowTitle(tr('Alle Spezifikationen'));self.setObjectName('specificationDialog')
-        self.setStyleSheet(f'QDialog#specificationDialog {{ background:{theme.BG}; color:{theme.TEXT}; }}')
         self.resize(760,650);self.setMinimumSize(400,320)
         layout=QVBoxLayout(self);layout.setContentsMargins(24,20,24,20);layout.setSpacing(14)
         title=QLabel(header.name.text());title.setObjectName('bigName');title.setWordWrap(True);title.setAlignment(Qt.AlignCenter);layout.addWidget(title)

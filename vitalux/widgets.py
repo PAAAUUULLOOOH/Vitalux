@@ -37,6 +37,12 @@ class Card(GlassSurface):
         self.body.setSpacing(10)
         lay.addLayout(self.body)
 
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        # Preserve useful text width on small windows without shrinking meters.
+        from .presentation import card_margins
+        self.layout().setContentsMargins(*card_margins(self.width()))
+
 
 class StatChip(GlassSurface):
     def __init__(self, title, value="–"):
@@ -324,7 +330,7 @@ class _SoftHover:
 
     def _set_hover(self, value):
         self._hover_motion.stop()
-        ms = motion.duration(155)
+        ms = motion.timing('hover')
         if not ms:
             self._hover_frame(value)
             return
@@ -395,33 +401,77 @@ class NavButton(_SoftHover, QPushButton):
         # caption row like the sidebar's update button.
         from . import theme
         self.setMinimumHeight(46 if theme.mode() == 'nebula_prism' else 47 if self._update_version else 39)
+        self.setAccessibleDescription(tr('Update verfügbar:') + ' ' + self._update_version if self._update_version else '')
+        self._sync_notice_animation()
         self.updateGeometry()
         self.update()
 
     def set_glow(self, on):
         self.glow = bool(on)
-        if self.glow:
+        self._sync_notice_animation()
+        self.update()
+
+    def _sync_notice_animation(self):
+        if self.glow and self.isVisible() and motion.level() == 'smooth' and motion.enabled():
             if not self._timer.isActive():
                 self._timer.start()
         else:
             self._timer.stop()
-        self.update()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._sync_notice_animation()
+
+    def hideEvent(self, event):
+        self._timer.stop()
+        super().hideEvent(event)
 
     def _tick(self):
-        self._phase += .105
+        self._phase = (self._phase + .19) % math.tau
         self.update()
+
+    def _notice_intensity(self):
+        return .5 + .5 * math.sin(self._phase) if self.glow and motion.level() == 'smooth' and motion.enabled() else .65
+
+    def paint_update_background(self, painter, rect, path=None):
+        if not (self._update_version or self.glow):return
+        painter.save()
+        amount = self._notice_intensity()
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(theme.accent_qcolor(round(28 + 40 * amount)))
+        if path is not None:painter.drawPath(path)
+        else:painter.drawRoundedRect(rect, 10, 10)
+        painter.restore()
+
+    def paint_notice_and_focus(self, painter, rect, path=None):
+        painter.save()
+        if self._update_version or self.glow:
+            amount = self._notice_intensity()
+            tone = QColor(theme.accent())
+            # A solid badge stays visible even at the pulse's dimmest point.
+            # Its contrasting rim works over bright glass and dark materials.
+            point = QPointF(rect.right() - (7 if self._compact else 10), rect.top() + 8)
+            painter.setPen(QPen(QColor(theme.BG), 1.7))
+            painter.setBrush(tone)
+            painter.drawEllipse(point, 3.4 + .8 * amount, 3.4 + .8 * amount)
+            if self.glow and motion.level() == 'smooth' and motion.enabled():
+                painter.setPen(QPen(theme.accent_qcolor(round(75 + 145 * amount)), 1.1))
+                painter.setBrush(Qt.NoBrush)
+                painter.drawEllipse(point, 5.2 + 1.4 * amount, 5.2 + 1.4 * amount)
+        if self.hasFocus():
+            painter.setBrush(Qt.NoBrush)
+            painter.setPen(QPen(theme.accent_qcolor(230), 1.3))
+            if path is not None:painter.drawPath(path)
+            else:painter.drawRoundedRect(rect.adjusted(1, 1, -1, -1), 9, 9)
+        painter.restore()
 
     def _paint_minimal_nav(self):
         """Plain navigation with two text draws and no effects."""
         p = QPainter(self)
         if self.isChecked():
             p.fillRect(self.rect(), QColor(theme.CARD))
-        if self.glow:
-            intensity = 0.5 + 0.5 * math.sin(self._phase)
-            background = theme.accent_qcolor(int(8 + 23 * intensity))
-            p.fillRect(self.rect().adjusted(2, 2, -2, -2), background)
-            left = theme.accent_qcolor(int(95 + 135 * intensity))
-            p.fillRect(QRectF(2, 5, 3, max(1, self.height()-10)), left)
+        rect = QRectF(self.rect()).adjusted(3, 3, -3, -3)
+        self.paint_update_background(p, rect)
         text = self.text()
         glyph, caption = text.split('    ', 1) if '    ' in text else ('◈', text)
         color = QColor(theme.accent() if self.isChecked() else theme.TEXT)
@@ -433,16 +483,17 @@ class NavButton(_SoftHover, QPushButton):
         if not self._compact:
             font.setPixelSize(13)
             p.setFont(font)
-            ypos = 7 if self._update_version and self.glow else 0
+            ypos = 7 if self._update_version else 0
             height = self.height()-19 if ypos else self.height()
             p.drawText(QRectF(52, ypos, max(1, self.width()-54), height), Qt.AlignVCenter | Qt.AlignLeft, caption)
-            if self._update_version and self.glow:
+            if self._update_version:
                 font.setPixelSize(10)
                 font.setBold(True)
                 p.setFont(font)
                 p.setPen(theme.accent_qcolor())
                 p.drawText(QRectF(52, self.height()-20, max(1, self.width()-54), 16),
                            Qt.AlignVCenter | Qt.AlignLeft, self._update_version)
+        self.paint_notice_and_focus(p, rect)
         p.end()
 
     def paintEvent(self, event):
@@ -476,16 +527,7 @@ class NavButton(_SoftHover, QPushButton):
                 p.setPen(Qt.NoPen)
                 p.drawRoundedRect(r, 11, 11)
 
-        if self.glow:
-            # Breathing theme-accent halo instead of a bright orange alarm.
-            intensity = 0.5 + 0.5 * math.sin(self._phase)
-            glow = theme.accent_qcolor(int(9 + 27 * intensity))
-            p.setPen(Qt.NoPen)
-            p.setBrush(glow)
-            p.drawRoundedRect(r, 11, 11)
-            rail_glow = theme.accent_qcolor(int(90 + 125 * intensity))
-            p.setBrush(rail_glow)
-            p.drawRoundedRect(QRectF(r.left()+.3, r.top()+5, 3, r.height()-10), 1.5, 1.5)
+        self.paint_update_background(p, r)
 
         if checked:
             # A precision-cut cyan seam indicates the current section.
@@ -515,13 +557,6 @@ class NavButton(_SoftHover, QPushButton):
         p.setPen(Qt.NoPen)
         p.setBrush(aura)
         p.drawRoundedRect(QRectF(cx-12, cy-12, 24, 24), 7, 7)
-        if self.glow:
-            intensity = 0.5 + 0.5 * math.sin(self._phase)
-            ring = theme.accent_qcolor(int(75 + 105 * intensity))
-            p.setPen(QPen(ring, 1.1 + intensity * 1.0))
-            p.setBrush(Qt.NoBrush)
-            p.drawEllipse(QRectF(cx - 13 - intensity*2, cy - 13 - intensity*2,
-                                 26 + intensity*4, 26 + intensity*4))
         # Distinct category symbols stay recognizable in both wide and compact nav.
         paint_icon(p, self.icon_key, QRectF(cx-10, cy-10, 20, 20), color)
 
@@ -532,7 +567,7 @@ class NavButton(_SoftHover, QPushButton):
         ink = QColor(color)
         p.setPen(ink)
         if not self._compact:
-            if self.glow and self._update_version:
+            if self._update_version:
                 p.drawText(QRectF(r.left()+45, r.top()+4, r.width()-54, r.height()-23),
                            Qt.AlignVCenter | Qt.AlignLeft, caption)
                 p.setPen(theme.accent_qcolor())
@@ -546,21 +581,7 @@ class NavButton(_SoftHover, QPushButton):
                 p.drawText(QRectF(r.left()+45, r.top(), r.width()-54, r.height()),
                            Qt.AlignVCenter | Qt.AlignLeft, caption)
 
-        if self.glow:
-            intensity = (0.5 + 0.5 * math.sin(self._phase))
-            dot = QColor(theme.accent())
-            dot.setAlpha(int(130 + 120 * intensity))
-            p.setPen(Qt.NoPen)
-            p.setBrush(dot)
-            if self._compact:
-                # In icon-only mode, keep the update marker away from the icon.
-                p.drawEllipse(QPointF(r.right() - 7, r.top() + 7),
-                              1.8 + .65 * intensity, 1.8 + .65 * intensity)
-            else:
-                p.drawEllipse(QPointF(r.right() - 14, r.center().y()),
-                              2.8 + 1.4 * intensity, 2.8 + 1.4 * intensity)
-        # No dotted keyboard/mouse focus outline. The active rail and icon
-        # color already communicate selection; keep keyboard focus semantics.
+        self.paint_notice_and_focus(p, r)
         p.end()
 
 

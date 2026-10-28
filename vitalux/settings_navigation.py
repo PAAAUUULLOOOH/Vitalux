@@ -72,7 +72,7 @@ class SettingsNavigator(QObject):
         destination = max(0, target.mapTo(self.page, QPoint(0, 0)).y()-max(110,inset+74))
         bar = self.scroll.verticalScrollBar()
         self.animation.stop()
-        duration = motion.duration(420)
+        duration = motion.timing('reflow')
         if duration:
             self.animation.setDuration(duration)
             self.animation.setStartValue(bar.value())

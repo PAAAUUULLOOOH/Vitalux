@@ -6,12 +6,12 @@ import math
 from PySide6.QtCore import QPointF, QRectF, QSize, Qt
 from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPen, QPolygonF
 from PySide6.QtWidgets import (
-    QDialog, QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget, QSizePolicy
+    QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget, QSizePolicy
 )
 
 from . import theme
 from .i18n import tr
-from .ui_locale import QPushButton
+from .ui_locale import QDialog, QPushButton
 
 
 # Title, concise introduction, three factual tips, focus region.
@@ -77,7 +77,7 @@ SLIDES = [
         "Darstellung und Einstellungen",
         "Sechs Designs stehen zur Auswahl: Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core und Light. Alle unterstützen eigene Akzentfarben und Hintergründe.",
         "Originalfarben und Originalhintergrund stellen die Vorgaben des aktiven Designs wieder her. Farben und Hintergründe früherer Designs bleiben als Vorlagen erhalten. Design zurücksetzen betrifft nur das aktuelle Design. Komponentenbilder anzeigen schaltet die Bilder gemeinsam um und behält den Cache.",
-        "Die Lupe sitzt mittig in der oberen Leiste. Das Suchfeld öffnet sich dort mit der Lupe links neben dem Text. Auch unvollständige Namen wie MiniH oder MiniHU führen zum passenden Bereich. Nach einer Auswahl bleibt die Suche fünf Sekunden sichtbar und schließt weich.",
+        "Alle Designs verwenden klare Messwerte, ruhige Kachelflächen und passende Dialoge. Hover, Suche und Navigation bewegen sich abgestimmt. Ein verfügbares Update wird in jeder Navigation deutlich markiert; bei reduzierten oder ausgeschalteten Animationen bleibt die Markierung statisch sichtbar.",
         "Unter Erweiterte Einstellungen → Wartung setzt „Standardwerte wiederherstellen“ das gesamte aktive Profil zurück. Einstellungen, eigene Farben, Layouts, importierte Bildkopien und Cache werden gelöscht. Originalbilder und das andere Updateprofil bleiben erhalten; Vitalux startet neu und öffnet die Anleitung.",
         "settings",
     ),
@@ -281,7 +281,7 @@ class GuideDialog(QDialog):
     def _render_ui(self):
         accent = theme.accent()
         self.setStyleSheet(
-            f'QDialog#vitaluxGuide {{background: {theme.BG}; color: {theme.TEXT};}}'
+            f'QDialog#vitaluxGuide {{color: {theme.TEXT};}}'
             f'QFrame#guideDetails {{background: {theme.CARD}; '
             f'border: 1px solid {theme.BORDER}; border-radius: 14px;}}'
             f'QLabel#guideTitle {{font-size: 23px; font-weight: 800; color: {theme.TEXT};}}'

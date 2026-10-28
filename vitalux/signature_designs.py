@@ -244,26 +244,29 @@ def paint_navigation(button):
             p.fillPath(shape(rect,theme.mode(),True),face)
     elif button._hover_amount>.01 or button.hasFocus():
         p.fillPath(shape(rect,theme.mode(),True),color(pal['accent'],20))
+    button.paint_update_background(p, rect, shape(rect, theme.mode(), True))
     ink=color(pal['bg'] if selected and theme.mode()=='eclipse_crystal' else pal['text'])
     compact=button._compact
     x=rect.center().x()-10 if compact else rect.left()+12
     paint_icon(p,button.icon_key,QRectF(x,rect.center().y()-10,20,20),ink)
     if not compact:
         font=QFont(button.font())
-        font.setPixelSize(12)
+        font.setPixelSize(13)
         font.setWeight(QFont.DemiBold if selected else QFont.Normal)
         p.setFont(font)
         p.setPen(ink)
         caption=button.text().split('    ',1)[-1]
-        if button.glow and button._update_version:
-            caption+=' '+button._update_version
-        p.drawText(QRectF(rect.left()+40,rect.top(),rect.width()-47,rect.height()),
+        text_rect=QRectF(rect.left()+40,rect.top(),rect.width()-57,rect.height())
+        if button._update_version:
+            text_rect.adjust(0,1,0,-17)
+        p.drawText(text_rect,
                    Qt.AlignLeft|Qt.AlignVCenter,
-                   p.fontMetrics().elidedText(caption,Qt.ElideRight,max(1,round(rect.width()-47))))
-    if button.hasFocus():
-        p.setPen(QPen(color(pal['accent']),1,Qt.DotLine))
-        p.setBrush(Qt.NoBrush)
-        p.drawPath(shape(rect.adjusted(2,2,-2,-2),theme.mode(),True))
+                   p.fontMetrics().elidedText(caption,Qt.ElideRight,max(1,round(text_rect.width()))))
+        if button._update_version:
+            font.setPixelSize(10);font.setWeight(QFont.DemiBold);p.setFont(font)
+            p.drawText(QRectF(text_rect.left(),rect.bottom()-18,text_rect.width(),15),
+                       Qt.AlignLeft|Qt.AlignVCenter,p.fontMetrics().elidedText(button._update_version,Qt.ElideRight,round(text_rect.width())))
+    button.paint_notice_and_focus(p, rect, shape(rect.adjusted(1,1,-1,-1),theme.mode(),True))
     p.end()
 
 

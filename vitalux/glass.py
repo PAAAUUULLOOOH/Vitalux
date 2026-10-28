@@ -469,13 +469,13 @@ class GlassSurface(QFrame):
 
     def enterEvent(self, event):
         self._hover = True
-        if theme.mode() != "minimal":
+        if theme.mode() != "minimal" and self.property('interactiveSurface'):
             self.update()
         super().enterEvent(event)
 
     def leaveEvent(self, event):
         self._hover = False
-        if theme.mode() != "minimal":
+        if theme.mode() != "minimal" and self.property('interactiveSurface'):
             self.update()
         super().leaveEvent(event)
 
@@ -488,5 +488,7 @@ class GlassSurface(QFrame):
             radius = 12 if self._compact else 21 if self._hero else 17
             paint_glass_body(p, self, r, radius,
                              strong=self._hero, compact=self._compact,
-                             active=self._hover)
+                             active=self._hover and bool(self.property('interactiveSurface')))
+            from .presentation import paint_content_wash
+            paint_content_wash(p, r, compact=self._compact)
         p.end()

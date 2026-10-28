@@ -295,6 +295,7 @@ def disabled_controls(light=False):
 
 def stylesheet():
     from . import eco
+    from .presentation import stylesheet as presentation_stylesheet
     base = accent()
     pal = _THEMES[_mode]
     light = is_light()
@@ -329,7 +330,7 @@ def stylesheet():
     """
     if _mode in PREMIUM_MODES:
         from .premium import stylesheet as premium_stylesheet
-        return qss + premium_stylesheet(_mode) + disabled_controls(light)
+        return qss + premium_stylesheet(_mode) + presentation_stylesheet() + disabled_controls(light)
     if eco.enabled():
         # Intentionally primitive Qt widgets: no rounded cards, light effects,
         # shadow treatments or decorative surfaces. All selectors are native.
@@ -342,4 +343,4 @@ def stylesheet():
             border-radius: 0px; }
         QPushButton:hover, QToolButton:hover { background-color: #222528; }
         """
-    return qss + disabled_controls(light)
+    return qss + presentation_stylesheet() + disabled_controls(light)

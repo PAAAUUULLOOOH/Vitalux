@@ -223,17 +223,11 @@ def paint_navigation(button):
         p.drawEllipse(QPointF(rect.center().x(), rect.bottom() - 4.5), 1.7, 1.7)
     elif button._hover_amount > .01 or button.hasFocus():
         p.fillPath(path, color(pal['accent'], 12 + 26 * button._hover_amount))
+    button.paint_update_background(p, rect, path)
     ink = color(pal['text'] if selected else pal['muted'] if button._hover_amount < .3 else pal['text'])
     paint_icon(p, button.icon_key,
                QRectF(rect.center().x() - 10, rect.center().y() - 12, 22, 22), ink)
-    if button.glow and button._update_version:
-        p.setPen(QPen(color(pal['bg']), 1.4))
-        p.setBrush(color(pal['secondary']))
-        p.drawEllipse(QPointF(rect.right() - 9, rect.top() + 8), 4, 4)
-    if button.hasFocus():
-        p.setPen(QPen(color(pal['accent']), 1, Qt.DotLine))
-        p.setBrush(Qt.NoBrush)
-        p.drawPath(shape(rect.adjusted(2, 2, -2, -2), True))
+    button.paint_notice_and_focus(p, rect, shape(rect.adjusted(1,1,-1,-1),True))
     p.end()
 
 

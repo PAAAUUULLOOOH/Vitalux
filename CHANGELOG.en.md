@@ -1,5 +1,13 @@
 # Vitalux – Changes
 
+## [v0.9.6.4-unstable.9] - 2026-10-28
+
+- All designs: appearance changes without a bright flash or brightness jump, including interrupted transitions and fractional display scaling.
+- All designs: calmer card surfaces, clearer measurement and label hierarchy, and balanced content gutters in narrow windows. Colors, backgrounds and distinctive design shapes remain individual.
+- All designs: consistent available-update emphasis in sidebars, header navigation and the dock. The marker remains visible with reduced motion or animations disabled.
+- All designs: coordinated hover, search and navigation transitions with clearer keyboard focus. Passive information cards no longer add a glow as the pointer passes over them.
+- Specifications, details, game profiles and confirmations use matching design materials, shared spacing and consistent buttons.
+
 ## [v0.9.6.4-unstable.8] - 2026-10-27
 
 - Game overlay: saving an enabled profile connects the game to its launcher and displays the actual connection state. The included MangoHud integration also works inside Steam’s runtime for OpenGL and Vulkan.

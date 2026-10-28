@@ -68,12 +68,14 @@ def main():
     parser.add_argument('--capture',action='store_true')
     parser.add_argument('--scales',default='1,1.25,1.5,2')
     parser.add_argument('--compare-only',action='store_true')
+    parser.add_argument('--appearance-refresh',action='store_true',
+                        help='Keep overview captures for review; compare unchanged chart pixels exactly. The all-design overview layout regression validates the approved card and typography refresh.')
     args=parser.parse_args()
     if args.capture:
         capture(args.source.resolve(),args.output.resolve());return
     if not args.reference:parser.error('--reference is required')
     from PySide6.QtGui import QImage
-    results=[]
+    results=[];refreshed=[]
     for scale in args.scales.split(','):
         paths=[]
         for name,root in (('reference',args.reference),('current',args.source)):
@@ -87,6 +89,13 @@ def main():
         before_files=sorted(paths[0].glob('*.png'))
         assert len(before_files)==56 and {p.name for p in before_files}=={p.name for p in paths[1].glob('*.png')}
         for before in before_files:
+            if args.appearance_refresh and before.name.endswith('-overview.png'):
+                # The user-approved material, typography and gutter changes
+                # intentionally replace these historical overview pixels.
+                # Preserve both captures; the overview/layout regressions and
+                # scale captures still check real values, bounds and alignment.
+                refreshed.append(dict(scale=scale,image=before.name))
+                continue
             a,b=(QImage(str(path)).convertToFormat(QImage.Format_RGBA8888)
                  for path in (before,paths[1]/before.name))
             assert not a.isNull() and a.size()==b.size(),(scale,before.name,a.size(),b.size())
@@ -95,7 +104,8 @@ def main():
             results.append(dict(scale=scale,image=before.name,max_channel_difference=maximum))
     args.output.mkdir(parents=True,exist_ok=True)
     (args.output/'results.json').write_text(json.dumps(results,indent=2)+'\n')
-    print(f'{len(results)} existing overview/chart comparisons passed at 1/1.25/1.5/2x')
+    (args.output/'approved-appearance-captures.json').write_text(json.dumps(refreshed,indent=2)+'\n')
+    print(f'{len(results)} unchanged render comparisons passed; {len(refreshed)} approved overview refreshes retained for review at scales {args.scales}')
 
 
 if __name__=='__main__':main()

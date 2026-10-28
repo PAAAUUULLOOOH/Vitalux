@@ -1,5 +1,13 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.4-unstable.9] - 2026-10-28
+
+- Alle Designs: Designwechsel ohne Aufblitzen oder Helligkeitssprung; auch bei unterbrochenen Übergängen und vergrößerter Bildschirmdarstellung.
+- Alle Designs: ruhigere Kachelflächen, klarer abgestufte Messwerte und Beschriftungen sowie ausgewogene Innenabstände für schmale Fenster. Farben, Hintergründe und besondere Designformen bleiben individuell.
+- Alle Designs: einheitliche Hervorhebung verfügbarer Updates in Seitenleiste, Kopf-Navigation und Dock. Die Markierung bleibt auch bei reduzierten oder ausgeschalteten Animationen sichtbar.
+- Alle Designs: abgestimmte Hover-, Such- und Navigationsübergänge sowie klarer Tastaturfokus. Reine Informationskacheln leuchten beim Überfahren nicht mehr zusätzlich auf.
+- Spezifikationen, Details, Spielprofile und Bestätigungen verwenden passende Designmaterialien, gemeinsame Abstände und einheitliche Schaltflächen.
+
 ## [v0.9.6.4-unstable.8] - 2026-10-27
 
 - Spiel-Overlay: Aktivierte Profile verbinden das Spiel beim Speichern mit dem Launcher. Der tatsächliche Verbindungsstatus wird angezeigt. Die mitgelieferte MangoHud-Anbindung funktioniert auch innerhalb der Steam-Laufzeit für OpenGL und Vulkan.

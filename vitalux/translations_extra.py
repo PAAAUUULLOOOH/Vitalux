@@ -1,5 +1,7 @@
 """Extra English translations for dashboard, settings, sensors and disk tests."""
 EN_MORE = {
+    'Alle Designs verwenden klare Messwerte, ruhige Kachelflächen und passende Dialoge. Hover, Suche und Navigation bewegen sich abgestimmt. Ein verfügbares Update wird in jeder Navigation deutlich markiert; bei reduzierten oder ausgeschalteten Animationen bleibt die Markierung statisch sichtbar.': 'All designs use clear readings, calm card surfaces and matching dialogs. Hover, search and navigation use coordinated motion. Available updates are clearly marked in every navigation layout; with reduced motion or animations off, the marker stays visible and static.',
+
     'Speichergröße / Busbreite':'Memory size / bus width',
     'Schnittstelle':'Interface',
     'Grafikchip':'Graphics processor',

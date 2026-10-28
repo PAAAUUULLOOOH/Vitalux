@@ -1,6 +1,6 @@
 """Native-resolution appearance blends, with no live subtree repaint per frame."""
 from PySide6.QtCore import QEasingCurve, QEvent, Signal, QVariantAnimation, Qt
-from PySide6.QtGui import QPainter
+from PySide6.QtGui import QPainter, QPixmap
 from PySide6.QtWidgets import QWidget
 from . import motion
 
@@ -12,6 +12,8 @@ class AppearanceTransition(QWidget):
         super().__init__(parent)
         self.setObjectName('appearanceTransition')
         self.before, self.after = before, after
+        self._blend = QPixmap()
+        self._layer = QPixmap()
         self.progress = 0.0
         self.slide=slide
         self.setAttribute(Qt.WA_TransparentForMouseEvents, True)
@@ -42,6 +44,8 @@ class AppearanceTransition(QWidget):
         self.animation.stop()
         self.hide()
         self.before = self.after = None
+        self._blend = QPixmap()
+        self._layer = QPixmap()
         self.parentWidget().removeEventFilter(self)
         self.finished.emit()
         self.deleteLater()
@@ -54,15 +58,39 @@ class AppearanceTransition(QWidget):
     def paintEvent(self, event):
         if self.before is None:
             return
-        painter = QPainter(self)
         if self._framed:
-            # Complementary premultiplied layers retain the existing corner
-            # alpha; an opaque overlay fills the rounded window's cutouts.
+            # QWidget painting shares the live window's backing store. Adding
+            # layers there adds the destination AGAIN and creates a bright flash.
+            # Blend into a cleared, reusable native-resolution buffer instead.
+            if self._blend.size() != self.before.size() or self._blend.devicePixelRatio() != self.before.devicePixelRatio():
+                self._blend = QPixmap(self.before.size())
+                self._blend.setDevicePixelRatio(self.before.devicePixelRatio())
+                self._layer = QPixmap(self.before.size())
+                self._layer.setDevicePixelRatio(self.before.devicePixelRatio())
+            self._blend.fill(Qt.transparent)
+            self._layer.fill(Qt.transparent)
+            blend = QPainter(self._blend)
+            blend.setOpacity(1. - self.progress)
+            blend.drawPixmap(0, 0, self.before)
+            # Apply source opacity with SourceOver on an EMPTY layer. Qt's
+            # constant opacity on Plus interpolates the operation's destination
+            # as well, making even a cleared one-buffer blend lose alpha.
+            layer = QPainter(self._layer)
+            layer.setOpacity(self.progress)
+            if self.slide:layer.translate(round(self.slide * (1 - self.progress)), 0)
+            layer.drawPixmap(0, 0, self.after)
+            layer.end()
+            blend.setOpacity(1.)
+            blend.setCompositionMode(QPainter.CompositionMode_Plus)
+            blend.drawPixmap(0, 0, self._layer)
+            blend.end()
+            painter = QPainter(self)
             painter.setCompositionMode(QPainter.CompositionMode_Source)
-            painter.setOpacity(1.-self.progress)
-        painter.drawPixmap(0, 0, self.before)
-        if self._framed:painter.setCompositionMode(QPainter.CompositionMode_Plus)
-        painter.setOpacity(self.progress)
-        if self.slide:painter.translate(round(self.slide*(1-self.progress)),0)
-        painter.drawPixmap(0, 0, self.after)
+            painter.drawPixmap(0, 0, self._blend)
+        else:
+            painter = QPainter(self)
+            painter.drawPixmap(0, 0, self.before)
+            painter.setOpacity(self.progress)
+            if self.slide:painter.translate(round(self.slide * (1 - self.progress)), 0)
+            painter.drawPixmap(0, 0, self.after)
         painter.end()
