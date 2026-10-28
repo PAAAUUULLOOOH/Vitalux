@@ -4,10 +4,11 @@ import argparse,json,os
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import sys,tempfile
+from html import escape
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 from PySide6.QtWidgets import QApplication
-from vitalux.product_images import ProductCache,resolve,valid_image,product_key
+from vitalux.product_images import ProductCache,resolve,valid_image,product_key,fetch
 from vitalux.product_ui import ProductHeader
 from vitalux.widgets import label
 
@@ -23,6 +24,9 @@ PRODUCTS=(
  ('ram','Crucial','CT16G4DFRA32A'),
  ('ram','G.Skill','F5-6000J3038F16GX2-TZ5N'),
 )
+# A stable, previously verified manufacturer page separates image retrieval
+# from live search indexing. It supplies no image bytes or model-page content.
+RAM_CONTROL='https://www.gskill.com/product/165/393/1661410171/F5-6000J3038F16GX2-TZ5N'
 
 def main():
  parser=argparse.ArgumentParser(description=__doc__)
@@ -30,10 +34,16 @@ def main():
  parser.add_argument('--output',type=Path,default=Path('build/product-image-check'))
  args=parser.parse_args();args.output.mkdir(parents=True,exist_ok=True)
  app=QApplication.instance() or QApplication([])
- def check(item):
+ def check(item,seed=''):
   kind,vendor,model=item;product=dict(kind=kind,vendor=vendor,model=model,revision='',exact=True)
-  cache=ProductCache(args.output/'cache'/product_key(product));result=resolve(product,cache)
-  record=dict(kind=kind,vendor=vendor,model=model,found=bool(result))
+  cache=ProductCache(args.output/'cache'/product_key(product))
+  def download(url,limit,hosts):
+   if seed and url.startswith('https://www.bing.com/search?'):
+    return ('<rss><channel><item><title>'+escape(model)+'</title><link>'+escape(seed)+'</link></item></channel></rss>').encode()
+   return fetch(url,limit,hosts)
+  result=resolve(product,cache,download=download)
+  record=dict(kind=kind,vendor=vendor,model=model,found=bool(result),
+              discovery='manufacturer_page_control' if seed else 'live_search')
   if result:
    def offline(*_):raise AssertionError('Cached product picture used the network')
    restored=resolve(product,ProductCache(cache.root),download=offline)
@@ -46,6 +56,14 @@ def main():
   print(json.dumps(record),flush=True)
   return product,result,record
  with ThreadPoolExecutor(max_workers=2) as pool:outcomes=list(pool.map(check,PRODUCTS))
+ automatic={record['kind'] for _,_,record in outcomes if record['found']}
+ if 'ram' not in automatic:
+  outcome=check(('ram','G.Skill','F5-6000J3038F16GX2-TZ5N'),RAM_CONTROL)
+  outcomes.append(outcome)
+  if outcome[2]['found']:
+   print('::warning title=RAM search availability::Live search did not find a usable RAM picture. '
+         'A known manufacturer-page control passed actual page/image download, exact model validation and offline reuse. '
+         'Live search discovery for RAM remains unverified in this run.',flush=True)
  for product,result,record in outcomes:
   header=ProductHeader(label(product['model'],'bigName',wrap=True),label(product['vendor'],'muted'),product['kind'])
   header.set_specs([('Model',product['model'])]);header.key=product_key(product)
@@ -60,7 +78,9 @@ def main():
   record['ui_display']=bool(result);header.close()
  records=[record for _,_,record in outcomes]
  found={record['kind'] for record in records if record['found']}
- summary=dict(real_product_downloads=records,component_kinds_found=sorted(found),missing_component_kinds=sorted({'cpu','gpu','ram','mainboard'}-found))
+ summary=dict(real_product_downloads=records,component_kinds_found=sorted(found),
+              automatic_discovery_kinds=sorted(automatic),
+              missing_component_kinds=sorted({'cpu','gpu','ram','mainboard'}-found))
  (args.output/'results.json').write_text(json.dumps(summary,indent=2)+'\n')
  print(json.dumps({key:value for key,value in summary.items() if key!='real_product_downloads'}),flush=True)
  if args.require_all_components and summary['missing_component_kinds']:
