@@ -11,7 +11,7 @@
 
 ![Vitalux running in English with Obsidian Gold and real system measurements](assets/vitalux-dashboard-preview.png)
 
-**Unstable v0.9.6.4-unstable.9.** Download this test build from the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest) for daily use.
+**Unstable v0.9.6.4-unstable.10.** Download this test build from the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest) for daily use.
 
 ## Features
 
@@ -71,7 +71,7 @@ All designs share readable card interiors, consistent value hierarchy, adaptive 
 
 Overview captions are centered in a consistent order below equally sized load displays. The larger system header centers the distribution name across the whole card, with a larger logo and roomier information chips. Long names are shortened; hover over a shortened caption to read its complete text. GPU overview cards omit watts; current GPU power and its limit remain on Graphics. **Show component pictures** in Appearance controls CPU, GPU, RAM and mainboard photos globally. Turning it off stops new picture lookups while keeping cached pictures. Component information stays centered with pictures shown, hidden or unavailable.
 
-**All specifications** opens a scrollable in-app datasheet for the exact CPU, graphics-card or mainboard model. Available manufacturer data is cached for offline use; **Open manufacturer page** links to the original. Detected local specifications remain available when online data is missing. Graphics groups utilization, video-memory usage and the other live readings under **Current GPU values**, without the duplicate sensor panel.
+**All specifications** opens a scrollable in-app datasheet for the exact CPU, graphics-card or mainboard model. Data arriving in the background also updates an already open dialog. Available manufacturer data is cached for offline use; **Open manufacturer page** links to the original. Detected local specifications remain available when online data is missing. Graphics groups utilization, video-memory usage and the other live readings under **Current GPU values**, without the duplicate sensor panel.
 
 A startup window follows the saved design and shows the actual preparation stage while hardware discovery, first measurements, cached pictures/specifications and the interface are prepared. Existing data is loaded before the main window opens; missing online data does not hold startup open. Motion-off and Ultra Eco use a static startup view.
 

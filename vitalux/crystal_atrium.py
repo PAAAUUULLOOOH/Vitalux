@@ -4,7 +4,6 @@ The original Atrium background is static and cached by the normal scene owner. T
 no custom overview, animation timer or replacement measurement layout here.
 """
 from PySide6.QtCore import QPointF, Qt
-from . import theme
 from PySide6.QtGui import QBrush,QColor,QConicalGradient,QLinearGradient,QPainter,QPainterPath,QPen,QRadialGradient
 
 KEY='crystal_atrium'
@@ -27,6 +26,7 @@ def _rr(rect, radius):
 def glass(p, rect, radius, draw_backdrop, *, strength=1.0,
           active=False):
     """One pane of physically-motivated glass."""
+    from . import theme
     path = _rr(rect, radius)
     p.save()
     p.setClipPath(path)

@@ -6,13 +6,13 @@ os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication
-from vitalux import theme
+from vitalux import theme,design_catalog
 from vitalux.control import AlertThresholdField
 
 app = QApplication.instance() or QApplication([])
 field = AlertThresholdField(40, 110, '°C', 90)
 field.show()
-for scheme in ('dark', 'light', 'glass', 'black_glass', 'minimal'):
+for scheme in design_catalog.AVAILABLE:
     theme.set_mode(scheme)
     app.setStyleSheet(theme.stylesheet())
     field.setValue(90)

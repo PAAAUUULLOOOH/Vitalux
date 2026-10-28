@@ -1,4 +1,4 @@
-"""Authored Aether Glass and Eclipse Crystal materials and live instruments.
+"""Authored glass materials and live instruments for the signature designs.
 
 All geometry is native, resolution independent and shared by every renderer.
 Atmospheres are cached; the live instruments only repaint on a sensor sample.
@@ -7,8 +7,8 @@ import math
 from PySide6.QtCore import QPointF, QRectF, Qt, QVariantAnimation, QEasingCurve
 from PySide6.QtGui import (QColor, QFont, QLinearGradient, QPainter,
                            QPainterPath, QPen, QPixmap, QRadialGradient)
-from PySide6.QtWidgets import QWidget, QLabel
-from . import nebula_prism, quantum_core, crystal_atrium
+from PySide6.QtWidgets import QWidget
+from . import nebula_prism, quantum_core, crystal_atrium, aurora_bloom
 
 COLLECTIONS = {
     'eclipse_crystal': dict(title='Eclipse Crystal', subtitle='BLACK CRYSTAL / CHAMPAGNE',
@@ -20,6 +20,7 @@ COLLECTIONS = {
 COLLECTIONS['nebula_prism'] = nebula_prism.PALETTE
 COLLECTIONS['quantum_core'] = quantum_core.PALETTE
 COLLECTIONS['crystal_atrium'] = crystal_atrium.PALETTE
+COLLECTIONS['aurora_bloom'] = aurora_bloom.PALETTE
 KEYS = tuple(COLLECTIONS)
 
 
@@ -37,6 +38,7 @@ def color(value, alpha=255):
 
 
 def shape(rect, mode, compact=False):
+    if mode == aurora_bloom.KEY:return aurora_bloom.shape(rect,compact)
     if mode == crystal_atrium.KEY:return crystal_atrium.shape(rect,compact)
     if mode == 'nebula_prism':
         return nebula_prism.shape(rect, compact)
@@ -58,6 +60,7 @@ def shape(rect, mode, compact=False):
 
 
 def scene_pixmap(size, mode, phase=0.0):
+    if mode == aurora_bloom.KEY:return aurora_bloom.scene_pixmap(size)
     if mode == crystal_atrium.KEY:return crystal_atrium.scene_pixmap(size,phase)
     if mode == 'nebula_prism':
         return nebula_prism.scene_pixmap(size)
@@ -112,6 +115,7 @@ def scene_pixmap(size, mode, phase=0.0):
 
 def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
     from . import theme
+    if theme.mode() == aurora_bloom.KEY:return aurora_bloom.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
     if theme.mode() == crystal_atrium.KEY:return crystal_atrium.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
     from . import theme
     from .glass import draw_frosted_backdrop
@@ -192,6 +196,7 @@ def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
 
 
 def stylesheet(mode):
+    if mode == aurora_bloom.KEY:return aurora_bloom.stylesheet()
     if mode == crystal_atrium.KEY:return crystal_atrium.stylesheet()
     if mode=='nebula_prism':
         return nebula_prism.stylesheet()
@@ -227,6 +232,8 @@ def stylesheet(mode):
 def paint_navigation(button):
     from . import theme
     from .nav_icons import paint_icon
+    if theme.mode()==aurora_bloom.KEY:
+        return aurora_bloom.paint_navigation(button)
     if theme.mode()=='nebula_prism':
         return nebula_prism.paint_navigation(button)
     p=QPainter(button)
@@ -396,7 +403,13 @@ class Metric(QWidget):
         box=QRectF((self.width()-side)/2,3,side,side)
         shown='–' if self._display_value is None else (
             f'{self._display_value:.0f}' if self.kind=='health' else f'{self._display_value:.0f}%')
-        if theme.mode() in ('nebula_prism','quantum_core'):
+        if theme.mode()==aurora_bloom.KEY:
+            value=self._display_value
+            level=theme.level_color(value) if value is not None and self.kind!='health' else None
+            aurora_bloom._ring(p,box,value,level_tone=level)
+            aurora_bloom.paint_center(p,box,shown.rstrip('%'),'' if self.kind=='health' or value is None else '%',
+                                      self.font(),color(pal['text']),color(pal['muted']))
+        elif theme.mode() in ('nebula_prism','quantum_core'):
             renderer=nebula_prism if theme.mode()=='nebula_prism' else quantum_core
             renderer._ring(p,box,self._display_value)
             font=QFont(self.font());font.setPixelSize(round(side*.23));font.setWeight(QFont.DemiBold)
@@ -416,6 +429,9 @@ class Metric(QWidget):
         p.end()
 
     def _graph(self,p,rect,pal):
+        from . import theme
+        if theme.mode()==aurora_bloom.KEY:
+            return aurora_bloom.paint_sparkline(p,rect,self.history)
         if rect.width()<5 or rect.height()<5:
             return
         for i in range(3):

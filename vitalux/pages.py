@@ -407,9 +407,6 @@ class OverviewPage(Page):
             tile.remove.setToolTip(tr('Kachel ausblenden'))
         self.distro_logo_remove.setToolTip(tr('Distributionslogo ausblenden'))
 
-    def apply_layout(self):
-        if not self.board.editing:
-            self.board.refresh_geometry()
 
     def refresh(self, d, h, _variant=None):
         initial=not hasattr(self,'_last_overview_sample')

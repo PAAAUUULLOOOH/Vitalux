@@ -10,7 +10,6 @@ from PySide6.QtGui import QColor, QBrush, QLinearGradient, QPainter, QPainterPat
 DEFAULT_THEMES = ('dark', 'light', 'glass', 'black_glass', 'minimal')
 # The five original wallpaper/theme pairs are preserved unchanged.
 # The original themes and supported static designs remain available.
-from pathlib import Path
 from . import design_catalog
 PRESETS = (('theme_default','Originalhintergrund'),) + tuple(
     (key,item['title']) for key,item in design_catalog.PRESETS.items()) + (
@@ -239,7 +238,7 @@ def _render_native(size, style='glass', accent='#4f8cff', light=False, phase=0.0
 from .image_cache import ImageCache
 _IMAGE_CACHE = ImageCache()
 
-def render(size, style='original:glass', accent='#4f8cff', light=False, phase=0.0):
+def render(size, style='original:glass', accent='#4f8cff', light=False, phase=0.0, *, soften=True):
     """Only backgrounds are selected here; never activate another design."""
     if style.startswith('original:'):
         key=style.split(':',1)[1]
@@ -253,11 +252,11 @@ def render(size, style='original:glass', accent='#4f8cff', light=False, phase=0.
             painter.fillRect(sharp.rect(),wash);painter.end()
         else:
             return _render_native(size,'light' if key=='light' else 'minimal',accent,light,0)
-        return sharp,_soften(sharp,size)
+        return sharp,_soften(sharp,size) if soften else sharp
     if style in design_catalog.PRESETS:
         path=design_catalog.ROOT/'assets'/design_catalog.PRESETS[style]['background']
         sharp=_cover(size,path)
-        return sharp,_soften(sharp,size)
+        return sharp,_soften(sharp,size) if soften else sharp
     return _render_native(size,style,accent,light,phase)
 
 

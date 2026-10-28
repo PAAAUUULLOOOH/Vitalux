@@ -48,7 +48,7 @@ def tr(text):
 EN = {
     # Navigation / Seiten
     "Übersicht": "Overview", "Prozessor": "Processor", "Grafik": "Graphics",
-    "Arbeitsspeicher": "Memory", "Laufwerke": "Drives", "System": "System", "Netzwerk-Verlauf": "Network history",
+    "Arbeitsspeicher": "Memory", "Laufwerke": "Drives", "System": "System",
     "Updates": "Updates", "Info": "About", "Sensoren": "Sensors", "Einstellungen": "Settings",
     "Live-Status deines Systems": "Live status of your system",
     "Systemauslastung": "System load",
@@ -88,12 +88,7 @@ EN = {
     "Trage hier dein GitHub-Repository ein, z. B. dein-name/vitalux. Es muss öffentlich sein.":
         "Enter your GitHub repository here, e.g. your-name/vitalux. It must be public.",
     "So veröffentlichst du ein Update": "How to publish an update",
-    "Führe im Projektordner ./release.sh 0.4 \"Änderungen\" aus. Das erzeugt ein ZIP. "
-    "Lade es auf GitHub unter Releases > Create a new release hoch (Tag z. B. v0.4) und klicke Publish. "
-    "Die App erkennt das Update danach automatisch und der Reiter leuchtet.":
-        "Run ./release.sh 0.4 \"changes\" in the project folder. This creates a ZIP. "
-        "Upload it on GitHub under Releases > Create a new release (tag e.g. v0.4) and click Publish. "
-        "The app then detects the update automatically and this tab starts to glow.",
+
     "Noch keine Update-Quelle eingerichtet. Trage unten dein GitHub-Repository ein (z. B. dein-name/vitalux).":
         "No update source set up yet. Enter your GitHub repository below (e.g. your-name/vitalux).",
     "Suche nach Updates ...": "Checking for updates ...",

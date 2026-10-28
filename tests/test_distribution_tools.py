@@ -4,6 +4,8 @@ import stat
 import sys
 import tempfile
 from zipfile import ZipFile, ZipInfo
+import runpy
+import json
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
 from distribution_tools import extract_release_zip
@@ -36,5 +38,22 @@ with tempfile.TemporaryDirectory(prefix='vitalux-distribution-') as folder:
         else:
             raise AssertionError('Unsafe release member accepted: ' + name)
     assert not (root / 'escaped.txt').exists()
+
+    # Notice collection excludes example code but follows attribution license
+    # references, even when the legal text lives in a source header.
+    collector=runpy.run_path(str(Path(__file__).resolve().parents[1]/'scripts/collect-license-notices.py'))
+    source=root/'notices.zip'
+    with ZipFile(source,'w') as zipped:
+        for name in ('LICENSE','COPYING.libsample','LICENSES/MIT.txt','src/bufferprocs_py37.h'):
+            zipped.writestr('project/'+name,'Verbatim license fixture')
+        zipped.writestr('project/src/qt_attribution.json',json.dumps({'LicenseFile':'bufferprocs_py37.h'}))
+        zipped.writestr('project/examples/licensewizard/licensewizard.py','example')
+        zipped.writestr('project/examples/licensewizard/licensewizard.png','image')
+        zipped.writestr('project/tools/license_check.py','tool')
+    notices=root/'notices'
+    collector['collect']([dict(filename=source.name,name='qt')],root,notices)
+    assert (notices/'qt/src/bufferprocs_py37.h').read_text()=='Verbatim license fixture'
+    assert (notices/'qt/COPYING.libsample').is_file()
+    assert not any('licensewizard' in p.name or p.name=='license_check.py' for p in notices.rglob('*'))
 
 print('Release extraction: executable launcher retained; path traversal, absolute paths and symlinks rejected PASS')

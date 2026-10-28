@@ -1,5 +1,5 @@
 """Shared spacing, readable content areas and design-aware dialog materials."""
-from PySide6.QtCore import QRectF, Qt
+from PySide6.QtCore import QRectF
 from PySide6.QtGui import QColor, QLinearGradient, QPainter
 from . import theme
 from .paint_geometry import rounded

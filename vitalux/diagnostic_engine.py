@@ -4,7 +4,7 @@ No system modifications, privilege escalation, external telemetry or automatic
 network access. Unsupported observations stay explicitly unknown.
 """
 from __future__ import annotations
-from .diagnostic_language import report_text, capture_report, protect_output
+from .diagnostic_language import report_text, capture_report
 import json
 import os
 import platform

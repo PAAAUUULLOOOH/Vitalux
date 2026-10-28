@@ -8,9 +8,8 @@ from PySide6.QtCore import QRectF
 from vitalux import settings,theme,i18n
 from vitalux.component_pages import CpuPage
 from vitalux.charts import ChartPanel
-ns={'__file__':str(Path(__file__).with_name('test_component_charts.py'))}
-src=Path(ns['__file__']).read_text();exec(src[:src.index('with tempfile.TemporaryDirectory()')],ns)
-app=ns['app'];sample=ns['sample']
+from sensor_fixture import load_fixture
+app,sample=load_fixture()
 h=dict(cpu=[0,15],cpu_temp=[None,50],cpu_clock=[2000,4000],cpu_power=[0,85],
        cpu_load_1=[0,.1],cpu_load_5=[0,.2],cpu_load_15=[0,.3])
 with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',str(Path(directory)/'settings.json')):

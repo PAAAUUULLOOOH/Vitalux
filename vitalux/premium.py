@@ -1,4 +1,4 @@
-"""Three locally rendered glass collections, shared by all native backends.
+"""Locally rendered glass collections, shared by all native backends.
 
 The atmosphere is cached by the scene. Cards sample that same atmosphere;
 only the small logo animates continuously, rather than repainting the window.

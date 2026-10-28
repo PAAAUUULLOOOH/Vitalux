@@ -26,6 +26,9 @@ def prepare(target):
             raise RuntimeError('Checked-in runtime SHA-256 mismatch')
     with tarfile.open(archive) as bundled:
         bundled.extractall(target, filter='data')
+    # Repository upstream notices are complete. Replace that subtree so old
+    # examples in the runtime archive cannot reappear through a merge.
+    shutil.rmtree(target/'licenses/upstream',ignore_errors=True)
     shutil.copytree(source/'licenses', target/'licenses', dirs_exist_ok=True, ignore=ignore)
     for folder in ('vitalux', 'assets', 'scripts', 'tests', 'packaging', 'third_party'):
         shutil.rmtree(target/folder, ignore_errors=True)
@@ -55,7 +58,7 @@ def prepare(target):
     for name in ('runtime/bin/python3.12', 'bin/fio', 'bin/fio.real'):
         (target/name).chmod(0o755)
     assert (target/'vitalux/__init__.py').read_text().startswith(f'__version__ = "{__version__}"')
-    print(f'Assembled stable Vitalux {__version__}: {target}', flush=True)
+    print(f'Assembled Vitalux {__version__}: {target}', flush=True)
 
 
 if __name__ == '__main__':

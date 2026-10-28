@@ -5,7 +5,7 @@ from PySide6.QtCore import QObject,QRunnable,QThreadPool,Signal,Qt,QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QApplication,QVBoxLayout,QHBoxLayout,QScrollArea,QWidget,QSizePolicy
 from .ui_locale import QDialog,QLabel,QPushButton
-from . import product_specs,theme,i18n,spec_language
+from . import product_specs,i18n,spec_language
 from .i18n import tr
 
 class _Signals(QObject):done=Signal(str,object)
@@ -131,18 +131,8 @@ class SpecificationDialog(QDialog):
     def _disconnect(self):
         try:loader().loaded.disconnect(self._ready)
         except (RuntimeError,TypeError):pass
-    def invalidate(self, product):
-        key=product_specs.product_key(product)
-        self.generations[key]=self.generations.get(key,0)+1
-        self.results.pop(key,None);self.errors.pop(key,None);self.pending.discard(key)
-        for mapping in (self.views,self.failed_at):
-            for pair in list(mapping):
-                if pair[0]==key:mapping.pop(pair,None)
-        self._languages={pair for pair in self._languages if pair[0]!=key}
 
     def _ready(self,key,result):
-        if result and result.get('generation',self.generations.get(key,0))!=self.generations.get(key,0):return
-        if result and result.get('error'):self.errors[key]=result['error']
         if key==self.key:self.populate(result)
     def open_source(self):
         if self.source:QDesktopServices.openUrl(QUrl(self.source))

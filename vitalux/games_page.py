@@ -13,7 +13,7 @@ from .choice_combo import ChoiceComboBox
 from .game_service import GameService
 from .i18n import tr
 from .page_base import Page
-from .ui_locale import QDialog, QCheckBox, QLabel, QPushButton, QMessageBox
+from .ui_locale import QDialog, QCheckBox,  QPushButton, QMessageBox
 from .widgets import Card, label
 from .charts import ChartPanel
 

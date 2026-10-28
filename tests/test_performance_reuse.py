@@ -31,20 +31,19 @@ with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',dir
         caption.resize(250,25);app.processEvents();assert metrics.call_count>0
     assert caption.property('vitaluxFullNameHint') and caption.toolTip()==caption.original_text
     caption.close()
-    fixture=Path(__file__).with_name('test_component_charts.py')
-    scope={'__file__':str(fixture)};text=fixture.read_text()
-    exec(compile(text[:text.index('with tempfile.TemporaryDirectory()')],str(fixture),'exec'),scope)
+    from sensor_fixture import load_fixture
+    _,sample=load_fixture()
     logo=QPixmap(96,96);logo.fill(Qt.transparent)
     page=OverviewPage(dict(name='Linux',version='1'),logo)
     history={key:[12.,20.] for key in ('cpu','gpu','ram','net_down','net_up')}
-    page.refresh(scope['sample'],history)
+    page.refresh(sample,history)
     with patch.object(page.design_metrics['cpu'],'set',wraps=page.design_metrics['cpu'].set) as hidden:
-        page.refresh(scope['sample'],history);assert hidden.call_count==0
+        page.refresh(sample,history);assert hidden.call_count==0
         theme.set_mode('quantum_core');page.refresh_design();assert hidden.call_count==1
     with patch.object(page.g_cpu,'set',wraps=page.g_cpu.set) as hidden:
-        page.refresh(scope['sample'],history);assert hidden.call_count==0
+        page.refresh(sample,history);assert hidden.call_count==0
         theme.set_mode('glass');page.refresh_design();assert hidden.call_count==1
-        assert page.g_cpu.box.gauge._render_value==scope['sample']['cpu']['usage']
+        assert page.g_cpu.box.gauge._render_value==sample['cpu']['usage']
     registry=page.charts();assert registry is page.charts() and len(registry)==2
     extra=ChartPanel(['CPU'],[theme.accent()]);extra.setParent(page);page.register_charts(extra)
     assert len(page.charts())==3
@@ -81,4 +80,17 @@ with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',dir
     assert size==QSize(20,15) and first.pixelColor(0,0)==QColor('red')
     first.fill(QColor('green'))
     assert provider.requestImage('',QSize(),QSize()).pixelColor(0,0)==QColor('red')
+    # Cached colors must follow mode, preference and source hue immediately.
+    settings.set('accent','#d13d8f');theme.set_mode('obsidian_gold');theme.set_accent('#d13d8f')
+    original=theme.palette_for(theme.mode());original['card']='modified by caller'
+    assert theme.palette_for(theme.mode())['card']!='modified by caller'
+    with patch('vitalux.theme.blend',wraps=theme.blend) as blend:
+        for _ in range(100):theme.palette_for(theme.mode())
+        assert blend.call_count==0
+    first=theme.palette_for(theme.mode())
+    theme.set_accent('#14b8a6');assert theme.palette_for(theme.mode())['accent']!=first['accent']
+    settings.set('accent','design_default')
+    from vitalux import design_catalog
+    assert theme.palette_for(theme.mode())==design_catalog.factory(theme.mode())
+    theme.set_mode('light');assert theme.palette_for('light')==design_catalog.factory('light')
 print('Freed menus, active overview, caption/vector caches, dynamic chart registry, hotplug/live sensors and image value ownership PASS')

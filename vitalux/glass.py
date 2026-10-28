@@ -56,13 +56,22 @@ class _AmbientSceneCore:
                                   theme.mode())
         # Only designs with moving backgrounds participate in this timer.
         # Quantum Core uses a cached static image; its logos stay independent.
-        active = style in backdrops.ANIMATED_PRESETS
+        active = style in backdrops.ANIMATED_PRESETS and self.isVisible()
         if active and not self._wallpaper_timer.isActive():
             self._wallpaper_timer.start()
         elif not active:
             self._wallpaper_timer.stop()
-            self._phase = 0.0
+            if style not in backdrops.ANIMATED_PRESETS:self._phase = 0.0
         self.update()
+
+    def showEvent(self,event):
+        super().showEvent(event)
+        style=backdrops.resolve(settings.observed('background_style','theme_default'),theme.mode())
+        if style in backdrops.ANIMATED_PRESETS:self._wallpaper_timer.start()
+
+    def hideEvent(self,event):
+        self._wallpaper_timer.stop()
+        super().hideEvent(event)
 
     def _advance_backdrop(self):
         if not self.isVisible():
@@ -114,7 +123,8 @@ class _AmbientSceneCore:
         key=(style,size,ratio,theme.mode()=='crystal_atrium',round(self._phase,3) if style in backdrops.ANIMATED_PRESETS else 0,
              theme.accent() if style in ('adaptive','animated_sparkle') else '')
         if key!=self._render_key:
-            self._sharp_cache,self._soft_cache=backdrops.render(size,style,theme.accent(),light=theme.is_light(),phase=self._phase)
+            self._sharp_cache,self._soft_cache=backdrops.render(size,style,theme.accent(),light=theme.is_light(),phase=self._phase,
+                                                             soften=theme.mode()!='crystal_atrium')
             if theme.mode()=='crystal_atrium':self._soft_cache=backdrops.smooth_glass(self._sharp_cache,18*ratio)
             self._sharp_cache.setDevicePixelRatio(ratio);self._soft_cache.setDevicePixelRatio(ratio)
             self._render_key=key

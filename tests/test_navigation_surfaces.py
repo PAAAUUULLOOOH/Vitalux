@@ -33,7 +33,7 @@ with tempfile.TemporaryDirectory() as temporary,patch.object(settings,'PATH',tem
     if expected:assert window.render_backend_active==expected,(expected,window.render_backend_active)
     try:
         page=window.pages[9][1]
-        for design in [key for key,_ in theme.CHOICES]+['eclipse_crystal','minimal']:
+        for design in [key for key,_ in theme.CHOICES]+['eclipse_crystal','aurora_bloom','minimal']:
             settings.set_many(dict(theme='obsidian_gold' if design=='minimal' else design,ultra_eco=design=='minimal'))
             window.apply_appearance();window.nav_buttons[9].click();wait()
             for width in (1400,800):

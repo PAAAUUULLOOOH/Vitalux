@@ -56,6 +56,6 @@ EN_NETWORK={
  'Die Netzwerk-Freigabe wurde abgebrochen oder ist fehlgeschlagen.':'Network authorization was cancelled or failed.',
  'Das Installationsverzeichnis des Netzwerk-Helfers ist nicht geschützt.':'The network helper installation directory is not protected.',
  'Der Netzwerk-Helfer darf kein symbolischer Link sein.':'The network helper must not be a symbolic link.',
- 'Aether Glass · Optisches Rauchglas, Platinkanten und Violett-/Cyanlicht mit schwebender Navigation und eigenen Instrumenten. Palette und Hintergrund sind fest.':'Aether Glass · Smoked optical glass, platinum edges and violet/cyan lighting, with floating navigation and distinct instruments. The palette and background are fixed.',
+
  'Eclipse Crystal · Facettierter schwarzer Kristall, Champagnerkanten und horizontale Navigation. Palette und Hintergrund sind fest.':'Eclipse Crystal · Faceted black crystal, champagne edges and horizontal navigation. The palette and background are fixed.',
 }

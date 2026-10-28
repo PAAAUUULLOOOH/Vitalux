@@ -162,8 +162,6 @@ class DashboardBoard(QWidget):
 
     def _render_positions(self,order=None):
         from .signature_designs import active
-        from PySide6.QtGui import QFont,QFontMetrics
-        from PySide6.QtCore import QRect
         sizes=dict(DEFAULT)
         selected=list(self.order if order is None else order)
         if active():

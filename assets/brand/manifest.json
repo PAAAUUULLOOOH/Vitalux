@@ -120,16 +120,6 @@
     "sha256": "46e2efd0b266cca650facd21d052a8bc697f9a5b1f2b66520f0dabc23bd8406e"
   },
   {
-    "file": "assets/brand/vitalux-pulse-gold.svg",
-    "bytes": 65862,
-    "sha256": "4d0484fa9d4b9bf53d8db7058743bc84be346f0e2b92993ce3d8dc814c35b630"
-  },
-  {
-    "file": "assets/brand/vitalux-wordmark-gold.svg",
-    "bytes": 6398,
-    "sha256": "ad024bba36046b13685acb7eeae525cce6445b0e24ff1a1e48bd57510d9d67a1"
-  },
-  {
     "file": "assets/brand/vitalux-pulse-obsidian-gold.svg",
     "bytes": 65871,
     "sha256": "5a46a36a2e417d02d92141168d5ba54ae8679bdc88c7da5798afce88f7304d50"
@@ -170,6 +160,26 @@
     "sha256": "878371e787605c0854879df639f4135262b830282e8b4131f6979548c1f346b4"
   },
   {
+    "file": "assets/brand/vitalux-pulse-crystal-atrium.svg",
+    "bytes": 66369,
+    "sha256": "cbb70495c19ee217a25caa50087f98d80f31d6f46ab36beed9058def2f09fdee"
+  },
+  {
+    "file": "assets/brand/vitalux-wordmark-crystal-atrium.svg",
+    "bytes": 6623,
+    "sha256": "4900d19fc59106666d9d4907d0179abfabd11f04de2e6d7cf95c8bbcf1db1eb4"
+  },
+  {
+    "file": "assets/brand/vitalux-pulse-aurora-bloom.svg",
+    "bytes": 65870,
+    "sha256": "9f3052de8cf58ea882a604933e30437b8803dbd4b7cb770b3ad89479781cab87"
+  },
+  {
+    "file": "assets/brand/vitalux-wordmark-aurora-bloom.svg",
+    "bytes": 6406,
+    "sha256": "6e1763e4e8479bac805c1983dfe6e144eaf85143db11ae52c831c6c2bbe04669"
+  },
+  {
     "file": "assets/vitalux-pulse.svg",
     "bytes": 65862,
     "sha256": "4d0484fa9d4b9bf53d8db7058743bc84be346f0e2b92993ce3d8dc814c35b630"
@@ -183,15 +193,5 @@
     "file": "assets/vitalux-wordmark-light.svg",
     "bytes": 6398,
     "sha256": "5b9ca5a9f86cde3ba159b6f147feed6ca3add7c29c9294668db0dc7f9983fea9"
-  },
-  {
-    "file": "assets/brand/vitalux-pulse-crystal-atrium.svg",
-    "bytes": 66368,
-    "sha256": "571ff1a00713f3f401ad67bebe2537cdae2af1244c3c0c3b4cebcf5b5421d2b6"
-  },
-  {
-    "file": "assets/brand/vitalux-wordmark-crystal-atrium.svg",
-    "bytes": 6622,
-    "sha256": "91e984a6ad243e51be386e09fc277b00d94677e20f0d65f73fd9849c9982d008"
   }
 ]

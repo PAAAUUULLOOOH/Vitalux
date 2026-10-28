@@ -37,7 +37,7 @@ def run():
             outlines = set()
             for name in config['variants']:
                 for kind in ('pulse', 'wordmark'):
-                    path = ASSETS/f'brand/vitalux-{kind}-{name}.svg'
+                    path = ASSETS/(f'vitalux-{kind}.svg' if name == 'gold' else f'brand/vitalux-{kind}-{name}.svg')
                     root = ET.parse(path).getroot()
                     assert not any(node.tag.rsplit('}', 1)[-1] in ('image', 'text')
                                    for node in root.iter()), path

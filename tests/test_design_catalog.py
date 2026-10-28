@@ -1,5 +1,5 @@
 """Factory restoration, preserved retired presets and isolated design settings."""
-import os,sys,tempfile,json
+import os,sys,tempfile,json,subprocess
 from pathlib import Path
 from unittest.mock import patch
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
@@ -10,6 +10,9 @@ from vitalux import settings,theme,design_catalog as catalog,backdrops,appearanc
 from vitalux.control import PreferencesPage
 from vitalux.design_capabilities import capabilities
 app=QApplication.instance() or QApplication([])
+# Direct imports must not depend on importing theme first.
+for module in ('crystal_atrium','aurora_bloom'):
+    subprocess.run([sys.executable,'-B','-c',f'import vitalux.{module}'],check=True)
 class Host(QWidget):
     render_backend_active='software';_tray=object()
     def apply_appearance(self, *, before=None):
@@ -75,5 +78,17 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
         page.change_accent('#f472b6')
         assert original==backdrops.render(QSize(180,120),backdrops.resolve('theme_default',key))[0].toImage(),key
         assert not page.accent_combo.isLocked() and not page.background_combo.isLocked()
+    visible=[tile.key for tile in page.design_tiles]
+    page.search_settings('bloo');assert theme.mode()!='aurora_bloom'
+    page.search.setText('  BLOOM  ');app.processEvents()
+    assert theme.mode()=='aurora_bloom' and settings.get('theme')=='aurora_bloom'
+    assert page.search.text()=='' and [tile.key for tile in page.design_tiles]==visible
+    assert 'aurora_bloom' not in dict(theme.CHOICES)
+    assert page.background_combo.findData('aurora_bloom')<0
+    assert page.accent_combo.findData('palette:aurora_bloom')<0
+    assert not backdrops.render(QSize(640,480),'original:aurora_bloom')[0].isNull()
+    settings._cache_identity=None;settings._cache_value=None
+    theme.set_mode(settings.get('theme'));assert theme.mode()=='aurora_bloom'
+    page.select_design('glass');page.search_settings('timbooh');assert theme.mode()=='eclipse_crystal'
     page.close();host.close()
 print('Six designs, retired data-only presets, personal settings, independent factory background and per-design reset PASS')

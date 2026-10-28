@@ -50,7 +50,7 @@ def _renderer(filename):
     return renderer
 
 
-@lru_cache(maxsize=16)
+@lru_cache(maxsize=8)
 def _logo_layers(filename):
     """Split the authored outer bands from the stationary pulse and lens.
 
@@ -92,12 +92,12 @@ def _pixmap(filename, width, height, ratio=1.0):
     return _render_pixmap(_renderer(filename), width, height, ratio)
 
 
-@lru_cache(maxsize=48)
+@lru_cache(maxsize=16)
 def _svg_renderer(data):
     return QSvgRenderer(data)
 
 
-@lru_cache(maxsize=48)
+@lru_cache(maxsize=16)
 def _tinted_svg(filename, accent):
     """Preserve every authored contour, cut and highlight for arbitrary hues."""
     base = QColor(accent)
@@ -118,7 +118,7 @@ def _tinted_svg(filename, accent):
     return re.sub(r'#[0-9a-fA-F]{6}', tint, (_ASSETS/filename).read_text()).encode()
 
 
-@lru_cache(maxsize=48)
+@lru_cache(maxsize=16)
 def _asset_bytes(filename):
     return (_ASSETS/filename).read_bytes()
 

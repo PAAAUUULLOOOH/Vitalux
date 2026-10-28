@@ -22,7 +22,7 @@ def run():
         for index,(key,_) in enumerate(theme.CHOICES):
             tile=DesignTile(key);tiles.append(tile);grid.addWidget(tile,index//3,index%3)
         gallery=Gallery(content,tiles);gallery.resize(650,gallery.height());gallery.show();app.processEvents()
-        for design in ('glass','aether_glass','eclipse_crystal'):
+        for design in ('glass','eclipse_crystal'):
             theme.set_mode(design);app.setStyleSheet(theme.stylesheet());gallery.sync();app.processEvents()
             assert gallery.horizontalScrollBarPolicy()==Qt.ScrollBarAlwaysOff
             assert all(grid.getItemPosition(grid.indexOf(tile))[:2]==(index//3,index%3) for index,tile in enumerate(tiles))

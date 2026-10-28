@@ -3,7 +3,7 @@ from string import Template
 from functools import lru_cache
 from . import DEFAULT_THEME
 from PySide6.QtGui import QColor
-from .premium import COLLECTIONS, KEYS as PREMIUM_MODES
+from .premium import KEYS as PREMIUM_MODES
 
 WARN, CRIT, VIOLET, TEAL, CYAN = "#f5b84d", "#f26464", "#a78bfa", "#2dd4bf", "#52d3ff"
 from . import design_catalog
@@ -16,19 +16,23 @@ FIXED_MODES = ('minimal',)
 
 def palette_for(key):
     from . import settings
+    # Return an owned dictionary; cache only the costly derived color values.
+    return dict(_palette_items(key,mode(),settings.observed('accent','design_default'),_accent))
+
+
+@lru_cache(maxsize=128)
+def _palette_items(key, current_mode, selected, source_accent):
     base=design_catalog.factory(key)
-    if key!=mode() or key=='minimal':return base
-    selected=settings.observed('accent','design_default')
-    if selected=='design_default':return base
+    if key!=current_mode or key=='minimal' or selected=='design_default':return tuple(base.items())
     chosen=design_catalog.accent_preset(selected)
-    primary=accent()
+    primary=_resolved_accent(current_mode,source_accent,selected)
     secondary=chosen['palette']['secondary'] if chosen else QColor(primary).lighter(135).name()
     base.update(accent=primary,secondary=secondary,
                 light=blend('#ffffff',primary,.65),border=blend(primary,base['border'],.55),
                 bloom=blend(primary,base['bg'],.4),
                 series=tuple(chosen['palette'].get('series',(primary,secondary,TEAL,VIOLET)))
                        if chosen else (primary,secondary,TEAL,VIOLET))
-    return base
+    return tuple(base.items())
 
 
 def background_locked():

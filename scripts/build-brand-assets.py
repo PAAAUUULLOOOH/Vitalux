@@ -242,6 +242,8 @@ def main():
         directory = BRAND/'animated' if animated else BRAND
         prefix = directory if animated else ROOT/'assets'
         for key, pal in PALETTES.items():
+            if key == 'gold':
+                continue  # Root defaults below are the identical gold vectors.
             for kind, builder in (('pulse', logo), ('wordmark', wordmark)):
                 path = directory / f'vitalux-{kind}-{key}.svg'
                 write(path, builder(pal, animated))

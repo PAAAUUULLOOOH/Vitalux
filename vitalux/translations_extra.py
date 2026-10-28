@@ -929,7 +929,7 @@ EN_MORE.update({
     'Ereignisse anzeigen': 'Show events',
 })
 
-# New guide slide in both languages (the legacy guide still has its nine entries).
+# Help-guide translations in both languages.
 EN_MORE.update({
     'Diagnostic Center und MiniHUD': 'Diagnostic Center and MiniHUD',
 
@@ -1052,7 +1052,6 @@ EN_MORE.update({
 EN_MORE.update({
 
 
-    'Die Lupe sitzt mittig in der oberen Leiste. Das Suchfeld öffnet sich dort mit der Lupe links neben dem Text. Auch unvollständige Namen wie MiniH oder MiniHU führen zum passenden Bereich. Nach einer Auswahl bleibt die Suche fünf Sekunden sichtbar und schließt weich.': 'The magnifier is centered in the top strip. The search field opens there with the icon to the left of the text. Partial names such as MiniH or MiniHU lead to the matching section. After selection, search stays visible for five seconds and closes smoothly.',
     'Unter Erweiterte Einstellungen → Wartung setzt „Standardwerte wiederherstellen“ das gesamte aktive Profil zurück. Einstellungen, eigene Farben, Layouts, importierte Bildkopien und Cache werden gelöscht. Originalbilder und das andere Updateprofil bleiben erhalten; Vitalux startet neu und öffnet die Anleitung.': 'Under Advanced settings → Maintenance, Restore defaults resets the entire active profile. Preferences, custom colors, layouts, imported image copies and cache are removed. Original images and the other update profile are preserved; Vitalux restarts and opens the guide.',
     'Nach einer geprüften Installation startet Vitalux automatisch neu. Vorübergehende Fehler bei der Neustartvorbereitung werden bis zu drei Mal automatisch versucht; danach wird ein Fehler mit Wiederholungsaktion angezeigt. Stable v0.9.6.2 besitzt noch seinen älteren manuellen Updater.': 'After a verified installation, Vitalux restarts automatically. Temporary restart preparation failures are retried automatically, up to three attempts; after that an error and recovery action are shown. Stable v0.9.6.2 still has its older manual updater.',
     'MiniHUD-Größe': 'MiniHUD size',
@@ -1108,7 +1107,7 @@ EN_MORE.update({
 
 EN_MORE.update({'Vitalux wird ohne Administratorrechte in deinem Benutzerordner abgelegt und ins Anwendungsmenü eingetragen. Alternativ kannst du es ohne Installation starten.': 'Vitalux will be placed in your user folder and added to the application menu without administrator permissions. You can also run it without installing.'})
 
-EN_MORE.update({'Aktuell': 'Current', 'Sensoren & Leistungsaufnahme': 'Sensors & power', 'Leistungsgrenze': 'Power limit', 'VRAM-Temperatur': 'VRAM temperature', 'Speichercontroller': 'Memory controller', 'Video-Engine': 'Video engine', 'Begrenzungsgründe': 'Limiting reasons', 'Begrenzungsflags (Treiber)': 'Limiting flags (driver)', 'Funkeln hat einen animierten Hintergrund. Adaptiv folgt der ausgewählten Akzentfarbe.': 'Sparkle has an animated background. Adaptive follows the selected accent color.', 'CPU-Package': 'CPU package', 'GPU-Leistung (Treiber)': 'GPU power (driver)', 'Dreizehn Designs stehen im Vorschau-Raster. Lumen Drift wurde entfernt; gespeicherte Auswahlen wechseln zu Obsidian Gold. Persönliche Farben, Bilder und andere Einstellungen bleiben erhalten. Quantum Core nutzt einen statischen Hintergrund; seine Logos bleiben animiert.': 'Thirteen designs share the preview grid. Lumen Drift has been removed; saved selections return to Obsidian Gold. Personal colors, images and other settings are preserved. Quantum Core uses a static backdrop; its logos remain animated.', })
+EN_MORE.update({'Aktuell': 'Current', 'Sensoren & Leistungsaufnahme': 'Sensors & power', 'Leistungsgrenze': 'Power limit', 'VRAM-Temperatur': 'VRAM temperature', 'Speichercontroller': 'Memory controller', 'Video-Engine': 'Video engine', 'Begrenzungsgründe': 'Limiting reasons', 'Begrenzungsflags (Treiber)': 'Limiting flags (driver)', 'Funkeln hat einen animierten Hintergrund. Adaptiv folgt der ausgewählten Akzentfarbe.': 'Sparkle has an animated background. Adaptive follows the selected accent color.', 'CPU-Package': 'CPU package', 'GPU-Leistung (Treiber)': 'GPU power (driver)',  })
 
 # Measured power captions.
 EN_MORE.update({'GPU-Socket': 'GPU socket'})

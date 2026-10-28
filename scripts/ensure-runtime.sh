@@ -36,6 +36,8 @@ fi
 VITALUX_RUNTIME_STAGE="$(mktemp -d "$VITALUX_RUNTIME_ROOT/.runtime/extract.XXXXXX")"
 trap 'rm -rf -- "$VITALUX_RUNTIME_STAGE"' EXIT
 tar --extract --xz --file "$VITALUX_RUNTIME_ARCHIVE" \
+  --exclude='*licenses/upstream/*/licensewizard*' \
+  --exclude='*licenses/upstream/*/license_check.py' \
   --directory "$VITALUX_RUNTIME_STAGE" --no-same-owner --no-same-permissions
 if [ ! -f "$VITALUX_RUNTIME_STAGE/runtime/bin/python3.12" ]; then
   printf 'Das Laufzeitpaket enthält kein Python.\n' >&2

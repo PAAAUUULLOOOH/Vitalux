@@ -11,12 +11,10 @@ import tempfile
 
 def capture(source, output):
     sys.path.insert(0, str(source))
-    # Reuse deterministic, source-controlled sensor fixtures, never host values.
-    fixture = source/'tests/test_component_charts.py'
-    scope = {'__file__': str(fixture)}
-    text = fixture.read_text()
-    exec(compile(text[:text.index('with tempfile.TemporaryDirectory()')], str(fixture), 'exec'), scope)
-    app, sample = scope['app'], scope['sample']
+    # Use one deterministic fixture for both checkouts, independent of test layout.
+    sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tests'))
+    from sensor_fixture import load_fixture
+    app,sample=load_fixture()
     from PySide6.QtCore import Qt, QTimer
     from PySide6.QtGui import QPixmap
     from vitalux import settings, theme, i18n

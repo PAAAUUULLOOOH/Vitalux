@@ -3,6 +3,7 @@
 import argparse
 import json
 import posixpath
+import re
 from pathlib import Path
 import tarfile
 from zipfile import ZipFile
@@ -10,8 +11,11 @@ from zipfile import ZipFile
 
 def interesting(name):
     path = Path(name)
-    return '/LICENSES/' in name or 'qt_attribution' in path.name or path.name.lower().startswith(
-        ('license', 'licence', 'copying', 'copyright', 'notice', 'lgpl', 'gpl'))
+    if path.name.casefold()=='license_check.py':return False
+    # A name such as licensewizard.png or license_check.py is example/tool
+    # code, not a notice. Referenced attribution files are added separately.
+    return '/LICENSES/' in name or 'qt_attribution' in path.name or bool(re.match(
+        r'^(?:licen[cs]e|copying|copyright|notice|[al]?gpl)(?:$|[._-])',path.name,re.I))
 
 
 def references(data):

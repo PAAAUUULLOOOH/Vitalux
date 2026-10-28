@@ -76,7 +76,7 @@ with tempfile.TemporaryDirectory() as folder, \
     window.show()
     wait(70)
     try:
-        for design in [key for key, _ in theme.CHOICES] + ['eclipse_crystal', 'minimal']:
+        for design in [key for key, _ in theme.CHOICES] + ['eclipse_crystal', 'aurora_bloom', 'minimal']:
             print('Checking framed navigation:',design,flush=True)
             settings.set_many(dict(theme='obsidian_gold' if design == 'minimal' else design,
                                    ultra_eco=design == 'minimal'))
@@ -230,7 +230,7 @@ with tempfile.TemporaryDirectory() as folder, \
         # Header controls and all editing actions stay separate at the minimum
         # width, including DE labels and designs with a wider brand/dock.
         settings.set_many(dict(motion='off',ultra_eco=False))
-        for design in [key for key,_ in theme.CHOICES]+['eclipse_crystal']:
+        for design in [key for key,_ in theme.CHOICES]+['eclipse_crystal','aurora_bloom']:
             settings.set('theme',design)
             window.apply_appearance()
             window.resize(800,560)

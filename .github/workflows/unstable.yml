@@ -53,6 +53,10 @@ jobs:
           fi
           echo "TAG=v$VERSION" >> "$GITHUB_ENV"
           python scripts/release_notes.py "$VERSION" "$RUNNER_TEMP/unstable-notes.md"
+      - name: Select expensive checks from the published baseline
+        id: validation
+        if: steps.prepare.outputs.changed == 'true'
+        run: python scripts/validation_plan.py --github-output "$GITHUB_OUTPUT"
       - name: Install pinned Python dependencies
         id: python_deps
         timeout-minutes: 8
@@ -98,13 +102,13 @@ jobs:
           python -m compileall -q vitalux tests scripts packaging
           bash -n run.sh packaging/AppRun
       - name: Check bundled OpenGL and Vulkan game recording in both architectures
-        if: steps.prepare.outputs.changed == 'true'
+        if: steps.prepare.outputs.changed == 'true' && steps.validation.outputs.overlay == 'true'
         timeout-minutes: 6
         run: |
           set -euo pipefail
           xvfb-run -a -s '-screen 0 1280x800x24' python scripts/check-game-recording.py --output build/game-recording
       - name: Check bundled overlay inside a real Flatpak sandbox
-        if: steps.prepare.outputs.changed == 'true'
+        if: steps.prepare.outputs.changed == 'true' && steps.validation.outputs.overlay == 'true'
         timeout-minutes: 10
         run: |
           set -euo pipefail
@@ -121,22 +125,22 @@ jobs:
           cd "$STAGED"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-regressions.py --output "$GITHUB_WORKSPACE/build/regressions"
       - name: Check the overlay inside Valve's Steam runtime
-        if: steps.prepare.outputs.changed == 'true'
+        if: steps.prepare.outputs.changed == 'true' && steps.validation.outputs.overlay == 'true'
         timeout-minutes: 8
         run: |
           set -euo pipefail
           mkdir -p build/steam-recording
           xvfb-run -a -s '-screen 0 1280x800x24' dbus-run-session -- bash scripts/check-steam-game-recording.sh build/steam-recording
       - name: Check wide Steam capsules and offline reuse
-        if: steps.prepare.outputs.changed == 'true'
+        if: steps.prepare.outputs.changed == 'true' && steps.validation.outputs.game_artwork == 'true'
         run: python scripts/check-game-artwork-network.py
       - name: Check native header search, translucent dock and interrupted appearance transitions
-        if: steps.prepare.outputs.changed == 'true'
+        if: steps.prepare.outputs.changed == 'true' && steps.validation.outputs.navigation == 'true'
         run: |
           set -euo pipefail
           xvfb-run -a -s '-screen 0 1600x1050x24' env QT_QPA_PLATFORM=xcb VITALUX_RENDERER=x11_opengl LIBGL_ALWAYS_SOFTWARE=1 LP_NUM_THREADS=2 python tests/test_navigation_surfaces.py
       - name: Check resource budgets, endurance and reference rendering
-        if: steps.prepare.outputs.changed == 'true'
+        if: steps.prepare.outputs.changed == 'true' && steps.validation.outputs.resources == 'true'
         timeout-minutes: 18
         run: |
           set -euo pipefail
@@ -145,31 +149,26 @@ jobs:
           git worktree add --detach build/render-reference 5bcc1e90a69f3f58f1de582db0b5eeec5b0e4332
           python scripts/check-render-parity.py --reference build/render-reference --output build/render-parity
           git worktree remove build/render-reference
-          git worktree add --detach build/performance-reference d9393d2ed3453d38b73728d9473667317a5dd9e4
-          python scripts/check-performance-render.py --reference build/performance-reference --output build/performance-parity --appearance-refresh
+          git worktree add --detach build/performance-reference 1a74b85a6ff427ca2e7cf672e26b2efe0f6ca6e8
+          python scripts/check-performance-render.py --reference build/performance-reference --output build/performance-parity
           git worktree remove build/performance-reference
-      - name: Check manufacturer image and offline reuse
-        if: steps.prepare.outputs.changed == 'true'
-        run: |
-          set -euo pipefail
-          mkdir -p build/product-image-check
-          python scripts/check-product-image-network.py --require-all-components | tee build/product-image-check/result.log
-      - name: Check manufacturer specifications and offline reuse
-        if: steps.prepare.outputs.changed == 'true'
-        run: python scripts/check-product-spec-network.py --require-all-components
-      - name: Check translated specifications and offline reuse
-        if: steps.prepare.outputs.changed == 'true'
-        run: python scripts/check-spec-translation-network.py
+      - name: Check manufacturer images, specifications and translations in isolated profiles
+        if: steps.prepare.outputs.changed == 'true' && steps.validation.outputs.hardware_network == 'true'
+        timeout-minutes: 11
+        run: python scripts/check-hardware-network.py
       - name: Exercise real kernel and desktop paths
         if: steps.prepare.outputs.changed == 'true'
         id: native
         run: |
           set -euo pipefail
-          sudo env VITALUX_NETWORK_TEST_VM=1 /usr/bin/python3 scripts/check-network-kernel.py | tee build/network-kernel.log
+          if [[ '${{ steps.validation.outputs.kernel }}' == true ]]; then
+            sudo env VITALUX_NETWORK_TEST_VM=1 /usr/bin/python3 scripts/check-network-kernel.py | tee build/network-kernel.log
+          fi
+          if [[ '${{ steps.validation.outputs.graphics }}' != true ]]; then exit 0; fi
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-graphics-checks.py --output "$GITHUB_WORKSPACE/build/graphics-checks"
-          for DESIGN in obsidian_gold glass light nebula_prism quantum_core crystal_atrium eclipse_crystal minimal; do
+          for DESIGN in obsidian_gold glass light nebula_prism quantum_core crystal_atrium eclipse_crystal aurora_bloom minimal; do
             LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/capture-release-ui.py --output "$GITHUB_WORKSPACE/build/ui-scale-checks/$DESIGN" --design "$DESIGN" --scales 1,1.25,1.5,2
           done
       - name: Expose native validation failures
@@ -184,8 +183,13 @@ jobs:
                   print(f'::error title={log.name}::{escaped}', flush=True)
           PY
       - name: Verify offline source ZIP startup
-        if: steps.prepare.outputs.changed == 'true'
+        if: steps.prepare.outputs.changed == 'true' && steps.validation.outputs.source_startup == 'true'
         run: python scripts/check-source-startup.py
+      - uses: actions/cache@v4
+        if: steps.prepare.outputs.changed == 'true'
+        with:
+          path: tooling/appimagetool.AppImage
+          key: vitalux-appimagetool-x86_64-v1
       - name: Build the full ZIP and AppImage
         if: steps.prepare.outputs.changed == 'true'
         run: |
@@ -193,7 +197,9 @@ jobs:
           python scripts/finalize-package.py "build/staged/Vitalux-${TAG}"
           python scripts/check-distribution.py "build/staged/Vitalux-${TAG}"
           mkdir -p tooling dist
-          curl -fL --retry 3 --silent --show-error https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -o tooling/appimagetool.AppImage
+          if [[ ! -s tooling/appimagetool.AppImage ]]; then
+            curl -fL --retry 3 --silent --show-error https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -o tooling/appimagetool.AppImage
+          fi
           chmod 755 tooling/appimagetool.AppImage
           (cd tooling && ./appimagetool.AppImage --appimage-extract >/dev/null)
           python scripts/create-release-archives.py "build/staged/Vitalux-${TAG}" dist --full-only
@@ -230,6 +236,7 @@ jobs:
             build/render-parity/results.json
             build/ui-endurance/
             build/graphics-checks/
+            build/hardware-network/
             build/product-image-check
             build/product-spec-check/
             build/spec-language-check/

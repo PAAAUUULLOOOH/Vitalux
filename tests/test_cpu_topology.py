@@ -40,7 +40,7 @@ area = QScrollArea()
 area.setWidgetResizable(True)
 page = CpuPage()
 area.setWidget(page)
-for design in ('obsidian_gold', 'liquid_silver', 'holographic', 'minimal'):
+for design in ('obsidian_gold', 'quantum_core', 'minimal'):
     theme.set_mode(design)
     app.setStyleSheet(theme.stylesheet())
     for language in ('de', 'en'):

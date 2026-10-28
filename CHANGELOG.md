@@ -1,5 +1,11 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.4-unstable.10] - 2026-10-28
+
+- Weniger Rechenaufwand und begrenzter Speicherbedarf beim wiederholten Wechseln von Designs und Akzentfarben. Darstellung, Animationen und Messintervalle bleiben erhalten.
+- Animierte Hintergründe pausieren bei ausgeblendetem Fenster vollständig und laufen beim Öffnen weiter.
+- Bereits geöffnete Spezifikationsfenster zeigen nachgeladene Herstellerangaben zuverlässig an.
+
 ## [v0.9.6.4-unstable.9] - 2026-10-28
 
 - Alle Designs: Designwechsel ohne Aufblitzen oder Helligkeitssprung; auch bei unterbrochenen Übergängen und vergrößerter Bildschirmdarstellung.

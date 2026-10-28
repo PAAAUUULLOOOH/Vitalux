@@ -26,5 +26,6 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
 root=Path(__file__).resolve().parents[1]
 for name in ('README.md','CHANGELOG.md','CHANGELOG.en.md','vitalux/guide.py','vitalux/translations_extra.py'):
     text='\n'.join(line for line in (root/name).read_text().splitlines() if 'Thanks to' not in line and 'Danke an' not in line).casefold()
-    assert 'timbooh' not in text,name
+    assert 'timbooh' not in text and 'aurora bloom' not in text,name
+    assert 'aurora_bloom' not in text,name
 print('Hidden live-search activation without Enter, persistence, clear search, normal exit and private documentation PASS')

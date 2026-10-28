@@ -128,13 +128,13 @@ def assert_brand(app):
     for name, color in presets.items():
         settings.set("accent", color)
         theme.set_accent(color)
-        for scheme in ("dark", "light", "glass", "black_glass", "minimal"):
+        for scheme in ("obsidian_gold", "light", "glass", "minimal"):
             theme.set_mode(scheme)
             icon = themed_icon_pixmap(152)
             word = wordmark_pixmap(205, 44)
             assert icon.hasAlphaChannel(), (name, scheme)
             assert word.hasAlphaChannel(), (name, scheme)
-            if scheme == "dark":
+            if scheme == "obsidian_gold":
                 icons.add(fingerprint(icon))
                 dark_words.add(fingerprint(word))
             elif scheme == "light":
@@ -155,7 +155,7 @@ def assert_brand(app):
     for color in ('#d13d8f', '#14b8a6', '#aabbcc'):
         settings.set('accent', color)
         theme.set_accent(color)
-        for scheme in ('dark', 'light', 'glass', 'black_glass', 'minimal'):
+        for scheme in ('obsidian_gold', 'light', 'glass', 'minimal'):
             theme.set_mode(scheme)
             icon = themed_icon_pixmap(152)
             word = wordmark_pixmap(205, 44)

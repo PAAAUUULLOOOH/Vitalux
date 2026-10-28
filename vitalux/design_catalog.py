@@ -5,7 +5,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PRESETS = json.loads((ROOT/'assets/design-presets.json').read_text())['presets']
 VISIBLE = ('obsidian_gold','glass','crystal_atrium','nebula_prism','quantum_core','light')
-INTERNAL = ('eclipse_crystal','minimal')
+INTERNAL = ('eclipse_crystal','aurora_bloom','minimal')
 AVAILABLE = (*VISIBLE,*INTERNAL)
 CHOICES = tuple((key,PRESETS[key]['title']) for key in VISIBLE)
 RETIRED = {'dark':'obsidian_gold','black_glass':'glass',
@@ -15,6 +15,9 @@ FIELDS = ('accent','background_style','custom_background_selected','custom_backg
 
 
 def factory(key):
+    if key=='aurora_bloom':
+        from .aurora_bloom import PALETTE
+        return dict(PALETTE)
     return dict(PRESETS.get(key,PRESETS['obsidian_gold'])['palette'])
 
 

@@ -74,6 +74,11 @@ def run():
                     scene._advance_backdrop()
                 later = scene.sharp_backdrop().toImage()
                 assert first != later, 'Background frozen: ' + style
+                phase=scene._phase
+                scene.hide();app.processEvents()
+                assert not scene._wallpaper_timer.isActive()
+                scene.show();app.processEvents()
+                assert scene._wallpaper_timer.isActive() and scene._phase==phase
 
             # Existing light wallpapers are still light under Glass; neither
             # scene composition nor cards should tint the canvas dark.

@@ -9,9 +9,8 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QApplication
 from vitalux import startup,settings,theme
 from vitalux.window import Sampler,MainWindow
-ns={'__file__':str(Path(__file__).with_name('test_component_charts.py'))}
-source=Path(ns['__file__']).read_text();exec(source[:source.index('with tempfile.TemporaryDirectory()')],ns)
-app=ns['app'];app.setQuitOnLastWindowClosed(False);sample=ns['sample'];sample['disks'][0]['fstype']='ext4'
+from sensor_fixture import load_fixture
+app,sample=load_fixture();app.setQuitOnLastWindowClosed(False);sample['disks'][0]['fstype']='ext4'
 class Guard:
  def mark_restarting(self):pass
 with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',str(Path(directory)/'settings.json')),patch.object(Sampler,'start',lambda self:None),patch.object(MainWindow,'_start_background_smart',lambda self:None):

@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QApplication,QLabel
 from vitalux import settings,theme,i18n
 from vitalux.product_ui import ProductHeader
 from vitalux.widgets import label
-from vitalux.spec_ui import SpecificationDialog
+from vitalux.spec_ui import SpecificationDialog,loader
 app=QApplication.instance() or QApplication([])
 with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Path(folder)/'settings.json')):
  settings.set_many(dict(component_images=False,motion='off'))
@@ -33,6 +33,15 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
   assert dialog.source_button.isVisible() and dialog.scroll.verticalScrollBar().maximum()>0
   texts=[x.text() for x in dialog.scroll.findChildren(QLabel)]
   assert 'Full manufacturer value 99' in texts and '16 GB' in texts
+  # Exercise the real asynchronous signal after opening, not only populate().
+  changed=dict(record,sections=[dict(title='Technische Spezifikationen',rows=[['GPU','Asynchronously loaded model']])])
+  loader().loaded.emit('unrelated-product',changed)
+  assert 'Asynchronously loaded model' not in [x.text() for x in dialog.scroll.findChildren(QLabel)]
+  loader().loaded.emit(header.key,changed);app.processEvents()
+  assert 'Asynchronously loaded model' in [x.text() for x in dialog.scroll.findChildren(QLabel)]
+  loader().loaded.emit(header.key,None);app.processEvents()
+  assert '16 GB' in [x.text() for x in dialog.scroll.findChildren(QLabel)]
+  loader().loaded.emit(header.key,record);app.processEvents()
   with patch('vitalux.spec_ui.QDesktopServices.openUrl') as open_url:
    dialog.source_button.click();assert open_url.call_args.args[0].toString()==record['source']
   header._local_specs=[('GPU','Changed device')];dialog.populate(record)

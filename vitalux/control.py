@@ -495,9 +495,10 @@ class PreferencesPage(AppearancePreferences, Page):
 
     def search_settings(self, query):
         """Predict full or partial settings names; never search outside Settings."""
-        if query.strip().casefold()=='timbooh':
+        hidden_design={'timbooh':'eclipse_crystal','bloom':'aurora_bloom'}.get(query.strip().casefold())
+        if hidden_design:
             if eco.enabled():settings.set('ultra_eco',False)
-            if design_catalog.switch('eclipse_crystal'):
+            if design_catalog.switch(hidden_design):
                 self.window.apply_appearance()
                 self.refresh_appearance()
             self.search.clear()

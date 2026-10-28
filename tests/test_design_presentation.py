@@ -12,7 +12,7 @@ from vitalux.ui_locale import QDialog,QPushButton
 
 app=QApplication([]);app.setQuitOnLastWindowClosed(False)
 with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',directory+'/settings.json'):
-    for design in [key for key,_ in theme.CHOICES]+['eclipse_crystal','minimal']:
+    for design in [key for key,_ in theme.CHOICES]+['eclipse_crystal','aurora_bloom','minimal']:
         settings.set_many(dict(theme=design,accent='design_default',motion='off',ultra_eco=design=='minimal'))
         theme.set_mode(design);app.setStyleSheet(theme.stylesheet())
         card=Card('Aktuelle Werte');value=label('42 °C','chipValue');card.body.addWidget(value)

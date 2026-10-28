@@ -241,20 +241,14 @@ def report_text(template, *values):
     english = english_template.format(*english_values) if values else english_template
     context = _capture.get()
     if context is not None:
-        context[0][german] = english
+        context[german] = english
     return german
 
-def protect_output(text):
-    context = _capture.get()
-    if context is not None and text:
-        context[1].append(text)
-    return text
 
 class Report(str):
-    def __new__(cls, text, translations=None, protected=None):
+    def __new__(cls, text, translations=None):
         result = super().__new__(cls, text)
         result.translations = translations or {}
-        result.protected = protected or []
         return result
 
     def localized(self, language=None):
@@ -263,7 +257,6 @@ class Report(str):
         if hasattr(self, '_english'):return self._english
         # A single substitution avoids translating inserted values a second time.
         translations = {k:v for k,v in self.translations.items() if k and k != v}
-        translations.update({value:value for value in self.protected if value})
         if not translations:
             return str(self)
         pattern = '|'.join(map(re.escape, sorted(translations, key=len, reverse=True)))
@@ -271,9 +264,9 @@ class Report(str):
         return self._english
 
 def capture_report(action):
-    context = ({}, [])
+    context = {}
     token = _capture.set(context)
     try:
-        return Report(action(), *context)
+        return Report(action(), context)
     finally:
         _capture.reset(token)

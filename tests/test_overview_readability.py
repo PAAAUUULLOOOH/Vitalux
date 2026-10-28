@@ -10,9 +10,8 @@ from PySide6.QtWidgets import QToolTip
 from vitalux import theme,i18n,motion,settings,design_catalog
 from vitalux.pages import OverviewPage
 from vitalux.hover_hints import install
-ns={'__file__':str(Path(__file__).with_name('test_component_charts.py'))}
-source=Path(ns['__file__']).read_text();exec(source[:source.index('with tempfile.TemporaryDirectory()')],ns)
-app=ns['app'];sample=ns['sample'];guard=install(app)
+from sensor_fixture import load_fixture
+app,sample=load_fixture();guard=install(app)
 history={key:[10,20] for key in ('cpu','gpu','ram','net_down','net_up')}
 name='ASUS TUF GAMING Radeon RX 9060 XT OC Edition 16GB GDDR6 PCI Express Graphics Card'
 sample['gpus'][0]['name']=name
@@ -24,7 +23,7 @@ cases=0
 with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Path(folder)/'settings.json')),patch.object(motion,'enabled',return_value=False),patch.object(motion,'duration',return_value=0):
  for language in ('de','en'):
   i18n.set_lang(language)
-  for design in (*design_catalog.VISIBLE,'eclipse_crystal','minimal'):
+  for design in design_catalog.AVAILABLE:
    settings.set_many(dict(theme=design,accent='design_default',motion='off'))
    theme.set_mode(design);app.setStyleSheet(theme.stylesheet());page.refresh_design()
    for width in (760,1180):
@@ -44,7 +43,7 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
      assert all(w.height()<=max(24,w.fontMetrics().height()+2) for widgets in page.power_labels.values() for w in widgets)
      assert len({card.box.gauge.height() for card in (page.g_cpu,page.g_gpu,page.g_ram,page.g_disk)})==1
      if True:
-      signature=design in ('nebula_prism','quantum_core','eclipse_crystal','crystal_atrium')
+      signature=design in ('nebula_prism','quantum_core','eclipse_crystal','crystal_atrium','aurora_bloom')
       index=1 if signature else 0
       infos={key:items[index] for key,items in page.overview_info.items()}
       caption=infos['gpu'].name

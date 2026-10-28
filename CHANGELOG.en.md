@@ -1,5 +1,11 @@
 # Vitalux – Changes
 
+## [v0.9.6.4-unstable.10] - 2026-10-28
+
+- Less processing and bounded memory use when repeatedly changing designs and accent colors. Rendering, animations and measurement intervals are preserved.
+- Animated backgrounds fully pause while the window is hidden and resume when shown.
+- Open specification dialogs reliably display manufacturer data that finishes loading in the background.
+
 ## [v0.9.6.4-unstable.9] - 2026-10-28
 
 - All designs: appearance changes without a bright flash or brightness jump, including interrupted transitions and fractional display scaling.

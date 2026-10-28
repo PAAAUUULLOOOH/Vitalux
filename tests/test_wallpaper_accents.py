@@ -121,7 +121,7 @@ def run():
             legacy.close()
 
             # Built-in backgrounds also yield stable results for all five themes.
-            for mode in ('glass', 'dark', 'light', 'black_glass', 'minimal'):
+            for mode in ('glass', 'obsidian_gold', 'light', 'minimal'):
                 theme.set_mode(mode)
                 settings.set('background_style', 'theme_default')
                 a = wallpaper_accents.suggestions()

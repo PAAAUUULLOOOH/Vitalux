@@ -141,6 +141,16 @@
       "secondary": "#baa7ff",
       "fixed": true,
       "glass_material": true
+    },
+    "aurora-bloom": {
+      "name": "Aurora Bloom",
+      "accent": "#4dffc4",
+      "top": "#eafff7",
+      "mid": "#6ff0d2",
+      "low": "#8a63e8",
+      "spec": "#ffffff",
+      "secondary": "#ff8e6b",
+      "fixed": true
     }
   },
   "theme_assets": {
@@ -148,7 +158,8 @@
     "eclipse_crystal": "eclipse-crystal",
     "nebula_prism": "nebula-prism",
     "quantum_core": "quantum-core",
-    "crystal_atrium": "crystal-atrium"
+    "crystal_atrium": "crystal-atrium",
+    "aurora_bloom": "aurora-bloom"
   },
   "custom_accent_policy": "Preserve the outlined geometry; moderately richer tint for the circle logo only.",
   "motion_seconds": {

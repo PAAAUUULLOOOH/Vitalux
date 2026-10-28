@@ -13,12 +13,11 @@ def main():
     profiles.initialize()
     from PySide6.QtCore import QTimer
     from PySide6.QtWidgets import QApplication
-    from . import APP_NAME, distro, i18n, sensors, settings, theme, diagnostics, hover_hints
+    from . import APP_NAME, distro, i18n, settings, theme, diagnostics, hover_hints
     from .logo import load_logo
     from .brand import app_icon
     from .wallpaper_accents import resolve_accent
     from . import renderer, eco
-    from .update_manager import UpdateManager
     sys.excepthook = diagnostics.exception_hook
     diagnostics.enable_native_crash_trace()
     # Select the scene-graph backend before the first Quick window exists.
