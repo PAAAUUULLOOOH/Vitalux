@@ -114,7 +114,7 @@ class HistoryGraph(QWidget):
 
     def _curves(self, rect, upper, scales, minimal):
         key=(self._revision,self.mode,upper,bool(self.property("recordedSession")),rect.x(),rect.y(),rect.width(),rect.height(),minimal,
-             self.maxlen,self.horizon_seconds,tuple(self.sample_times),tuple(self.series_modes),
+             self.devicePixelRatioF(),self.maxlen,self.horizon_seconds,tuple(self.sample_times),tuple(self.series_modes),
              tuple(self.series_styles),tuple(scales.items()))
         if key==self._curve_key:return self._curve_data
         result=[]

@@ -36,6 +36,10 @@ assert abs(upper.boundingRect().top()-(rect.bottom()-180/scales['fps'][0]*rect.h
 assert abs(lower.boundingRect().bottom()-(rect.bottom()-60/scales['fps'][0]*rect.height()))<.01
 graph._pointer=rect.right()
 assert any('180 FPS' in line for line in graph.hover_readout(rect))
+with patch.object(graph,'devicePixelRatioF',return_value=2.):
+ high_dpi=graph._curves(rect,200,scales,False)[0][0][0][0]
+ assert high_dpi.elementCount()>upper.elementCount(),'Display scaling reused a lower-resolution envelope'
+ assert abs(high_dpi.boundingRect().top()-upper.boundingRect().top())<.01
 graph.resize(900,260);graph.grab();assert graph._recorded_layer is not layer
 graph.close();graph.deleteLater()
 print(f'4096-point extrema/exact hover, cached interaction and resize PASS; cold={cold:.3f}s hover={elapsed:.3f}s')
