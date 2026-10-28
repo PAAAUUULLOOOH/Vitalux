@@ -36,22 +36,31 @@ def record(probe,api,bits,seconds,output,app,flatpak_app=None,loader32=None,stea
     with (output/(name+'.log')).open('w') as log:
         process=subprocess.Popen(command,env=env,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
         try:
-            deadline=time.monotonic()+min(4,seconds-1)
+            # Mesa/MangoHud cold startup varies on shared runners. Wait for
+            # actual overlay pixels instead of taking one fixed four-second
+            # screenshot before the first composited frame is ready.
+            started=time.monotonic()
+            deadline=started+min(12,seconds-1)
+            from PySide6.QtGui import QImage
+            bright=0;picture=None
             while time.monotonic()<deadline:
                 if process.poll() is not None:raise RuntimeError(name+' ended before drawing')
-                app.processEvents();time.sleep(.02)
+                app.processEvents()
+                picture=app.primaryScreen().grabWindow(0).toImage().convertToFormat(QImage.Format_RGBA8888)
+                data=bytes(picture.constBits());stride=picture.bytesPerLine()
+                bright=sum(all(data[y*stride+x*4+c]>135 for c in range(3))
+                           for y in range(min(240,picture.height())) for x in range(min(420,picture.width())))
+                if bright>40:break
+                time.sleep(.1)
+            assert picture is not None
+            assert picture.save(str(output/(name+'-overlay.png')))
+            assert bright>40,(name,'Overlay text did not appear',bright)
+            startup_seconds=time.monotonic()-started
             alive=sessions.pending();assert len(alive)==1
             assert sessions.ready(alive,now=2)[1]==[game['id']]
             assert sessions.ready(alive,now=6)[1]==[game['id']],'A live game was mistaken for a completed session'
             # The probe only clears a dark color. Bright pixels demonstrate that
             # MangoHud actually drew its text, rather than merely writing CSV.
-            from PySide6.QtGui import QImage
-            picture=app.primaryScreen().grabWindow(0).toImage().convertToFormat(QImage.Format_RGBA8888)
-            assert picture.save(str(output/(name+'-overlay.png')))
-            data=bytes(picture.constBits());stride=picture.bytesPerLine()
-            bright=sum(all(data[y*stride+x*4+c]>135 for c in range(3))
-                       for y in range(min(240,picture.height())) for x in range(min(420,picture.width())))
-            assert bright>40,(name,'Overlay text did not appear',bright)
             assert process.wait(timeout=seconds+20)==0,(name,'Graphics probe failed')
         except BaseException:
             log.flush()
@@ -88,6 +97,7 @@ def record(probe,api,bits,seconds,output,app,flatpak_app=None,loader32=None,stea
     assert GameSessions(output/(name+'-state')).report(report['id'])==report
     result={key:report[key] for key in ('frames','duration','average_fps','low_1','low_01','grade','complete')}
     result.update(api=api,bits=bits,visible_overlay_pixels=bright,flatpak=bool(flatpak_app),steam_runtime=bool(steam_runtime))
+    result['overlay_startup_seconds']=round(startup_seconds,3)
     print(json.dumps(result),flush=True)
     return result
 
