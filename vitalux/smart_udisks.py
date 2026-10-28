@@ -8,6 +8,7 @@ import json
 import re
 import shutil
 import subprocess
+from .process_environment import host_environment
 
 DEST = 'org.freedesktop.UDisks2'
 BLOCK = '/org/freedesktop/UDisks2/block_devices/'
@@ -20,7 +21,7 @@ def _call(args, timeout=6):
         return None
     try:
         p = subprocess.run([binary, '--system', '--json=short', *args],
-                           capture_output=True, text=True, timeout=timeout, check=False)
+                           env=host_environment(), capture_output=True, text=True, timeout=timeout, check=False)
         if p.returncode != 0:
             return None
         return json.loads(p.stdout)

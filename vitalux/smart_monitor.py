@@ -4,6 +4,7 @@ import json
 import re
 import shutil
 import subprocess
+from .process_environment import host_environment
 from .bundled_tools import find_tool
 from .smart_udisks import inspect_drive as inspect_with_udisks
 
@@ -94,7 +95,7 @@ def fallback_basic(name,timeout=6):
     tool=shutil.which('udisksctl')
     if not tool:return None
     try:
-        response=subprocess.run([tool,'info','-b','/dev/'+name],capture_output=True,text=True,timeout=timeout)
+        response=subprocess.run([tool,'info','-b','/dev/'+name],env=host_environment(), capture_output=True,text=True,timeout=timeout)
         if response.returncode:return None
         lines=dict(x.strip() for x in (line.split(':',1) for line in response.stdout.splitlines() if ':' in line))
     except (OSError,subprocess.TimeoutExpired,ValueError):return None
@@ -116,7 +117,7 @@ def inspect_drive(name, timeout=8):
     if smartctl:
         try:
             p = subprocess.run([smartctl, '-a', '-j', '/dev/' + name],
-                               capture_output=True, text=True, timeout=timeout,
+                               env=host_environment(), capture_output=True, text=True, timeout=timeout,
                                check=False)
             data = json.loads(p.stdout)
             if any(x in data for x in ('smart_status', 'nvme_smart_health_information_log',

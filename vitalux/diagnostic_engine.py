@@ -10,6 +10,7 @@ import os
 import platform
 import shutil
 import subprocess
+from .process_environment import host_environment
 import time
 from datetime import datetime
 from pathlib import Path
@@ -44,7 +45,7 @@ def cmd(command, timeout=3):
     if not shutil.which(command[0]):
         return (None, report_text('{0} nicht installiert', command[0]))
     try:
-        completed = subprocess.run(command, capture_output=True, text=True, timeout=timeout, check=False)
+        completed = subprocess.run(command, env=host_environment(), capture_output=True, text=True, timeout=timeout, check=False)
         out = completed.stdout.strip()[:16000]
         if completed.returncode:
             return (None, (completed.stderr.strip() or f'Exit {completed.returncode}')[:320])

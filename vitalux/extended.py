@@ -5,6 +5,7 @@ import re
 import socket
 import struct
 import subprocess
+from .process_environment import host_environment
 import time
 
 
@@ -94,7 +95,7 @@ def _dns():
             servers.append(m.group(1))
     if servers == ['127.0.0.53'] or servers == ['127.0.0.54']:
         try:
-            p = subprocess.run(['resolvectl','dns'], capture_output=True, text=True, timeout=1)
+            p = subprocess.run(['resolvectl','dns'], env=host_environment(), capture_output=True, text=True, timeout=1)
             extra = re.findall(r'(?<!\w)(?:\d{1,3}\.){3}\d{1,3}(?!\w)', p.stdout)
             extra = [x for x in extra if not x.startswith('127.')]
             if extra:

@@ -29,4 +29,14 @@ with tempfile.TemporaryDirectory() as folder:
    while (not marker.exists() or 'LIB=' not in marker.read_text()) and time.monotonic()<end:
     app.processEvents();time.sleep(.005)
    assert marker.read_text().splitlines()==expected
+  # Sensor and diagnostic helpers must use the same isolation as launchers.
+  # Invoke an actual child command, not just the environment dictionary.
+  from vitalux.sensors import _run
+  from vitalux.diagnostic_engine import cmd
+  tool=binary/'runtime-check'
+  tool.write_text('#!/bin/sh\nprintf "LIB=%s\\n" "${LD_LIBRARY_PATH-}"\n')
+  tool.chmod(0o755)
+  assert _run(str(tool))=='LIB='
+  output,error=cmd([str(tool)])
+  assert output=='LIB=' and error is None,(output,error)
 print('Native/Flatpak launcher identity, preserved user environment and real detached start PASS')

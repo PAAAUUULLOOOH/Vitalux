@@ -5,6 +5,7 @@ import re
 import shutil
 import struct
 import subprocess
+from .process_environment import host_environment
 
 from .hardware_identity import clean, manufacturer
 
@@ -85,7 +86,7 @@ def memory_modules():
     except OSError:pass
     if shutil.which('dmidecode'):
         try:
-            run = subprocess.run(['dmidecode','--type','17'],capture_output=True,text=True,timeout=3)
+            run = subprocess.run(['dmidecode','--type','17'],env=host_environment(), capture_output=True,text=True,timeout=3)
             if run.returncode==0:return parse_dmidecode(run.stdout)
         except (OSError,subprocess.TimeoutExpired):pass
     return []

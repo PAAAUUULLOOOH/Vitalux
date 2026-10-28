@@ -9,6 +9,7 @@ import shlex
 import shutil
 import socket
 import subprocess
+from .process_environment import host_environment
 import time
 
 import psutil
@@ -49,7 +50,7 @@ def _num(s, mult=1):
 
 def _run(*cmd, timeout=2):
     try:
-        return subprocess.run(list(cmd), capture_output=True, text=True, timeout=timeout).stdout.strip()
+        return subprocess.run(list(cmd), env=host_environment(), capture_output=True, text=True, timeout=timeout).stdout.strip()
     except Exception:
         return ""
 

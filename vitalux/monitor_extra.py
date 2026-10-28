@@ -10,6 +10,7 @@ import math
 import os
 import shutil
 import subprocess
+from .process_environment import host_environment
 
 import psutil
 
@@ -71,7 +72,7 @@ def _kscreen_active_displays():
     if not doctor:
         return {}
     try:
-        result = subprocess.run([doctor, '-j'], capture_output=True, text=True,
+        result = subprocess.run([doctor, '-j'], env=host_environment(), capture_output=True, text=True,
                                 timeout=2, check=False)
         if result.returncode != 0:
             return {}

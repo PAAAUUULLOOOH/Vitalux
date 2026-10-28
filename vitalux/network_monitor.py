@@ -7,8 +7,9 @@ import shutil
 import stat
 import threading
 
-from PySide6.QtCore import QObject,QProcess,QThread,Signal
+from PySide6.QtCore import QObject,QProcess,QProcessEnvironment,QThread,Signal
 from .network_kernel import socket_snapshot
+from .process_environment import host_environment
 
 HELPER=Path('/usr/local/libexec/vitalux-network-helper')
 SOURCE=Path(__file__).with_name('network_kernel.py')
@@ -168,6 +169,9 @@ class HelperClient(QObject):
             self.error.emit('Der Netzwerk-Helfer benötigt /usr/bin/python3. Die normale App benötigt kein System-Python.')
             return
         self.buffer=b''
+        child=QProcessEnvironment()
+        for key,value in host_environment().items():child.insert(key,value)
+        self.process.setProcessEnvironment(child)
         if not installed_helper():
             for folder in (HELPER.parent.parent,HELPER.parent):
                 if folder.exists():
