@@ -44,7 +44,8 @@ with tempfile.TemporaryDirectory(prefix='vitalux-distribution-') as folder:
     collector=runpy.run_path(str(Path(__file__).resolve().parents[1]/'scripts/collect-license-notices.py'))
     source=root/'notices.zip'
     with ZipFile(source,'w') as zipped:
-        for name in ('LICENSE','COPYING.libsample','LICENSES/MIT.txt','src/bufferprocs_py37.h'):
+        for name in ('LICENSE','COPYING.libsample','COPYING3','LGPL2.txt','GPLv2.TXT',
+                     'licenseRule.json','LICENSES/MIT.txt','src/bufferprocs_py37.h'):
             zipped.writestr('project/'+name,'Verbatim license fixture')
         zipped.writestr('project/src/qt_attribution.json',json.dumps({'LicenseFile':'bufferprocs_py37.h'}))
         zipped.writestr('project/examples/licensewizard/licensewizard.py','example')
@@ -54,6 +55,7 @@ with tempfile.TemporaryDirectory(prefix='vitalux-distribution-') as folder:
     collector['collect']([dict(filename=source.name,name='qt')],root,notices)
     assert (notices/'qt/src/bufferprocs_py37.h').read_text()=='Verbatim license fixture'
     assert (notices/'qt/COPYING.libsample').is_file()
+    assert all((notices/'qt'/name).is_file() for name in ('COPYING3','LGPL2.txt','GPLv2.TXT','licenseRule.json'))
     assert not any('licensewizard' in p.name or p.name=='license_check.py' for p in notices.rglob('*'))
 
 print('Release extraction: executable launcher retained; path traversal, absolute paths and symlinks rejected PASS')
