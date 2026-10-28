@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import patch
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from PySide6.QtCore import Qt, QPoint
+from PySide6.QtCore import Qt, QPoint, QEvent
 from PySide6.QtWidgets import QApplication,QVBoxLayout
 from vitalux import settings,theme
 from vitalux.widgets import Card,label
@@ -43,5 +43,8 @@ with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',dir
     assert popup.mask().contains(popup.rect().center())
     combo.hidePopup();theme.set_mode('obsidian_gold');app.setStyleSheet(theme.stylesheet())
     combo.showPopup();app.processEvents();assert popup.mask().isEmpty()
-    combo.hidePopup();combo.close()
+    combo.hidePopup();combo.close();combo.deleteLater()
+    # Complete native-popup disposal while Qt is still alive, rather than
+    # leaving its standalone style/window to Python interpreter teardown.
+    app.sendPostedEvents(None,QEvent.DeferredDelete);app.processEvents()
 print('All-design readable dialogs, matching control gutters, adaptive card spacing and quiet passive surfaces PASS')
