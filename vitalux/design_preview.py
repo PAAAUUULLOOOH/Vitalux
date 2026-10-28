@@ -10,12 +10,19 @@ def paint(p,tile,pal):
     frame=QRectF(13,13,max(50,tile.width()-55),59)
     p.setPen(QPen(QColor(pal['border']),.7));p.setBrush(QColor(pal['bg']))
     p.drawRoundedRect(frame,7,7)
+    bloom=tile.key=='aurora_bloom'
+    if bloom:
+        p.save();clip=QPainterPath();clip.addRoundedRect(frame,7,7);p.setClipPath(clip,Qt.IntersectClip)
+        p.drawPixmap(frame,tile._background,QRectF(tile._background.rect()));p.restore()
     p.save();p.setClipRect(frame.adjusted(3,3,-3,-3))
     quantum=tile.key=='quantum_core';nebula=tile.key=='nebula_prism'
     def panel(rect):
         p.setPen(QPen(QColor(pal['accent']),.55));p.setBrush(QColor(pal['card']))
         if quantum:
             path=QPainterPath(rect.topLeft()+QPointF(3,0));path.lineTo(rect.topRight());path.lineTo(rect.bottomRight()-QPointF(3,0));path.lineTo(rect.bottomLeft());path.closeSubpath();p.drawPath(path)
+        elif bloom:
+            from .aurora_bloom import shape
+            p.drawPath(shape(rect,True,scale=.3))
         else:p.drawRoundedRect(rect,2.5,2.5)
     left=frame.left()+5;right=frame.right()-5;top=frame.top()+5;bottom=frame.bottom()-5
     if not nebula:

@@ -93,3 +93,12 @@ with tempfile.TemporaryDirectory(prefix='vitalux-games-') as directory:
         clean=overlay.normalize(dict(target_fps=float('nan'),position='top-left\noutput_folder=/bad',toggle_hud='bad\nkey'))
         assert clean['target_fps']==60 and clean['position']=='top-left'
 print('Reversible Steam/Heroic/Lutris setup, preserved launch arguments, running-launcher guard and real shell wrapper lifecycle PASS')
+
+# A completed launcher child must not prevent connecting the next game.
+from types import SimpleNamespace
+import psutil
+uid=SimpleNamespace(real=os.getuid())
+with patch.object(psutil,'process_iter',return_value=[SimpleNamespace(info=dict(name='steam',uids=uid,status=psutil.STATUS_ZOMBIE))]):
+    assert not overlay.launcher_running('steam')
+with patch.object(psutil,'process_iter',return_value=[SimpleNamespace(info=dict(name='steam',uids=uid,status=psutil.STATUS_RUNNING))]):
+    assert overlay.launcher_running('steam')

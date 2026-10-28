@@ -25,5 +25,5 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
   for x,y in ((0,0),(219,0),(0,111),(219,111),(4,4),(215,4)):assert image.pixelColor(x,y).alpha()==0,(key,x,y)
   assert image.pixelColor(round(c.x()),round(c.y())).alpha()>240
   pm.save(str(out/(key+'.png')));images.append(bytes(image.constBits()));tile.close()
- assert len(set(images))==6
+ assert len(set(images))==len(theme.CHOICES)
 print('Six distinct design previews: matching rounded clipping and check circles fully inset PASS')

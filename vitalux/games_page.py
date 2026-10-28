@@ -3,12 +3,11 @@ from datetime import datetime
 from pathlib import Path
 import math
 from PySide6.QtCore import Qt, Signal, QRectF, QPoint, QPointF, QEvent
-from PySide6.QtGui import QColor, QDesktopServices, QImageReader, QPainter, QPen, QPixmap, QTextLayout, QTextOption
-from PySide6.QtCore import QUrl
+from PySide6.QtGui import QColor, QImageReader, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (QFormLayout, QGridLayout, QLineEdit,
                               QHBoxLayout, QScrollArea, QSpinBox, QTableWidget,
                               QTableWidgetItem, QVBoxLayout, QWidget, QSizePolicy)
-from . import game_profiles, theme
+from . import game_profiles, game_launch, theme
 from .choice_combo import ChoiceComboBox
 from .game_service import GameService
 from .i18n import tr
@@ -98,36 +97,21 @@ class GameTile(Card):
         super().__init__()
         self.game_id='';self.checked=False;self._title=''
         self.setCursor(Qt.PointingHandCursor);self.setFocusPolicy(Qt.StrongFocus)
-        self.layout().setContentsMargins(0,0,0,0);self.body.setSpacing(0)
-        self.cover=GameArtwork(self);self.body.addWidget(self.cover)
-        text_host=QWidget(self);text=QVBoxLayout(text_host)
-        text.setContentsMargins(16,12,16,14);text.setSpacing(5)
-        self.name=label('','strong');self.name.setTextFormat(Qt.PlainText)
-        self.name.setSizePolicy(QSizePolicy.Ignored,QSizePolicy.Fixed)
-        self.name.setMinimumWidth(0)
-        self.source=label('','muted');self.result=label('','strong')
-        text.addWidget(self.name);text.addWidget(self.source);text.addWidget(self.result)
-        self.body.addWidget(text_host)
-        self.setMinimumWidth(190)
+        self.layout().setContentsMargins(12,6,12,6);self.body.setSpacing(2)
+        self.name=label('','strong',Qt.AlignCenter);self.name.setTextFormat(Qt.PlainText)
+        self.name.setSizePolicy(QSizePolicy.Ignored,QSizePolicy.Fixed);self.name.setMinimumWidth(0)
+        self.cover=GameArtwork(self)
+        self.source=label('','muted',Qt.AlignCenter);self.result=label('','strong',Qt.AlignCenter)
+        for widget in (self.name,self.cover,self.source,self.result):self.body.addWidget(widget)
+        self.setMinimumWidth(190);self.setFixedHeight(128)
 
     def _fit(self):
         if not hasattr(self,'name'):return
-        width=max(1,self.width()-32)
-        layout=QTextLayout(self._title,self.name.font());option=QTextOption()
-        option.setWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere);layout.setTextOption(option)
-        layout.beginLayout();lines=[]
-        for index in range(2):
-            line=layout.createLine()
-            if not line.isValid():break
-            line.setLineWidth(width)
-            value=self._title[line.textStart():line.textStart()+line.textLength()].strip()
-            if index==1:value=self.name.fontMetrics().elidedText(self._title[line.textStart():],Qt.ElideRight,width)
-            lines.append(value)
-        layout.endLayout();self.name.setText('\n'.join(lines))
-        self.name.setFixedHeight(self.name.fontMetrics().lineSpacing()*2)
-        picture=max(96,round(self.width()*353/616));self.cover.setFixedHeight(picture)
-        height=picture+self.name.height()+self.source.sizeHint().height()+self.result.sizeHint().height()+36
-        if self.height()!=height:self.setFixedHeight(height)
+        width=max(1,self.width()-24)
+        self.name.setText(self.name.fontMetrics().elidedText(self._title,Qt.ElideRight,width))
+        self.name.setFixedHeight(self.name.fontMetrics().lineSpacing())
+        picture=128-12-6-self.name.height()-self.source.sizeHint().height()-self.result.sizeHint().height()
+        self.cover.setFixedHeight(max(24,picture))
 
     def set_game(self,game,checked):
         self.game_id,self.checked=game['id'],checked;self._title=game['name']
@@ -139,7 +123,7 @@ class GameTile(Card):
         self._fit();self.update()
 
     def resizeEvent(self,event):
-        super().resizeEvent(event);self._fit()
+        super().resizeEvent(event);self.layout().setContentsMargins(12,6,12,6);self._fit()
 
     def mouseReleaseEvent(self,event):
         if event.button()==Qt.LeftButton and self.rect().contains(event.position().toPoint()):self.selected.emit(self.game_id)
@@ -167,6 +151,8 @@ class OverlayProfile(QDialog):
         super().__init__(page.window())
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.page, self.game = page, game
+        self._close_after_save=False
+        self.page.service.profile_saved.connect(self._saved)
         self.setWindowTitle(tr('Overlay-Profil')+' · '+game['name'])
         self.resize(620, 720)
         root = QVBoxLayout(self)
@@ -279,8 +265,11 @@ class OverlayProfile(QDialog):
         return True
 
     def _save_close(self):
-        if self._save():
-            self.accept()
+        self._close_after_save=True
+        if not self._save():self._close_after_save=False
+
+    def _saved(self,game_id):
+        if self._close_after_save and game_id==self.game['id']:self.accept()
 
     def _connection(self):
         self._save('disconnect' if self.game.get('connected') else 'connect')
@@ -298,6 +287,7 @@ class GamesPage(Page):
         self._tile_columns = 3
         self._dialog = None
         self._closing = False
+        self._launch_requested=False
         self._covers = {}
         self._tile_viewport = None
         self.service = GameService(self, initial_games=startup_games)
@@ -310,6 +300,7 @@ class GamesPage(Page):
         self.service.activity.connect(self._activity)
         self.service.failed.connect(self._error)
         self.service.busy.connect(self._busy)
+        self.service.launch_ready.connect(self._launch_ready)
         heading = Card()
         title_row = QHBoxLayout()
         texts = QVBoxLayout()
@@ -449,6 +440,7 @@ class GamesPage(Page):
             visible = index < self._tile_columns and position < len(games)
             tile.setVisible(visible)
             if visible:tile.set_game(games[position], games[position]['id']==self.selected_id)
+        self.tile_row.invalidate();self.tile_row.activate();self.tile_host.updateGeometry()
         self.tile_host.setVisible(bool(games))
         if self.isVisible():self.artwork.request(games[self.offset:self.offset+self._tile_columns])
         self.previous.setEnabled(self.offset > 0)
@@ -579,9 +571,19 @@ class GamesPage(Page):
 
     def start_game(self):
         game = next((g for g in self.games if g['id']==self.selected_id), None)
-        if game and game.get('installed'):
-            if not QDesktopServices.openUrl(QUrl(game['launcher_uri'])):
-                self._error(tr('Der Spiele-Launcher konnte nicht geöffnet werden.'))
+        if game and game.get('installed') and not self._launch_requested:
+            self._launch_requested=True
+            self.start_button.setEnabled(False)
+            self.notice.setText(tr('Spielstart und Overlay-Verbindung werden vorbereitet …'));self.notice.show()
+            self.service.submit('launch',dict(game))
+
+    def _launch_ready(self,game):
+        self._launch_requested=False
+        if self._closing:return
+        try:
+            if not game_launch.start(game):raise ValueError('Der Spiele-Launcher konnte nicht geöffnet werden.')
+            self.notice.hide()
+        except (OSError,ValueError) as error:self._error(str(error))
 
     def _explain(self):
         from .detail_dialog import show_details
@@ -617,6 +619,7 @@ class GamesPage(Page):
 
     def _error(self, message):
         if self._closing:return
+        self._launch_requested=False
         self.notice.setText(tr(message))
         self.notice.show()
         self.notice.setTextFormat(Qt.PlainText)
@@ -627,6 +630,8 @@ class GamesPage(Page):
 
     def _busy(self, busy):
         self.profile_button.setEnabled(not busy)
+        game=next((g for g in self.games if g['id']==self.selected_id),{})
+        self.start_button.setEnabled(not busy and not self._launch_requested and bool(game.get('installed')))
         if self._dialog is not None:
             import shiboken6
             if shiboken6.isValid(self._dialog):

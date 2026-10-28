@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (QLabel as _QLabel, QPushButton as _QPushButton,
 from .i18n import tr
 from functools import lru_cache
 from PySide6.QtCore import Qt, QRectF, QSize, QVariantAnimation, QEasingCurve
-from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen, QPalette
+from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen, QPalette, QRegion
 
 
 def localized(x):
@@ -78,8 +78,10 @@ class QPushButton(_QPushButton):
             color.setAlpha(round((155 if self.isDown() else 70)*self._edge_amount))
             painter.setPen(QPen(color, 1.1))
             painter.setBrush(Qt.NoBrush)
-            radius = 10
-            painter.drawRoundedRect(rect, radius, radius)
+            if theme.mode()=='aurora_bloom':
+                from .aurora_bloom import shape
+                painter.drawPath(shape(rect,True,scale=1.25))
+            else:painter.drawRoundedRect(rect,10,10)
             painter.end()
     def setText(self, text):
         self._original = original_text(text)
@@ -282,9 +284,13 @@ class QComboBox(_QComboBox):
         view.viewport().setPalette(popup_palette)
         container.setAutoFillBackground(True)
         container.setObjectName("vitaluxComboPopup")
+        corners='border-radius:9px;'
+        if theme.mode()=='aurora_bloom':
+            from .aurora_bloom import _corners
+            corners=_corners(20,5)
         container.setStyleSheet(
             f"QFrame#vitaluxComboPopup {{ background: {surface}; "
-            f"border: 1px solid {border}; border-radius: 9px; padding: 2px; }}"
+            f"border: 1px solid {border}; {corners} padding: 2px; }}"
             f"QListView {{ background: {surface}; color: {theme.TEXT}; "
             f"border: none; outline: none; padding: 0px; }}"
             f"QListView::item {{ color: {theme.TEXT}; border: none; "
@@ -294,6 +300,14 @@ class QComboBox(_QComboBox):
             f"QListView::item:hover {{ background: {theme.blend(accent, surface, .14)}; }}"
         )
         super().showPopup()
+        if theme.mode() == 'aurora_bloom':
+            from .aurora_bloom import shape
+            container.setMask(QRegion(shape(QRectF(container.rect()), compact=True,
+                                            scale=1.25).toFillPolygon().toPolygon()))
+            container.setProperty('vitaluxPetalMask', True)
+        elif container.property('vitaluxPetalMask'):
+            container.clearMask()
+            container.setProperty('vitaluxPetalMask', False)
 
     def addItem(self, *args, **kwargs):
         source = original_text(args[0]) if args and isinstance(args[0],str) else None

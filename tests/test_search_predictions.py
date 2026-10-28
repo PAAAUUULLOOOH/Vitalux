@@ -51,7 +51,7 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
         assert page.advanced.isAncestorOf(page.restore_button)
         assert not hasattr(page,'clear_cache_btn') and not hasattr(page,'clear_preferences_btn')
         assert not hasattr(page,'sound_toggle') and not hasattr(page,'sound_volume')
-        assert len(page.design_tiles)== 6 and all(t.key!='champagne_glass' for t in page.design_tiles)
+        assert len(page.design_tiles)== 7 and all(t.key!='champagne_glass' for t in page.design_tiles)
         assert page.search.hasFocus()
         if language == 'en':
             assert page.search_results.item(0).text().startswith('Restore defaults')

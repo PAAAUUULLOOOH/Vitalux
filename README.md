@@ -11,14 +11,14 @@
 
 ![Vitalux running in English with Obsidian Gold and real system measurements](assets/vitalux-dashboard-preview.png)
 
-**Unstable v0.9.6.4-unstable.10.** Download this test build from the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest) for daily use.
+**Unstable v0.9.6.4-unstable.11.** Download this test build from the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest) for daily use.
 
 ## Features
 
 - Live CPU, GPU, memory, storage, network and sensor measurements, with saved chart choices, alerts and local history. Multi-GPU systems can select a preferred GPU for the overview, desktop overlay and diagnostics.
 - A rounded, frameless main window with edge-aligned navigation, integrated window controls and native dragging/resizing. Content scrolls behind the fixed controls; designs with a header combine them in one continuous surface.
-- A rearrangeable dashboard, desktop overlay and six customizable designs, from smoked glass and glass instruments to prismatic space and reactor HUDs. **Obsidian Gold is the default.**
-- A Games library with automatic Steam, Heroic and Lutris discovery, wide Steam capsules cached for offline use, per-game MangoHud profiles and local post-game FPS/frametime reports. Saving an enabled profile connects the game once its launcher is closed. The bundled 32/64-bit OpenGL/Vulkan overlay supports Steam’s container runtime and Flatpak; no separate MangoHud installation is needed.
+- A rearrangeable dashboard, desktop overlay and seven customizable designs, from smoked glass and glass instruments to prismatic space and reactor HUDs. **Obsidian Gold is the default.**
+- A Games library with automatic Steam, Heroic and Lutris discovery, compact game tiles with fitted Steam artwork cached for offline use, per-game MangoHud profiles and local post-game FPS/frametime reports. Saving an enabled profile connects the game once its launcher is closed. The bundled 32/64-bit OpenGL/Vulkan overlay supports Steam’s container runtime and Flatpak; no separate MangoHud installation is needed.
 - Per-app connections, usage warnings and optional, reversible TCP/UDP session blocks.
 - SMART information, drive benchmarks and local diagnostic reports.
 - Measured component power where supported, with current GPU watts and a readable power limit alongside the live values.
@@ -63,7 +63,9 @@ Keep the runtime, libraries, assets and launcher together. **Code → Download Z
 
 ## Appearance and controls
 
-Choose **Obsidian Gold**, **Glass**, **Crystal Atrium**, **Nebula Prism**, **Quantum Core** or **Light** in **Settings → Appearance**. Each design supports preset or custom accent colors and independently selectable backgrounds. The original names of retired designs identify their saved background and color presets; these presets do not change the selected design's layout or effects.
+Choose **Obsidian Gold**, **Glass**, **Crystal Atrium**, **Nebula Prism**, **Quantum Core**, **Light** or **Aurora Bloom** in **Settings → Appearance**. Each design supports preset or custom accent colors and independently selectable backgrounds. The original names of retired designs identify their saved background and color presets; these presets do not change the selected design's layout or effects.
+
+Aurora Bloom has a normal design tile, aurora ribbons, petal-shaped controls and a rounded inner header/sidebar junction.
 
 All designs share readable card interiors, consistent value hierarchy, adaptive content gutters and matching in-app dialogs. Hover, search and navigation use coordinated motion. Available updates have a clearly visible navigation marker; reduced motion, animations off and Ultra Eco retain a static marker. Appearance transitions blend at their original brightness.
 

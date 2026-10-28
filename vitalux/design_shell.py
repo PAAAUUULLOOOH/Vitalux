@@ -182,6 +182,7 @@ class DesignShell(QObject):
         w.collapse_button.setVisible(not signature)
         if signature:
             w.sidebar_brand.hide()
+            w._brand_gap.hide()
             w.sidebar_version.hide()
             w.lang_host.show()
             w.sidebar.setFixedWidth(210)

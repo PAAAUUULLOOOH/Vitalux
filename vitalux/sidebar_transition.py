@@ -74,6 +74,7 @@ class SidebarFreeze(QWidget):
 class SidebarTransition(QWidget):
     """Caches endpoints; only inexpensive QPainter composition occurs per tick."""
     resized = Signal()
+    width_changed = Signal(int)
 
     def __init__(self, parent, before, after, old_width, new_width,
                  old_arrow=None, new_arrow=None, old_tiles=None, new_tiles=None,
@@ -128,6 +129,7 @@ class SidebarTransition(QWidget):
 
     def set_progress(self, progress):
         self.progress = max(0.0, min(1.0, float(progress)))
+        self.width_changed.emit(self.current_width())
         self.update()
 
     def eventFilter(self, watched, event):

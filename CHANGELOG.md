@@ -1,5 +1,14 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.4-unstable.11] - 2026-10-28
+
+- Aurora Bloom ist regulär mit eigener Vorschaukachel auswählbar. Buttons und Auswahlfelder erhalten die asymmetrischen Rundungen; die innere Verbindungsecke von Kopf- und Seitenleiste ist abgerundet.
+- Designs mit einklappbarer Seitenleiste: Die Einstellungssuche sitzt mittig über dem Inhaltsbereich und folgt der Seitenleistenbewegung. Der Reststreifen unter der oberen Fensterkontur ist behoben.
+- Glass, Obsidian Gold und Light: etwas mehr fester Abstand zwischen Vitalux-Schriftzug und Navigationsreitern, auch im Vollbild.
+- Kompakte Spielkacheln mit mittigem Namen oben, passend skaliertem Bild und Launcher sowie Sitzungsanzeige darunter. Steam-Bilder berücksichtigen auch aktuelle Cache-Dateien und offizielle Bildadressen.
+- „Spiel starten“ prüft und bereitet die tatsächliche Overlay-Verbindung vor. Verlorene Launcher-Einträge werden erkannt; ein nicht verbundenes aktiviertes Overlay wird nicht mehr beim Start übergangen. Native und Flatpak-Launcher werden gezielt gestartet.
+- Overlay-Profile schließen nach dem Speichern erst bei erfolgreicher Einrichtung. Fehler bleiben sichtbar; vorhandene Startargumente bleiben erhalten.
+
 ## [v0.9.6.4-unstable.10] - 2026-10-28
 
 - Weniger Rechenaufwand und begrenzter Speicherbedarf beim wiederholten Wechseln von Designs und Akzentfarben. Darstellung, Animationen und Messintervalle bleiben erhalten.

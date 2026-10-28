@@ -71,8 +71,9 @@ def config_text(profile):
 
 def launcher_running(store):
     names = {'steam': ('steam', 'steamwebhelper'), 'heroic': ('heroic',), 'lutris': ('lutris',)}[store]
-    for process in psutil.process_iter(['name', 'uids']):
+    for process in psutil.process_iter(['name', 'uids', 'status']):
         try:
+            if process.info.get('status') in (psutil.STATUS_ZOMBIE,psutil.STATUS_DEAD):continue
             if process.info['uids'] and process.info['uids'].real != os.getuid():
                 continue
             if (process.info['name'] or '').lower() in names:
@@ -143,6 +144,34 @@ def _steam_path(game):
     raise ValueError('Steam-Konto nicht eindeutig. Melde dich zuerst im gewünschten Steam-Konto an.')
 
 
+def connected(game, root=None, snapshots=None):
+    """Read the actual launcher entry, rather than trusting a backup marker."""
+    root=Path(root) if root is not None else bridge_root(game)
+    record=profiles.read(root/'connection.json')
+    launcher=str(root/'launch.sh')
+    if record.get('launcher')!=launcher or not (root/'launch.sh').is_file():return False
+    snapshots={} if snapshots is None else snapshots
+    try:
+        store=game['store']
+        path=(_steam_path(game) if store=='steam' else
+              Path(game['launcher_root'])/'GamesConfig'/(game['appid']+'.json') if store=='heroic' else
+              Path(game['config_file']))
+        key=(store,str(path))
+        if key not in snapshots:
+            text=game_files.read_text(path)
+            snapshots[key]=game_files.loads(text) if store=='steam' else json.loads(text) if store=='heroic' else text
+        data=snapshots[key]
+        if store=='steam':
+            for key in ('UserLocalConfigStore','Software','Valve','Steam','apps',game['appid'],'LaunchOptions'):
+                data=game_files.get(data,key,{}) if isinstance(data,dict) else {}
+            return isinstance(data,str) and launcher in shlex.split(data) and '%command%' in data
+        if store=='heroic':
+            return any(isinstance(item,dict) and item.get('exe')==launcher
+                       for item in data.get(game['appid'],{}).get('wrapperOptions',[]))
+        return launcher in shlex.split(_yaml_prefix(data)[0])
+    except (OSError,ValueError,TypeError,KeyError,AttributeError):return False
+
+
 def _yaml_prefix(text, value=None):
     """Edit one generated Lutris scalar, preserving the rest of its YAML."""
     section = re.search(r'^system:[ \t]*(?:#[^\n]*)?$', text, re.M)
@@ -196,9 +225,12 @@ def connect(game, root=None, check_running=True):
             data = game_files.get(data, key, {}) if isinstance(data, dict) else {}
         old = data if isinstance(data, str) else ''
         if prefix in old:
-            return old_connection or dict(store=store, path=str(path), original=old, applied=old)
-        applied = (old.replace('%command%', prefix+' %command%', 1) if '%command%' in old
-                   else prefix+' %command%'+(' '+old if old else ''))
+            if old_connection.get('launcher')==launcher:return old_connection
+            applied=old
+            old=old.replace(prefix+' ','',1)
+        else:
+            applied = (old.replace('%command%', prefix+' %command%', 1) if '%command%' in old
+                       else prefix+' %command%'+(' '+old if old else ''))
         updated = game_files.set_string(text, keys, applied).encode()
         if raw.startswith(b'\xef\xbb\xbf'):
             updated = b'\xef\xbb\xbf'+updated
@@ -214,9 +246,11 @@ def connect(game, root=None, check_running=True):
         if not isinstance(wrappers, list):
             raise ValueError('Ungültige Heroic-Startpräfixe')
         if any(isinstance(item, dict) and item.get('exe') == launcher for item in wrappers):
-            return old_connection
-        original = list(wrappers)
-        config['wrapperOptions'] = [dict(exe=launcher, args='')]+wrappers
+            if old_connection.get('launcher')==launcher:return old_connection
+            original=[item for item in wrappers if not isinstance(item,dict) or item.get('exe')!=launcher]
+        else:
+            original = list(wrappers)
+            config['wrapperOptions'] = [dict(exe=launcher, args='')]+wrappers
         updated = (json.dumps(data, ensure_ascii=False, indent=2)+'\n').encode()
         connection = dict(store=store, path=str(path), original=original, launcher=launcher, appid=game['appid'])
     elif store == 'lutris':
@@ -227,8 +261,9 @@ def connect(game, root=None, check_running=True):
         text = raw.decode('utf-8')
         original, _ = _yaml_prefix(text)
         if prefix in original:
-            return old_connection
-        applied = prefix+(' '+original if original else '')
+            if old_connection.get('launcher')==launcher:return old_connection
+            applied=original;original=original.replace(prefix+' ','',1).replace(prefix,'',1).strip()
+        else:applied = prefix+(' '+original if original else '')
         _, changed = _yaml_prefix(text, applied)
         updated = changed.encode()
         connection = dict(store=store, path=str(path), original=original, applied=applied, launcher=launcher)

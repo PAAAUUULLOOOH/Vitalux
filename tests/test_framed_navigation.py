@@ -76,7 +76,7 @@ with tempfile.TemporaryDirectory() as folder, \
     window.show()
     wait(70)
     try:
-        for design in [key for key, _ in theme.CHOICES] + ['eclipse_crystal', 'aurora_bloom', 'minimal']:
+        for design in [key for key, _ in theme.CHOICES] + ['eclipse_crystal', 'minimal']:
             print('Checking framed navigation:',design,flush=True)
             settings.set_many(dict(theme='obsidian_gold' if design == 'minimal' else design,
                                    ultra_eco=design == 'minimal'))
@@ -101,7 +101,7 @@ with tempfile.TemporaryDirectory() as folder, \
             anchor=window.design_shell.bar if not header.isHidden() else window.window_frame.titlebar
             assert search.parentWidget() is window.window_frame.scene
             assert abs(bounds(search.icon).center().y()-bounds(anchor).center().y())<=1
-            assert abs(bounds(search).center().x()-window.rect().center().x())<=1
+            assert abs(bounds(search).center().x()-((window.width()+window.sidebar.width())/2 if not window.collapse_button.isHidden() else window.width()/2))<=1
             assert search.icon.height()==window.window_frame.buttons['minimize'].height()
             preferences.search_overlay.close_search()
             wait(100)
@@ -230,7 +230,7 @@ with tempfile.TemporaryDirectory() as folder, \
         # Header controls and all editing actions stay separate at the minimum
         # width, including DE labels and designs with a wider brand/dock.
         settings.set_many(dict(motion='off',ultra_eco=False))
-        for design in [key for key,_ in theme.CHOICES]+['eclipse_crystal','aurora_bloom']:
+        for design in [key for key,_ in theme.CHOICES]+['eclipse_crystal']:
             settings.set('theme',design)
             window.apply_appearance()
             window.resize(800,560)

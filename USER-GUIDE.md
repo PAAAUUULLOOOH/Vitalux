@@ -20,7 +20,9 @@ Available updates highlight **Updates** in every sidebar, header navigation and 
 
 ## Designs and backgrounds
 
-Choose one of six rounded preview tiles under **Settings → Appearance → Design**: **Obsidian Gold**, **Glass**, **Crystal Atrium**, **Nebula Prism**, **Quantum Core** and **Light**. Obsidian Gold is the default for new profiles. Design changes retain your page, scroll position and running measurements. The selected check stays inside the tile's upper-right edge.
+Choose one of seven rounded preview tiles under **Settings → Appearance → Design**: **Obsidian Gold**, **Glass**, **Crystal Atrium**, **Nebula Prism**, **Quantum Core**, **Light** and **Aurora Bloom**. Obsidian Gold is the default for new profiles. Design changes retain your page, scroll position and running measurements. The selected check stays inside the tile's upper-right edge.
+
+Aurora Bloom has a normal design tile, aurora ribbons, petal-shaped controls and a rounded inner header/sidebar junction.
 
 Every retained design supports preset/custom accents and backgrounds. Choose a retired design's original name in either selector to reuse only its colors or background. It does not restore the retired design's layout, materials or effects. Glass and Crystal Atrium are separate complete designs. Crystal Glass remains available as a color and background preset.
 
@@ -170,3 +172,9 @@ The main window has rounded outer corners and its own minimize, maximize/restore
 Overview cards use the available width with even outer margins, adapt to window resizing and sidebar width, and start close below the top controls. Expanding or collapsing the sidebar animates only its content row, keeping window controls and fixed design navigation in place.
 
 The initialization card stays centered as the display becomes ready, including compositor-managed Wayland placement. Only the small rounded card is visible; its position also follows display geometry changes during login.
+
+## Game launching and artwork
+
+Game tiles keep a compact height: centered title above the fitted image, followed by the launcher and session assessment. Long titles have a full-name tooltip. Steam artwork uses suitable local capsules/headers or official store image metadata and stays available offline.
+
+**Play game** waits for pending profile work, checks the actual launcher entry and prepares the enabled overlay before opening the detected native or Flatpak launcher. A stale connection backup does not count as a valid link. If setup is needed while the launcher is running, close it and retry; Vitalux keeps the profile open after a failed save and does not silently start that game without its enabled overlay.

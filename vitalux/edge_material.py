@@ -18,7 +18,7 @@ class HeaderMaterial(QWidget):
         painter=QPainter(self)
         w=self.materials.frame.window;height=w.design_shell.header.height()
         region=QRegion(QRect(0,0,w.width(),height))
-        if theme.mode()=='crystal_atrium':
+        if theme.mode() in ('crystal_atrium','aurora_bloom'):
             region=region.united(QRegion(QRect(w.sidebar.width(),height,22,22)))
         painter.setClipRegion(region)
         painter.drawImage(0,0,self.materials._joined_image('header'))
@@ -48,11 +48,13 @@ class EdgeMaterials(QWidget):
         """One silhouette: rounded outer ends and a concave inner glass corner."""
         w=self.frame.window;header=w.design_shell.header
         radius=22 if theme.mode()=='crystal_atrium' else 0
+        inner_radius=22 if theme.mode() in ('crystal_atrium','aurora_bloom') else 0
         path=QPainterPath();side=QPainterPath()
         path.addRoundedRect(QRectF(3,3,w.width()-6,header.height()-3),radius,radius)
         side.addRoundedRect(QRectF(3,3,w.sidebar.width()-3,w.height()-6),radius,radius)
         path=path.united(side)
-        if radius:
+        if inner_radius:
+            radius=inner_radius
             x,y=w.sidebar.width(),header.height()
             corner=QPainterPath();corner.addRect(QRectF(x,y,radius,radius))
             inside=QPainterPath();inside.addEllipse(QRectF(x,y,2*radius,2*radius))
@@ -66,7 +68,7 @@ class EdgeMaterials(QWidget):
     def _joined_image(self,name):
         scene=self.frame.scene;w=self.frame.window
         ratio=scene.devicePixelRatioF();height=w.design_shell.header.height()
-        radius=22 if theme.mode()=='crystal_atrium' else 0
+        radius=22 if theme.mode() in ('crystal_atrium','aurora_bloom') else 0
         patch=(QRect(0,0,w.width(),height+radius) if name=='header' else
                QRect(0,0,w.sidebar.width(),w.height()))
         scene.sharp_backdrop()
@@ -185,7 +187,7 @@ class EdgeMaterials(QWidget):
         self.header_layer.setVisible(joined)
         if joined:
             self._cache.pop('sidebar',None);self._cache.pop('header',None)
-            w=self.frame.window;radius=22 if theme.mode()=='crystal_atrium' else 0
+            w=self.frame.window;radius=22 if theme.mode() in ('crystal_atrium','aurora_bloom') else 0
             self.header_layer.setGeometry(0,0,w.width(),w.design_shell.header.height()+radius)
             self.header_layer.update();self.header_layer.raise_()
             w.design_shell.header.raise_();self.frame.titlebar.raise_()

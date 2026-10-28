@@ -425,7 +425,7 @@ def _corners(big, small):
 def stylesheet():
     pal = palette()
     series = pal['series']
-    field = _corners(14, 5)
+    field = _corners(20, 5)
     return f'''
     #heroTitle {{font-size:20px;font-weight:650;color:{pal['text']};}}
     #pageTitle {{font-size:30px;font-weight:750;}}
@@ -434,10 +434,11 @@ def stylesheet():
     #chipTitle {{font-size:9px;color:{pal['muted']};}}
     QLineEdit,QComboBox,QSpinBox,QTextEdit,QListWidget,QTableWidget {{
         background:{pal['sidebar']};color:{pal['text']};border:1px solid {pal['border']};{field}}}
+    QPushButton,QToolButton {{ {field} }}
     QHeaderView::section {{background:{pal['sidebar']};color:{pal['muted']};border:none;padding:8px;}}
     QTableWidget::item {{padding:6px;border-bottom:1px solid {pal['grid']};}}
     QTableWidget::item:selected {{background:{pal['track']};color:{pal['text']};}}
-    QComboBox::drop-down {{{_corners(0, 0)}border-top-right-radius:5px;border-bottom-right-radius:14px;background:{pal['card']};}}
+    QComboBox::drop-down {{{_corners(0, 0)}border-top-right-radius:5px;border-bottom-right-radius:20px;background:{pal['card']};}}
     QPushButton#ghostBtn,QPushButton#langBtn,QToolButton#layoutAction {{
         border:1px solid {pal['border']};{field}background:{pal['sidebar']};color:{pal['text']};}}
     QPushButton#ghostBtn:hover,QPushButton#langBtn:hover,QToolButton#layoutAction:hover {{

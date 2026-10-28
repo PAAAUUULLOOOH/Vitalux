@@ -259,6 +259,9 @@ class MainWindow(WindowLifecycle, QMainWindow):
         self.brand_mark = mark
         brand_lay.addWidget(mark, 0, Qt.AlignHCenter)
         sl.addWidget(brand)
+        self._brand_gap=QWidget(side)
+        self._brand_gap.setFixedHeight(0)
+        sl.addWidget(self._brand_gap)
 
         self.stack = QStackedWidget()
         factories=[
@@ -522,6 +525,12 @@ class MainWindow(WindowLifecycle, QMainWindow):
     def _setup_sidebar_motion(self):
         """A lightweight image-composited transition; no layout work per tick."""
         self._sidebar_overlay = None
+        self._sidebar_search_width = None
+
+    def _position_header_search(self,*_):
+        for _,page in self.pages:
+            if hasattr(page,'search_overlay') and page.search_overlay.isVisible():
+                page.search_overlay._position()
 
     def _capture_page_layers(self, root):
         """Cache visible cards separately, including ordinary component/settings tabs.
@@ -652,6 +661,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
         root = self.content_host
         toggle = self.collapse_button
         old_width = self.sidebar.width()
+        self._sidebar_search_width=old_width
         visible = root.isVisible()
         # Guard the FIRST rendered frame, before even hiding the arrow. Qt's
         # processEvents() is needed to settle QScrollArea, but must NEVER expose
@@ -719,6 +729,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
                                         before_side=before_side, after_side=after_side, arrow_y=toggle.y(),
                                         blend_tiles=self.stack.currentIndex()==0)
             self._sidebar_overlay = overlay
+            overlay.width_changed.connect(self._position_header_search)
             # A single, opaque overlay now owns the whole visible transition;
             # expose the real destination widgets only after the final frame.
             overlay.raise_()
@@ -730,6 +741,8 @@ class MainWindow(WindowLifecycle, QMainWindow):
             # Only raise the real arrow if there is no animation overlay.
             # During the animation its ONE snapshot moves with the seam.
             if self._sidebar_overlay is None:
+                self._sidebar_search_width=None
+                self._position_header_search()
                 toggle.raise_()
 
         # Keep endpoint snapshots untouched until the animation finishes.
@@ -751,6 +764,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
         overlay = self._sidebar_overlay
         if overlay is None and self._sidebar_motion is None:return
         self._sidebar_overlay = None
+        self._sidebar_search_width=None
         if overlay is not None:
             overlay.resized.disconnect(self._sidebar_finish)
             overlay.parentWidget().removeEventFilter(overlay)
@@ -774,6 +788,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
         from .signature_designs import active
         self.collapse_button.setVisible(not active())
         if not self.collapse_button.isHidden():self.collapse_button.raise_()
+        self._position_header_search()
 
     def _apply_sidebar_state(self):
         """Only for initial construction: no animation before the window shows."""
@@ -783,6 +798,9 @@ class MainWindow(WindowLifecycle, QMainWindow):
         compact = self._sidebar_collapsed
         self.sidebar_layout.setContentsMargins(*( (8,55,8,12) if compact else (16,21,16,16) ))
         self.sidebar_brand.setVisible(not compact)
+        gap=6 if not compact and theme.mode() in ('glass','obsidian_gold','light') else 0
+        self._brand_gap.setFixedHeight(gap)
+        self._brand_gap.setVisible(bool(gap))
         # Original full-size DE/EN buttons: never squeeze them into a 74px rail.
         self.lang_host.setVisible(not compact)
         self.sidebar_version.setVisible(not compact)

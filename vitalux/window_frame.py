@@ -78,7 +78,10 @@ class WindowButton(QAbstractButton):
             color = QColor(theme.CRIT if self.action == 'close' else theme.accent())
             color.setAlpha(95 if self.isDown() else 44)
             painter.setPen(Qt.NoPen); painter.setBrush(color)
-            painter.drawRoundedRect(QRectF(self.rect()).adjusted(1, 1, -1, -1), 6, 6)
+            if theme.mode()=='aurora_bloom':
+                from .aurora_bloom import shape
+                painter.drawPath(shape(QRectF(self.rect()).adjusted(1,1,-1,-1),True,scale=1.25))
+            else:painter.drawRoundedRect(QRectF(self.rect()).adjusted(1, 1, -1, -1), 6, 6)
         painter.setPen(QPen(QColor(theme.TEXT), 1.35, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
         painter.setBrush(Qt.NoBrush)
         x, y = self.width()/2, self.height()/2
@@ -362,7 +365,13 @@ class WindowFrame(QObject):
             position=widget.mapTo(self.scene,QPoint())
             key=(self.scene.width(),self.scene.height(),position.x(),position.y(),self.expanded)
             if key!=getattr(widget,'_vitalux_clip_key',None):
-                widget.setMask(QRegion() if self.expanded else QRegion(path.translated(-position.x(),-position.y()).toFillPolygon().toPolygon()))
+                region=QRegion(path.translated(-position.x(),-position.y()).toFillPolygon().toPolygon())
+                if widget is self.window.content_host:
+                    # Animate the straight top band too, without letting an
+                    # opaque child cover the antialiased outer corner pixels.
+                    band=QRect(CORNER_RADIUS+3,1,max(0,self.scene.width()-2*(CORNER_RADIUS+3)),2)
+                    region=region.united(QRegion(band.translated(-position)))
+                widget.setMask(QRegion() if self.expanded else region)
                 widget._vitalux_clip_key=key
 
     def _sync_page(self, *_):

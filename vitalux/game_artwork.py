@@ -1,5 +1,6 @@
 """Wide game capsules with bounded background retrieval and an offline cache."""
 import hashlib
+import json
 from pathlib import Path
 from queue import Queue
 from threading import Event, Lock
@@ -20,7 +21,7 @@ def dimensions(path):
         if not path.is_file() or path.stat().st_size>MAX_BYTES:return None
         reader=QImageReader(str(path));size=reader.size()
         if not size.isValid() or size.width()*size.height()>24_000_000:return None
-        if size.width()<460 or size.height()<200 or size.width()/size.height()<1.3:return None
+        if size.width()<460 or size.height()<200 or not 1.3<=size.width()/size.height()<=2.6:return None
         return size
     except (OSError,ValueError):return None
 
@@ -31,6 +32,10 @@ def local_candidates(game):
         for name in ('capsule_616x353.jpg','header_2x.jpg','header.jpg','library_hero.jpg'):
             yield folder/appid/name
             yield folder/(appid+'_'+name)
+        # Current Steam caches include content hashes in the filenames.
+        for directory,pattern in ((folder/appid,'*'),(folder,appid+'_*')):
+            for candidate in sorted(directory.glob(pattern))[:80]:
+                if any(part in candidate.name.lower() for part in ('capsule_616','header')):yield candidate
     if game.get('cover'):yield Path(game['cover'])
 
 
@@ -54,15 +59,31 @@ def resolve(game, cancelled=None, *, cache=None, offline=False, fetch=None):
     if offline or game.get('store')!='steam' or not str(game.get('appid','')).isdecimal():return ''
     try:
         record=game_files.read_json(meta)
-        if isinstance(record,dict) and float(record.get('retry_after',0))>time.time():return ''
+        if isinstance(record,dict) and record.get('schema')==2 and float(record.get('retry_after',0))>time.time():return ''
     except (OSError,ValueError,TypeError):pass
     appid=str(game['appid'])
     urls=[f'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/{appid}/capsule_616x353.jpg',
           f'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/{appid}/header_2x.jpg',
           f'https://cdn.akamai.steamstatic.com/steam/apps/{appid}/header.jpg']
+    def official_images():
+        # Store metadata supplies modern hashed asset paths. No guessed image
+        # search, scraped thumbnails, or unrelated game artwork is accepted.
+        try:
+            request=urllib.request.Request('https://store.steampowered.com/api/appdetails?appids='+appid,
+                                          headers={'User-Agent':'Vitalux game artwork'})
+            with (fetch or urllib.request.urlopen)(request,timeout=3) as response:
+                if urlparse(response.geturl()).hostname!='store.steampowered.com':return []
+                raw=response.read(1024*1024+1)
+                if len(raw)>1024*1024:return []
+                data=json.loads(raw).get(appid,{})
+                data=data.get('data',{}) if data.get('success') else {}
+            return [data[key] for key in ('capsule_image','header_image','capsule_imagev5')
+                    if isinstance(data.get(key),str) and _remote(data[key])]
+        except (OSError,ValueError,TypeError,AttributeError):return []
     folder.mkdir(parents=True,exist_ok=True)
     temporary=folder/(key+'.part')
-    for url in urls:
+    # Expand this same bounded list after the first legacy capsule misses.
+    for index,url in enumerate(urls):
         if cancelled():raise InterruptedError()
         try:
             request=urllib.request.Request(url,headers={'User-Agent':'Vitalux game artwork'})
@@ -86,7 +107,9 @@ def resolve(game, cancelled=None, *, cache=None, offline=False, fetch=None):
             return str(target)
         except (OSError,ValueError):pass
         finally:temporary.unlink(missing_ok=True)
-    if not cancelled():game_files.write_json(meta,dict(retry_after=time.time()+6*3600))
+        if index==0 and not cancelled():
+            urls[1:1]=[candidate for candidate in official_images() if candidate not in urls]
+    if not cancelled():game_files.write_json(meta,dict(schema=2,retry_after=time.time()+600))
     return ''
 
 

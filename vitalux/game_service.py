@@ -15,6 +15,8 @@ class GameService(QThread):
     activity = Signal(object)
     failed = Signal(str)
     busy = Signal(bool)
+    launch_ready = Signal(object)
+    profile_saved = Signal(str)
 
     def __init__(self, parent=None, root=None, initial_games=None):
         super().__init__(parent)
@@ -59,7 +61,7 @@ class GameService(QThread):
             if self.cancelled.is_set() or operation == 'stop':
                 break
             try:
-                if operation in ('connect', 'disconnect', 'profile'):
+                if operation in ('connect', 'disconnect', 'profile', 'launch'):
                     self.busy.emit(True)
                     game = payload
                     if operation == 'connect':
@@ -73,10 +75,25 @@ class GameService(QThread):
                         if connection:
                             game_profiles.disconnect(game, Path(connection['root']))
                         sessions.unregister(game['id'])
+                    elif operation=='launch':
+                        connection=sessions.connections.get(game['id'])
+                        profile=game_profiles.load(game['id'])
+                        if profile['enabled']:
+                            if not game_profiles.available(game):
+                                raise ValueError('Die mitgelieferte Overlay-Komponente ist unvollständig. Bitte Vitalux erneut entpacken oder installieren.')
+                            bridge=game_profiles.prepare(game,base=Path(connection['root']).parent if connection else None)
+                            if not game_profiles.connected(game,bridge):game_profiles.connect(game,bridge)
+                            if not game_profiles.connected(game,bridge):
+                                raise ValueError('Die Overlay-Verbindung konnte nicht bestätigt werden. Bitte das Overlay-Profil erneut verbinden.')
+                            sessions.register(game,bridge)
+                        elif connection:
+                            (Path(connection['root'])/'enabled').unlink(missing_ok=True)
                     else:
                         connection = sessions.connections.get(game['id'])
                         if connection:
-                            game_profiles.prepare(connection['game'])
+                            bridge=game_profiles.prepare(game,base=Path(connection['root']).parent)
+                            if game_profiles.load(game['id'])['enabled'] and not game_profiles.connected(game,bridge):
+                                game_profiles.connect(game,bridge);sessions.register(game,bridge)
                         elif game_profiles.load(game['id'])['enabled']:
                             # Saving an enabled profile also establishes the
                             # actual launcher connection; a checkmark alone
@@ -85,6 +102,8 @@ class GameService(QThread):
                             game_profiles.connect(game,bridge)
                             sessions.register(game,bridge)
                     self._catalog(sessions)
+                    if operation=='launch' and not self.cancelled.is_set():self.launch_ready.emit(dict(game))
+                    if operation=='profile':self.profile_saved.emit(game['id'])
                 elif operation == 'report':
                     self.report_ready.emit(sessions.report(payload))
                 if operation == 'scan' or time.monotonic() >= next_scan:
@@ -126,11 +145,12 @@ class GameService(QThread):
                 break
             except Exception as error:
                 if not self.cancelled.is_set():
+                    if operation in ('connect','disconnect','profile','launch'):self._catalog(sessions)
                     self.failed.emit(str(error))
                 if operation == 'scan':
                     self._scan_queued = False
                 next_scan = max(next_scan, time.monotonic()+60)
                 next_monitor = time.monotonic()+2
             finally:
-                if operation in ('connect', 'disconnect', 'profile'):
+                if operation in ('connect', 'disconnect', 'profile', 'launch'):
                     self.busy.emit(False)

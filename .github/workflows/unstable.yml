@@ -107,6 +107,7 @@ jobs:
         run: |
           set -euo pipefail
           xvfb-run -a -s '-screen 0 1280x800x24' python scripts/check-game-recording.py --output build/game-recording
+          xvfb-run -a -s '-screen 0 1280x800x24' python scripts/check-game-start.py --probe build/game-recording/graphics-probe64 --output build/game-start
       - name: Check bundled overlay inside a real Flatpak sandbox
         if: steps.prepare.outputs.changed == 'true' && steps.validation.outputs.overlay == 'true'
         timeout-minutes: 10
@@ -225,6 +226,7 @@ jobs:
             build/setup/
             build/regressions/
             build/game-recording/
+            build/game-start/
             build/flatpak-recording/recording/
             build/flatpak-recording/runtime-list.txt
             build/steam-recording/recording/

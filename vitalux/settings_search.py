@@ -186,11 +186,22 @@ class FloatingSettingsSearch(QWidget):
                 shell=self._host.design_shell
                 anchor=shell.bar if not shell.header.isHidden() else self._host.window_frame.titlebar
                 top=anchor.mapTo(self.parentWidget(),QPoint()).y()
-                self.move((self._host.width()-self.width())//2,top+(anchor.height()-self.icon.height())//2)
+                self.move(round(self._horizontal_center()-self.width()/2),top+(anchor.height()-self.icon.height())//2)
             else:
                 inset=self._host.property('vitaluxTopInset') or 0
                 self.move(max(0, (self._host.width()-self.width())//2), 12+inset)
             self.raise_()
+
+    def _horizontal_center(self):
+        """Center over the content, excluding only a collapsible sidebar."""
+        window=self._host
+        if self._header_mode and not window.collapse_button.isHidden():
+            overlay=getattr(window,'_sidebar_overlay',None)
+            width=overlay.current_width() if overlay is not None else getattr(window,'_sidebar_search_width',None)
+            if width is None:width=window.sidebar.width()
+            left=window.content_host.mapTo(self.parentWidget(),QPoint()).x()+width
+            return (left+self.parentWidget().width())/2
+        return window.width()/2
 
     def _sync_geometry(self):
         icon_width,height=self.icon.width(),self.icon.height()
@@ -244,8 +255,9 @@ class FloatingSettingsSearch(QWidget):
     def _wanted_width(self):
         metrics = self.field.fontMetrics()
         if self._header_mode:
-            window=self._host;shell=window.design_shell;center=window.width()/2
-            left,right=24,window.width()-24
+            window=self._host;shell=window.design_shell;center=self._horizontal_center()
+            left=window.sidebar.width()+12 if not window.collapse_button.isHidden() else 24
+            right=window.width()-24
             candidates=([shell.brand,window.lang_host,window.window_frame.titlebar]
                         if not shell.header.isHidden() else [window.window_frame.buttons['minimize']])
             for widget in candidates:

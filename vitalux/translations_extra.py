@@ -36,7 +36,7 @@ EN_MORE = {
     'Anschlüsse': 'Outputs',
     'Stable enthält alle Teständerungen. Die App wechselt automatisch zu Stable.': 'Stable includes all test changes. The app is switching to Stable automatically.',
 
-    'Sechs Designs stehen zur Auswahl: Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core und Light. Alle unterstützen eigene Akzentfarben und Hintergründe.': 'Choose from six designs: Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core and Light. All support custom accent colors and backgrounds.',
+    'Sieben Designs stehen zur Auswahl: Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core, Light und Aurora Bloom. Alle unterstützen eigene Akzentfarben und Hintergründe.': 'Choose from seven designs: Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core, Light and Aurora Bloom. All support custom accent colors and backgrounds.',
     'Originalfarben und Originalhintergrund stellen die Vorgaben des aktiven Designs wieder her. Farben und Hintergründe früherer Designs bleiben als Vorlagen erhalten. Design zurücksetzen betrifft nur das aktuelle Design. Komponentenbilder anzeigen schaltet die Bilder gemeinsam um und behält den Cache.': 'Original colors and Original background restore the active design’s factory choices. Colors and backgrounds from previous designs remain available as presets. Reset design affects only the current design. Show component pictures toggles all product images while retaining the cache.',
     'Übersichtskacheln zeigen mittige Texte in gleicher Reihenfolge. Lange Namen werden gekürzt; beim Darüberfahren erscheint der volle Name. Im Bearbeitungsmodus bleiben Verschieben und das X sichtbar.': 'Overview captions are centered in a consistent order. Long names are shortened; hover to read the full name. Move and X controls remain visible while editing.',
     'Originalfarben': 'Original colors',
@@ -50,6 +50,7 @@ EN_MORE = {
     'Nebula Prism · Akzentfarben und Hintergrund sind anpassbar.': 'Nebula Prism · Accent colors and background are adjustable.',
     'Quantum Core · Akzentfarben und Hintergrund sind anpassbar.': 'Quantum Core · Accent colors and background are adjustable.',
     'Light · Akzentfarben und Hintergrund sind anpassbar.': 'Light · Accent colors and background are adjustable.',
+    'Aurora Bloom · Akzentfarben und Hintergrund sind anpassbar.': 'Aurora Bloom · Accent colors and background are adjustable.',
 
     'CPU, Grafik, RAM und Mainboard zeigen verfügbare Herstellerdaten und kurze Specs. Freigestellte Produktbilder werden bevorzugt, sonst passende Bilder mit Hintergrund verwendet. Ohne Bild nutzen die Texte die gesamte Breite.': 'CPU, graphics, RAM and mainboard show available manufacturer details and concise specs. Cutout pictures are preferred; matching pictures with backgrounds are used otherwise. Without a picture, the text uses the full width.',
     'Maximaler Takt': 'Maximum clock',

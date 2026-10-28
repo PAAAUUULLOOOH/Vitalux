@@ -33,7 +33,7 @@ with tempfile.TemporaryDirectory() as temporary,patch.object(settings,'PATH',tem
     if expected:assert window.render_backend_active==expected,(expected,window.render_backend_active)
     try:
         page=window.pages[9][1]
-        for design in [key for key,_ in theme.CHOICES]+['eclipse_crystal','aurora_bloom','minimal']:
+        for design in [key for key,_ in theme.CHOICES]+['eclipse_crystal','minimal']:
             settings.set_many(dict(theme='obsidian_gold' if design=='minimal' else design,ultra_eco=design=='minimal'))
             window.apply_appearance();window.nav_buttons[9].click();wait()
             for width in (1400,800):
@@ -41,7 +41,7 @@ with tempfile.TemporaryDirectory() as temporary,patch.object(settings,'PATH',tem
                 search=page.search_overlay;search.open_search();wait()
                 anchor=window.design_shell.bar if not window.design_shell.header.isHidden() else window.window_frame.titlebar
                 assert abs(bounds(search.icon).center().y()-bounds(anchor).center().y())<=1,(design,width)
-                assert abs(bounds(search).center().x()-window.rect().center().x())<=1,(design,width)
+                assert abs(bounds(search).center().x()-((window.width()+window.sidebar.width())/2 if not window.collapse_button.isHidden() else window.width()/2))<=1,(design,width)
                 assert search.field.height()==window.window_frame.buttons['minimize'].height()
                 assert bounds(search.field).contains(bounds(search.icon))
                 assert not bounds(search).intersects(bounds(window.window_frame.buttons['minimize']))
@@ -59,6 +59,14 @@ with tempfile.TemporaryDirectory() as temporary,patch.object(settings,'PATH',tem
                 for progress in (0.,.25,.5,.75,1.):
                     window._sidebar_overlay.set_progress(progress)
                     assert window.grab().toImage().copy(80,0,270,1)==contour,'Top contour changed during sidebar motion'
+                    if design=='obsidian_gold':
+                        image=window.grab().toImage();ratio=image.devicePixelRatio()
+                        x=round((window._sidebar_overlay.current_width()-12)*ratio)
+                        top=image.pixelColor(x,round(2*ratio));body=image.pixelColor(x,round(6*ratio))
+                        assert max(abs(top.red()-body.red()),abs(top.green()-body.green()),abs(top.blue()-body.blue()))<=5,'Stale sidebar band below window contour'
+                    search=page.search_overlay
+                    expected=(window.width()+window._sidebar_overlay.current_width())/2
+                    assert abs(search.x()+search.width()/2-expected)<=1,'Search did not follow the animated content center'
                 window._sidebar_finish();settings.set('motion','off')
             if design=='nebula_prism':
                 shell=window.design_shell

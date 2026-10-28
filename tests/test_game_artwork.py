@@ -30,6 +30,10 @@ with tempfile.TemporaryDirectory() as temporary:
     hero=root/'hero.jpg';image=QImage(1920,620,QImage.Format_RGB32);image.fill(QColor('#506080'));image.save(str(hero))
     local=dict(game,id='steam:45',appid='45',launcher_root=str(steam),cover=str(hero))
     assert resolve(local,cache=cache,offline=True)==str(capsule),'Large hero displaced the properly shaped capsule'
+    assert dimensions(hero) is None,'Very flat hero artwork was accepted as a capsule'
+    hashed=steam/'appcache/librarycache/46/0123_header.jpg';hashed.parent.mkdir()
+    image=QImage(920,430,QImage.Format_RGB32);image.fill(QColor('#506080'));image.save(str(hashed))
+    assert resolve(dict(local,id='steam:46',appid='46',cover=''),cache=cache,offline=True)==str(hashed)
 
     class Response(io.BytesIO):
         def geturl(self):return 'https://shared.akamai.steamstatic.com/capsule.jpg'
@@ -45,6 +49,18 @@ with tempfile.TemporaryDirectory() as temporary:
     assert resolve(game,cache=cache,offline=True,fetch=forbidden)==cached
     assert resolve(game,cache=cache,fetch=forbidden)==cached
     assert resolve(dict(game,id='lutris:1',store='lutris'),cache=cache,fetch=forbidden)==''
+    class StoreResponse(io.BytesIO):
+        def geturl(self):return 'https://store.steampowered.com/api/appdetails?appids=47'
+    modern_url='https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/47/hash/header.jpg'
+    requested=[]
+    def modern(request,timeout):
+        requested.append(request.full_url)
+        if 'api/appdetails' in request.full_url:
+            return StoreResponse(json.dumps({'47':{'success':True,'data':{'header_image':modern_url}}}).encode())
+        if request.full_url==modern_url:return Response(wide.read_bytes())
+        raise OSError('Legacy image address missing')
+    assert resolve(dict(game,id='steam:47',appid='47'),cache=cache,fetch=modern)
+    assert modern_url in requested
 
     # A failed or malformed lookup must neither crash nor retry on every scan.
     other=dict(game,id='steam:43',appid='43')

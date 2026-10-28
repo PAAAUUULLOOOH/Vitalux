@@ -10,7 +10,7 @@ os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 os.environ['VITALUX_SPEC_OFFLINE']='1'
 os.environ['VITALUX_LOCAL_PREVIEW']='1'
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication,QDialog
 from PySide6.QtCore import Qt
 from PySide6.QtTest import QTest
 from vitalux import settings, theme, distro, sensors, i18n
@@ -76,6 +76,13 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',folder
                 assert page.width()<=scroll.viewport().width()+2,(design,page.width(),scroll.viewport().width())
                 assert page.values[0].text()=='132'
                 assert sum(tile.isVisible() for tile in page.tiles)<=3
+                for tile in page.tiles:
+                    if not tile.isVisible():continue
+                    assert tile.height()==128 and tile.name.alignment()==Qt.AlignCenter
+                    assert tile.name.geometry().bottom()<tile.cover.geometry().top()
+                    assert tile.cover.geometry().bottom()<tile.source.geometry().top()
+                    assert tile.source.geometry().bottom()<tile.result.geometry().top()
+                    assert all(tile.rect().contains(widget.geometry()) for widget in (tile.name,tile.cover,tile.source,tile.result)),design
                 if output:window.grab().save(str(output/(design+'-'+str(width)+'.png')))
         window.resize(1500,1100);window.set_language('en');wait(30)
         page._report(report)
@@ -87,14 +94,20 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',folder
         QTest.keyClick(page.tiles[1],Qt.Key_Return)
         assert page.selected_id=='steam:43'
         page.select_game('steam:42')
-        with patch('vitalux.games_page.QDesktopServices.openUrl',return_value=True) as opened:
-            page.start_game();assert opened.call_args.args[0].toString()=='steam://rungameid/42'
+        with patch.object(page.service,'submit') as submitted,patch('vitalux.game_launch.start',return_value=True) as opened:
+            page.start_game();assert submitted.call_args.args[0]=='launch'
+            assert not opened.called and not page.start_button.isEnabled()
+            page._launch_ready(games[0]);assert opened.call_args.args[0]['id']=='steam:42'
         dialog=OverlayProfile(page,games[0]);dialog.target.setValue(144)
         assert dialog._save()
         from vitalux import game_profiles
         assert game_profiles.load('steam:42')['target_fps']==144
         assert game_profiles.load('steam:43')['target_fps']==60
-        dialog.close();wait(20)
+        finished=[];dialog.finished.connect(finished.append)
+        dialog._save_close();assert not finished,'Profile closed before its worker succeeded'
+        page.service.profile_saved.emit('unrelated');assert not finished
+        page.service.profile_saved.emit('steam:42');assert finished==[QDialog.DialogCode.Accepted]
+        wait(20)
         window._switch_page(0);page._finished(report);wait(30)
         assert window.stack.currentIndex()==12 and page.current_report['game_id']=='steam:42'
         assert window.nav_buttons[12].isChecked()

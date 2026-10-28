@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 import time
 import psutil
-from . import game_files, game_reports, profiles
+from . import game_files, game_reports, game_profiles, profiles
 
 MAX_REPORTS = 200
 RAW_BUDGET = 512*1024*1024
@@ -91,6 +91,7 @@ class GameSessions:
         self._save_catalog()
 
     def catalog(self):
+        snapshots={}
         latest = {}
         for row in self.summaries:
             latest.setdefault(row['game_id'], row)
@@ -99,8 +100,8 @@ class GameSessions:
             item = dict(game)
             connection = self.connections.get(game['id'])
             root = Path(connection['root']) if connection else None
-            item['connected'] = bool(root and (root/'connection.json').is_file())
-            item['overlay_enabled'] = bool(root and (root/'enabled').is_file())
+            item['connected'] = bool(root and game_profiles.connected(game,root,snapshots))
+            item['overlay_enabled'] = bool(item['connected'] and (root/'enabled').is_file())
             item['latest'] = latest.get(game['id'])
             result.append(item)
         return sorted(result, key=lambda game: (not game.get('installed'), game['name'].casefold(), game['id']))

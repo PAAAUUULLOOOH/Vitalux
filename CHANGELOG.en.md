@@ -1,5 +1,14 @@
 # Vitalux – Changes
 
+## [v0.9.6.4-unstable.11] - 2026-10-28
+
+- Aurora Bloom is now available through its own design preview tile. Buttons and selectors use asymmetric rounded corners; the inner header/sidebar junction is rounded.
+- Designs with a collapsible sidebar: Settings search centers over the content and follows sidebar movement. Fixed the leftover strip below the top window outline.
+- Glass, Obsidian Gold and Light: a small fixed gap between the Vitalux wordmark and navigation, including fullscreen.
+- Compact game tiles place a centered title above fitted artwork, with the launcher and session status below. Steam artwork also supports current cache filenames and official image metadata.
+- Play game verifies and prepares the actual overlay connection first. Missing launcher entries are detected; an enabled but disconnected overlay is no longer silently skipped. Native and Flatpak launchers are started explicitly.
+- Overlay profiles close after saving only when setup succeeds. Errors stay visible and existing launch arguments are preserved.
+
 ## [v0.9.6.4-unstable.10] - 2026-10-28
 
 - Less processing and bounded memory use when repeatedly changing designs and accent colors. Rendering, animations and measurement intervals are preserved.

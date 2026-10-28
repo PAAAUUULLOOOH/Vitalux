@@ -20,7 +20,7 @@ class Host(QWidget):
         theme.set_accent(wallpaper_accents.resolve_accent(settings.get('accent','design_default'),'#73ba25'))
         catalog.remember()
 with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Path(folder)/'settings.json')):
-    assert tuple(dict(theme.CHOICES))==catalog.VISIBLE and len(theme.CHOICES)==6
+    assert tuple(dict(theme.CHOICES))==catalog.VISIBLE and len(theme.CHOICES)==7
     assert set(theme._THEMES)==set(catalog.AVAILABLE)
     for key in catalog.VISIBLE:assert all(capabilities(key).values())
     assert not any(capabilities('minimal').values())
@@ -78,17 +78,13 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
         page.change_accent('#f472b6')
         assert original==backdrops.render(QSize(180,120),backdrops.resolve('theme_default',key))[0].toImage(),key
         assert not page.accent_combo.isLocked() and not page.background_combo.isLocked()
-    visible=[tile.key for tile in page.design_tiles]
-    page.search_settings('bloo');assert theme.mode()!='aurora_bloom'
-    page.search.setText('  BLOOM  ');app.processEvents()
-    assert theme.mode()=='aurora_bloom' and settings.get('theme')=='aurora_bloom'
-    assert page.search.text()=='' and [tile.key for tile in page.design_tiles]==visible
-    assert 'aurora_bloom' not in dict(theme.CHOICES)
-    assert page.background_combo.findData('aurora_bloom')<0
-    assert page.accent_combo.findData('palette:aurora_bloom')<0
+    assert 'aurora_bloom' in [tile.key for tile in page.design_tiles]
+    page.select_design('glass');page.search.setText('bloom');app.processEvents()
+    assert theme.mode()=='glass' and page.search.text()=='bloom'
+    page.select_design('aurora_bloom');assert theme.mode()=='aurora_bloom'
     assert not backdrops.render(QSize(640,480),'original:aurora_bloom')[0].isNull()
     settings._cache_identity=None;settings._cache_value=None
     theme.set_mode(settings.get('theme'));assert theme.mode()=='aurora_bloom'
     page.select_design('glass');page.search_settings('timbooh');assert theme.mode()=='eclipse_crystal'
     page.close();host.close()
-print('Six designs, retired data-only presets, personal settings, independent factory background and per-design reset PASS')
+print('Seven designs, retired data-only presets, personal settings, independent factory background and per-design reset PASS')

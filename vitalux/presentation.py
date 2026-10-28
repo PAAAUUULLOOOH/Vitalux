@@ -52,6 +52,7 @@ def prepare_dialog(widget):
 
 def stylesheet():
     """Apply hierarchy and target sizes after each design's own palette rules."""
+    corners='border-top-left-radius:20px;border-bottom-right-radius:20px;border-top-right-radius:5px;border-bottom-left-radius:5px;' if theme.mode()=='aurora_bloom' else 'border-radius:10px;'
     return f'''
     QLabel#strong {{font-weight:650; color:{theme.TEXT};}}
     QLabel#telemetryValue {{font-weight:700;}}
@@ -59,9 +60,9 @@ def stylesheet():
     QLabel#chipTitle {{font-size:11px; font-weight:600;}}
     QLabel#chipValue {{font-size:15px; font-weight:700;}}
     QPushButton#ghostBtn,QPushButton#primaryBtn {{
-        min-height:18px; padding:8px 14px; border-radius:10px;}}
+        min-height:18px; padding:8px 14px; {corners}}}
     QDialog QPushButton {{min-height:18px; min-width:64px; padding:8px 14px;
-        border:1px solid {theme.BORDER}; border-radius:10px;
+        border:1px solid {theme.BORDER}; {corners}
         background:{theme.combo_surface()}; color:{theme.TEXT};}}
     QDialog QPushButton:hover,QDialog QPushButton:focus {{border-color:{theme.accent()};}}
     QDialog QPushButton:default {{border-color:{theme.accent()}; font-weight:700;}}

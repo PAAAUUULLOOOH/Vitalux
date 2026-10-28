@@ -28,7 +28,8 @@ def capture(source, output):
                      for i in range(900)]
                for index, key in enumerate(('cpu','gpu','ram','net_down','net_up'))}
     output.mkdir(parents=True, exist_ok=True)
-    for design in [key for key, _ in theme.CHOICES]+['eclipse_crystal','minimal']:
+    # Preserve the eight existing published layouts; Bloom's controls change by request.
+    for design in ('obsidian_gold','glass','crystal_atrium','nebula_prism','quantum_core','light','eclipse_crystal','minimal'):
         settings.set_many(dict(theme=design,motion='off',component_images=False))
         theme.set_mode(design)
         app.setStyleSheet(theme.stylesheet())
