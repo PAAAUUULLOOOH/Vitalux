@@ -14,10 +14,12 @@ def main():
   os.environ.update(QT_QPA_PLATFORM='xcb',LIBGL_ALWAYS_SOFTWARE='1',vblank_mode='0',VITALUX_GAME_ART_OFFLINE='1')
   os.environ.pop('VITALUX_SPEC_OFFLINE',None)
   from PySide6.QtGui import QImage
+  from PySide6.QtCore import QCoreApplication,QEvent
   from PySide6.QtWidgets import QApplication
   from vitalux import game_files,game_profiles,settings,theme
   from vitalux.games_page import GamesPage
   app=QApplication([])
+  app.setQuitOnLastWindowClosed(False)
   settings.set_many(dict(motion='off',component_images=False));theme.set_mode('obsidian_gold')
   config=output/'Steam test files/userdata/123/config/localconfig.vdf';config.parent.mkdir(parents=True,exist_ok=True)
   config.write_text('"UserLocalConfigStore" { "Software" { "Valve" { "Steam" { "apps" { "42" { "LaunchOptions" "" } } } } } }')
@@ -64,7 +66,14 @@ def main():
    result.update(visible_overlay_pixels=bright[0],recording=True,play_button=True)
    game_files.write_json(output/'verification.json',result);print(json.dumps(result),flush=True)
   finally:
-   page.shutdown();assert page.service.wait(5000);assert page.artwork.wait(5000);page.close()
+   page.shutdown();assert page.service.wait(5000);assert page.artwork.wait(5000)
+   # Deliver the worker's final queued signals while the page still exists,
+   # then destroy its widgets with QApplication alive. Leaving this cyclic
+   # object graph to Python finalization can tear down shared Qt objects late.
+   app.processEvents();page.close();page.deleteLater()
+   QCoreApplication.sendPostedEvents(None,QEvent.DeferredDelete);app.processEvents()
+   import shiboken6
+   assert not shiboken6.isValid(page),'Native game page outlived its QApplication'
    if pidfile.exists():
     try:
      import psutil
