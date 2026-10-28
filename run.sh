@@ -12,7 +12,8 @@ HERE="$PWD"
 if [ -f "$HERE/DESIGN-BUILD.json" ] && [ -f "$HERE/Designs-testen.sh" ]; then
   exec bash "$HERE/Designs-testen.sh" "$@"
 fi
-if [ ! -f "$HERE/runtime/bin/python3.12" ] && [ -f "$HERE/portable-runtime/vitalux-linux-x86_64.tar.xz" ]; then
+if [[ -f "$HERE/portable-runtime/desktop-libraries-linux-x86_64.tar.xz" ]] ||
+   { [[ ! -f "$HERE/runtime/bin/python3.12" ]] && [[ -f "$HERE/portable-runtime/vitalux-linux-x86_64.tar.xz" ]]; }; then
   bash "$HERE/scripts/ensure-runtime.sh" || exit $?
 fi
 VERSION="$(sed -n 's/^__version__ = "\([^"]*\)".*/\1/p' "$HERE/vitalux/__init__.py" 2>/dev/null)"

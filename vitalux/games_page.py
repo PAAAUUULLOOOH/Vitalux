@@ -3,7 +3,7 @@ from datetime import datetime
 from pathlib import Path
 import math
 from PySide6.QtCore import Qt, Signal, QRectF, QPoint, QPointF, QEvent
-from PySide6.QtGui import QColor, QImageReader, QPainter, QPen, QPixmap
+from PySide6.QtGui import QColor, QImageReader, QLinearGradient, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (QFormLayout, QGridLayout, QLineEdit,
                               QHBoxLayout, QScrollArea, QSpinBox, QTableWidget,
                               QTableWidgetItem, QVBoxLayout, QWidget, QSizePolicy)
@@ -39,6 +39,14 @@ def duration(seconds):
 def date_text(stamp):
     from .i18n import lang
     return datetime.fromtimestamp(stamp).strftime('%d.%m.%Y · %H:%M' if lang() == 'de' else '%Y-%m-%d · %H:%M')
+
+
+def grade_color(grade, on_cover=False):
+    light=theme.is_light() and not on_cover
+    return dict(excellent='#137b3d' if light else '#6ce49b',
+                good='#247a57' if light else '#43ce96',
+                adequate='#966000' if light else '#f5c15c',
+                improve='#b72f39' if light else '#ff858b').get(grade,'#d6dee8' if on_cover else theme.MUTED)
 
 
 class GameArtwork(QWidget):
@@ -77,7 +85,7 @@ class GameArtwork(QWidget):
         painter.setClipPath(path.translated(-position.x(),-position.y()))
         painter.fillRect(self.rect(),QColor(theme.CARD))
         if not self._pixmap.isNull():
-            size=self._pixmap.size().scaled(self.size(),Qt.KeepAspectRatio)
+            size=self._pixmap.size().scaled(self.size(),Qt.KeepAspectRatioByExpanding)
             target=QRectF((self.width()-size.width())/2,(self.height()-size.height())/2,size.width(),size.height())
             painter.drawPixmap(target,self._pixmap,QRectF(self._pixmap.rect()))
         else:
@@ -87,6 +95,10 @@ class GameArtwork(QWidget):
             painter.drawRoundedRect(QRectF(x-23,y-13,46,27),9,9)
             painter.drawLine(QPointF(x-15,y),QPointF(x-5,y));painter.drawLine(QPointF(x-10,y-5),QPointF(x-10,y+5))
             painter.drawEllipse(QRectF(x+7,y-4,3,3));painter.drawEllipse(QRectF(x+13,y+2,3,3))
+        shade=QLinearGradient(0,0,0,self.height())
+        for position,alpha in ((0,220),(.3,85),(.48,35),(.7,130),(1,235)):
+            shade.setColorAt(position,QColor(0,0,0,alpha))
+        painter.fillRect(self.rect(),shade)
         painter.end()
 
 
@@ -102,7 +114,10 @@ class GameTile(Card):
         self.name.setSizePolicy(QSizePolicy.Ignored,QSizePolicy.Fixed);self.name.setMinimumWidth(0)
         self.cover=GameArtwork(self)
         self.source=label('','muted',Qt.AlignCenter);self.result=label('','strong',Qt.AlignCenter)
-        for widget in (self.name,self.cover,self.source,self.result):self.body.addWidget(widget)
+        self.body.addWidget(self.name);self.body.addStretch(1)
+        for widget in (self.source,self.result):self.body.addWidget(widget)
+        self.name.setStyleSheet('color: white; background: transparent;')
+        self.source.setStyleSheet('color: #e1e7ef; background: transparent;')
         self.setMinimumWidth(190);self.setFixedHeight(128)
 
     def _fit(self):
@@ -110,8 +125,8 @@ class GameTile(Card):
         width=max(1,self.width()-24)
         self.name.setText(self.name.fontMetrics().elidedText(self._title,Qt.ElideRight,width))
         self.name.setFixedHeight(self.name.fontMetrics().lineSpacing())
-        picture=128-12-6-self.name.height()-self.source.sizeHint().height()-self.result.sizeHint().height()
-        self.cover.setFixedHeight(max(24,picture))
+        self.cover.setGeometry(self.rect().adjusted(4,4,-4,-4));self.cover.setFixedHeight(max(1,self.height()-8))
+        self.cover.lower()
 
     def set_game(self,game,checked):
         self.game_id,self.checked=game['id'],checked;self._title=game['name']
@@ -120,6 +135,8 @@ class GameTile(Card):
         self.result.setText(tr(GRADES.get((game.get('latest') or {}).get('grade'),'Noch keine Sitzung'))
                             if game.get('installed') else tr('Nicht installiert'))
         self.setAccessibleDescription(self.result.text());self.cover.set_path(game.get('cover'))
+        color=grade_color((game.get('latest') or {}).get('grade'),on_cover=True)
+        self.result.setStyleSheet(f'color: {color}; background: transparent;')
         self._fit();self.update()
 
     def resizeEvent(self,event):
@@ -218,8 +235,8 @@ class OverlayProfile(QDialog):
         self.connection.setObjectName('ghostBtn')
         self.connection.clicked.connect(self._connection)
         form.addWidget(self.connection)
-        form.addWidget(label('Beende den Launcher zum Einrichten oder Entfernen der Verbindung. '
-                            'Vorhandene Startargumente bleiben erhalten. MangoHud für 32- und 64-Bit-Spiele ist bereits enthalten, auch für Flatpak.',
+        form.addWidget(label('Steam startet bei nötiger Einrichtung automatisch neu. Beende vorher laufende Spiele. '
+                            'Heroic und Lutris müssen zum Ändern der Verbindung geschlossen sein. Vorhandene Startargumente bleiben erhalten.',
                             'muted', wrap=True))
         scroll.setWidget(body)
         root.addWidget(scroll, 1)
@@ -239,7 +256,7 @@ class OverlayProfile(QDialog):
         if game.get('mangohud_available'):
             state=('Overlay aktiviert und mit dem Spiel verbunden.' if connected and game.get('overlay_enabled') else
                    'Overlay ist deaktiviert.' if connected else
-                   'Noch nicht mit dem Spiel verbunden. Zum Aktivieren den Launcher beenden und das aktivierte Profil speichern.')
+                   'Noch nicht mit dem Spiel verbunden. Speichere das aktivierte Profil; einen nötigen Steam-Neustart übernimmt Vitalux.')
             self.notice.setText(self.notice.text()+'\n'+tr(state))
         if hasattr(self,'save_button'):
             self.save_button.setText(tr('Overlay aktivieren' if self.enabled.isChecked() and not connected else 'Speichern'))
@@ -285,6 +302,7 @@ class GamesPage(Page):
         self.current_report = None
         self.offset = 0
         self._tile_columns = 3
+        self._metric_columns = None
         self._dialog = None
         self._closing = False
         self._launch_requested=False
@@ -301,6 +319,7 @@ class GamesPage(Page):
         self.service.failed.connect(self._error)
         self.service.busy.connect(self._busy)
         self.service.launch_ready.connect(self._launch_ready)
+        self.service.progress.connect(self._progress)
         heading = Card()
         title_row = QHBoxLayout()
         texts = QVBoxLayout()
@@ -376,7 +395,7 @@ class GamesPage(Page):
                                 mode='mixed', series_modes=['fps', 'frametime'])
         self.chart.set_scope('games')
         self.chart.setProperty('defaultHorizon', -1)
-        self.chart.graph.setProperty('fullSessionPoints', True)
+        self.chart.graph.setProperty('recordedSession', True)
         self.chart.time_range.insertItem(0, tr('Gesamte Sitzung'), -1)
         self.chart.time_range.setCurrentIndex(0)
         plot.body.addWidget(self.chart)
@@ -515,6 +534,7 @@ class GamesPage(Page):
         for widget, key in zip(self.values[:3], ('average_fps', 'low_1', 'low_01')):
             widget.setText(shown(report.get(key)))
         self.values[3].setText(tr(GRADES.get(report['grade'], 'Zu wenige Messdaten')))
+        self.values[3].setStyleSheet('color: '+grade_color(report['grade'])+';')
         reasons = dict(excellent='FPS-Ziel erreicht · sehr gleichmäßige Bildausgabe',
                        good='Überwiegend gleichmäßige Bildausgabe im Verhältnis zum FPS-Ziel',
                        adequate='Spielbar, mit deutlichen Einbrüchen gegenüber dem FPS-Ziel',
@@ -553,6 +573,7 @@ class GamesPage(Page):
                 if item is None:item = QTableWidgetItem();self.history.setItem(index, column, item)
                 item.setText(text)
                 item.setData(Qt.UserRole, row['id'])
+                if column==4:item.setForeground(QColor(grade_color(row.get('grade'))))
         self.history.resizeColumnsToContents()
         self.history.blockSignals(False)
         self.history_card.setVisible(bool(rows))
@@ -583,7 +604,18 @@ class GamesPage(Page):
         try:
             if not game_launch.start(game):raise ValueError('Der Spiele-Launcher konnte nicht geöffnet werden.')
             self.notice.hide()
-        except (OSError,ValueError) as error:self._error(str(error))
+        except (OSError,ValueError) as error:
+            if game.get('restart_steam'):
+                from .game_steam import open_client
+                open_client(game)
+            self._error(str(error))
+
+    def _progress(self,message):
+        if self._closing:return
+        self.notice.setText(tr(message));self.notice.show()
+        if self._dialog is not None:
+            import shiboken6
+            if shiboken6.isValid(self._dialog):self._dialog.notice.setText(tr(message))
 
     def _explain(self):
         from .detail_dialog import show_details
@@ -607,6 +639,15 @@ class GamesPage(Page):
 
     def _finished(self, report):
         if self._closing:return
+        # Apply the completion as one UI update, even if an earlier catalog
+        # snapshot is still queued. The plot itself never enters the tile data.
+        summary={key:value for key,value in report.items() if key!='plot'}
+        self.summaries=sorted([summary]+[row for row in self.summaries if row['id']!=report['id']],
+                              key=lambda row:row['started'],reverse=True)[:200]
+        for game in self.games:
+            if game['id']==report['game_id']:
+                latest=game.get('latest') or {}
+                if report['started']>=latest.get('started',0):game['latest']=summary
         self.select_game(report['game_id'])
         self.selected_report = report['id']
         self._report(report)
@@ -643,9 +684,11 @@ class GamesPage(Page):
         host=self.parentWidget()
         width = min(self.width(),host.width()) if host is not None else self.width()
         self._tile_columns = 3 if width >= 1000 else 2 if width >= 680 else 1
-        for index, card in enumerate(self.metric_cards):
-            columns = 4 if width >= 760 else 2
-            self.metrics_grid.addWidget(card, index//columns, index % columns)
+        columns = 4 if width >= 760 else 2
+        if columns!=self._metric_columns:
+            self._metric_columns=columns
+            for index, card in enumerate(self.metric_cards):
+                self.metrics_grid.addWidget(card, index//columns, index % columns)
         if hasattr(self, 'search'):self._tiles()
 
     def resizeEvent(self, event):

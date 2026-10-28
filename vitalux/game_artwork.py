@@ -1,4 +1,4 @@
-"""Wide game capsules with bounded background retrieval and an offline cache."""
+"""Wide game artwork with bounded background retrieval and an offline cache."""
 import hashlib
 import json
 from pathlib import Path
@@ -29,7 +29,7 @@ def dimensions(path):
 def local_candidates(game):
     if game.get('store')=='steam' and str(game.get('appid','')).isdecimal():
         folder=Path(game.get('launcher_root',''))/'appcache/librarycache';appid=str(game['appid'])
-        for name in ('capsule_616x353.jpg','header_2x.jpg','header.jpg','library_hero.jpg'):
+        for name in ('header_2x.jpg','header.jpg','capsule_616x353.jpg','library_hero.jpg'):
             yield folder/appid/name
             yield folder/(appid+'_'+name)
         # Current Steam caches include content hashes in the filenames.
@@ -52,8 +52,7 @@ def resolve(game, cancelled=None, *, cache=None, offline=False, fetch=None):
     key=hashlib.sha256(game['id'].encode()).hexdigest()[:32]
     target=folder/(key+'.img');meta=folder/(key+'.json')
     if dimensions(target):return str(target)
-    # Prefer a capsule over a larger but much flatter library-hero banner.
-    # The latter would again look small inside the shared capsule-shaped area.
+    # Prefer wide store artwork over portrait covers and very flat hero banners.
     for candidate in local_candidates(game):
         if dimensions(candidate):return str(candidate)
     if offline or game.get('store')!='steam' or not str(game.get('appid','')).isdecimal():return ''
@@ -62,8 +61,8 @@ def resolve(game, cancelled=None, *, cache=None, offline=False, fetch=None):
         if isinstance(record,dict) and record.get('schema')==2 and float(record.get('retry_after',0))>time.time():return ''
     except (OSError,ValueError,TypeError):pass
     appid=str(game['appid'])
-    urls=[f'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/{appid}/capsule_616x353.jpg',
-          f'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/{appid}/header_2x.jpg',
+    urls=[f'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/{appid}/header_2x.jpg',
+          f'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/{appid}/capsule_616x353.jpg',
           f'https://cdn.akamai.steamstatic.com/steam/apps/{appid}/header.jpg']
     def official_images():
         # Store metadata supplies modern hashed asset paths. No guessed image
@@ -77,12 +76,12 @@ def resolve(game, cancelled=None, *, cache=None, offline=False, fetch=None):
                 if len(raw)>1024*1024:return []
                 data=json.loads(raw).get(appid,{})
                 data=data.get('data',{}) if data.get('success') else {}
-            return [data[key] for key in ('capsule_image','header_image','capsule_imagev5')
+            return [data[key] for key in ('header_image','capsule_image','capsule_imagev5')
                     if isinstance(data.get(key),str) and _remote(data[key])]
         except (OSError,ValueError,TypeError,AttributeError):return []
     folder.mkdir(parents=True,exist_ok=True)
     temporary=folder/(key+'.part')
-    # Expand this same bounded list after the first legacy capsule misses.
+    # Expand this same bounded list after the first legacy image misses.
     for index,url in enumerate(urls):
         if cancelled():raise InterruptedError()
         try:

@@ -53,6 +53,8 @@ def main():
         assert 'einmalig entpackt' not in (logs/'Obsidian-Gold.sh.log').read_text()
         assert not marker.exists(), 'Launcher used system Python/pip'
         assert (stage/'runtime/bin/python3.12').is_file()
+        assert (stage/'lib/libgthread-2.0.so.0').is_file()
+        assert (stage/'.runtime/desktop-libraries.sha256').is_file()
         env['LD_LIBRARY_PATH'] = str(stage/'lib')
         subprocess.run([str(stage/'runtime/bin/python3.12'), '-c',
                         'from PySide6.QtCore import QCoreApplication; '

@@ -1,5 +1,14 @@
 # Vitalux – Changes
 
+## [v0.9.6.4-unstable.12] - 2026-10-28
+
+- Portable packages include the required GLib and other desktop runtime libraries. No separate GLib installation is needed to start the app.
+- Steam restarts orderly and automatically when overlay setup requires it. Play game prepares the connection and then starts the game; running Steam games are not terminated. Existing connections and changes to metrics do not need a restart.
+- Long game-session reports remain responsive while preserving recorded values and spikes.
+- The game tile, current session and history update together after a game ends, without restarting Vitalux.
+- Assessments use matching colors: green for Very good/Good, amber for Adequate and red for Needs improvement. Incomplete or short recordings remain neutral.
+- Game covers fill the same compact tiles proportionally. Names and session details stay readable inside each tile.
+
 ## [v0.9.6.4-unstable.11] - 2026-10-28
 
 - Aurora Bloom is now available through its own design preview tile. Buttons and selectors use asymmetric rounded corners; the inner header/sidebar junction is rounded.

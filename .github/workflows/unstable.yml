@@ -125,6 +125,10 @@ jobs:
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-regressions.py --output "$GITHUB_WORKSPACE/build/regressions"
+      - name: Start Qt in a minimal Linux base without extra installed libraries
+        if: steps.prepare.outputs.changed == 'true'
+        timeout-minutes: 4
+        run: python scripts/check-minimal-runtime.py "build/staged/Vitalux-${TAG}" --output build/minimal-runtime
       - name: Check the overlay inside Valve's Steam runtime
         if: steps.prepare.outputs.changed == 'true' && steps.validation.outputs.overlay == 'true'
         timeout-minutes: 8
@@ -227,6 +231,7 @@ jobs:
             build/regressions/
             build/game-recording/
             build/game-start/
+            build/minimal-runtime/
             build/flatpak-recording/recording/
             build/flatpak-recording/runtime-list.txt
             build/steam-recording/recording/

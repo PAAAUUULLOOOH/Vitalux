@@ -97,7 +97,7 @@ SLIDES = [
         "Die Prozentzahl steht mittig im Update-Ladebalken. Downloads lassen sich abbrechen und bei Fehlern erneut versuchen. Changelogs folgen deiner Sprache und bleiben offline lesbar. Lange Texte haben eine eigene Scrollleiste; passt der Text, bleibt sie unsichtbar. Beim Versionswechsel beginnt der Text oben.",
         "updates",
     ),
-    ('Spiele und MangoHud', 'Der Reiter Spiele erkennt installierte Steam-, Heroic- und Lutris-Spiele automatisch.', 'MangoHud ist für 32- und 64-Bit-Spiele enthalten, auch für Steam-Laufzeit und Flatpak. Schließe den Launcher und speichere das aktivierte Spielprofil, um das Overlay zu verbinden. Metriken und FPS-Ziel sind pro Spiel wählbar.', 'Lass Vitalux im Hintergrund laufen. Nach Spielende erscheinen FPS, niedrige FPS-Werte, Frametime-Verlauf und frühere Sitzungen beim jeweiligen Spiel.', 'Die Bewertung erklärt ihre Kriterien im Verhältnis zum FPS-Ziel. Zu kurze oder unvollständige Aufnahmen erhalten keine Gesamtnote.', 'hardware'),
+    ('Spiele und MangoHud', 'Der Reiter Spiele erkennt installierte Steam-, Heroic- und Lutris-Spiele automatisch.', 'MangoHud ist für 32- und 64-Bit-Spiele enthalten, auch für Steam-Laufzeit und Flatpak. Speichere das aktivierte Spielprofil; einen nötigen Steam-Neustart übernimmt Vitalux. Beende vorher laufende Spiele. Heroic und Lutris müssen zur Einrichtung geschlossen sein. Metriken und FPS-Ziel sind pro Spiel wählbar.', 'Lass Vitalux im Hintergrund laufen. Nach Spielende erscheinen FPS, niedrige FPS-Werte, Frametime-Verlauf und frühere Sitzungen beim jeweiligen Spiel.', 'Die Bewertung erklärt ihre Kriterien im Verhältnis zum FPS-Ziel. Zu kurze oder unvollständige Aufnahmen erhalten keine Gesamtnote.', 'hardware'),
 ]
 
 

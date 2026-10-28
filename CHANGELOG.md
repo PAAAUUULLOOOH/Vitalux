@@ -1,5 +1,14 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.4-unstable.12] - 2026-10-28
+
+- Portable-Pakete enthalten die benötigten GLib- und weiteren Desktop-Laufzeitbibliotheken. Der Start erfordert keine separate GLib-Nachinstallation.
+- Steam wird bei nötiger Overlay-Einrichtung geordnet automatisch neu gestartet. „Spiel starten“ richtet die Verbindung ein und startet anschließend das Spiel; laufende Steam-Spiele werden nicht beendet. Bestehende Verbindungen und reine Metrikänderungen benötigen keinen Neustart.
+- Spiele-Auswertungen bleiben auch bei langen Sitzungen flüssig bedienbar. Messwerte und Spitzen bleiben erhalten.
+- Spielkachel, aktuelle Sitzung und Historie aktualisieren sich nach Spielende gemeinsam, ohne Vitalux-Neustart.
+- Bewertungen verwenden passende Farben: Grün für sehr gut/gut, Gelb für ausreichend und Rot für Verbesserungsbedarf. Unvollständige oder zu kurze Messungen bleiben neutral.
+- Spielcover füllen die gleich großen Kacheln proportional aus. Namen und Sitzungsangaben bleiben lesbar innerhalb der Kachel.
+
 ## [v0.9.6.4-unstable.11] - 2026-10-28
 
 - Aurora Bloom ist regulär mit eigener Vorschaukachel auswählbar. Buttons und Auswahlfelder erhalten die asymmetrischen Rundungen; die innere Verbindungsecke von Kopf- und Seitenleiste ist abgerundet.

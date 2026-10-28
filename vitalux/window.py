@@ -923,6 +923,8 @@ class MainWindow(WindowLifecycle, QMainWindow):
             nav._sync_notice_animation()
         for graph in self.findChildren(ChartPanel):
             graph.retheme()
+        for _,page in self.pages:
+            if isinstance(page,GamesPage):page.retranslate()
         disk = next((p for name, p in self.pages if name == 'Laufwerke'), None)
         if disk is not None and hasattr(disk, 'refresh_appearance'):
             disk.refresh_appearance()

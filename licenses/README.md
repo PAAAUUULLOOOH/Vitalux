@@ -6,7 +6,7 @@ The files in this directory reproduce upstream notices without rewriting their l
 - `runtime/`: CPython and psutil notices.
 - `branding-build-tools/`: verbatim vtracer, NumPy and fontTools notices for local conversion of the approved branding concepts. Their code is not shipped or required at runtime.
 - `upstream/`: verbatim licenses, copyright files and Qt attribution records from the exact source archives in `third_party/sources.lock.json`. This conservative collection can include notices for upstream optional or test components that are not distributed as binaries.
-- `system-libraries/`: copyright/license notices for bundled X11/XCB/xkbcommon and zlib helpers, plus retained package notices from the original runtime.
+- `system-libraries/`: copyright/license notices for bundled GLib/thread, X11/XCB/Wayland, font, image, compression, IPC and network helpers. `desktop-libraries.json` records the exact selected libraries and verified binary packages.
 - `appimage-dependencies/`: musl, zstd, zlib and mimalloc notices for the upstream AppImage runtime build.
 - `GPL-2.0.txt`, `GPL-3.0.txt`, `LGPL-2.1.txt`, `LGPL-3.0.txt`: complete license texts.
 - `source/fio-3.43-build-source.tar.gz` in extracted portable packages: the exact fio build-source tree, including its original COPYING and build files. The release's separate third-party source download includes the same archive.
@@ -30,3 +30,5 @@ The files in this directory reproduce upstream notices without rewriting their l
 All third-party license rights, source obligations and warranty disclaimers continue to apply. Preserve these notices when redistributing those components.
 
 The complete PCI ID Database source is retained in `assets/hardware/pci.ids`, copyright Martin Mares and Albert Pool, distributed under GPL-2.0-or-later. Its provenance is in `assets/hardware/provenance.json`; the complete GPL-2.0 text is included here.
+
+**Desktop runtime libraries:** `scripts/build-desktop-libraries.py` reproduces the small supplemental archive from the locked Ubuntu packages in [system-libraries/desktop-libraries.json](system-libraries/desktop-libraries.json). The complete corresponding source archives, distribution patches and source descriptors are pinned in `third_party/sources.lock.json` and included in the release’s separate source download. Compatible replacement libraries can be placed in `lib/`. No development tools or GPU drivers are added to the application.

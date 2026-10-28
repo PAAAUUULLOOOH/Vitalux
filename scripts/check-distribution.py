@@ -12,6 +12,8 @@ def check(root):
     sys.path.insert(0,str(root))
     from vitalux.game_runtime import validate
     overlay=validate(root/'mangohud-runtime')
+    from desktop_runtime import check as desktop_libraries
+    desktop_libraries(root,Path(__file__).resolve().parents[1])
     assert set(overlay['architectures'])=={'x86_64','i386'}
     required = ('README.md', 'USER-GUIDE.md', 'THIRD-PARTY.md', 'LICENSE-NOTICE.md',
                 'packaging/logging.sh', 'vitalux/logfiles.py',

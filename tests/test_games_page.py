@@ -79,8 +79,8 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',folder
                 for tile in page.tiles:
                     if not tile.isVisible():continue
                     assert tile.height()==128 and tile.name.alignment()==Qt.AlignCenter
-                    assert tile.name.geometry().bottom()<tile.cover.geometry().top()
-                    assert tile.cover.geometry().bottom()<tile.source.geometry().top()
+                    assert tile.cover.geometry()==tile.rect().adjusted(4,4,-4,-4)
+                    assert tile.name.geometry().bottom()<tile.source.geometry().top()
                     assert tile.source.geometry().bottom()<tile.result.geometry().top()
                     assert all(tile.rect().contains(widget.geometry()) for widget in (tile.name,tile.cover,tile.source,tile.result)),design
                 if output:window.grab().save(str(output/(design+'-'+str(width)+'.png')))
@@ -111,6 +111,16 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',folder
         window._switch_page(0);page._finished(report);wait(30)
         assert window.stack.currentIndex()==12 and page.current_report['game_id']=='steam:42'
         assert window.nav_buttons[12].isChecked()
+        # Completion must update a previously empty catalog immediately, even
+        # before a worker catalog snapshot arrives or the app restarts.
+        page._catalog(dict(games=[dict(games[0],latest=None)],sessions=[]))
+        page._finished(report);wait(20)
+        assert page.tiles[0].result.text()=='Good' and page.history.rowCount()==1
+        assert page.games[0]['latest']['id']==report['id']
+        assert 'No session' not in page.session_name.text()
+        from vitalux.games_page import grade_color
+        assert page.history.item(0,4).foreground().color().name()==grade_color('good')
+        assert grade_color('good') in page.values[3].styleSheet()
     finally:
         window._force_quit=True;window.close();wait(60)
 print('Per-game reports/history, automatic page opening, isolated profiles, DE/EN and all eight minimum-width layouts PASS')

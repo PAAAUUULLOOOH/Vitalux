@@ -4,7 +4,7 @@ from queue import Empty, Queue
 from threading import Event
 import time
 from PySide6.QtCore import QThread, Signal
-from . import game_library, game_profiles
+from . import game_library, game_profiles, game_steam
 from .game_sessions import GameSessions
 
 
@@ -17,6 +17,7 @@ class GameService(QThread):
     busy = Signal(bool)
     launch_ready = Signal(object)
     profile_saved = Signal(str)
+    progress = Signal(str)
 
     def __init__(self, parent=None, root=None, initial_games=None):
         super().__init__(parent)
@@ -48,12 +49,23 @@ class GameService(QThread):
             game['mangohud_available'] = self._availability.get((game['store'], bool(game.get('flatpak'))), False)
         self.catalog_ready.emit(dict(games=games, sessions=sessions.summaries))
 
+    def _connect(self,game,bridge):
+        stopped=game_steam.stop_for_setup(game,self.cancelled,self.progress.emit)
+        try:
+            if self.cancelled.is_set():raise InterruptedError()
+            game_profiles.connect(game,bridge,check_running=game.get('store')!='steam')
+        except BaseException:
+            if stopped:game_steam.open_client(game)
+            raise
+        return stopped
+
     def run(self):
         sessions = GameSessions(self.root)
         self._catalog(sessions)
         next_scan, next_monitor = 0., 0.
         deferred = []
         while not self.cancelled.is_set():
+            restart=None
             try:
                 operation, payload = self.commands.get(timeout=1.)
             except Empty:
@@ -68,12 +80,13 @@ class GameService(QThread):
                         if not game_profiles.available(game):
                             raise ValueError('Die mitgelieferte Overlay-Komponente ist unvollständig. Bitte Vitalux erneut entpacken oder installieren.')
                         bridge = game_profiles.prepare(game)
-                        game_profiles.connect(game, bridge)
+                        if self._connect(game,bridge):restart=game
                         sessions.register(game, bridge)
                     elif operation == 'disconnect':
                         connection = sessions.connections.get(game['id'])
                         if connection:
-                            game_profiles.disconnect(game, Path(connection['root']))
+                            if game_steam.stop_for_setup(game,self.cancelled,self.progress.emit):restart=game
+                            game_profiles.disconnect(game, Path(connection['root']),check_running=game.get('store')!='steam')
                         sessions.unregister(game['id'])
                     elif operation=='launch':
                         connection=sessions.connections.get(game['id'])
@@ -82,7 +95,8 @@ class GameService(QThread):
                             if not game_profiles.available(game):
                                 raise ValueError('Die mitgelieferte Overlay-Komponente ist unvollständig. Bitte Vitalux erneut entpacken oder installieren.')
                             bridge=game_profiles.prepare(game,base=Path(connection['root']).parent if connection else None)
-                            if not game_profiles.connected(game,bridge):game_profiles.connect(game,bridge)
+                            if not game_profiles.connected(game,bridge):
+                                if self._connect(game,bridge):restart=game
                             if not game_profiles.connected(game,bridge):
                                 raise ValueError('Die Overlay-Verbindung konnte nicht bestätigt werden. Bitte das Overlay-Profil erneut verbinden.')
                             sessions.register(game,bridge)
@@ -93,16 +107,18 @@ class GameService(QThread):
                         if connection:
                             bridge=game_profiles.prepare(game,base=Path(connection['root']).parent)
                             if game_profiles.load(game['id'])['enabled'] and not game_profiles.connected(game,bridge):
-                                game_profiles.connect(game,bridge);sessions.register(game,bridge)
+                                if self._connect(game,bridge):restart=game
+                                sessions.register(game,bridge)
                         elif game_profiles.load(game['id'])['enabled']:
                             # Saving an enabled profile also establishes the
                             # actual launcher connection; a checkmark alone
                             # cannot inject an overlay into a game's process.
                             bridge=game_profiles.prepare(game)
-                            game_profiles.connect(game,bridge)
+                            if self._connect(game,bridge):restart=game
                             sessions.register(game,bridge)
                     self._catalog(sessions)
-                    if operation=='launch' and not self.cancelled.is_set():self.launch_ready.emit(dict(game))
+                    if operation=='launch' and not self.cancelled.is_set():
+                        self.launch_ready.emit(dict(game,restart_steam=restart is not None));restart=None
                     if operation=='profile':self.profile_saved.emit(game['id'])
                 elif operation == 'report':
                     self.report_ready.emit(sessions.report(payload))
@@ -152,5 +168,10 @@ class GameService(QThread):
                 next_scan = max(next_scan, time.monotonic()+60)
                 next_monitor = time.monotonic()+2
             finally:
+                if restart is not None:
+                    self.progress.emit('Steam wird wieder geöffnet …')
+                    try:
+                        if not game_steam.open_client(restart):self.failed.emit('Steam konnte nach der Einrichtung nicht wieder geöffnet werden.')
+                    except (OSError,ValueError):self.failed.emit('Steam konnte nach der Einrichtung nicht wieder geöffnet werden.')
                 if operation in ('connect', 'disconnect', 'profile', 'launch'):
                     self.busy.emit(False)

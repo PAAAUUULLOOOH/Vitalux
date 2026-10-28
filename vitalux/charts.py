@@ -1,7 +1,8 @@
 """Native chart rendering, selection and recorded/live timelines."""
 import math
+from bisect import bisect_left
 from PySide6.QtCore import QPointF, QRectF, QSize, Qt
-from PySide6.QtGui import QColor, QFont, QFontMetrics, QLinearGradient, QPainter, QPainterPath, QPen
+from PySide6.QtGui import QColor, QFont, QFontMetrics, QImage, QLinearGradient, QPainter, QPainterPath, QPen
 from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget
 from .ui_locale import QComboBox, QCheckBox, paint_check_indicator
 from . import theme, premium
@@ -71,7 +72,12 @@ class HistoryGraph(QWidget):
         count = max((len(values) for values, _ in self.series), default=0)
         if not count:
             return []
-        index = min(range(count), key=lambda i: abs(self._x(i, count, rect)-self._pointer))
+        if self.property('recordedSession') and len(self.sample_times) >= count:
+            target=self.sample_times[-1]-(rect.right()-self._pointer)/rect.width()*self.horizon_seconds
+            offset=len(self.sample_times)-count
+            right=min(count-1,bisect_left(self.sample_times,target,lo=offset)-offset)
+            index=min((max(0,right-1),right),key=lambda i:abs(self._x(i,count,rect)-self._pointer))
+        else:index = min(range(count), key=lambda i: abs(self._x(i, count, rect)-self._pointer))
         if len(self.sample_times) >= count:
             from datetime import datetime
             stamp = datetime.fromtimestamp(self.sample_times[-count+index]).strftime('%H:%M:%S')
@@ -107,7 +113,7 @@ class HistoryGraph(QWidget):
         return scales
 
     def _curves(self, rect, upper, scales, minimal):
-        key=(self._revision,self.mode,upper,bool(self.property("fullSessionPoints")),rect.x(),rect.y(),rect.width(),rect.height(),minimal,
+        key=(self._revision,self.mode,upper,bool(self.property("recordedSession")),rect.x(),rect.y(),rect.width(),rect.height(),minimal,
              self.maxlen,self.horizon_seconds,tuple(self.sample_times),tuple(self.series_modes),
              tuple(self.series_styles),tuple(scales.items()))
         if key==self._curve_key:return self._curve_data
@@ -126,8 +132,37 @@ class HistoryGraph(QWidget):
             if run:runs.append(run)
             paths=[]
             for points in runs:
-                stride=1 if self.property("fullSessionPoints") else max(1,len(points)//400)
-                points=points[::stride]+([points[-1]] if (len(points)-1)%stride else [])
+                recorded=bool(self.property('recordedSession'))
+                dense=recorded and len(points)>max(2,rect.width()*self.devicePixelRatioF()*2)
+                if dense:
+                    # Preserve the low/high in each physical pixel column.
+                    # Full recorded values remain available for hover/statistics.
+                    buckets={}
+                    for i,point in enumerate(points):
+                        bucket=int((point.x()-rect.left())*self.devicePixelRatioF())
+                        low,high=buckets.get(bucket,(i,i))
+                        buckets[bucket]=(i if point.y()<points[low].y() else low,
+                                         i if point.y()>points[high].y() else high)
+                    upper_points=[points[low] for low,high in buckets.values()]
+                    lower_points=[points[high] for low,high in buckets.values()]
+                    boundaries=[]
+                    for edge in (upper_points,lower_points):
+                        boundary=QPainterPath(edge[0])
+                        for point in edge[1:]:boundary.lineTo(point)
+                        boundaries.append(boundary)
+                    # Draw a pixel envelope instead of thousands of overlapping
+                    # stroked turns. Both extrema remain at their actual x/y.
+                    band=QPainterPath(boundaries[0])
+                    for point in reversed(lower_points):band.lineTo(point)
+                    band.closeSubpath()
+                    base=QPainterPath(boundaries[1])
+                    base.lineTo(lower_points[-1].x(),rect.bottom())
+                    base.lineTo(lower_points[0].x(),rect.bottom());base.closeSubpath()
+                    paths.extend(((boundaries[0],band),(boundaries[1],base)))
+                    continue
+                else:
+                    stride=1 if recorded else max(1,len(points)//400)
+                    points=points[::stride]+([points[-1]] if (len(points)-1)%stride else [])
                 path=QPainterPath(points[0])
                 for previous,current in zip(points,points[1:]):
                     if minimal:path.lineTo(current)
@@ -205,6 +240,36 @@ class HistoryGraph(QWidget):
             p.drawText(QRectF(x-(0 if fraction == 0 else 29), rect.bottom()+6, 58, 20), align, stamp)
         curves=self._curves(rect,upper,scales,minimal)
         any_data=any(paths for paths,_end in curves)
+        if self.property('recordedSession'):
+            key=(self._curve_key,self.devicePixelRatioF(),self.size(),theme.mode())
+            if key!=getattr(self,'_recorded_layer_key',None):
+                ratio=self.devicePixelRatioF()
+                layer=QImage(round(self.width()*ratio),round(self.height()*ratio),QImage.Format_ARGB32_Premultiplied)
+                layer.setDevicePixelRatio(ratio);layer.fill(Qt.transparent)
+                painter=QPainter(layer);painter.setRenderHint(QPainter.Antialiasing)
+                self._paint_curves(painter,curves,rect,minimal);painter.end()
+                self._recorded_layer_key,self._recorded_layer=key,layer
+            p.drawImage(QPointF(0,0),self._recorded_layer)
+        else:self._paint_curves(p,curves,rect,minimal)
+        if not any_data:
+            p.setPen(QColor(theme.MUTED))
+            p.drawText(rect, Qt.AlignCenter, tr('Noch keine Messwerte verfügbar'))
+        lines = self.hover_readout(rect)
+        if lines:
+            p.setPen(QPen(QColor(theme.MUTED), .8, Qt.DashLine))
+            p.drawLine(QPointF(self._pointer, rect.top()), QPointF(self._pointer, rect.bottom()))
+            width = min(rect.width()-10, max(p.fontMetrics().horizontalAdvance(line) for line in lines)+24)
+            box = QRectF(min(rect.right()-width-5, max(rect.left()+5, self._pointer+10)),
+                         rect.top()+5, width, 20*len(lines)+12)
+            p.setBrush(QColor(theme.CARD)); p.setPen(QPen(QColor(theme.BORDER), .8))
+            p.drawRoundedRect(box, 8, 8)
+            for index, line in enumerate(lines):
+                p.setPen(QColor(theme.MUTED if index == 0 else theme.TEXT))
+                p.drawText(box.adjusted(10, 6+index*20, -8, 0), Qt.AlignLeft | Qt.AlignTop, line)
+        p.end()
+
+
+    def _paint_curves(self,p,curves,rect,minimal):
         for number,((values,color),(paths,end)) in enumerate(zip(self.series,curves)):
             style=self.series_styles[number] if number<len(self.series_styles) else Qt.SolidLine
             c=QColor(color)
@@ -222,22 +287,6 @@ class HistoryGraph(QWidget):
                 p.setPen(QPen(c,1.8,style,Qt.RoundCap,Qt.RoundJoin));p.drawPath(path)
             if end is not None:
                 p.setBrush(c);p.setPen(Qt.NoPen);p.drawEllipse(end,2.5,2.5)
-        if not any_data:
-            p.setPen(QColor(theme.MUTED))
-            p.drawText(rect, Qt.AlignCenter, tr('Noch keine Messwerte verfügbar'))
-        lines = self.hover_readout(rect)
-        if lines:
-            p.setPen(QPen(QColor(theme.MUTED), .8, Qt.DashLine))
-            p.drawLine(QPointF(self._pointer, rect.top()), QPointF(self._pointer, rect.bottom()))
-            width = min(rect.width()-10, max(p.fontMetrics().horizontalAdvance(line) for line in lines)+24)
-            box = QRectF(min(rect.right()-width-5, max(rect.left()+5, self._pointer+10)),
-                         rect.top()+5, width, 20*len(lines)+12)
-            p.setBrush(QColor(theme.CARD)); p.setPen(QPen(QColor(theme.BORDER), .8))
-            p.drawRoundedRect(box, 8, 8)
-            for index, line in enumerate(lines):
-                p.setPen(QColor(theme.MUTED if index == 0 else theme.TEXT))
-                p.drawText(box.adjusted(10, 6+index*20, -8, 0), Qt.AlignLeft | Qt.AlignTop, line)
-        p.end()
 
 
 class ChartSeriesCheckBox(QCheckBox):

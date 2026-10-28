@@ -26,6 +26,8 @@ def prepare(target):
             raise RuntimeError('Checked-in runtime SHA-256 mismatch')
     with tarfile.open(archive) as bundled:
         bundled.extractall(target, filter='data')
+    from desktop_runtime import materialize as desktop_libraries
+    desktop_libraries(target,source)
     # Repository upstream notices are complete. Replace that subtree so old
     # examples in the runtime archive cannot reappear through a merge.
     shutil.rmtree(target/'licenses/upstream',ignore_errors=True)

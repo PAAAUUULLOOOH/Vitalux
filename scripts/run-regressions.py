@@ -14,7 +14,7 @@ import time
 # These scripts assert real-time Qt animation/relaunch behavior. Let them own
 # the test runner's CPU budget instead of competing with other GUI processes.
 EXCLUSIVE={'test_framed_navigation.py','test_settings_search_reset.py',
-           'test_restart_profile_flow.py','test_startup_pipeline.py'}
+           'test_restart_profile_flow.py','test_startup_pipeline.py','test_steam_restart.py'}
 
 
 def main():

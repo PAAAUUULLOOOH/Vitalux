@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # Unpack the checked-in portable runtime locally. No Python or network needed.
 set -euo pipefail
+# A restart can inherit Vitalux's private libraries. Host tar/xz must use
+# their matching system libraries while unpacking the next runtime.
+unset LD_LIBRARY_PATH LD_PRELOAD
 VITALUX_RUNTIME_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 VITALUX_RUNTIME_ARCHIVE="$VITALUX_RUNTIME_ROOT/portable-runtime/vitalux-linux-x86_64.tar.xz"
 cd -- "$VITALUX_RUNTIME_ROOT"
@@ -15,9 +18,29 @@ if command -v flock >/dev/null 2>&1; then
   exec 9>.runtime/install.lock
   flock 9
 fi
+install_desktop_libraries() (
+  set -euo pipefail
+  local checksum="$VITALUX_RUNTIME_ROOT/portable-runtime/desktop-libraries.SHA256SUMS"
+  local marker="$VITALUX_RUNTIME_ROOT/.runtime/desktop-libraries.sha256"
+  [[ -f "$checksum" ]] || return 0
+  if [[ -r lib/libgthread-2.0.so.0 ]] && cmp -s "$checksum" "$marker"; then return 0; fi
+  if ! (cd portable-runtime && sha256sum --check desktop-libraries.SHA256SUMS); then
+    printf 'Das Desktop-Laufzeitpaket ist beschädigt. Bitte die ZIP erneut vollständig entpacken.\n' >&2
+    return 1
+  fi
+  local stage
+  stage="$(mktemp -d "$VITALUX_RUNTIME_ROOT/.runtime/desktop.XXXXXX")"
+  trap 'rm -rf -- "$stage"' EXIT
+  tar --extract --xz --file portable-runtime/desktop-libraries-linux-x86_64.tar.xz --directory "$stage" --no-same-owner --no-same-permissions
+  mkdir -p lib licenses/system-libraries
+  cp --remove-destination -- "$stage"/lib/* lib/
+  cp --remove-destination -- "$stage"/licenses/system-libraries/* licenses/system-libraries/
+  cp -- "$checksum" "$marker"
+)
 # Another launcher may have finished unpacking while this one waited.
 if [ -f runtime/bin/python3.12 ]; then
   chmod u+x runtime/bin/python3.12
+  install_desktop_libraries
   exit 0
 fi
 
@@ -62,4 +85,5 @@ if [ -e runtime ]; then
 fi
 mv -- "$VITALUX_RUNTIME_STAGE/runtime" runtime
 chmod u+x runtime/bin/python3.12 bin/fio bin/fio.real
+install_desktop_libraries
 printf 'Python und Qt sind bereit. Vitalux startet.\n'

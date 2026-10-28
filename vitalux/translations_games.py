@@ -4,8 +4,19 @@ EN_GAMES = {
     'Overlay aktiviert und mit dem Spiel verbunden.': 'Overlay enabled and connected to the game.',
     'Overlay ist deaktiviert.': 'Overlay is disabled.',
     'Overlay noch nicht mit dem Spiel verbunden.': 'Overlay is not connected to the game yet.',
-    'Noch nicht mit dem Spiel verbunden. Zum Aktivieren den Launcher beenden und das aktivierte Profil speichern.':
-        'Not connected to the game yet. Close the launcher, then save the enabled profile to activate it.',
+    'Noch nicht mit dem Spiel verbunden. Speichere das aktivierte Profil; einen nötigen Steam-Neustart übernimmt Vitalux.':
+        'Not connected to the game yet. Save the enabled profile; Vitalux handles any necessary Steam restart.',
+    'Beende zuerst laufende Steam-Spiele. Danach kann Vitalux Steam für die Overlay-Einrichtung neu starten.':
+        'Close running Steam games first. Vitalux can then restart Steam to set up the overlay.',
+    'Steam konnte für die Overlay-Einrichtung nicht neu gestartet werden.': 'Steam could not be restarted to set up the overlay.',
+    'Steam wird für die Overlay-Einrichtung beendet …': 'Closing Steam to set up the overlay…',
+    'Steam wurde nicht rechtzeitig beendet. Bitte schließe offene Steam-Dialoge und versuche es erneut.':
+        'Steam did not close in time. Close any open Steam dialogs and try again.',
+    'Overlay-Verbindung wird eingerichtet …': 'Setting up the overlay connection…',
+    'Steam wird wieder geöffnet …': 'Reopening Steam…',
+    'Steam konnte nach der Einrichtung nicht wieder geöffnet werden.': 'Steam could not be reopened after setup.',
+    'Der Steam-Status konnte nicht zuverlässig geprüft werden. Bitte Steam einmal selbst beenden.':
+        'Steam’s state could not be checked reliably. Close Steam manually this time.',
     'Mehrere Grafikprogramme aufgezeichnet. Ausgewertet wird die längste Aufzeichnung: {process}.':
         'Several graphics programs were recorded. This report uses the longest recording: {process}.',
     'Setzt alle Einstellungen dieses Profils zurück: Design, Farben, Layouts, Sprache, Warnwerte und Grafik-Renderer. Gespeicherte eigene Farben, importierte Bildkopien und der Vitalux-Cache werden gelöscht. Originalbilder und das andere Updateprofil bleiben erhalten. Spielberichte und Launcher-Verbindungen bleiben erhalten; Overlay-Profile werden zurückgesetzt. Danach startet Vitalux neu und zeigt die Anleitung.': 'Resets all preferences in this profile: design, colors, layouts, language, warning thresholds and graphics renderer. Saved custom colors, imported image copies and the Vitalux cache are deleted. Original images and the other update profile are preserved. Game reports and launcher connections are retained; overlay profiles are reset. Vitalux then restarts and opens the guide.',
@@ -13,7 +24,7 @@ EN_GAMES = {
 
     'Spiele und MangoHud': 'Games and MangoHud',
     'Der Reiter Spiele erkennt installierte Steam-, Heroic- und Lutris-Spiele automatisch.': 'Games automatically discovers installed Steam, Heroic and Lutris games.',
-    'MangoHud ist für 32- und 64-Bit-Spiele enthalten, auch für Steam-Laufzeit und Flatpak. Schließe den Launcher und speichere das aktivierte Spielprofil, um das Overlay zu verbinden. Metriken und FPS-Ziel sind pro Spiel wählbar.': 'MangoHud is included for 32-bit and 64-bit games, including Steam runtime and Flatpak. Close the launcher and save the enabled game profile to connect the overlay. Metrics and target FPS are configurable per game.',
+    'MangoHud ist für 32- und 64-Bit-Spiele enthalten, auch für Steam-Laufzeit und Flatpak. Speichere das aktivierte Spielprofil; einen nötigen Steam-Neustart übernimmt Vitalux. Beende vorher laufende Spiele. Heroic und Lutris müssen zur Einrichtung geschlossen sein. Metriken und FPS-Ziel sind pro Spiel wählbar.': 'MangoHud is included for 32-bit and 64-bit games, including Steam runtime and Flatpak. Save the enabled game profile; Vitalux handles any necessary Steam restart. Close running games first. Heroic and Lutris must be closed for setup. Metrics and target FPS are configurable per game.',
     'Lass Vitalux im Hintergrund laufen. Nach Spielende erscheinen FPS, niedrige FPS-Werte, Frametime-Verlauf und frühere Sitzungen beim jeweiligen Spiel.': 'Keep Vitalux running in the background. After a game ends, its FPS, lows, frametime history and previous sessions appear under that game.',
     'Die Bewertung erklärt ihre Kriterien im Verhältnis zum FPS-Ziel. Zu kurze oder unvollständige Aufnahmen erhalten keine Gesamtnote.': 'The assessment explains its criteria relative to the target FPS. Short or incomplete recordings receive no overall grade.',
     'Diagnostic Center und Overlay': 'Diagnostic Center and desktop overlay',
@@ -81,8 +92,8 @@ EN_GAMES = {
         'Recording begins after the selected delay. Menus and loading screens remain part of the measurement; use the recording shortcut to pause it.',
     'Mit Launcher verbinden': 'Connect to launcher',
     'Verbindung entfernen': 'Remove connection',
-    'Beende den Launcher zum Einrichten oder Entfernen der Verbindung. Vorhandene Startargumente bleiben erhalten. MangoHud für 32- und 64-Bit-Spiele ist bereits enthalten, auch für Flatpak.':
-        'Close the launcher before setting up or removing its connection. Existing launch arguments are preserved. MangoHud for 32-bit and 64-bit games is already included, also for Flatpak.',
+    'Steam startet bei nötiger Einrichtung automatisch neu. Beende vorher laufende Spiele. Heroic und Lutris müssen zum Ändern der Verbindung geschlossen sein. Vorhandene Startargumente bleiben erhalten.':
+        'Steam restarts automatically when setup requires it. Close running games first. Heroic and Lutris must be closed to change their connection. Existing launch arguments are preserved.',
     'Beende den Spiele-Launcher vor dem Einrichten oder Entfernen der Verbindung.':
         'Close the game launcher before setting up or removing its connection.',
     'Ungültiges Tastenkürzel. Beispiel: Shift_R+F12': 'Invalid shortcut. Example: Shift_R+F12',

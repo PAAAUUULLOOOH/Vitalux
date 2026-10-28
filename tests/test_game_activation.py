@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from PySide6.QtCore import QCoreApplication
-from vitalux import game_files,game_profiles,profiles,settings
+from vitalux import game_files,game_profiles,game_steam,profiles,settings
 from vitalux.game_service import GameService
 
 app=QCoreApplication([])
@@ -23,7 +23,7 @@ with tempfile.TemporaryDirectory() as temporary:
     original='"UserLocalConfigStore" { "Software" { "Valve" { "Steam" { "apps" { "42" { "LaunchOptions" "-novid" } } } } } }\n'
     config.write_text(original)
     game=dict(id='steam:42',appid='42',store='steam',name='Test',launcher_root=str(steam),flatpak=False)
-    with patch.object(settings,'PATH',str(root/'settings.json')),patch.object(profiles,'directory',lambda kind:root/kind),patch.object(game_profiles,'launcher_running',return_value=False) as busy:
+    with patch.object(settings,'PATH',str(root/'settings.json')),patch.object(profiles,'directory',lambda kind:root/kind),patch.object(game_steam,'running',return_value=False) as busy,patch.object(game_steam,'playing',return_value=True):
         service=GameService(root=root/'sessions',initial_games=[game]);catalog=[];errors=[];launches=[]
         service.catalog_ready.connect(catalog.append);service.failed.connect(errors.append)
         service.launch_ready.connect(launches.append)
