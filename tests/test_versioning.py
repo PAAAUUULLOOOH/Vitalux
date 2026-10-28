@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import versioning
+import importlib.util
 
 
 def check():
@@ -41,6 +42,14 @@ def check():
     bad = subprocess.run([sys.executable, str(script), "verify",
                           "v0.9.4.9", "0.9.4.10"], capture_output=True, text=True)
     assert bad.returncode != 0
+    spec=importlib.util.spec_from_file_location('prepare_unstable',ROOT/'scripts/prepare-unstable-build.py')
+    prepare=importlib.util.module_from_spec(spec);spec.loader.exec_module(prepare)
+    assets={'Vitalux-v0.9.6.4-unstable.8-linux-x86_64.zip','Vitalux-v0.9.6.4-unstable.8-x86_64.AppImage'}
+    assert prepare.unpublished_test_version('0.9.6.4-unstable.8','0.9.6.3',assets)=='0.9.6.4-unstable.9'
+    assert prepare.unpublished_test_version('0.9.6.4-unstable.9','0.9.6.3',assets)=='0.9.6.4-unstable.9'
+    assert prepare.unpublished_test_version('0.9.6.4-unstable.9','0.9.6.4',assets)=='0.9.6.5-unstable.1'
+    assert prepare.unpublished_test_version('0.9.6.3','0.9.6.3',assets)=='0.9.6.4-unstable.1'
+    assert prepare.unpublished_test_version('0.9.6.4-unstable.9','0.9.6.3',{'Vitalux-v0.9.6.4-unstable.9-x86_64.AppImage'})=='0.9.6.4-unstable.10'
     print("Vitalux releases: .0 through .9, then next patch .0: PASS")
 
 

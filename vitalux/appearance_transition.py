@@ -1,6 +1,6 @@
 """Native-resolution appearance blends, with no live subtree repaint per frame."""
 from PySide6.QtCore import QEasingCurve, QEvent, Signal, QVariantAnimation, Qt
-from PySide6.QtGui import QPainter, QPixmap
+from PySide6.QtGui import QColor, QPainter, QPixmap
 from PySide6.QtWidgets import QWidget
 from . import motion
 
@@ -58,6 +58,13 @@ class AppearanceTransition(QWidget):
     def paintEvent(self, event):
         if self.before is None:
             return
+        if self._framed and self.progress in (0., 1.):
+            # The frozen guard and settled endpoint need no blend buffers.
+            painter = QPainter(self)
+            painter.setCompositionMode(QPainter.CompositionMode_Source)
+            painter.drawPixmap(0, 0, self.before if not self.progress else self.after)
+            painter.end()
+            return
         if self._framed:
             # QWidget painting shares the live window's backing store. Adding
             # layers there adds the destination AGAIN and creates a bright flash.
@@ -67,20 +74,23 @@ class AppearanceTransition(QWidget):
                 self._blend.setDevicePixelRatio(self.before.devicePixelRatio())
                 self._layer = QPixmap(self.before.size())
                 self._layer.setDevicePixelRatio(self.before.devicePixelRatio())
+            # Integer complementary masks keep opaque content opaque on both
+            # raster/SIMD implementations. Two rounded floating opacity values
+            # can otherwise sum to alpha253 and reveal the desktop underneath.
+            weight = max(0, min(255, round(255 * self.progress)))
             self._blend.fill(Qt.transparent)
             self._layer.fill(Qt.transparent)
             blend = QPainter(self._blend)
-            blend.setOpacity(1. - self.progress)
             blend.drawPixmap(0, 0, self.before)
-            # Apply source opacity with SourceOver on an EMPTY layer. Qt's
-            # constant opacity on Plus interpolates the operation's destination
-            # as well, making even a cleared one-buffer blend lose alpha.
+            blend.setCompositionMode(QPainter.CompositionMode_DestinationIn)
+            blend.fillRect(self._blend.rect(), QColor(0, 0, 0, 255 - weight))
             layer = QPainter(self._layer)
-            layer.setOpacity(self.progress)
             if self.slide:layer.translate(round(self.slide * (1 - self.progress)), 0)
             layer.drawPixmap(0, 0, self.after)
+            layer.resetTransform()
+            layer.setCompositionMode(QPainter.CompositionMode_DestinationIn)
+            layer.fillRect(self._layer.rect(), QColor(0, 0, 0, weight))
             layer.end()
-            blend.setOpacity(1.)
             blend.setCompositionMode(QPainter.CompositionMode_Plus)
             blend.drawPixmap(0, 0, self._layer)
             blend.end()

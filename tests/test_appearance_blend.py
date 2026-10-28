@@ -43,7 +43,7 @@ for ratio in (1., 1.25, 1.5, 2.):
             overlay._frame(amount)
             image = host.grab().toImage();dpr=image.devicePixelRatio()
             actual = image.pixelColor(round(48*dpr),round(32*dpr))
-            assert actual.alpha()>=254,(ratio,amount,'Opaque content lost alpha',actual.alpha())
+            assert actual.alpha()==255,(ratio,amount,'Opaque content lost alpha',actual.alpha())
             a,b=QColor(first),QColor(last)
             for channel in ('red','green','blue'):
                 expected=getattr(a,channel)()*(1-amount)+getattr(b,channel)()*amount

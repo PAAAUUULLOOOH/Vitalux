@@ -28,6 +28,8 @@ jobs:
           cache-dependency-path: requirements-dev.txt
       - name: Number the test build on the permanent branch
         id: prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           mkdir -p build/setup
@@ -42,10 +44,13 @@ jobs:
           if [[ "$CHANGED" != true ]]; then
             exit 0
           fi
-          VERSION="$(python scripts/prepare-unstable-build.py)"
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/unstable" --jq '.assets[].name' > build/setup/published-assets.txt
+          VERSION="$(python scripts/prepare-unstable-build.py --published-assets build/setup/published-assets.txt)"
           git add vitalux/__init__.py CHANGELOG.md CHANGELOG.en.md
-          git commit -m "Prepare Unstable test build v$VERSION"
-          git push origin HEAD:refs/heads/unstable
+          if ! git diff --cached --quiet; then
+            git commit -m "Prepare Unstable test build v$VERSION"
+            git push origin HEAD:refs/heads/unstable
+          fi
           echo "TAG=v$VERSION" >> "$GITHUB_ENV"
           python scripts/release_notes.py "$VERSION" "$RUNNER_TEMP/unstable-notes.md"
       - name: Install pinned Python dependencies
