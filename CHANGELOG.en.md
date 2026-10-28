@@ -1,6 +1,6 @@
 # Vitalux – Changes
 
-## [v0.9.6.4-unstable.12] - 2026-10-28
+## [v0.9.6.4-unstable.12] - 2026-10-29
 
 - Portable packages include the required GLib and other desktop runtime libraries. No separate GLib installation is needed to start the app.
 - Steam restarts orderly and automatically when overlay setup requires it. Play game prepares the connection and then starts the game; running Steam games are not terminated. Existing connections and changes to metrics do not need a restart.

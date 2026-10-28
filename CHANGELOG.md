@@ -1,6 +1,6 @@
 # Vitalux – Änderungen
 
-## [v0.9.6.4-unstable.12] - 2026-10-28
+## [v0.9.6.4-unstable.12] - 2026-10-29
 
 - Portable-Pakete enthalten die benötigten GLib- und weiteren Desktop-Laufzeitbibliotheken. Der Start erfordert keine separate GLib-Nachinstallation.
 - Steam wird bei nötiger Overlay-Einrichtung geordnet automatisch neu gestartet. „Spiel starten“ richtet die Verbindung ein und startet anschließend das Spiel; laufende Steam-Spiele werden nicht beendet. Bestehende Verbindungen und reine Metrikänderungen benötigen keinen Neustart.
