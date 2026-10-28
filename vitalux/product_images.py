@@ -26,10 +26,8 @@ DOMAINS = {
     'biostar': ('biostar.com.tw',), 'intel': ('intel.com',),
     'amd': ('amd.com',), 'nvidia': ('nvidia.com',),
     'dell': ('dell.com',), 'hp': ('hp.com',), 'lenovo': ('lenovo.com',),
-    'corsair': ('corsair.com',), 'kingston': ('kingston.com',), 'crucial': ('crucial.com',),
-    'g.skill': ('gskill.com',), 'samsung': ('samsung.com',), 'sk hynix': ('skhynix.com',),
-    'teamgroup': ('teamgroupinc.com',), 'adata': ('adata.com',), 'patriot': ('patriotmemory.com',),
 }
+IMAGE_KINDS = ('cpu', 'gpu', 'mainboard')
 SAPPHIRE_PURE_PAGE = 'https://www.sapphiretech.com/en/consumer/pure-radeon-rx-9070-xt-16g-gddr6'
 SAPPHIRE_PURE_IMAGE = ('https://media.cdn.sapphiretech.com.cn/-/media/sites/sapphire/pim/'
                        'product-images/11348_02_rx9070xt_pure_16ggddr6/'
@@ -43,7 +41,7 @@ def product_key(product):
         return ''
     fields = [str(product.get(k) or '').strip().casefold()
               for k in ('kind', 'vendor', 'model', 'revision')]
-    if fields[0] not in ('gpu', 'mainboard', 'cpu', 'ram') or not all(fields[1:3]):
+    if fields[0] not in IMAGE_KINDS or not all(fields[1:3]):
         return ''
     return hashlib.sha256(json.dumps(fields, ensure_ascii=True).encode()).hexdigest()
 
@@ -268,10 +266,10 @@ def matches_product(product, title):
     actual=words(title)
     if not required or not required<=actual:return False
     if re.search(r'\b(?:vs\.?|versus|comparison|unveils|announces|roundup)\b',str(title),re.I):return False
-    if product['kind'] in ('mainboard','ram','cpu'):
+    if product['kind'] in ('mainboard','cpu'):
         # Retail pages separate model codes differently from firmware: i7-13700K
         # / i7 13700K, B650-A / B650 A. Preserve full suffix boundaries so B650
-        # never matches B650M and a different RAM part is not selected.
+        # never matches B650M and a different model suffix is not selected.
         codes=re.findall(r'\b[a-z]+[a-z0-9-]*\d[a-z0-9-]*\b',search_model(product),re.I)
         for code in codes:
             pieces=re.findall(r'[a-z]+|\d+',code.casefold())
@@ -442,6 +440,7 @@ def refresh_pci(cache, download):
 
 
 def lookup_key(product):
+    if not product or product.get('kind') not in IMAGE_KINDS:return ''
     key=product_key(product)
     ids=product.get('pci_ids','') if product else ''
     if key:return key
@@ -457,9 +456,6 @@ def manufacturer_pages(product):
     if product['kind']=='mainboard' and vendor=='msi':
         slug=re.sub(r'[^a-z0-9]+','-',model.lower()).strip('-')
         return ['https://www.msi.com/Motherboard/'+slug]
-    if product['kind']=='ram' and vendor=='kingston':
-        return ['https://www.kingston.com/en/memory/search?'+urlencode({'partid':model}),
-                'https://www.kingston.com/en/memory/search/discontinuedmodels?'+urlencode({'partid':model})]
     if product['kind']=='cpu' and vendor=='amd':
         match=re.search(r'\bRyzen\s+(\d)\s+(\d{4}[a-z0-9]*)\b',model,re.I)
         if match:
@@ -470,10 +466,10 @@ def manufacturer_pages(product):
 
 def resolve(product, cache=None, download=fetch, cancelled=None, on_preview=None):
     """Prefer a cutout, retain a verified background alternative and offline cache."""
+    if not product or product.get('kind') not in IMAGE_KINDS:return None
     cache=cache or ProductCache()
     saved=cache.load(product)
     if saved:return saved
-    if not product:return None
     if not product_key(product):
         if lookup_key(product):refresh_pci(cache,download)
         return None

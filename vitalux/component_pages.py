@@ -377,7 +377,6 @@ class MemoryPage(Page):
             modules = groups[index];module = modules[0]
             name.setText(module.get('model') or tr('Arbeitsspeicher'))
             meta.setText(module.get('vendor') or '')
-            header.set_product(module.get('product'))
             speed = module.get('speed')
             detail = ' · '.join(str(x) for x in (module.get('memory_type'),f'{speed} MT/s' if speed else '') if x)
             header.set_specs([

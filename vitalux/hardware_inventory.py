@@ -53,8 +53,7 @@ def parse_smbios(raw):
                 if speed==65535:speed=0
                 modules.append(dict(vendor=vendor,model=part,capacity=capacity,
                     memory_type=_MEMORY_TYPES.get(body[0x12],''),
-                    speed=speed,slot=string(0x10),
-                    product=dict(kind='ram',vendor=vendor,model=part,revision='',exact=bool(vendor and part))))
+                    speed=speed,slot=string(0x10)))
         offset = end+2
         if kind == 127:break
     return modules
@@ -72,8 +71,7 @@ def parse_dmidecode(text):
         speed = re.search(r'\d+',fields.get('Configured Memory Speed') or fields.get('Speed') or '')
         modules.append(dict(vendor=vendor,model=part,capacity=int(size[1])*scale,
             memory_type=clean(fields.get('Type')),speed=int(speed[0]) if speed else 0,
-            slot=clean(fields.get('Locator')),
-            product=dict(kind='ram',vendor=vendor,model=part,revision='',exact=bool(vendor and part))))
+            slot=clean(fields.get('Locator'))))
     return modules
 
 

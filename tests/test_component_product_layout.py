@@ -1,6 +1,7 @@
 """Four component headers: concise specs, no placeholders, mixed DIMMs, no PL1/2."""
 import os,sys,tempfile
 from pathlib import Path
+from unittest.mock import patch
 os.environ.setdefault('QT_QPA_PLATFORM','offscreen')
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from PySide6.QtCore import Qt
@@ -19,13 +20,12 @@ cpu=dict(model='AMD Ryzen 7 9800X3D',manufacturer='AMD',usage=20,cores=8,threads
 ram=dict(percent=30,total=32*1024**3,used=10*1024**3,available=22*1024**3,
          cached=0,buffers=0,swap_used=0,swap_total=0,swap_percent=0,modules=[])
 for vendor,part in (('Kingston','KF560C30-16'),('Corsair','CMK16GX5')):
-    ram['modules'].append(dict(vendor=vendor,model=part,capacity=16*1024**3,memory_type='DDR5',speed=6000,slot='DIMM_A1',
-        product=dict(kind='ram',vendor=vendor,model=part,revision='',exact=True)))
+    ram['modules'].append(dict(vendor=vendor,model=part,capacity=16*1024**3,memory_type='DDR5',speed=6000,slot='DIMM_A1'))
 power=dict(id='cpu-pkg',component='cpu',kind='powers',unit='W',name='Package',value=88,
            limits=[('PL1',125),('PL2',181)],primary=True,domain='package-0')
 sample=dict(cpu=cpu,ram=ram,hardware=[power])
 history=dict(cpu=[20],ram=[30],cpu_temp=[50],cpu_clock=[4200],cpu_power=[88])
-for product in [cpu['product']]+[m['product'] for m in ram['modules']]:loader().results[lookup_key(product)]=None
+loader().results[lookup_key(cpu['product'])]=None
 page=CpuPage();page.refresh(sample,history)
 assert not hasattr(page,'kv')
 assert len(page.graph.live_labels)==3 and all(' W' not in item.text() for item in page.graph.live_labels)
@@ -33,17 +33,23 @@ assert '4.20 GHz' in page.graph.live_labels[2].text()
 assert ('Maximaler Takt','5.20 GHz') in page.product_header._spec_values
 assert ('Kerne / Threads','8 / 16') in page.product_header._spec_values
 assert page.product_header.picture.isHidden()
-memory=MemoryPage();memory.refresh(sample,history)
+memory=MemoryPage()
+with patch.object(loader(),'request') as requested:
+    memory.refresh(sample,history);memory.show();app.processEvents()
+    for item in memory.module_cards:item[1].sync_preference()
+    assert not requested.called,'RAM module cards requested product pictures'
 assert len(memory.module_cards)==2
 assert [item[2].text() for item in memory.module_cards]==['KF560C30-16','CMK16GX5']
 assert all(item[1].picture.isHidden() for item in memory.module_cards)
+assert all(item[1].row.spacing()==0 and not item[1].retry.isActive() for item in memory.module_cards)
+assert all(('Kapazität','1 × 16.0 GB') in item[1]._spec_values for item in memory.module_cards)
 ram['modules']=[];memory.refresh(sample,history)
 assert all(item[0].isHidden() for item in memory.module_cards)
 with tempfile.TemporaryDirectory() as directory:
     path=Path(directory)/'cutout.png'
     image=QImage(240,160,QImage.Format_ARGB32);image.fill(0)
     painter=QPainter(image);painter.fillRect(20,10,200,140,QColor('white'));painter.end();image.save(str(path))
-    for kind in ('gpu','mainboard','cpu','ram'):
+    for kind in ('gpu','mainboard','cpu'):
         widget=ProductHeader(label('Product model','bigName'),label('Manufacturer','muted'),kind)
         widget.set_specs([('Kapazität','16 GB'),('Speichertyp','DDR5-6000'),('Steckplatz','DIMM_A1')])
         widget.key='fixture';widget._ready('fixture',dict(path=str(path)))

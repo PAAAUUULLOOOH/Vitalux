@@ -19,7 +19,11 @@ gpu=dict(kind='gpu',vendor='ASUS',model='ASUS TUF Gaming Radeon RX 9060 XT',revi
 assert images.matches_product(gpu,'ASUS TUF GAMING Radeon RX 9060 XT OC Edition')
 assert not images.matches_product(gpu,'ASUS PRIME Radeon RX 9060 XT')
 assert images.product_key(dict(kind='cpu',vendor='AMD',model='Ryzen 7 9800X3D',exact=True))
-assert images.product_key(dict(kind='ram',vendor='Kingston',model='KF560C30-16',exact=True))
+ram=dict(kind='ram',vendor='Kingston',model='KF560C30-16',exact=True)
+assert not images.product_key(ram) and not images.lookup_key(ram)
+with tempfile.TemporaryDirectory() as directory:
+    def forbidden(*args):raise AssertionError('A RAM product started a picture lookup')
+    assert images.resolve(ram,images.ProductCache(directory),forbidden) is None
 assert images.matches_product(dict(kind='cpu',vendor='AMD',model='AMD Ryzen 7 9800X3D 8-Core Processor'), 'AMD Ryzen 7 9800X3D')
 assert images.matches_product(dict(kind='cpu',vendor='Intel',model='Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz'), 'Intel Core i7-6700K')
 image=QImage(160,100,QImage.Format_ARGB32);image.fill(0)

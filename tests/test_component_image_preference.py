@@ -14,7 +14,7 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
  result=dict(path=str(path));headers=[]
  with patch.object(product_ui.loader(),'request') as request:
   settings.set('component_images',False)
-  for kind in ('cpu','gpu','ram','mainboard'):
+  for kind in ('cpu','gpu','mainboard'):
    header=product_ui.ProductHeader(label('Detected model'),label('Manufacturer'),kind)
    header.set_product(dict(kind=kind,model='Exact model',vendor='Vendor',exact=True))
    header.resize(700,210);header.show();headers.append(header)
@@ -26,11 +26,16 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
   for header in headers:
    header.sync_preference();app.processEvents()
    assert not header.picture.isHidden() and header.row.direction()==QBoxLayout.TopToBottom
-  assert request.call_count==4 and path.exists()
+  assert request.call_count==3 and path.exists()
+  ram=product_ui.ProductHeader(label('Detected RAM part'),label('RAM manufacturer'),'ram')
+  ram.set_product(dict(kind='ram',model='Exact RAM part',vendor='Vendor',exact=True))
+  ram.show();app.processEvents();ram._ready(ram.key,result);ram.sync_preference()
+  assert ram.picture.isHidden() and not ram.retry.isActive() and request.call_count==3
+  ram.close()
   settings.set('component_images',False)
   for header in headers:
    header.sync_preference();header._ready(header.key,result)
    assert header.picture.isHidden() and not header.retry.isActive()
    header.close()
   assert path.exists(),'Disabling images must preserve cache files'
-print('All four component image kinds: preference, late result, layout collapse and retained cache PASS')
+print('CPU/GPU/mainboard pictures, RAM exclusion, late result, layout collapse and retained cache PASS')

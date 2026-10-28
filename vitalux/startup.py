@@ -25,7 +25,6 @@ class StartupWorker(QThread):
             from .product_specs import SpecCache,product_key
             products=[sample['cpu'].get('product'),static.get('board_product')]
             products += [item.get('product') for item in sample.get('gpus',[])]
-            products += [item.get('product') for item in sample.get('ram',{}).get('modules',[])]
             images={};specs={}
             for product in products:
                 if not product:continue

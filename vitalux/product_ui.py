@@ -6,7 +6,7 @@ from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal, Qt, QRectF, 
 from PySide6.QtGui import QPainter, QPixmap
 from PySide6.QtWidgets import QApplication, QBoxLayout, QSizePolicy, QVBoxLayout, QGridLayout, QWidget
 
-from .product_images import lookup_key, resolve, ProductCache
+from .product_images import IMAGE_KINDS, lookup_key, resolve, ProductCache
 from .work_result import WorkResult
 from . import settings
 from .ui_locale import QLabel, QPushButton
@@ -165,9 +165,10 @@ class ProductHeader(QWidget):
         self.row.addWidget(self.details,1)
         self.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Maximum)
         self._layout_image(False)
-        loader().loaded.connect(self._ready)
-        from .spec_ui import loader as spec_loader
-        spec_loader().loaded.connect(self._spec_ready)
+        if kind in IMAGE_KINDS:
+            loader().loaded.connect(self._ready)
+            from .spec_ui import loader as spec_loader
+            spec_loader().loaded.connect(self._spec_ready)
         self.set_specs([])
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self._context_menu)
@@ -284,6 +285,7 @@ class ProductHeader(QWidget):
         if self.isVisible():self._request();self.request_specs()
 
     def _request(self):
+        if self.kind not in IMAGE_KINDS:return
         if settings.get('component_images',True) is not False and self.key and not self._requested:
             self._requested=True;loader().request(self.product)
 
@@ -303,6 +305,7 @@ class ProductHeader(QWidget):
             self.picture.setFixedWidth(min(280,max(110,round(self.width()*.42))))
 
     def _ready(self,key,result):
+        if self.kind not in IMAGE_KINDS:return
         if key!=self.key:return
         identity=(result.get('path'),result.get('sha256')) if result else None
         if identity!=getattr(self,'_image_identity',None):

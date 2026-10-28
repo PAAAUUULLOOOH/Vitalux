@@ -27,7 +27,7 @@ EN_MORE = {
     'Komponentenbilder und Spezifikationen laden …': 'Loading component pictures and specifications…',
     'Oberfläche vorbereiten …': 'Preparing the interface…',
     'Einige Startdaten konnten nicht geladen werden.': 'Some startup data could not be loaded.',
-    'Zeigt verfügbare Produktbilder von Prozessor, Grafikkarte, Arbeitsspeicher und Mainboard. Die Komponenteninformationen werden immer mittig dargestellt. Bereits geladene Bilder bleiben gespeichert.': 'Shows available product pictures for the processor, graphics card, memory and mainboard. Component information always remains centered. Previously loaded pictures remain saved.',
+    'Zeigt verfügbare Produktbilder von Prozessor, Grafikkarte und Mainboard. Die Komponenteninformationen werden immer mittig dargestellt. Bereits geladene Bilder bleiben gespeichert.': 'Shows available product pictures for the processor, graphics card and mainboard. Component information always remains centered. Previously loaded pictures remain saved.',
     'Sockel': 'Socket',
     'Chipsatz': 'Chipset',
     'Formfaktor': 'Form factor',
@@ -52,7 +52,6 @@ EN_MORE = {
     'Light · Akzentfarben und Hintergrund sind anpassbar.': 'Light · Accent colors and background are adjustable.',
     'Aurora Bloom · Akzentfarben und Hintergrund sind anpassbar.': 'Aurora Bloom · Accent colors and background are adjustable.',
 
-    'CPU, Grafik, RAM und Mainboard zeigen verfügbare Herstellerdaten und kurze Specs. Freigestellte Produktbilder werden bevorzugt, sonst passende Bilder mit Hintergrund verwendet. Ohne Bild nutzen die Texte die gesamte Breite.': 'CPU, graphics, RAM and mainboard show available manufacturer details and concise specs. Cutout pictures are preferred; matching pictures with backgrounds are used otherwise. Without a picture, the text uses the full width.',
     'Maximaler Takt': 'Maximum clock',
     'Speichertyp': 'Memory type',
     'Kapazität': 'Capacity',

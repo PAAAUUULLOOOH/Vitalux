@@ -16,10 +16,11 @@ def dimm(vendor,part,size=16384,kind=0x22,speed=6000,slot='DIMM_A1'):
 modules=inventory.parse_smbios(dimm('Kingston','KF560C30-16')+dimm('Corsair','CMK32GX5',slot='DIMM_B1')+dimm('Unknown','',size=0))
 assert len(modules)==2 and modules[0]['capacity']==16*1024**3
 assert modules[0]['memory_type']=='DDR5' and modules[0]['speed']==6000
-assert modules[0]['product']['exact'] and modules[1]['vendor']=='Corsair'
+assert modules[0]['model']=='KF560C30-16' and modules[1]['vendor']=='Corsair'
+assert all('product' not in module for module in modules)
 assert inventory.parse_smbios(dimm('Samsung','M393',size=0x7fff))[0]['capacity']==64*1024**3
 unknown=inventory.parse_smbios(dimm('Unknown','Unknown'))[0]
-assert not unknown['product']['exact']
+assert not unknown['vendor'] and not unknown['model']
 for raw in (b'',b'\x11\x00\x00\x00',dimm('Kingston','KF')[:-1],b'\x11\xff\x00\x00'):
     assert inventory.parse_smbios(raw)==[]
 text='''Handle 0x1, DMI type 17, 40 bytes
