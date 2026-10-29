@@ -44,14 +44,17 @@ with tempfile.TemporaryDirectory() as folder:
     def prepare(chosen,base=None):
         prepared.append((chosen,base));return target
     with patch.object(game_steam,'_processes',side_effect=clients),patch.object(game_steam,'stop_for_setup',return_value=False),patch.object(game_profiles,'prepare',side_effect=prepare):
-        worker=GameService(root=state,initial_games=[game]);saved=[];errors=[]
+        worker=GameService(root=state,initial_games=[game]);saved=[];errors=[];catalogs=[]
         worker.profile_saved.connect(saved.append);worker.failed.connect(errors.append)
+        worker.catalog_ready.connect(catalogs.append)
         worker.submit('profile',game);worker.start()
         try:
             deadline=time.monotonic()+5
             while not saved and not errors and time.monotonic()<deadline:app.processEvents();time.sleep(.01)
             assert saved and not errors,errors
             assert prepared[0][0]['flatpak'] and prepared[0][1] is None,prepared
+            while not any(row.get('flatpak') and row.get('mangohud_available') for row in catalogs[-1]['games']) and time.monotonic()<deadline:app.processEvents();time.sleep(.01)
+            assert any(row.get('flatpak') and row.get('mangohud_available') for row in catalogs[-1]['games']),'Lost the bundled engine status after selecting Flatpak'
         finally:worker.shutdown();assert worker.wait(5000)
     with patch.object(game_steam,'_processes',side_effect=lambda target:[(process(flat if target.get('flatpak') else native),{})]):
         try:game_steam.resolve(game)

@@ -148,9 +148,10 @@ class GameService(QThread):
                             game_profiles.prepare(connection['game'])
                     available = {}
                     for game in installed:
-                        key = (game['store'], bool(game.get('flatpak')))
-                        if key not in available:
-                            available[key] = game_profiles.available(game)
+                        for variant in [game,*game.get('steam_installations',[])]:
+                            key = (variant['store'], bool(variant.get('flatpak')))
+                            if key not in available:
+                                available[key] = game_profiles.available(variant)
                     self._availability = available
                     self._catalog(sessions)
                     next_scan = time.monotonic()+60
