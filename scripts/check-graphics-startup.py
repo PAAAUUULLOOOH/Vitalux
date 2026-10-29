@@ -115,6 +115,14 @@ def child(mode, output):
                 QTest.qWait(150)
                 win.window_frame.buttons['maximize'].click()
                 settled(lambda: not win.isMaximized() and win.size()==original_size)
+                def restored_frame():
+                    restored=win.grab().toImage()
+                    return all(restored.pixelColor(x,y).alpha()==0 for x,y in
+                               ((0,0),(restored.width()-1,0),(0,restored.height()-1),
+                                (restored.width()-1,restored.height()-1)))
+                # Native state/size notifications precede the restored RHI
+                # frame. Test sidebar motion only after restoration renders.
+                settled(restored_frame)
             controls = [button.geometry() for button in win.window_frame.buttons.values()]
             for collapsed in (True, False):
                 win.collapse_button.click()

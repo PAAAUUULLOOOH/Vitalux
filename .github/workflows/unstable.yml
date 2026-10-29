@@ -149,19 +149,6 @@ jobs:
         run: |
           set -euo pipefail
           xvfb-run -a -s '-screen 0 1600x1050x24' env QT_QPA_PLATFORM=xcb VITALUX_RENDERER=x11_opengl LIBGL_ALWAYS_SOFTWARE=1 LP_NUM_THREADS=2 python tests/test_navigation_surfaces.py
-      - name: Check resource budgets, endurance and reference rendering
-        if: steps.prepare.outputs.changed == 'true' && steps.validation.outputs.resources == 'true'
-        timeout-minutes: 18
-        run: |
-          set -euo pipefail
-          python scripts/check-resource-budgets.py
-          python scripts/check-ui-endurance.py --cycles 180 --output build/ui-endurance
-          git worktree add --detach build/render-reference 5bcc1e90a69f3f58f1de582db0b5eeec5b0e4332
-          python scripts/check-render-parity.py --reference build/render-reference --output build/render-parity
-          git worktree remove build/render-reference
-          git worktree add --detach build/performance-reference 1a74b85a6ff427ca2e7cf672e26b2efe0f6ca6e8
-          python scripts/check-performance-render.py --reference build/performance-reference --output build/performance-parity
-          git worktree remove build/performance-reference
       - name: Exercise real kernel and desktop paths
         if: steps.prepare.outputs.changed == 'true'
         id: native
@@ -191,6 +178,19 @@ jobs:
       - name: Verify offline source ZIP startup
         if: steps.prepare.outputs.changed == 'true' && steps.validation.outputs.source_startup == 'true'
         run: python scripts/check-source-startup.py
+      - name: Check resource budgets, endurance and reference rendering
+        if: steps.prepare.outputs.changed == 'true' && steps.validation.outputs.resources == 'true'
+        timeout-minutes: 18
+        run: |
+          set -euo pipefail
+          python scripts/check-resource-budgets.py
+          python scripts/check-ui-endurance.py --cycles 180 --output build/ui-endurance
+          git worktree add --detach build/render-reference 5bcc1e90a69f3f58f1de582db0b5eeec5b0e4332
+          python scripts/check-render-parity.py --reference build/render-reference --output build/render-parity
+          git worktree remove build/render-reference
+          git worktree add --detach build/performance-reference 1a74b85a6ff427ca2e7cf672e26b2efe0f6ca6e8
+          python scripts/check-performance-render.py --reference build/performance-reference --output build/performance-parity
+          git worktree remove build/performance-reference
       - uses: actions/cache@v4
         if: steps.prepare.outputs.changed == 'true'
         with:

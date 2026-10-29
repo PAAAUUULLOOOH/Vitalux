@@ -10,6 +10,9 @@ import sys
 import tempfile
 import time
 
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from vitalux.process_environment import host_environment
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -39,6 +42,13 @@ def main():
     if not all(programs.values()) or not icd or not icd.is_file():
         raise RuntimeError('Install Xvfb, Weston and Mesa Vulkan/Lavapipe')
     env['VK_DRIVER_FILES'] = env['VK_ICD_FILENAMES'] = str(icd)
+    def desktop_environment():
+        # The compositor is a host program, not a shipped Qt process. Its
+        # GLib/font stack must not inherit Vitalux's private dependencies.
+        clean=host_environment(env)
+        if args.sysroot:
+            clean['LD_LIBRARY_PATH']=':'.join(map(str,(lib,lib/'weston')))+':'+clean.get('LD_LIBRARY_PATH','')
+        return clean
     with tempfile.TemporaryDirectory(prefix='vitalux-graphics-') as directory:
         runtime = Path(directory)
         runtime.chmod(0o700)
@@ -53,7 +63,7 @@ def main():
                 streams.append((output/(name+'.log')).open('w'))
             xvfb = subprocess.Popen([programs['Xvfb'], '-displayfd', str(write_fd),
                 '-screen', '0', '1600x1100x24', '-nolisten', 'tcp', '-noreset'],
-                env=env, pass_fds=(write_fd,), stdout=streams[0], stderr=subprocess.STDOUT)
+                env=desktop_environment(), pass_fds=(write_fd,), stdout=streams[0], stderr=subprocess.STDOUT)
             processes.append(xvfb)
             os.close(write_fd)
             write_fd = None
@@ -61,8 +71,10 @@ def main():
             if not select.select([read_fd], [], [], 15)[0]:
                 raise RuntimeError('Xvfb did not allocate a display')
             env['DISPLAY'] = ':'+os.read(read_fd, 32).decode().strip()
-            help_text = subprocess.check_output([programs['weston'], '--help'], env=env,
-                                                stderr=subprocess.STDOUT, text=True)
+            help_probe = subprocess.run([programs['weston'], '--help'], env=desktop_environment(),
+                                        capture_output=True, text=True)
+            (output/'weston-help.log').write_text(help_probe.stdout+help_probe.stderr)
+            help_probe.check_returncode();help_text=help_probe.stdout
             compositor_renderer = ['--renderer=gl'] if '--renderer=' in help_text else ['--use-gl']
             sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
             from vitalux import renderer
@@ -86,7 +98,7 @@ def main():
                         weston = subprocess.Popen([programs['weston'], '--backend=headless-backend.so',
                             '--shell='+shell, '--socket='+env['WAYLAND_DISPLAY'],
                             '--width=1600', '--height=1100', '--no-config', '--idle-time=0',
-                            *compositor_renderer], env=env, stdout=streams[1], stderr=subprocess.STDOUT)
+                            *compositor_renderer], env=desktop_environment(), stdout=streams[1], stderr=subprocess.STDOUT)
                         processes.append(weston)
                         deadline = time.monotonic()+20
                         while not (runtime/env['WAYLAND_DISPLAY']).exists():
