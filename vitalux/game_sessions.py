@@ -76,6 +76,13 @@ class GameSessions:
     def update_inventory(self, installed):
         games = {key: dict(value, installed=False) for key, value in self.games.items()}
         for game in installed:
+            connection=self.connections.get(game['id'])
+            if connection and game.get('store')=='steam':
+                previous=connection['game']
+                variant=next((row for row in game.get('steam_installations',[])
+                              if bool(row.get('flatpak'))==bool(previous.get('flatpak'))
+                              and row.get('launcher_root')==previous.get('launcher_root')),None)
+                if variant:game=dict(game,**variant)
             games[game['id']] = dict(game)
         if games != self.games:
             self.games = games

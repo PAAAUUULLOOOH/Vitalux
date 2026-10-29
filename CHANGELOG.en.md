@@ -1,5 +1,11 @@
 # Vitalux – Changes
 
+## [v0.9.6.4-unstable.13] - 2026-10-29
+
+- Steam integration matches the running native or Flatpak installation and the active account. Invalid account data is detected before restarting Steam.
+- Overlay launch options are checked after writing and again after a necessary Steam restart. If the options are lost, the game is not started without its enabled overlay.
+- Overlay-profile errors remain visible across library refreshes. Setup in progress prevents further launch and save actions.
+
 ## [v0.9.6.4-unstable.12] - 2026-10-29
 
 - Portable packages include the required GLib and other desktop runtime libraries. No separate GLib installation is needed to start the app.

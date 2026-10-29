@@ -169,6 +169,7 @@ class OverlayProfile(QDialog):
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.page, self.game = page, game
         self._close_after_save=False
+        self._operation_error=page._operation_error if page._operation_game_id==game['id'] else ''
         self.page.service.profile_saved.connect(self._saved)
         self.setWindowTitle(tr('Overlay-Profil')+' · '+game['name'])
         self.resize(620, 720)
@@ -182,6 +183,7 @@ class OverlayProfile(QDialog):
         title.setTextFormat(Qt.PlainText)
         form.addWidget(title)
         self.notice = label('', 'muted', wrap=True)
+        self.notice.setTextFormat(Qt.PlainText)
         form.addWidget(self.notice)
         profile = game_profiles.load(game['id'])
         self.enabled = QCheckBox('Overlay und Aufzeichnung für dieses Spiel aktivieren')
@@ -258,9 +260,11 @@ class OverlayProfile(QDialog):
                    'Overlay ist deaktiviert.' if connected else
                    'Noch nicht mit dem Spiel verbunden. Speichere das aktivierte Profil; einen nötigen Steam-Neustart übernimmt Vitalux.')
             self.notice.setText(self.notice.text()+'\n'+tr(state))
+        if self._operation_error:self.notice.setText(tr(self._operation_error))
         if hasattr(self,'save_button'):
             self.save_button.setText(tr('Overlay aktivieren' if self.enabled.isChecked() and not connected else 'Speichern'))
-        self.connection.setEnabled(connected or bool(game.get('mangohud_available')))
+            self.save_button.setEnabled(not self.page._operation_busy)
+        self.connection.setEnabled(not self.page._operation_busy and (connected or bool(game.get('mangohud_available'))))
 
     def _save(self,operation='profile'):
         profile = dict(enabled=self.enabled.isChecked(), target_fps=self.target.value(),
@@ -278,7 +282,8 @@ class OverlayProfile(QDialog):
         except OSError as error:
             QMessageBox.warning(self, 'Vitalux', str(error))
             return False
-        self.page.service.submit(operation, self.game)
+        self._operation_error=''
+        self.page._submit_operation(operation,self.game)
         return True
 
     def _save_close(self):
@@ -306,6 +311,9 @@ class GamesPage(Page):
         self._dialog = None
         self._closing = False
         self._launch_requested=False
+        self._operation_busy=False
+        self._operation_error=''
+        self._operation_game_id=''
         self._covers = {}
         self._tile_viewport = None
         self.service = GameService(self, initial_games=startup_games)
@@ -508,7 +516,7 @@ class GamesPage(Page):
             if game.get('connected') and game.get('overlay_enabled') else
             'Overlay ist deaktiviert.' if game.get('connected') else
             'Overlay noch nicht mit dem Spiel verbunden.'))
-        self.start_button.setEnabled(bool(game.get('installed')))
+        self.start_button.setEnabled(bool(game.get('installed')) and not self._operation_busy and not self._launch_requested)
         history = [row for row in self.summaries if row['game_id']==self.selected_id]
         self._history_table(history)
         if history and not self.selected_report:
@@ -592,11 +600,20 @@ class GamesPage(Page):
 
     def start_game(self):
         game = next((g for g in self.games if g['id']==self.selected_id), None)
-        if game and game.get('installed') and not self._launch_requested:
+        if game and game.get('installed') and not self._launch_requested and not self._operation_busy:
             self._launch_requested=True
             self.start_button.setEnabled(False)
             self.notice.setText(tr('Spielstart und Overlay-Verbindung werden vorbereitet …'));self.notice.show()
-            self.service.submit('launch',dict(game))
+            self._submit_operation('launch',dict(game))
+
+    def _submit_operation(self,operation,game):
+        self._operation_error=''
+        self._operation_game_id=game['id']
+        if self._dialog is not None:
+            import shiboken6
+            if shiboken6.isValid(self._dialog):self._dialog._operation_error=''
+        self._busy(True)
+        self.service.submit(operation,game)
 
     def _launch_ready(self,game):
         self._launch_requested=False
@@ -605,6 +622,8 @@ class GamesPage(Page):
             if not game_launch.start(game):raise ValueError('Der Spiele-Launcher konnte nicht geöffnet werden.')
             self.notice.hide()
         except (OSError,ValueError) as error:
+            from .diagnostics import log_exception
+            log_exception(type(error),error,error.__traceback__)
             if game.get('restart_steam'):
                 from .game_steam import open_client
                 open_client(game)
@@ -612,6 +631,7 @@ class GamesPage(Page):
 
     def _progress(self,message):
         if self._closing:return
+        if self._operation_error:return
         self.notice.setText(tr(message));self.notice.show()
         if self._dialog is not None:
             import shiboken6
@@ -660,6 +680,7 @@ class GamesPage(Page):
 
     def _error(self, message):
         if self._closing:return
+        self._operation_error=message
         self._launch_requested=False
         self.notice.setText(tr(message))
         self.notice.show()
@@ -667,9 +688,12 @@ class GamesPage(Page):
         if self._dialog is not None:
             import shiboken6
             if shiboken6.isValid(self._dialog):
+                self._dialog._operation_error=message
+                self._dialog._close_after_save=False
                 self._dialog.notice.setText(tr(message))
 
     def _busy(self, busy):
+        self._operation_busy=busy
         self.profile_button.setEnabled(not busy)
         game=next((g for g in self.games if g['id']==self.selected_id),{})
         self.start_button.setEnabled(not busy and not self._launch_requested and bool(game.get('installed')))

@@ -108,6 +108,19 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',folder
         page.service.profile_saved.emit('unrelated');assert not finished
         page.service.profile_saved.emit('steam:42');assert finished==[QDialog.DialogCode.Accepted]
         wait(20)
+        page._busy(False);page.open_profile();dialog=page._dialog
+        error='Steam hat die Overlay-Startoptionen nicht übernommen. Das Spiel wurde nicht gestartet. Bitte prüfe das aktive Steam-Konto und die Zugriffsrechte.'
+        page._error(error);visible=dialog.notice.text()
+        page._catalog(dict(games=games,sessions=[summary,previous]))
+        assert dialog.notice.text()==visible,'Catalog refresh discarded the setup failure'
+        page._progress('Steam wird wieder geöffnet …')
+        assert dialog.notice.text()==visible and page.notice.text()==visible
+        page._busy(True);page._catalog(dict(games=games,sessions=[summary,previous]))
+        assert not page.start_button.isEnabled() and not dialog.save_button.isEnabled()
+        with patch.object(page.service,'submit') as submitted:
+            page._busy(False);dialog._save()
+            assert submitted.called and not dialog._operation_error and not page._operation_error
+        page._busy(False);dialog.close();wait(20)
         window._switch_page(0);page._finished(report);wait(30)
         assert window.stack.currentIndex()==12 and page.current_report['game_id']=='steam:42'
         assert window.nav_buttons[12].isChecked()

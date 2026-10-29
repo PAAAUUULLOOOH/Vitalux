@@ -50,10 +50,15 @@ class GameService(QThread):
         self.catalog_ready.emit(dict(games=games, sessions=sessions.summaries))
 
     def _connect(self,game,bridge):
+        target=game_profiles.preflight_steam(game) if game.get('store')=='steam' else None
         stopped=game_steam.stop_for_setup(game,self.cancelled,self.progress.emit)
         try:
             if self.cancelled.is_set():raise InterruptedError()
+            if target is not None and game_profiles._steam_path(game)!=target:
+                raise ValueError('Das Steam-Konto hat sich während der Einrichtung geändert. Bitte versuche es erneut.')
             game_profiles.connect(game,bridge,check_running=game.get('store')!='steam')
+            if not game_profiles.connected(game,bridge):
+                raise ValueError('Die Overlay-Verbindung konnte nicht bestätigt werden. Bitte das Overlay-Profil erneut verbinden.')
         except BaseException:
             if stopped:game_steam.open_client(game)
             raise
@@ -76,6 +81,12 @@ class GameService(QThread):
                 if operation in ('connect', 'disconnect', 'profile', 'launch'):
                     self.busy.emit(True)
                     game = payload
+                    if game.get('store')=='steam' and operation!='disconnect':game=game_steam.resolve(game)
+                    connection=sessions.connections.get(game['id'])
+                    if connection and game.get('store')=='steam' and operation!='disconnect':
+                        previous=connection['game']
+                        if (bool(previous.get('flatpak'))!=bool(game.get('flatpak')) or
+                                previous.get('launcher_root')!=game.get('launcher_root')):connection=None
                     if operation == 'connect':
                         if not game_profiles.available(game):
                             raise ValueError('Die mitgelieferte Overlay-Komponente ist unvollständig. Bitte Vitalux erneut entpacken oder installieren.')
@@ -83,13 +94,12 @@ class GameService(QThread):
                         if self._connect(game,bridge):restart=game
                         sessions.register(game, bridge)
                     elif operation == 'disconnect':
-                        connection = sessions.connections.get(game['id'])
                         if connection:
+                            if game.get('store')=='steam':game_profiles.preflight_steam(game)
                             if game_steam.stop_for_setup(game,self.cancelled,self.progress.emit):restart=game
                             game_profiles.disconnect(game, Path(connection['root']),check_running=game.get('store')!='steam')
                         sessions.unregister(game['id'])
                     elif operation=='launch':
-                        connection=sessions.connections.get(game['id'])
                         profile=game_profiles.load(game['id'])
                         if profile['enabled']:
                             if not game_profiles.available(game):
@@ -103,7 +113,6 @@ class GameService(QThread):
                         elif connection:
                             (Path(connection['root'])/'enabled').unlink(missing_ok=True)
                     else:
-                        connection = sessions.connections.get(game['id'])
                         if connection:
                             bridge=game_profiles.prepare(game,base=Path(connection['root']).parent)
                             if game_profiles.load(game['id'])['enabled'] and not game_profiles.connected(game,bridge):
@@ -116,9 +125,14 @@ class GameService(QThread):
                             bridge=game_profiles.prepare(game)
                             if self._connect(game,bridge):restart=game
                             sessions.register(game,bridge)
+                    restarted=restart is not None
+                    if restart is not None:
+                        resume=restart;restart=None
+                        verify=(lambda:game_profiles.connected(game,bridge)) if operation!='disconnect' else None
+                        game_steam.resume(resume,self.cancelled,self.progress.emit,verify)
                     self._catalog(sessions)
                     if operation=='launch' and not self.cancelled.is_set():
-                        self.launch_ready.emit(dict(game,restart_steam=restart is not None));restart=None
+                        self.launch_ready.emit(dict(game,restart_steam=restarted))
                     if operation=='profile':self.profile_saved.emit(game['id'])
                 elif operation == 'report':
                     self.report_ready.emit(sessions.report(payload))
@@ -160,6 +174,8 @@ class GameService(QThread):
             except InterruptedError:
                 break
             except Exception as error:
+                from .diagnostics import log_exception
+                log_exception(type(error),error,error.__traceback__)
                 if not self.cancelled.is_set():
                     if operation in ('connect','disconnect','profile','launch'):self._catalog(sessions)
                     self.failed.emit(str(error))

@@ -1,5 +1,11 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.4-unstable.13] - 2026-10-29
+
+- Steam-Anbindung berücksichtigt die laufende native oder Flatpak-Installation und das aktive Konto. Ungültige Kontodaten werden vor einem Neustart erkannt.
+- Overlay-Startoptionen werden nach dem Schreiben und nach einem nötigen Steam-Neustart erneut geprüft. Bei verlorenen Optionen startet das Spiel nicht ohne sein aktiviertes Overlay.
+- Fehler im Overlay-Profil bleiben auch nach einer Aktualisierung sichtbar. Laufende Einrichtung sperrt weitere Start- und Speicheraktionen.
+
 ## [v0.9.6.4-unstable.12] - 2026-10-29
 
 - Portable-Pakete enthalten die benötigten GLib- und weiteren Desktop-Laufzeitbibliotheken. Der Start erfordert keine separate GLib-Nachinstallation.

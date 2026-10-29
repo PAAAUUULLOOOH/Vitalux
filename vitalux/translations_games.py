@@ -1,5 +1,15 @@
 """Game library, MangoHud setup and per-game session report translations."""
 EN_GAMES = {
+    'Das aktive Steam-Konto ist nicht eindeutig. Bitte melde dich in Steam erneut an.': 'The active Steam account is ambiguous. Sign in to Steam again.',
+    'Das aktive Steam-Konto konnte nicht gelesen werden. Bitte melde dich in Steam erneut an.': 'The active Steam account could not be read. Sign in to Steam again.',
+    'Für das aktive Steam-Konto fehlen die Spieleinstellungen. Bitte starte das Spiel einmal direkt über Steam.': 'Game settings are missing for the active Steam account. Launch the game directly through Steam once.',
+    'Die Steam-Spieleinstellungen sind nicht schreibbar. Bitte prüfe die Zugriffsrechte des Steam-Kontos.': 'Steam game settings are not writable. Check the Steam account’s file permissions.',
+    'Mehrere Steam-Installationen laufen gleichzeitig. Bitte schließe die nicht verwendete Installation.': 'Several Steam installations are running at the same time. Close the installation you are not using.',
+    'Das Spiel konnte der laufenden Steam-Installation nicht eindeutig zugeordnet werden. Bitte prüfe die Steam-Bibliothek und erkenne die Spiele erneut.': 'The game could not be matched reliably to the running Steam installation. Check the Steam library and scan for games again.',
+    'Steam ist noch nicht bereit. Bitte öffne Steam und versuche den Spielstart erneut.': 'Steam is not ready yet. Open Steam and try starting the game again.',
+    'Steam-Startoptionen werden geprüft …': 'Checking Steam launch options…',
+    'Steam hat die Overlay-Startoptionen nicht übernommen. Das Spiel wurde nicht gestartet. Bitte prüfe das aktive Steam-Konto und die Zugriffsrechte.': 'Steam did not retain the overlay launch options. The game was not started. Check the active Steam account and file permissions.',
+    'Das Steam-Konto hat sich während der Einrichtung geändert. Bitte versuche es erneut.': 'The Steam account changed during setup. Try again.',
     'Overlay aktivieren': 'Activate overlay',
     'Overlay aktiviert und mit dem Spiel verbunden.': 'Overlay enabled and connected to the game.',
     'Overlay ist deaktiviert.': 'Overlay is disabled.',

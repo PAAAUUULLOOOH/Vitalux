@@ -132,16 +132,29 @@ def _steam_path(game):
                   game_files.get(row, 'MostRecent', '0') == '1' and key.isdecimal()]
         if len(recent) == 1:
             account = str(int(recent[0][0]) & 0xffffffff)
-    except (OSError, ValueError, AttributeError):
-        pass
+        if len(recent)>1:
+            raise ValueError('Das aktive Steam-Konto ist nicht eindeutig. Bitte melde dich in Steam erneut an.')
+    except FileNotFoundError:pass
+    except (OSError, ValueError, AttributeError) as error:
+        raise ValueError('Das aktive Steam-Konto konnte nicht gelesen werden. Bitte melde dich in Steam erneut an.') from error
     candidates = list((root/'userdata').glob('*/config/localconfig.vdf'))
     if account:
         selected = root/'userdata'/account/'config/localconfig.vdf'
         if selected in candidates:
             return selected
+        raise ValueError('Für das aktive Steam-Konto fehlen die Spieleinstellungen. Bitte starte das Spiel einmal direkt über Steam.')
     if len(candidates) == 1:
         return candidates[0]
     raise ValueError('Steam-Konto nicht eindeutig. Melde dich zuerst im gewünschten Steam-Konto an.')
+
+
+def preflight_steam(game):
+    """Validate the actual account before asking Steam to shut down."""
+    path=_steam_path(game)
+    game_files.loads(game_files.read_text(path))
+    if not os.access(path,os.R_OK|os.W_OK) or not os.access(path.parent,os.W_OK|os.X_OK):
+        raise ValueError('Die Steam-Spieleinstellungen sind nicht schreibbar. Bitte prüfe die Zugriffsrechte des Steam-Kontos.')
+    return path
 
 
 def connected(game, root=None, snapshots=None):
@@ -156,6 +169,7 @@ def connected(game, root=None, snapshots=None):
         path=(_steam_path(game) if store=='steam' else
               Path(game['launcher_root'])/'GamesConfig'/(game['appid']+'.json') if store=='heroic' else
               Path(game['config_file']))
+        if store=='steam' and record.get('path')!=str(path):return False
         key=(store,str(path))
         if key not in snapshots:
             text=game_files.read_text(path)

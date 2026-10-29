@@ -24,6 +24,7 @@ if args and args[0]=='run':
  os.environ['FLATPAK_ID']=args[1];args=args[2:]
 if args==['daemon']:
  ctypes.CDLL(None).prctl(15,b'steam',0,0,0)
+ if (root/'discard-options').exists():(root/'config.vdf').write_text((root/'original.vdf').read_text())
  snapshot=(root/'config.vdf').read_text();(root/'client.pid').write_text(str(os.getpid()))
  while not (root/'shutdown').exists():time.sleep(.01)
  time.sleep(.15)
@@ -45,11 +46,15 @@ subprocess.Popen([sys.executable,__file__,'daemon'],env=os.environ.copy(),start_
  driver.chmod(0o755);(binary/'flatpak').symlink_to(driver)
  tracked=set();real_iter=psutil.process_iter
  def own_processes(attrs):
+  for marker in root.glob('*/client.pid'):
+   try:tracked.add(int(marker.read_text()))
+   except (OSError,ValueError):pass
   for p in real_iter(attrs):
    if p.pid in tracked:yield p
  for flatpak in (False,True):
   case=root/('flatpak' if flatpak else 'native');case.mkdir()
   config=case/'config.vdf';original='"UserLocalConfigStore" { "Software" { "Valve" { "Steam" { "apps" { "42" { "LaunchOptions" "-novid" } } } } } }\n'
+  (case/'original.vdf').write_text(original)
   steam=case/'Steam';path=steam/'userdata/123/config/localconfig.vdf'
   path.parent.mkdir(parents=True);path.write_text(original);config.symlink_to(path)
   game=dict(id='steam:42',store='steam',appid='42',name='Fixture',installed=True,flatpak=flatpak,
@@ -95,19 +100,30 @@ subprocess.Popen([sys.executable,__file__,'daemon'],env=os.environ.copy(),start_
     service.submit('launch',game);wait(lambda:bool(launches) or bool(errors));assert not errors,errors
     assert launches[-1]['restart_steam'] and 'launch.sh' in config.read_text()
     assert (case/'calls').read_text().count('-shutdown')==2
+    # A client which discards the newly written options must not yield a
+    # success signal or launch the game. It stays open for user recovery.
+    wait(lambda:pid()!=first and game_steam.running(game))
+    (case/'discard-options').write_text('yes');config.write_text(original)
+    errors.clear();launches.clear();saved.clear()
+    service.submit('launch',game);wait(lambda:bool(errors))
+    assert 'nicht übernommen' in errors[-1],errors
+    assert not launches and not saved and 'launch.sh' not in config.read_text()
+    assert game_steam.running(game) and (case/'calls').read_text().count('-shutdown')==3
+    from vitalux import diagnostics
+    assert 'nicht übernommen' in diagnostics.LOG_PATH.read_text()
    finally:
     service.shutdown();assert service.wait(5000)
     for process_id in list(tracked):
      try:
       process=psutil.Process(process_id)
-      if str(driver) in process.cmdline():process.terminate()
+      if any(path in process.cmdline() for path in (str(driver),str(binary/'flatpak'))):process.terminate()
      except psutil.Error:pass
     # Detached launcher IPC can finish after the worker signal. Reap only
     # processes from this unique fixture, including a late-starting client.
     for _ in range(5):
      for process in real_iter(['cmdline']):
       try:
-       if str(driver) in (process.info['cmdline'] or []):process.terminate()
+       if any(path in (process.info['cmdline'] or []) for path in (str(driver),str(binary/'flatpak'))):process.terminate()
       except psutil.Error:pass
      time.sleep(.03)
     tracked.clear()

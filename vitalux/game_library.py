@@ -170,5 +170,11 @@ def discover(home=None, config=None, data=None, cancelled=None):
     games = {}
     for iterator in (_steam(home,cancelled), _heroic(home,config,cancelled), _lutris(home,config,data,cancelled)):
         for game in iterator:
-            games.setdefault(game['id'], game)
+            previous=games.get(game['id'])
+            if previous is not None and game['store']=='steam':
+                # Keep both installations for operation-time selection. The
+                # currently running Steam client decides where to connect.
+                variants=previous.setdefault('steam_installations',[dict(previous)])
+                variants.append(game)
+            else:games.setdefault(game['id'], game)
     return sorted(games.values(), key=lambda game: (game['name'].casefold(), game['id']))

@@ -23,7 +23,7 @@ with tempfile.TemporaryDirectory() as temporary:
     original='"UserLocalConfigStore" { "Software" { "Valve" { "Steam" { "apps" { "42" { "LaunchOptions" "-novid" } } } } } }\n'
     config.write_text(original)
     game=dict(id='steam:42',appid='42',store='steam',name='Test',launcher_root=str(steam),flatpak=False)
-    with patch.object(settings,'PATH',str(root/'settings.json')),patch.object(profiles,'directory',lambda kind:root/kind),patch.object(game_steam,'running',return_value=False) as busy,patch.object(game_steam,'playing',return_value=True):
+    with patch.object(settings,'PATH',str(root/'settings.json')),patch.object(profiles,'directory',lambda kind:root/kind),patch.object(game_steam,'_processes',return_value=[]),patch.object(game_steam,'running',return_value=False) as busy,patch.object(game_steam,'playing',return_value=True):
         service=GameService(root=root/'sessions',initial_games=[game]);catalog=[];errors=[];launches=[]
         service.catalog_ready.connect(catalog.append);service.failed.connect(errors.append)
         service.launch_ready.connect(launches.append)
