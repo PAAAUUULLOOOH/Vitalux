@@ -172,6 +172,8 @@ class WindowLifecycle:
             try:
                 from .updater import queue_appimage_restart
                 queue_appimage_restart()
+                from .restart_protocol import ready
+                ready()
             except (OSError,RuntimeError):
                 event.ignore()
                 self._cancel_shutdown('Neustart fehlgeschlagen. Bitte unter Updates erneut versuchen.')

@@ -3,7 +3,7 @@ from .appearance_preferences import AppearancePreferences
 from . import DEFAULT_THEME
 from functools import lru_cache
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QTimer, Qt
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QLabel, QLineEdit, QListWidget, QSizePolicy, QVBoxLayout, QWidget
 from .ui_locale import QCheckBox, QComboBox, QListWidgetItem, QMessageBox, QPushButton
@@ -303,11 +303,11 @@ class PreferencesPage(AppearancePreferences, Page):
         self.render_combo.currentIndexChanged.connect(self.change_renderer)
         render_card.body.addWidget(ResponsiveActions([render_caption, self.render_combo]))
         render_card.body.addWidget(label(
-            'Wayland und X11 bleiben experimentelle GPU-Modi; Diagramme und Qt-Widgets nutzen weiterhin die CPU.',
+            'X11 verwendet OpenGL für den Hintergrund. Diagramme und Qt-Widgets nutzen weiterhin die CPU.',
             'muted', wrap=True))
         render_card.body.addWidget(label(
-            'Für den Wechsel Jetzt neu starten klicken. Wayland setzt eine Wayland-Sitzung, '
-            'X11 einen X-Server voraus. Ein fehlgeschlagener GPU-Start wird auf CPU zurückgesetzt.',
+            'Der Rendererwechsel startet Vitalux automatisch neu. X11 benötigt '
+            'einen X-Server. Ein fehlgeschlagener GPU-Start wird auf CPU zurückgesetzt.',
             'muted', wrap=True))
         self.render_status = label('', 'muted', wrap=True)
         render_card.body.addWidget(self.render_status)
@@ -447,7 +447,7 @@ class PreferencesPage(AppearancePreferences, Page):
             ('monitoring', 'Aktualisierungsintervall Live Monitoring', self.interval),
             ('monitoring', 'Warnungen Grenzwerte CPU GPU Temperatur RAM Laufwerk', self.alert_toggle),
             ('energy', 'Ultra Eco Ressourcenschonung Neustarten', self.eco_toggle),
-            ('render', 'Grafik Rendering Backend CPU OpenGL Wayland Vulkan X11', self.render_combo),
+            ('render', 'Grafik Rendering Backend CPU OpenGL X11', self.render_combo),
             ('maintenance', 'Wartung Maintenance', self._maintenance_card),
             ('maintenance', 'Standardwerte wiederherstellen Zurücksetzen Werkseinstellungen Cache Reset Restore Defaults Delete Personal Preferences', self.restore_button),
         ]
@@ -702,9 +702,7 @@ class PreferencesPage(AppearancePreferences, Page):
         self.eco_restart_button.setVisible(False)
         selected = self.render_combo.currentData()
         if selected != active:
-            status = tr('Rendering-Wechsel vorgemerkt – bitte Vitalux neu starten.')
-        elif active == renderer.OPENGL:
-            status = tr('Aktiv: OpenGL-GPU-Rendering (experimentell)')
+            status = tr('Rendering-Wechsel: Vitalux startet automatisch neu.')
         elif active in renderer.QUICK_MODES:
             status = tr('Aktiv: ') + tr(renderer.DESCRIPTIONS[active])
         else:
@@ -713,10 +711,36 @@ class PreferencesPage(AppearancePreferences, Page):
         self.render_restart_button.setVisible(selected != active)
 
     def _restart_after_reset(self, commit):
-        if self.window.restart_for_renderer(commit=commit):
-            self.restore_reveal.setRevealed(False)
-        else:
-            QMessageBox.warning(self, 'Vitalux', tr('Ein Vorgang läuft noch. Bitte danach erneut zurücksetzen.'))
+        self._request_auto_restart(commit)
+
+    def _cancel_pending_restart(self):
+        self._restart_pending=False
+        self._pending_reset_commit=None
+        if hasattr(self,'_renderer_restart_timer'):self._renderer_restart_timer.stop()
+
+    def _request_auto_restart(self,commit=None):
+        if not hasattr(self,'_renderer_restart_timer'):
+            self._renderer_restart_timer=QTimer(self)
+            self._renderer_restart_timer.setSingleShot(True)
+            self._renderer_restart_timer.timeout.connect(self._try_auto_restart)
+        self._restart_pending=True
+        if commit is not None:self._pending_reset_commit=commit
+        elif not hasattr(self,'_pending_reset_commit'):self._pending_reset_commit=None
+        self._try_auto_restart()
+
+    def _try_auto_restart(self):
+        if getattr(self.window,'_shutdown_pending',False):
+            self._cancel_pending_restart();return
+        commit=self._pending_reset_commit
+        if commit is None and self.render_combo.currentData()==getattr(self.window,'render_backend_active',renderer.SOFTWARE):
+            self._cancel_pending_restart();return
+        accepted=(self.window.restart_for_renderer(commit=commit) if commit is not None
+                  else self.window.restart_for_renderer())
+        if accepted:self._cancel_pending_restart();return
+        self.restore_button.setEnabled(False)
+        self._renderer_restart_timer.start(500)
+        if hasattr(self.window,'statusBar'):
+            self.window.statusBar().showMessage(tr('Vitalux startet nach dem laufenden Vorgang automatisch neu.'))
 
     def change_renderer(self, *_):
         if eco.enabled():
@@ -724,19 +748,17 @@ class PreferencesPage(AppearancePreferences, Page):
         selected = self.render_combo.currentData()
         if selected not in renderer.CHOICES:
             return
-        settings.set('render_backend', selected)
-        # The QWidget/OpenGL/QtQuick scene graphics APIs cannot be hot-swapped
-        # safely while the app and background threads are active.
+        if not settings.set('render_backend',selected):return
+        # Defer the process switch until the selection signal has unwound.
         self._refresh_renderer_status()
         self._refresh_restore_button()
+        QTimer.singleShot(0,self.restart_for_renderer)
 
     def restart_for_renderer(self):
         """Ask MainWindow for a graceful full-process restart via run.sh."""
         if self.render_combo.currentData() == getattr(self.window, 'render_backend_active', renderer.SOFTWARE):
             return
-        if not self.window.restart_for_renderer():
-            QMessageBox.warning(self, 'Vitalux',
-                tr('Vitalux kann wegen eines laufenden Vorgangs gerade nicht neu starten.'))
+        self._request_auto_restart()
 
     def restart_for_eco(self):
         """Apply CPU or previously saved GPU graphics with a safe full restart."""
@@ -782,7 +804,7 @@ class PreferencesPage(AppearancePreferences, Page):
                      'dashboard_hidden','dashboard_layout','lang')))
         self._maintenance_card.setVisible(True)
         self.restore_reveal.setRevealed(True)
-        self.restore_button.setEnabled(bool(changed))
+        self.restore_button.setEnabled(bool(changed) and not getattr(self,'_restart_pending',False))
 
     def restore_defaults(self):
         answer = QMessageBox.question(

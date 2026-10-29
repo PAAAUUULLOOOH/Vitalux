@@ -1,6 +1,6 @@
 """Experimental Qt Quick/scene-graph wallpaper under ordinary Qt widgets.
 
-Qt Quick owns the background texture through Qt RHI (OpenGL or Vulkan).
+Qt Quick owns the background texture through the X11 OpenGL scene graph.
 Ordinary QWidget charts/cards remain CPU-painted.
 """
 from pathlib import Path

@@ -95,7 +95,7 @@ def validate(data):
                                 ('ram_usage',90,1,100),('disk_usage',95,1,100)):
         value=result.get(name)
         if name in result and (type(value) not in (int,float) or not low<=value<=high):result[name]=default
-    if result.get('render_backend','software') not in ('software','opengl','wayland_opengl','wayland_vulkan','x11_opengl'):
+    if result.get('render_backend','software') not in ('software','x11_opengl'):
         result['render_backend']='software'
     if result.get('lang','en') not in ('de','en'):result['lang']='en'
     for name in ('custom_backgrounds','custom_accents'):

@@ -6,6 +6,7 @@ This uses no real GUI or system Qt runtime and does not alter user files.
 from pathlib import Path
 import os
 import re
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -19,9 +20,11 @@ def test_launcher():
         here = Path(temporary)
         (here / 'runtime' / 'bin').mkdir(parents=True)
         (here / 'run.sh').write_bytes((ROOT/'run.sh').read_bytes())
-        (here/'packaging').mkdir()
+        (here/'packaging').mkdir(exist_ok=True)
+        (here/'packaging/restart-request.py').write_bytes((ROOT/'packaging/restart-request.py').read_bytes())
         (here/'packaging/logging.sh').write_bytes((ROOT/'packaging/logging.sh').read_bytes())
         (here / 'vitalux').mkdir()
+        (here/'vitalux/restart_protocol.py').write_bytes((ROOT/'vitalux/restart_protocol.py').read_bytes())
         (here / 'vitalux' / '__init__.py').write_text(
             '__version__ = "0.9.3.70"\n', encoding='utf-8')
         fake = here / 'runtime' / 'bin' / 'python3.12'
@@ -33,7 +36,7 @@ def test_launcher():
             '  echo "malloc(): unaligned tcache chunk detected" >&2\n'
             '  exit 134\n'
             'fi\n'
-            'exit 0\n', encoding='utf-8')
+            'exec '+shlex.quote(sys.executable)+' \"$@\"\n', encoding='utf-8')
         fake.chmod(0o755)
         env = os.environ.copy()
         env['XDG_STATE_HOME'] = str(here/'state')

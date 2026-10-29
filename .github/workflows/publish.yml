@@ -55,7 +55,7 @@ jobs:
           printf '%s\n' 'https://archive.ubuntu.com/ubuntu' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
           printf '%s\n' 'https://security.ubuntu.com/ubuntu' | sudo tee /etc/apt/apt-mirrors-security.txt >/dev/null
           sudo apt-get -o Acquire::ForceIPv4=true -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 update
-          sudo apt-get -o Acquire::ForceIPv4=true -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=120 install -y xvfb weston libegl1 libgl1 libopengl0 libgl1-mesa-dri libglx-mesa0 mesa-vulkan-drivers libvulkan1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-util1 libxcb-shape0 curl squashfs-tools unzip file
+          sudo apt-get -o Acquire::ForceIPv4=true -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=120 install -y xvfb weston libegl1 libgl1 libopengl0 libgl1-mesa-dri libglx-mesa0 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-util1 libxcb-shape0 curl squashfs-tools unzip file
           python -m compileall -q vitalux tests scripts packaging
           bash -n run.sh packaging/AppRun packaging/build-appimage.sh packaging/appimage-integration.sh packaging/appimage-rollback-watch.sh
       - uses: actions/cache@v4
@@ -91,7 +91,7 @@ jobs:
           python scripts/prepare-release.py "build/staged/Vitalux-${TAG}"
           python scripts/check-distribution.py "build/staged/Vitalux-${TAG}"
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
-          LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" -c 'from PySide6.QtOpenGLWidgets import QOpenGLWidget; from PySide6.QtQuickWidgets import QQuickWidget; from PySide6.QtTest import QTest; import psutil'
+          LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" -c 'from PySide6.QtQuickWidgets import QQuickWidget; from PySide6.QtTest import QTest; import psutil'
       - name: Run every regression with the shipped Python and Qt and expose failures
         run: |
           set -euo pipefail
@@ -117,7 +117,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo env VITALUX_NETWORK_TEST_VM=1 /usr/bin/python3 scripts/check-network-kernel.py | tee build/network-kernel.log
-      - name: Check five native renderers in isolated compositor sessions
+      - name: Check CPU and X11 rendering in isolated compositor sessions
         id: graphics
         run: |
           set -euo pipefail

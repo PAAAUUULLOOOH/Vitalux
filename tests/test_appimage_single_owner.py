@@ -9,6 +9,8 @@ for action,status in itertools.product(('update','restart'),(0,42,139,135,134)):
   stage=Path(directory);mounted=stage/'mounted';(mounted/'vitalux').mkdir(parents=True)
   (mounted/'packaging').mkdir();(mounted/'runtime/bin').mkdir(parents=True)
   (mounted/'packaging/appimage-activate.py').write_bytes((ROOT/'packaging/appimage-activate.py').read_bytes())
+  (mounted/'packaging/restart-request.py').write_bytes((ROOT/'packaging/restart-request.py').read_bytes())
+  (mounted/'vitalux/restart_protocol.py').write_bytes((ROOT/'vitalux/restart_protocol.py').read_bytes())
   (mounted/'vitalux/__init__.py').write_text('__version__ = "'+__version__+'"\n')
   restarted=stage/'restarted'
   current=(b'current version' if action=='update' else

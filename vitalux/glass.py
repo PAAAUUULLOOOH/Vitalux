@@ -11,10 +11,6 @@ from PySide6.QtCore import QPoint, QPointF, QRectF, Qt, QTimer
 from PySide6.QtGui import (QBrush, QColor, QLinearGradient, QPainter,
                            QPainterPath, QPen, QPixmap, QRadialGradient)
 from PySide6.QtWidgets import QFrame, QWidget
-try:
-    from PySide6.QtOpenGLWidgets import QOpenGLWidget
-except (ImportError, RuntimeError):
-    QOpenGLWidget = None
 
 from . import theme, settings, backdrops, user_background, renderer, premium
 
@@ -189,21 +185,6 @@ class AmbientScene(_AmbientSceneCore, QWidget):
 
 
 
-if QOpenGLWidget is not None:
-    class AcceleratedAmbientScene(_AmbientSceneCore, QOpenGLWidget):
-        """Experimental GL-backed background with OpenGL compositing.
-
-        Standard Qt child widgets continue using software QPainter.
-        """
-        def paintEvent(self, event):
-            QOpenGLWidget.paintEvent(self, event)
-
-        def paintGL(self):
-            self._paint_background()
-else:
-    AcceleratedAmbientScene = None
-
-
 def create_ambient_scene():
     """Select one backend at startup; never hot-swap a GL surface."""
     if renderer.desired() in renderer.QUICK_MODES:
@@ -211,19 +192,10 @@ def create_ambient_scene():
             try:
                 from .quick_scene import QuickAmbientScene
                 scene = QuickAmbientScene()
-                scene.render_backend = renderer.desired()  # Preserve the actual Wayland/X11 + RHI profile.
+                scene.render_backend = renderer.desired()  # Retain the explicitly selected X11 backend.
                 return scene
             except (ImportError, RuntimeError, OSError) as exc:
                 print('Vitalux: Qt Quick konnte nicht initialisiert werden:', exc)
-        renderer.fallback()
-    if renderer.desired() == renderer.OPENGL:
-        if AcceleratedAmbientScene is not None and renderer.gpu_available():
-            try:
-                scene = AcceleratedAmbientScene()
-                scene.render_backend = renderer.OPENGL
-                return scene
-            except (RuntimeError, OSError):
-                pass
         renderer.fallback()
     scene = AmbientScene()
     scene.render_backend = renderer.SOFTWARE

@@ -1,5 +1,11 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.4-unstable.14] - 2026-10-29
+
+- Steam-Kontoerkennung unterstützt aktuelle Kontodaten ohne MostRecent, einschließlich AutoLogin und Kontonamen aus der Steam-Registry. Gemeinsame Datenordner werden nicht als zusätzliches Konto gezählt.
+- Rendererwechsel und bestätigtes Zurücksetzen starten Vitalux zuverlässig neu. Laufende Vorgänge werden abgewartet; vorbereitete Neustarts bleiben bei einem Fehler während des Beendens erhalten.
+- Renderer-Auswahl auf CPU und X11/OpenGL reduziert. Einstellungen entfernter Renderer wechseln sicher auf CPU.
+
 ## [v0.9.6.4-unstable.13] - 2026-10-29
 
 - Steam-Anbindung berücksichtigt die laufende native oder Flatpak-Installation und das aktive Konto. Ungültige Kontodaten werden vor einem Neustart erkannt.

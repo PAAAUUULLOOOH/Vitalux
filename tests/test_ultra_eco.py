@@ -42,13 +42,13 @@ def run():
             original = {
                 'theme': 'glass', 'accent': '#f472b6', 'motion': 'smooth',
                 'background_style': 'animated_sparkle',
-                'render_backend': renderer.WAYLAND_VULKAN, 'interval': 1,
+                'render_backend': renderer.X11_OPENGL, 'interval': 1,
                 'ultra_eco': False,
             }
             assert settings.set_many(original)
             theme.set_mode('glass')
             assert not eco.enabled()
-            assert renderer.desired() == renderer.WAYLAND_VULKAN
+            assert renderer.desired() == renderer.X11_OPENGL
             host = Host()
             pref = PreferencesPage(host)
             pref.show()
@@ -98,12 +98,12 @@ def run():
             assert theme.mode() == 'glass'
             assert eco.interval() == 1
             assert motion.level() == 'smooth'
-            assert renderer.desired() == renderer.WAYLAND_VULKAN
+            assert renderer.desired() == renderer.X11_OPENGL
             assert host.intervals[-1] == 1
             assert host.restarts == 0, 'Toggle never restarts without user action'
             assert pref.render_restart_button.isVisible()
             assert not pref.eco_restart_button.isVisible()
-            assert pref.render_combo.currentData() == renderer.WAYLAND_VULKAN
+            assert pref.render_combo.currentData() == renderer.X11_OPENGL
             pref.render_restart_button.click()
             assert host.restarts == 1, 'Explicit restart applies remembered GPU backend'
             assert pref.design_tiles[0].isEnabled()

@@ -1,8 +1,4 @@
-"""GPU and Qt display-backend selection with isolated preflight and safe rollback.
-
-Wayland/X11 select the Qt QPA window-system plugin. OpenGL/Vulkan use the
-Qt Quick RHI internally, but have no separate Qt Quick menu item.
-CPU mode uses native QWidget/QPainter drawing.
+"""CPU rendering and the optional X11/OpenGL scene, with safe startup fallback.
 """
 import os
 import subprocess
@@ -11,22 +7,13 @@ import sys
 from . import settings, eco
 
 SOFTWARE = 'software'
-QT_RASTER = 'qt_raster'
-OPENGL = 'opengl'
-LEGACY_QTQUICK = 'qtquick'  # Previously stored renderer ID; migrate below
-WAYLAND_OPENGL = 'wayland_opengl'
-WAYLAND_VULKAN = 'wayland_vulkan'
 X11_OPENGL = 'x11_opengl'
-
-CHOICES = (SOFTWARE, OPENGL, WAYLAND_OPENGL, WAYLAND_VULKAN, X11_OPENGL)
-QUICK_MODES = (WAYLAND_OPENGL, WAYLAND_VULKAN, X11_OPENGL)
-GPU_MODES = (OPENGL,) + QUICK_MODES
+CHOICES = (SOFTWARE, X11_OPENGL)
+QUICK_MODES = (X11_OPENGL,)
+GPU_MODES = QUICK_MODES
 DESCRIPTIONS = {
     SOFTWARE: 'CPU · Standard (stabil)',
-    OPENGL: 'OpenGL · GPU-Test (experimentell)',
-    WAYLAND_OPENGL: 'Wayland · OpenGL (experimentell)',
-    WAYLAND_VULKAN: 'Wayland · Vulkan (experimentell)',
-    X11_OPENGL: 'X11 · OpenGL (experimentell)',
+    X11_OPENGL: 'X11 · OpenGL',
 }
 _failure = ''
 _preflight_ok = False
@@ -34,31 +21,22 @@ _saved_environment = {}
 
 
 def desired():
-    if eco.enabled():
-        return SOFTWARE  # No GPU surface or Qt Quick pipeline in Ultra Eco.
-    forced = os.environ.get('VITALUX_RENDERER', '').strip().lower()
-    if forced in (LEGACY_QTQUICK, QT_RASTER):
+    if eco.enabled():return SOFTWARE
+    forced=os.environ.get('VITALUX_RENDERER','').strip().lower()
+    if forced:return forced if forced in CHOICES else SOFTWARE
+    saved=settings.get('render_backend',SOFTWARE)
+    if saved not in CHOICES:
+        settings.set_many({'render_backend':SOFTWARE,'gpu_boot_pending':False})
         return SOFTWARE
-    if forced in CHOICES:
-        return forced
-    saved = settings.get('render_backend', SOFTWARE)
-    if saved in (LEGACY_QTQUICK, QT_RASTER):
-        settings.set('render_backend', SOFTWARE)
-        return SOFTWARE
-    return saved if saved in CHOICES else SOFTWARE
+    return saved
 
 
 def graphics_api(mode=None):
-    return 'vulkan' if (mode or desired()) == WAYLAND_VULKAN else 'opengl'
+    return 'opengl'
 
 
 def display_api(mode=None):
-    selected = mode or desired()
-    if selected in (WAYLAND_OPENGL, WAYLAND_VULKAN):
-        return 'wayland'
-    if selected == X11_OPENGL:
-        return 'xcb'
-    return None
+    return 'xcb' if (mode or desired())==X11_OPENGL else None
 
 
 def _set_environment(mode):
@@ -84,12 +62,12 @@ def _restore_environment():
 
 
 def _probe(mode, timeout=12):
-    """The test may SIGABRT inside a Qt display/Vulkan driver: never run in UI."""
+    """The test may SIGABRT inside a Qt display/OpenGL driver: never run in UI."""
     try:
         result = subprocess.run(
             [sys.executable, '-m', 'vitalux.quick_probe'],
             capture_output=True, check=False, timeout=timeout,
-            env={**os.environ, 'VITALUX_QUICK_API': graphics_api(mode)})
+            env=os.environ.copy())
     except subprocess.TimeoutExpired:
         return False, 'Zeitüberschreitung beim Grafik-Starttest'
     except OSError as exc:
@@ -120,11 +98,6 @@ def prepare_start():
         fallback()
         return SOFTWARE
     settings.set('gpu_boot_pending', True)
-    if selected in (WAYLAND_OPENGL, WAYLAND_VULKAN):
-        if not os.environ.get('WAYLAND_DISPLAY') or not os.environ.get('XDG_RUNTIME_DIR'):
-            _failure = 'Keine Wayland-Sitzung erkennbar; CPU-Rendering aktiviert.'
-            fallback()
-            return SOFTWARE
     if selected == X11_OPENGL and not os.environ.get('DISPLAY'):
         _failure = 'Kein X11-Display erreichbar; CPU-Rendering aktiviert.'
         fallback()
@@ -147,25 +120,6 @@ def prepare_start():
 def successful_start():
     if settings.get('gpu_boot_pending', False):
         settings.set('gpu_boot_pending', False)
-
-
-def gpu_available():
-    if os.environ.get('QT_QPA_PLATFORM', '').lower() in ('offscreen', 'minimal'):
-        return False
-    try:
-        from PySide6.QtOpenGLWidgets import QOpenGLWidget  # noqa: F401
-        from PySide6.QtGui import QOffscreenSurface, QOpenGLContext
-        surface = QOffscreenSurface()
-        surface.create()
-        if not surface.isValid():
-            return False
-        context = QOpenGLContext()
-        if not context.create() or not context.makeCurrent(surface):
-            return False
-        context.doneCurrent()
-        return True
-    except (ImportError, RuntimeError, OSError):
-        return False
 
 
 def quick_available():

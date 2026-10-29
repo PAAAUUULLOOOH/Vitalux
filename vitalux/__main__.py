@@ -71,6 +71,11 @@ def main():
         result=42  # The portable launcher restarts after native GUI disposal.
     from .lifecycle import dispose_gui
     dispose_gui(app.startup)
+    if result==42 and not os.environ.get('VITALUX_LAUNCHER_PID'):
+        # Development/direct Python starts have no run.sh owner to read 42.
+        renderer._restore_environment()
+        instance.close()
+        os.execv(sys.executable,[sys.executable,'-m','vitalux',*sys.argv[1:]])
     sys.exit(result)
 
 

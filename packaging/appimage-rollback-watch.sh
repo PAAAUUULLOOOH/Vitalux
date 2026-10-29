@@ -49,7 +49,7 @@ if [[ -s "$REQUEST" && ! -L "$REQUEST" ]]; then
     fi
     if [[ "$activation" == 0 || "$activation" == 20 ]]; then
       unset APPDIR APPIMAGE LD_LIBRARY_PATH LD_PRELOAD PYTHONHOME PYTHONPATH PYTHONUSERBASE VITALUX_GUARDED VITALUX_APPIMAGE_REQUEST_FILE VITALUX_APPIMAGE_TARGET
-      ( "$TARGET" --launch "$@" 2>&1 | log_child ) &
+      exec "$TARGET" --launch "$@" > >(log_child) 2>&1
     fi
     exit 0
   fi
@@ -85,5 +85,4 @@ rm -f -- "$PREVIOUS" "$REQUEST"
 log_line "Recovered previous Vitalux version. Restarting it."
 # Launch the restored version once, without inheriting the failed AppImage mount.
 unset APPDIR APPIMAGE LD_LIBRARY_PATH LD_PRELOAD PYTHONHOME PYTHONPATH PYTHONUSERBASE VITALUX_GUARDED VITALUX_APPIMAGE_REQUEST_FILE VITALUX_APPIMAGE_TARGET
-( "$TARGET" --launch "$@" 2>&1 | log_child ) &
-exit 0
+exec "$TARGET" --launch "$@" > >(log_child) 2>&1

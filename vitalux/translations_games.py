@@ -1,7 +1,7 @@
 """Game library, MangoHud setup and per-game session report translations."""
 EN_GAMES = {
-    'Das aktive Steam-Konto ist nicht eindeutig. Bitte melde dich in Steam erneut an.': 'The active Steam account is ambiguous. Sign in to Steam again.',
-    'Das aktive Steam-Konto konnte nicht gelesen werden. Bitte melde dich in Steam erneut an.': 'The active Steam account could not be read. Sign in to Steam again.',
+    'Das aktive Steam-Konto konnte nicht gelesen werden. Bitte prüfe die Steam-Kontodaten und versuche es erneut.': 'The active Steam account could not be read. Check the Steam account data and try again.',
+    'Das aktive Steam-Konto konnte aus den Steam-Kontodaten nicht sicher bestimmt werden. Bitte wähle das gewünschte Konto in Steam und versuche es erneut.': 'The active Steam account could not be identified reliably from Steam’s account data. Select the account in Steam and try again.',
     'Für das aktive Steam-Konto fehlen die Spieleinstellungen. Bitte starte das Spiel einmal direkt über Steam.': 'Game settings are missing for the active Steam account. Launch the game directly through Steam once.',
     'Die Steam-Spieleinstellungen sind nicht schreibbar. Bitte prüfe die Zugriffsrechte des Steam-Kontos.': 'Steam game settings are not writable. Check the Steam account’s file permissions.',
     'Mehrere Steam-Installationen laufen gleichzeitig. Bitte schließe die nicht verwendete Installation.': 'Several Steam installations are running at the same time. Close the installation you are not using.',

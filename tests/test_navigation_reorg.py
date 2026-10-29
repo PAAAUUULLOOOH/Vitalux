@@ -80,8 +80,8 @@ def main():
             assert not pref.search_overlay.expanded
             pref.search_home.click()
             qwait(320)
-            pref.search.setText('Vulk')
-            pref.search_settings('Vulk')
+            pref.search.setText('X11')
+            pref.search_settings('X11')
             assert pref.search_overlay.expanded
             assert pref.search_results.count() >= 1
             pref.choose_search_result(pref.search_results.item(0))
@@ -89,7 +89,7 @@ def main():
             assert pref.render_combo.hasFocus()
             assert window.stack.currentWidget().verticalScrollBar().value() > 0
             qwait(320)
-            assert pref.search.text() == 'Vulk'
+            assert pref.search.text() == 'X11'
             assert pref.search_overlay.expanded
             assert pref.advanced.panel.isVisible()
             assert pref.background_performance_note.isHidden()

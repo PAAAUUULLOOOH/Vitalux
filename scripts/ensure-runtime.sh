@@ -39,10 +39,16 @@ install_desktop_libraries() (
   cp --remove-destination -- "$stage"/licenses/system-libraries/* licenses/system-libraries/
   cp -- "$checksum" "$marker"
 )
+remove_retired_renderer_libraries() {
+  local qt="$VITALUX_RUNTIME_ROOT/runtime/lib/python3.12/site-packages/PySide6"
+  rm -f -- "$qt/QtOpenGLWidgets.abi3.so" "$qt/Qt/lib/libQt6OpenGLWidgets.so.6" \
+    "$qt/Qt/plugins/wayland-graphics-integration-client/libvulkan-server.so"
+}
 # Another launcher may have finished unpacking while this one waited.
 if [ -f runtime/bin/python3.12 ]; then
   chmod u+x runtime/bin/python3.12
   install_desktop_libraries
+  remove_retired_renderer_libraries
   exit 0
 fi
 
@@ -88,4 +94,5 @@ fi
 mv -- "$VITALUX_RUNTIME_STAGE/runtime" runtime
 chmod u+x runtime/bin/python3.12 bin/fio bin/fio.real
 install_desktop_libraries
+remove_retired_renderer_libraries
 printf 'Python und Qt sind bereit. Vitalux startet.\n'

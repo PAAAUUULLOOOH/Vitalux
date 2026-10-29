@@ -83,10 +83,10 @@ def check():
             first_width = floating.width()
             assert first_width >= 145
             assert floating.field.width() >= floating.DEFAULT_WIDTH, 'The input must visually expand, not just its parent widget'
-            floating.field.setText('vulk')
-            page.search_settings('vulk')
+            floating.field.setText('x11')
+            page.search_settings('x11')
             assert page.search_results.count() > 0
-            floating.field.setText('grafikrendering backend wayland vulkan')
+            floating.field.setText('grafikrendering backend CPU X11')
             app.processEvents()
             qwait(420)
             assert floating.width() > first_width
@@ -101,11 +101,11 @@ def check():
             assert floating.expanded
 
             # Selecting a suggested setting scrolls to its actual control.
-            floating.field.setText('vulk')
-            page.search_settings('vulk')
+            floating.field.setText('x11')
+            page.search_settings('x11')
             page.choose_search_result(page.search_results.item(0))
             qwait(520)
-            assert floating.expanded and floating.field.text() == 'vulk'
+            assert floating.expanded and floating.field.text() == 'x11'
             assert page.advanced.panel.isVisible()
             assert page.render_combo.hasFocus()
             floating.close_search()
@@ -123,8 +123,8 @@ def check():
             # and opacity must share the whole transition, including its tail.
             page.search_home.click()
             qwait(420)
-            floating.field.setText('vulk')
-            page.search_settings('vulk')
+            floating.field.setText('x11')
+            page.search_settings('x11')
             qwait(300)
             assert floating.suggestions.isVisible()
             open_width = floating.width()
@@ -152,7 +152,7 @@ def check():
             assert 0 < floating._opacity.opacity() < 1
             qwait(350)
             assert floating._opacity.opacity() == 1
-            floating.field.setText('Grafik Rendering Backend Wayland Vulkan und alle weiteren Einstellungen')
+            floating.field.setText('Grafik Rendering Backend CPU X11 und alle weiteren Einstellungen')
             qwait(420)
             assert floating.width() <= scroll.viewport().width()-24
             qwait(5050)

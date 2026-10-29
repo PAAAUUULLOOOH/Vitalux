@@ -1,5 +1,9 @@
 """Extra English translations for dashboard, settings, sensors and disk tests."""
 EN_MORE = {
+    'X11 · OpenGL': 'X11 · OpenGL',
+    'X11 verwendet OpenGL für den Hintergrund. Diagramme und Qt-Widgets nutzen weiterhin die CPU.': 'X11 uses OpenGL for the background. Charts and Qt widgets continue to use the CPU.',
+    'Der Rendererwechsel startet Vitalux automatisch neu. X11 benötigt einen X-Server. Ein fehlgeschlagener GPU-Start wird auf CPU zurückgesetzt.': 'Changing the renderer restarts Vitalux automatically. X11 requires an X server. A failed GPU startup falls back to CPU.',
+    'Vitalux startet nach dem laufenden Vorgang automatisch neu.': 'Vitalux will restart automatically after the current operation.',
     'Alle Designs verwenden klare Messwerte, ruhige Kachelflächen und passende Dialoge. Hover, Suche und Navigation bewegen sich abgestimmt. Ein verfügbares Update wird in jeder Navigation deutlich markiert; bei reduzierten oder ausgeschalteten Animationen bleibt die Markierung statisch sichtbar.': 'All designs use clear readings, calm card surfaces and matching dialogs. Hover, search and navigation use coordinated motion. Available updates are clearly marked in every navigation layout; with reduced motion or animations off, the marker stays visible and static.',
 
     'Speichergröße / Busbreite':'Memory size / bus width',
@@ -162,11 +166,9 @@ EN_MORE = {
     'Grafik-Rendering': 'Graphics rendering',
     'Render-Methode': 'Rendering method',
     'CPU · Standard (stabil)': "CPU · Standard (stable)",
-    'OpenGL · GPU-Test (experimentell)': "OpenGL · GPU test (experimental)",
 
 
-    'Rendering-Wechsel vorgemerkt – bitte Vitalux neu starten.': 'Rendering switch queued – please restart Vitalux.',
-    'Aktiv: OpenGL-GPU-Rendering (experimentell)': 'Active: OpenGL GPU rendering (experimental)',
+    'Rendering-Wechsel: Vitalux startet automatisch neu.': 'Rendering switch: Vitalux restarts automatically.',
     'Aktiv: CPU-Rendering (Standard)': 'Active: CPU rendering (standard)',
 
     'Hintergrundfarbe automatisch': 'Automatically match background',
@@ -837,14 +839,8 @@ EN_MORE.update({
 
 # Graphics backends (v0.9.4.3).
 EN_MORE.update({
-    "Qt Quick · OpenGL (experimentell)": "Qt Quick · OpenGL (experimental)",
-    "Wayland · OpenGL (experimentell)": "Wayland · OpenGL (experimental)",
-    "Wayland · Vulkan (experimentell)": "Wayland · Vulkan (experimental)",
-    "X11 · OpenGL (experimentell)": "X11 · OpenGL (experimental)",
     "Aktiv: ": "Active: ",
 
-    "Für den Wechsel Jetzt neu starten klicken. Wayland setzt eine Wayland-Sitzung, X11 einen X-Server voraus. Ein fehlgeschlagener GPU-Start wird auf CPU zurückgesetzt.":
-        "Select Restart now to switch. Wayland needs an active Wayland session and X11 needs an X server. Failed GPU starts revert to CPU.",
 
 })
 
@@ -985,8 +981,6 @@ EN_MORE.update({
 EN_MORE.update({
     'Leistungshinweis: Eigene Hintergrundbilder können besonders bei hoher Auflösung und aktivierten Glaseffekten zusätzliche Systemressourcen beanspruchen. Dadurch sind Ruckler oder eine verzögerte Darstellung möglich. Für eine optimale Leistung empfehlen wir die integrierten Vitalux-Hintergründe.':
         'Performance note: Custom wallpapers may use extra system resources, especially at high resolutions with glass effects enabled. This may cause stuttering or slower rendering. For best performance, we recommend Vitalux built-in backgrounds.',
-    'Wayland und X11 bleiben experimentelle GPU-Modi; Diagramme und Qt-Widgets nutzen weiterhin die CPU.':
-        'Wayland and X11 remain experimental GPU modes; charts and Qt widgets still use the CPU.',
 
 
     'Im Diagnostic Center kannst du System- und Fehlerberichte lokal als TXT/JSON exportieren. Externer Ping nur per Klick.':

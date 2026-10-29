@@ -11,14 +11,14 @@
 
 ![Vitalux running in English with Obsidian Gold and real system measurements](assets/vitalux-dashboard-preview.png)
 
-**Unstable v0.9.6.4-unstable.13.** Download this test build from the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest) for daily use.
+**Unstable v0.9.6.4-unstable.14.** Download this test build from the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest) for daily use.
 
 ## Features
 
 - Live CPU, GPU, memory, storage, network and sensor measurements, with saved chart choices, alerts and local history. Multi-GPU systems can select a preferred GPU for the overview, desktop overlay and diagnostics.
 - A rounded, frameless main window with edge-aligned navigation, integrated window controls and native dragging/resizing. Content scrolls behind the fixed controls; designs with a header combine them in one continuous surface.
 - A rearrangeable dashboard, desktop overlay and seven customizable designs, from smoked glass and glass instruments to prismatic space and reactor HUDs. **Obsidian Gold is the default.**
-- A Games library with automatic Steam, Heroic and Lutris discovery, compact game tiles with full-cover Steam artwork cached for offline use, per-game MangoHud profiles and local post-game FPS/frametime reports. Saving an enabled profile connects the game; Vitalux handles a necessary Steam restart automatically while protecting running games. The bundled 32/64-bit OpenGL/Vulkan overlay supports Steam’s container runtime and Flatpak; no separate MangoHud installation is needed. Setup validates the active Steam installation/account and checks that launch options survive the restart.
+- A Games library with automatic Steam, Heroic and Lutris discovery, compact game tiles with full-cover Steam artwork cached for offline use, per-game MangoHud profiles and local post-game FPS/frametime reports. Saving an enabled profile connects the game; Vitalux handles a necessary Steam restart automatically while protecting running games. The bundled 32/64-bit OpenGL/Vulkan overlay supports Steam’s container runtime and Flatpak; no separate MangoHud installation is needed. Setup supports current and legacy Steam account metadata, validates the active installation/account and checks that launch options survive the restart.
 - Per-app connections, usage warnings and optional, reversible TCP/UDP session blocks.
 - SMART information, drive benchmarks and local diagnostic reports.
 - Measured component power where supported, with current GPU watts and a readable power limit alongside the live values.
@@ -33,7 +33,7 @@ Missing sensor fields are hidden; real zeroes such as stopped fans remain visibl
 
 ## Requirements
 
-**Linux x86-64, glibc 2.38 or newer, and an X11 or Wayland desktop.** Release packages include Python 3.12, Qt, GLib and their required desktop libraries: no pip, system Python or separate GLib installation is needed. CPU rendering is the default; optional GPU modes require suitable drivers. Sensor availability depends on hardware and permissions.
+**Linux x86-64, glibc 2.38 or newer, and an X11 or Wayland desktop.** Release packages include Python 3.12, Qt, GLib and their required desktop libraries: no pip, system Python or separate GLib installation is needed. CPU rendering is the default; the optional X11/OpenGL renderer requires suitable drivers and X11/XWayland. Sensor availability depends on hardware and permissions.
 
 Full app networking additionally requires cgroup v2/BPF, process-fork tracepoints, Polkit (`pkexec`) and `/usr/bin/python3`. Authorization is requested when needed. See the [network guide](USER-GUIDE.md#apps-and-network-connections) for session scope and kernel requirements.
 
@@ -74,6 +74,8 @@ All designs share readable card interiors, consistent value hierarchy, adaptive 
 Overview captions are centered in a consistent order below equally sized load displays. The larger system header centers the distribution name across the whole card, with a larger logo and roomier information chips. Long names are shortened; hover over a shortened caption to read its complete text. GPU overview cards omit watts; current GPU power and its limit remain on Graphics. **Show component pictures** in Appearance controls CPU, GPU and mainboard photos globally. Turning it off stops new picture lookups while keeping cached pictures. Component information stays centered with pictures shown, hidden or unavailable.
 
 **All specifications** opens a scrollable in-app datasheet for the exact CPU, graphics-card or mainboard model. Data arriving in the background also updates an already open dialog. Available manufacturer data is cached for offline use; **Open manufacturer page** links to the original. Detected local specifications remain available when online data is missing. Graphics groups utilization, video-memory usage and the other live readings under **Current GPU values**, without the duplicate sensor panel.
+
+**CPU** and **X11 · OpenGL** are the available renderers. Renderer changes and confirmed resets restart automatically after current work finishes.
 
 A startup window follows the saved design and shows the actual preparation stage while hardware discovery, first measurements, cached pictures/specifications and the interface are prepared. Existing data is loaded before the main window opens; missing online data does not hold startup open. Motion-off and Ultra Eco use a static startup view.
 

@@ -124,28 +124,8 @@ def prepare(game, profile=None, base=None):
 
 
 def _steam_path(game):
-    root = Path(game['launcher_root'])
-    account = ''
-    try:
-        data = game_files.get(game_files.loads(game_files.read_text(root/'config/loginusers.vdf')), 'users', {})
-        recent = [(key, row) for key, row in data.items() if isinstance(row, dict) and
-                  game_files.get(row, 'MostRecent', '0') == '1' and key.isdecimal()]
-        if len(recent) == 1:
-            account = str(int(recent[0][0]) & 0xffffffff)
-        if len(recent)>1:
-            raise ValueError('Das aktive Steam-Konto ist nicht eindeutig. Bitte melde dich in Steam erneut an.')
-    except FileNotFoundError:pass
-    except (OSError, ValueError, AttributeError) as error:
-        raise ValueError('Das aktive Steam-Konto konnte nicht gelesen werden. Bitte melde dich in Steam erneut an.') from error
-    candidates = list((root/'userdata').glob('*/config/localconfig.vdf'))
-    if account:
-        selected = root/'userdata'/account/'config/localconfig.vdf'
-        if selected in candidates:
-            return selected
-        raise ValueError('Für das aktive Steam-Konto fehlen die Spieleinstellungen. Bitte starte das Spiel einmal direkt über Steam.')
-    if len(candidates) == 1:
-        return candidates[0]
-    raise ValueError('Steam-Konto nicht eindeutig. Melde dich zuerst im gewünschten Steam-Konto an.')
+    from .game_steam_accounts import config_path
+    return config_path(game)
 
 
 def preflight_steam(game):

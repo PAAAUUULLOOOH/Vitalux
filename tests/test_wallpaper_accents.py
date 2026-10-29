@@ -90,11 +90,11 @@ def run():
             assert page.accent_combo.width() >= 80, 'Combo became too narrow'
             # Renderer controls remain the final part of the settings page.
             app.processEvents()
-            # Restart button appears only while switching renderer.
+            # Only the retained X11 renderer is selectable and starts a restart.
             assert not page.render_restart_button.isVisible()
-            page.render_combo.setCurrentIndex(page.render_combo.findData('opengl'))
+            page.render_combo.setCurrentIndex(page.render_combo.findData('x11_opengl'))
             assert page.render_restart_button.isVisible()
-            page.render_restart_button.click()
+            app.processEvents()
             assert win.restarts == 1
             page.render_combo.setCurrentIndex(page.render_combo.findData('software'))
             assert not page.render_restart_button.isVisible()

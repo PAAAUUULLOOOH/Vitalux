@@ -40,7 +40,7 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
         assert page.search.hasFocus() and page.search_overlay.expanded
         queries=(('minihud layout',page.hud_size),('minihud opacity',page.hud_opacity),
                  ('accent',page.accent_combo),('hinterg',page.background_combo),
-                 ('vulk',page.render_combo),('warnung',page.alert_toggle),
+                 ('x11',page.render_combo),('warnung',page.alert_toggle),
                  ('interval',page.interval),('ultra eco',page.eco_toggle),
                  ('wartung',page._maintenance_card),('reset',page.restore_button))
         for query,target in queries:

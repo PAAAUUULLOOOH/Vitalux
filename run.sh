@@ -85,6 +85,12 @@ if ! "$PY" -c 'import PySide6.QtWidgets; import PySide6.QtSvg; import psutil' 2>
   exit 1
 fi
 rm -f -- "$QT_CHECK"
+RESTART_REQUEST="$(mktemp "$STATE_DIR/.restart-request.XXXXXXXX")" || exit 1
+trap 'rm -f -- "$QT_CHECK" "$RESTART_REQUEST"' EXIT
+LAUNCHER_PID="$BASHPID"
+RESTART_TOKEN="$("$PY" "$HERE/packaging/restart-request.py" init "$RESTART_REQUEST" "$HERE" "$LAUNCHER_PID" "$VERSION")" || exit 1
+export VITALUX_RESTART_REQUEST_FILE="$RESTART_REQUEST" VITALUX_RESTART_TOKEN="$RESTART_TOKEN"
+export VITALUX_LAUNCH_ROOT="$HERE" VITALUX_LAUNCHER_PID="$LAUNCHER_PID" VITALUX_LAUNCH_VERSION="$VERSION"
 # Capture stdout and stderr together to retain the original event ordering.
 # PIPESTATUS[0] is the *app's* exit code, not that of the log writer.
 "$PY" -m vitalux 2>&1 | while IFS= read -r line || [[ -n "$line" ]]; do
@@ -92,6 +98,23 @@ rm -f -- "$QT_CHECK"
 done
 STATUS=${PIPESTATUS[0]}
 log_line "=== Vitalux ended (exit code $STATUS) ==="
+case "$STATUS" in
+  129|130|143) ;;
+  *)
+    if "$PY" "$HERE/packaging/restart-request.py" check "$RESTART_REQUEST" "$HERE" "$LAUNCHER_PID" "$VERSION" "$RESTART_TOKEN" 2>"$QT_CHECK"; then
+      if [[ "$STATUS" != 42 ]]; then
+        log_line "Controlled restart retained after GUI exit $STATUS."
+        if [[ "$STATUS" != 0 ]]; then
+          vitalux_log_line "$STATE_DIR/errors.log" "$VERSION" "GUI exited with code $STATUS during a prepared restart; restart retained."
+        fi
+      fi
+      STATUS=42
+    else
+      while IFS= read -r line || [[ -n "$line" ]]; do log_line "$line"; done <"$QT_CHECK"
+    fi
+    ;;
+esac
+rm -f -- "$RESTART_REQUEST" "$QT_CHECK"
 # AppRun owns prepared updates and intentional restarts after this process
 # exits. Do not restart the old mount for GPU recovery before that exit.
 UPDATE_QUEUED=0

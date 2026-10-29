@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Validate all five renderers in real X11 and Wayland test sessions.
+"""Validate CPU and X11 rendering, including CPU in a Wayland session.
 
 Requires DISPLAY and WAYLAND_DISPLAY (e.g. Xvfb and headless Weston).
-Mesa software GL/Vulkan is sufficient; this does not benchmark a physical GPU.
+Mesa software OpenGL is sufficient; this does not benchmark a physical GPU.
 """
 import argparse
 import ctypes
@@ -148,10 +148,7 @@ def child(mode, output):
             if mode in renderer.QUICK_MODES:
                 assert not scene.grabFramebuffer().isNull()
                 api = scene.quickWindow().rendererInterface().graphicsApi().name
-                assert ('Vulkan' if mode == renderer.WAYLAND_VULKAN else 'OpenGL') in api
-            elif mode == renderer.OPENGL:
-                assert scene.context().isValid()
-                assert not scene.grabFramebuffer().isNull()
+                assert 'OpenGL' in api
             assert win.grab().save(str(output/(mode+'.png')))
             preferences = dict(win.pages)['Einstellungen']
             index = next(i for i, (name, _) in enumerate(win.pages) if name == 'Einstellungen')

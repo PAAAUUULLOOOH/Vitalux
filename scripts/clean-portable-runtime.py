@@ -13,7 +13,8 @@ def clean(root):
         for path in (qt/'lib').glob(pattern):
             removed.append(str(path.relative_to(root)))
             path.unlink()
-    for relative in ('plugins/vectorimageformats', 'plugins/imageformats/libqpdf.so',
+    for relative in ('../QtOpenGLWidgets.abi3.so', 'lib/libQt6OpenGLWidgets.so.6',
+                     'plugins/wayland-graphics-integration-client/libvulkan-server.so', 'plugins/vectorimageformats', 'plugins/imageformats/libqpdf.so',
                      'plugins/platforminputcontexts/libqtvirtualkeyboardplugin.so'):
         path = qt/relative
         if path.exists():

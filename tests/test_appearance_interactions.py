@@ -135,12 +135,14 @@ def run():
             with patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes), \
                  patch.object(QMessageBox, 'warning') as notice:
                 page.restore_defaults()
-                assert notice.called
+                assert page._renderer_restart_timer.isActive()
+                assert not notice.called
             assert Path(settings.PATH).read_bytes() == saved
             assert not window.restart_requested
             worker.release.set()
             assert worker.wait(1000)
             diagnostic.worker = None
+            page._cancel_pending_restart()
 
             # Slow read-only workers keep their owner alive; the GUI keeps ticking.
             slow = SlowRead(window)

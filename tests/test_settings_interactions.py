@@ -52,7 +52,7 @@ def run():
         scroll.verticalScrollBar().setValue(0)
         floating.open_search()
         QTest.qWait(400)
-        page.search.setText('vulk')
+        page.search.setText('x11')
         QTest.qWait(230)
         assert advanced.panel.isVisible()
         navigation = page.search_navigation
@@ -65,9 +65,13 @@ def run():
         page.choose_search_result(page.search_results.item(0))
         assert floating.expanded and floating.idle_timer.isActive()
         assert 4700 <= floating.idle_timer.remainingTime() <= 5250
-        QTest.qWait(550)
+        # Qt completes navigation asynchronously; wait for the focus handoff
+        # instead of assuming an exact animation frame under parallel load.
+        deadline = time.monotonic()+2
+        while not page.render_combo.hasFocus() and time.monotonic() < deadline:
+            QTest.qWait(20)
         assert page.render_combo.hasFocus()
-        assert floating.field.text() == 'vulk' and floating.expanded
+        assert floating.field.text() == 'x11' and floating.expanded
         floating.idle_timer.timeout.emit()
         floating.animation.setCurrentTime(170)
         assert floating.isVisible() and 0 < floating._opacity.opacity() < 1

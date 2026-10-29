@@ -27,7 +27,6 @@ def main():
     # test-driver scheduling, not rendering quality or Vitalux's runtime.
     env.setdefault('LP_NUM_THREADS', '2')
     programs = {}
-    icd = None
     if args.sysroot:
         root = args.sysroot.resolve()
         lib = root/'usr/lib/x86_64-linux-gnu'
@@ -35,13 +34,10 @@ def main():
         modules = list((lib/'libweston-14').glob('*.so'))+list((lib/'weston').glob('*.so'))
         env['WESTON_MODULE_MAP'] = ';'.join(p.name+'='+str(p) for p in modules)
         programs = {name: str(root/'usr/bin'/name) for name in ('Xvfb', 'weston')}
-        icd = root/'usr/share/vulkan/icd.d/lvp_icd.json'
     else:
         programs = {name: shutil.which(name) for name in ('Xvfb', 'weston')}
-        icd = next(Path('/usr/share/vulkan/icd.d').glob('lvp_icd*.json'), None)
-    if not all(programs.values()) or not icd or not icd.is_file():
-        raise RuntimeError('Install Xvfb, Weston and Mesa Vulkan/Lavapipe')
-    env['VK_DRIVER_FILES'] = env['VK_ICD_FILENAMES'] = str(icd)
+    if not all(programs.values()):
+        raise RuntimeError('Install Xvfb, Weston and Mesa OpenGL')
     def desktop_environment():
         # The compositor is a host program, not a shipped Qt process. Its
         # GLib/font stack must not inherit Vitalux's private dependencies.

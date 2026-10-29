@@ -1,5 +1,11 @@
 # Vitalux – Changes
 
+## [v0.9.6.4-unstable.14] - 2026-10-29
+
+- Steam account detection supports current metadata without MostRecent, including AutoLogin and account names from the Steam registry. Shared data folders are excluded from account selection.
+- Renderer changes and confirmed resets restart Vitalux reliably after current operations finish. Prepared restarts are retained if an error occurs during shutdown.
+- Renderer choices are reduced to CPU and X11/OpenGL. Settings for removed renderers migrate safely to CPU.
+
 ## [v0.9.6.4-unstable.13] - 2026-10-29
 
 - Steam integration matches the running native or Flatpak installation and the active account. Invalid account data is detected before restarting Steam.

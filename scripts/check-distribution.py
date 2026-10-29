@@ -17,6 +17,7 @@ def check(root):
     assert set(overlay['architectures'])=={'x86_64','i386'}
     required = ('README.md', 'USER-GUIDE.md', 'THIRD-PARTY.md', 'LICENSE-NOTICE.md',
                 'packaging/logging.sh', 'vitalux/logfiles.py',
+                'packaging/restart-request.py', 'vitalux/restart_protocol.py',
                 'third_party/sources.lock.json', 'licenses/README.md', 'licenses/GPL-2.0.txt',
                 'licenses/GPL-3.0.txt', 'licenses/LGPL-2.1.txt', 'licenses/LGPL-3.0.txt',
                 'licenses/runtime/Python-3.12.7.txt', 'licenses/runtime/psutil-7.2.2.txt',
@@ -41,6 +42,9 @@ def check(root):
     for pattern in ('libQt6Lottie*', 'libQt6QmlCompiler*', 'libQt6QuickVector*', 'libQt6QuickTimeline*'):
         assert not list((qt/'lib').glob(pattern)), 'Unused runtime component: '+pattern
     assert not (qt/'plugins/imageformats/libqpdf.so').exists()
+    assert not (qt.parent/'QtOpenGLWidgets.abi3.so').exists()
+    assert not (qt/'lib/libQt6OpenGLWidgets.so.6').exists()
+    assert not (qt/'plugins/wayland-graphics-integration-client/libvulkan-server.so').exists()
     for name in ('run.sh', 'runtime/bin/python3.12', 'bin/fio.real'):
         assert (root/name).stat().st_mode & 0o111, 'Missing executable bits: '+name
     print('Distribution: complete license/source notices, valid links, cleaned runtime and executable bits PASS', flush=True)

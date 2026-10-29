@@ -9,10 +9,7 @@ from PySide6.QtQuick import QSGRendererInterface
 
 def main():
     # QSG_RHI_BACKEND must be configured before creating the Quick surface.
-    selected = os.environ.get('VITALUX_QUICK_API', 'opengl').lower()
-    if selected not in ('opengl', 'vulkan'):
-        return 8
-    os.environ['QSG_RHI_BACKEND'] = selected
+    os.environ['QSG_RHI_BACKEND'] = 'opengl'
     app = QApplication([])
     from PySide6.QtQuickWidgets import QQuickWidget
     from .quick_scene import QuickAmbientScene
@@ -40,8 +37,7 @@ def main():
     # Logical show initializes the real RHI, but the preconfigured host is
     # never mapped to the display and can never take focus or a taskbar slot.
     host.show()
-    expected = (QSGRendererInterface.Vulkan if selected == 'vulkan'
-                else QSGRendererInterface.OpenGL)
+    expected = QSGRendererInterface.OpenGL
     def check():
         if scene.status() != QQuickWidget.Ready or scene.rootObject() is None:
             app.exit(3)
