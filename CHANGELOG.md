@@ -1,5 +1,24 @@
 # Vitalux – Änderungen
 
+
+## [v0.9.6.4] - 2026-10-30
+
+- Neues Spiele-Center: installierte Steam-, Heroic- und Lutris-Spiele erkennen, durchsuchen und starten; kompakte Cover-Kacheln mit aktueller Sitzungsanzeige und Offline-Bildern.
+- MangoHud ist für 32-/64-Bit-Spiele mit OpenGL und Vulkan enthalten, einschließlich Steam-Laufzeit und Flatpak. Metriken, Position, Größe, Deckkraft, Tastenkürzel und FPS-Ziel lassen sich pro Spiel einstellen; vorhandene Startargumente bleiben erhalten.
+- Die Overlay-Einrichtung prüft die tatsächlichen Launcher-Einträge und das aktive Steam-Konto. Ein nötiger Steam-Neustart erfolgt automatisch; laufende Spiele werden geschützt. Einrichtung und Spielstart melden Fehler sichtbar.
+- Nach Spielende erscheinen lokale Auswertungen mit Durchschnitts-FPS, 1%-/0,1%-Low, FPS-/Frametime-Verlauf, Hardware-Spitzen und Sitzungshistorie. Zielabhängige Bewertungen erhalten passende Farben; unvollständige Messungen bleiben neutral. Lange Auswertungen bleiben flüssig bedienbar.
+- Rahmenloses Hauptfenster mit abgerundeten Außenecken, eigenen Fensterknöpfen, Verschieben, Größenänderung und Maximieren. Layout-Bearbeitung und Fenstersteuerung teilen sich die obere Leiste.
+- Alle Designs: bündige Navigation ohne doppelte Distro-/Designnamen, mehr nutzbare Kachelfläche, sauberes Ein-/Ausklappen und Scrollen hinter festen Leisten. Kopf- und Seitenleiste bilden bei entsprechenden Designs eine gemeinsame abgerundete Oberfläche; Nebula Prism nutzt ein freistehendes transparentes Dock.
+- Alle Designs: weichere unterbrechbare Designwechsel ohne Aufblitzen, gut sichtbare Update-Hinweise, klare Tastaturfokusse sowie abgestimmte Suche, Dialoge und Innenabstände. Die Einstellungssuche folgt der Mitte des Inhaltsbereichs.
+- Crystal Glass heißt wieder Crystal Atrium und nutzt den ursprünglichen statischen Atrium-Hintergrund. Gespeicherte Farben und Hintergründe werden übernommen. Aurora Bloom ergänzt die reguläre Designauswahl mit eigener Vorschau und asymmetrisch abgerundeten Bedienelementen.
+- Diagrammauswahl und Zeitfenster bleiben gespeichert. Eine bevorzugte Grafikkarte kann für Übersicht, Desktop-Overlay und Diagnosen gewählt werden.
+- Komponenten lassen sich einzeln neu laden; falsche Produktbilder können verworfen oder durch eigene ersetzt werden. Nachgeladene Spezifikationen aktualisieren sich auch im geöffneten Fenster. RAM-Bildabfragen entfallen; Hersteller, Teilenummer und Spezifikationen bleiben erhalten.
+- Vollständige Sensorlisten unterscheiden fehlende und veraltete Messwerte. Diagnoseberichte und Exporte folgen der App-Sprache; der Vergleich mit einer Diagnosebasis blockiert die Oberfläche nicht.
+- Grafik-Renderer auf CPU und X11/OpenGL konzentriert; entfernte Einstellungen wechseln auf CPU. Das Initialisierungsfenster richtet sich auch nach Bildschirmänderungen mittig aus.
+- Updates, Rendererwechsel und bestätigtes Zurücksetzen verwenden einen kontrollierten automatischen Neustart. Offene Spiele-Launcher blockieren ihn nicht; App-Menü-Starts verlieren keine installierte Zielkopie durch übernommene AppImage-Kennungen. Vorbereitete Updates werden vor dem Neustart erneut geprüft.
+- Enthält Stable den Teststand vollständig, führt das normale Unstable-Update direkt zu Stable – auch wenn der Gleichstand während Download oder Vorbereitung entsteht. Gleiche Stände bieten keinen Wechsel zu Unstable; neue Tests erfordern wieder eine ausdrückliche Auswahl.
+- Geringerer Rechenaufwand und begrenzte Caches bei Designs, Hintergründen, Diagrammen, Sensorabfragen und Netzwerkdetails, bei unveränderten Animationen, Darstellungsqualität und Messintervallen. Benötigte Desktop-Bibliotheken sind enthalten; eine separate GLib-Installation entfällt.
+
 ## [v0.9.6.4-unstable.15] - 2026-10-30
 
 - Automatische Neustarts nach Updates, Rendererwechseln und dem Zurücksetzen bleiben nicht mehr an weiterhin geöffneten Spiele-Launchern hängen.

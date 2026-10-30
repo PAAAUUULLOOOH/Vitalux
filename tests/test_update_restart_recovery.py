@@ -40,8 +40,9 @@ for failures in (1,3):
             assert manager.pending_restart and manager.restart_retrying
             assert page.retry_button.isHidden()
             attempts=[]
-            def activate(path,relaunch=True):
+            def activate(path,relaunch=True,sha256=None):
                 assert path==str(prepared) and relaunch
+                assert sha256==state['sha256']
                 attempts.append(path)
                 if len(attempts)<=failures:raise OSError('Transient helper setup failure')
             def finish():
@@ -70,3 +71,20 @@ for failures in (1,3):
             assert records[-1]['target']==state['version']
             manager.shutdown();page.close()
 print('Persisted verified target, automatic bounded retries, terminal-error recovery and single activation PASS')
+
+# A package altered after download must fail before shutdown, retaining both
+# the running image and its previous version instead of starting corrupt data.
+with tempfile.TemporaryDirectory(prefix='vitalux-changed-stage-') as folder:
+    base=Path(folder);image=base/'Vitalux.AppImage';image.write_bytes(b'running image')
+    previous=base/'Vitalux.AppImage.previous';previous.write_bytes(b'previous image')
+    staged=base/'candidate.AppImage';staged.write_bytes(b'verified download')
+    digest=hashlib.sha256(staged.read_bytes()).hexdigest()
+    staged.write_bytes(b'changed after download')
+    env={f'XDG_{kind.upper()}_HOME':str(base/kind) for kind in profiles.KINDS}
+    env['APPIMAGE']=str(image)
+    with patch.dict(os.environ,env):
+        try:updater.activate_appimage_update(str(staged),sha256=digest)
+        except RuntimeError as error:assert 'SHA-256' in str(error)
+        else:raise AssertionError('Changed prepared image accepted for activation')
+    assert image.read_bytes()==b'running image' and previous.read_bytes()==b'previous image'
+print('Changed prepared AppImage rejected before shutdown; running and previous images preserved PASS')

@@ -45,6 +45,42 @@ with tempfile.TemporaryDirectory(prefix='vitalux-real-appimage-') as folder:
  while not (root/'opened').exists() and time.monotonic()<deadline:time.sleep(.01)
  assert (root/'opened').read_text()=='Steam','Steam opening reactivated Vitalux'
 
+ # First-run installation must execute the installed copy, not the download
+ # retained by the real type-2 runtime in TARGET_APPIMAGE.
+ case=root/'installation';case.mkdir();appdir=case/'AppDir';appdir.mkdir()
+ (appdir/'packaging').mkdir();(appdir/'vitalux').mkdir();(appdir/'assets').mkdir()
+ (appdir/'runtime/bin').mkdir(parents=True)
+ for name in ('AppRun','appimage-integration.sh','appimage-rollback-watch.sh','logging.sh'):
+  shutil.copy2(ROOT/'packaging'/name,appdir/('AppRun' if name=='AppRun' else 'packaging/'+name))
+ (appdir/'AppRun').chmod(0o755)
+ (appdir/'vitalux/__init__.py').write_text('__version__ = "0.9.6.3"\n')
+ (appdir/'assets/vitalux.svg').write_text('<svg/>')
+ (appdir/'run.sh').write_text('#!/bin/sh\nprintf "%s" "$APPIMAGE" > "$TEST_INSTALL_ENTRY"\n')
+ (appdir/'run.sh').chmod(0o755)
+ python=appdir/'runtime/bin/python3.12'
+ python.write_text('#!/bin/sh\nexit 0\n');python.chmod(0o755)
+ download=case/'download.AppImage';image(appdir,download)
+ integration=case/'user space';installed=integration/'.local/opt/vitalux/Vitalux.AppImage'
+ install_env=dict(env,VITALUX_INTEGRATION_ROOT=str(integration),DISPLAY=':fixture',TEST_INSTALL_ENTRY=str(case/'opened'))
+ result=subprocess.run([str(download)],env=install_env,capture_output=True,text=True,timeout=20)
+ assert result.returncode==0,(result.stdout,result.stderr)
+ assert Path((case/'opened').read_text())==installed,'First-run installation started the download instead of the installed AppImage'
+ # The menu command must also shed inherited AppImage identity.
+ contaminated=dict(install_env,TARGET_APPIMAGE=str(download),APPIMAGE=str(download),APPDIR=str(appdir))
+ (case/'opened').unlink()
+ subprocess.run([str(integration/'.local/bin/vitalux')],env=contaminated,check=True,capture_output=True,timeout=20)
+ assert Path((case/'opened').read_text())==installed,'Menu launcher followed an inherited AppImage target'
+ # Upgrade only the exact generated legacy wrapper on an installed start.
+ launcher=integration/'.local/bin/vitalux'
+ legacy=subprocess.check_output(['bash','-c',
+     'printf \'#!/usr/bin/env bash\\nexec %q --launch "$@"\\n\' "$1"','fixture',str(installed)],text=True)
+ launcher.write_text(legacy)
+ subprocess.run([str(installed),'--launch'],env=install_env,check=True,capture_output=True,timeout=20)
+ assert '# Vitalux AppImage launcher' in launcher.read_text(),'Legacy menu wrapper was not upgraded'
+ launcher.write_text('#!/bin/sh\n# user customization\nexit 0\n')
+ subprocess.run([str(installed),'--launch'],env=install_env,check=True,capture_output=True,timeout=20)
+ assert 'user customization' in launcher.read_text(),'Custom menu wrapper was overwritten'
+
  driver=root/'driver.py';driver.write_text('''import json,os,subprocess,sys
 from pathlib import Path
 sys.path.insert(0,str(Path.cwd()))
@@ -61,7 +97,8 @@ if number==1:
  else:updater.activate_appimage_update(str(state/'candidate.AppImage'))
  raise SystemExit(42 if os.environ['TEST_ACTION']=='restart' else 0)
 ''')
- for action in ('restart','update'):
+ for action,source_version,future in (('restart',__version__,__version__),('update',__version__,'9.9.9.9-unstable.1'),
+        ('stable_to_unstable','0.9.6.3','0.9.6.4-unstable.15'),('unstable_to_stable','0.9.6.4-unstable.15','0.9.6.4')):
   case=root/action;case.mkdir();appdir=case/'AppDir';appdir.mkdir()
   shutil.copytree(ROOT/'vitalux',appdir/'vitalux',ignore=shutil.ignore_patterns('__pycache__'))
   (appdir/'packaging').mkdir();(appdir/'runtime/bin').mkdir(parents=True)
@@ -70,10 +107,10 @@ if number==1:
   shutil.copy2(ROOT/'run.sh',appdir/'run.sh')
   (appdir/'AppRun').chmod(0o755);(appdir/'run.sh').chmod(0o755)
   python=appdir/'runtime/bin/python3.12';python.write_text('#!/bin/sh\nif [ "$1" = -c ]; then exit 0; fi\nif [ "$1" = -m ]; then exec '+shlex.quote(sys.executable)+' '+shlex.quote(str(driver))+'; fi\nexec '+shlex.quote(sys.executable)+' "$@"\n');python.chmod(0o755)
+  init=appdir/'vitalux/__init__.py';init.write_text(init.read_text().replace(__version__,source_version))
   target=case/'Vitalux.AppImage';image(appdir,target);previous_hash=hashlib.sha256(target.read_bytes()).hexdigest()
-  future='9.9.9.9-unstable.1'
-  if action=='update':
-   init=appdir/'vitalux/__init__.py';init.write_text(init.read_text().replace(__version__,future))
+  if action!='restart':
+   init.write_text(init.read_text().replace(source_version,future))
    image(appdir,case/'candidate.AppImage')
   process=subprocess.Popen([str(target),'--launch'],env=dict(env,TEST_ACTION=action,TEST_CASE=str(case)),
                            stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,start_new_session=True)
@@ -82,14 +119,14 @@ if number==1:
    assert process.returncode==0,(out,err)
    entries=[json.loads(line) for line in (case/'entries').read_text().splitlines()]
    assert [row['phase'] for row in entries]==[1,2],entries
-   assert [row['version'] for row in entries]==[__version__,future if action=='update' else __version__],entries
+   assert [row['version'] for row in entries]==[source_version,future],entries
    assert entries[0]['pid']!=entries[1]['pid']
    os.kill(int((case/'child').read_text()),0)
-   if action=='update':assert hashlib.sha256(target.with_name('Vitalux.AppImage.previous').read_bytes()).hexdigest()==previous_hash
+   if action!='restart':assert hashlib.sha256(target.with_name('Vitalux.AppImage.previous').read_bytes()).hexdigest()==previous_hash
   finally:
    if (case/'child').exists():
     try:os.kill(int((case/'child').read_text()),signal.SIGTERM)
     except ProcessLookupError:pass
    if process.poll() is None:os.killpg(process.pid,signal.SIGKILL)
    process.communicate(timeout=3)
-print('Real AppImage runtime: inherited-target regression, correct Steam start, restart/update successor, instance handoff and live-child survival PASS')
+print('Real AppImage runtime: inherited-target regression, correct Steam/menu starts, restart/update and both channel successors, instance handoff and live-child survival PASS')

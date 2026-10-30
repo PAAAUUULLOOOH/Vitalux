@@ -10,6 +10,12 @@ import re
 def check(root):
     import sys
     sys.path.insert(0,str(root))
+    for path in root.rglob('*'):
+        if path.is_symlink():continue
+        mode=path.stat().st_mode
+        assert mode & 0o444 == 0o444, 'Package file is not readable by all users: '+str(path)
+        if path.is_dir() or mode & 0o111:
+            assert mode & 0o111 == 0o111, 'Package path is not executable/searchable by all users: '+str(path)
     from vitalux.game_runtime import validate
     overlay=validate(root/'mangohud-runtime')
     from desktop_runtime import check as desktop_libraries

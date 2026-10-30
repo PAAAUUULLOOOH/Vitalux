@@ -27,8 +27,9 @@ with tempfile.TemporaryDirectory(prefix='vitalux-auto-update-') as folder,patch.
             image=Path(folder)/('prepared-'+target+'.AppImage');image.write_bytes(b'candidate')
             events=[];m.restart.connect(lambda:events.append('request'))
             attempts=[]
-            def activate(path,relaunch=True):
+            def activate(path,relaunch=True,sha256=None):
                 assert QThread.currentThread()==app.thread(),'Restart ran outside the GUI thread'
+                assert sha256==worker.sha256
                 assert not win.sampler.isRunning(),'Activated before live telemetry stopped'
                 assert m.shutdown(),'Activated before update workers stopped'
                 attempts.append((path,relaunch))

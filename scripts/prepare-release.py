@@ -59,6 +59,8 @@ def prepare(target):
         script.chmod(0o755)
     for name in ('runtime/bin/python3.12', 'bin/fio', 'bin/fio.real'):
         (target/name).chmod(0o755)
+    from distribution_tools import normalize_permissions
+    normalize_permissions(target)
     assert (target/'vitalux/__init__.py').read_text().startswith(f'__version__ = "{__version__}"')
     print(f'Assembled Vitalux {__version__}: {target}', flush=True)
 

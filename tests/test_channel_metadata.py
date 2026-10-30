@@ -24,6 +24,10 @@ with tempfile.TemporaryDirectory() as directory:
     git('add','.');git('commit','-m','build label and documentation')
     state=describe(main='main',root=root)
     assert not state['has_test_changes'] and state['same_as_stable']
+    (root/'packaging').mkdir()
+    (root/'packaging/restart-request.py').write_text('restart_protocol=2\n')
+    git('add','.');git('commit','-m','launch handoff change')
+    assert describe(main='main',root=root)['has_test_changes'],'Runtime-only changes were mistaken for Stable parity'
     (root/'vitalux/app.py').write_text('appearance="improved glass"\n')
     git('add','.');git('commit','-m','actual app change')
     assert describe(main='main',root=root)['has_test_changes']

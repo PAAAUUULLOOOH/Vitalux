@@ -26,8 +26,12 @@ if [[ "$(realpath "$SRC")" != "$(realpath -m "$TARGET")" ]]; then
   trap - EXIT
 fi
 cp -f "$APPDIR/assets/vitalux.svg" "$ICON"
-printf '#!/usr/bin/env bash\nexec %q --launch "$@"\n' "$TARGET" > "$LAUNCH"
-chmod 755 "$LAUNCH"
+TEMP="$(mktemp "$(dirname "$LAUNCH")/.vitalux-launcher-XXXXXXXX")"
+trap 'rm -f -- "${TEMP:-}"' EXIT
+printf '#!/usr/bin/env bash\n# Vitalux AppImage launcher\nunset APPDIR APPIMAGE TARGET_APPIMAGE ARGV0 OWD APPIMAGE_UUID LD_LIBRARY_PATH LD_PRELOAD PYTHONHOME PYTHONPATH PYTHONUSERBASE\nexec %q --launch "$@"\n' "$TARGET" > "$TEMP"
+chmod 755 "$TEMP"
+mv -f -- "$TEMP" "$LAUNCH"
+trap - EXIT
 printf '[Desktop Entry]\nType=Application\nName=Vitalux\nExec="%s"\nTryExec=%s\nIcon=vitalux\nTerminal=false\nCategories=System;Monitor;\n' "$LAUNCH" "$LAUNCH" > "$MENU"
 chmod 644 "$MENU"
 command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database "$(dirname "$MENU")" >/dev/null 2>&1 || true

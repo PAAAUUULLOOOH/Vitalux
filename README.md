@@ -11,7 +11,7 @@
 
 ![Vitalux running in English with Obsidian Gold and real system measurements](assets/vitalux-dashboard-preview.png)
 
-**Unstable v0.9.6.4-unstable.15.** Download this test build from the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest) for daily use.
+**Stable v0.9.6.4.** Download the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). A separate [Unstable build](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable) is offered only when it contains newer application changes.
 
 ## Features
 
@@ -44,16 +44,16 @@ Download a package from the [Stable release](https://github.com/PAAAUUULLOOOH/Vi
 **AppImage:**
 
 ```bash
-chmod +x Vitalux-v0.9.6.3-x86_64.AppImage
-./Vitalux-v0.9.6.3-x86_64.AppImage
+chmod +x Vitalux-v0.9.6.4-x86_64.AppImage
+./Vitalux-v0.9.6.4-x86_64.AppImage
 ```
 
 First launch offers user-account installation or **Run once**. Use `--portable` to skip integration, `--install` to add it later, or `--uninstall` to remove it while keeping preferences.
 
-**Portable ZIP:** extract the complete `Vitalux-v0.9.6.3-linux-x86_64.zip` into its own writable folder:
+**Portable ZIP:** extract the complete `Vitalux-v0.9.6.4-linux-x86_64.zip` into its own writable folder:
 
 ```bash
-cd Vitalux-v0.9.6.3
+cd Vitalux-v0.9.6.4
 bash run.sh
 ```
 
@@ -96,7 +96,7 @@ After a verified update or channel switch, Vitalux finishes background work and 
 Updates check SHA-256 and preserve recovery data. For manual verification, put the matching release manifest beside your downloads and run:
 
 ```bash
-sha256sum --ignore-missing -c Vitalux-v0.9.6.3-SHA256SUMS.txt
+sha256sum --ignore-missing -c Vitalux-v0.9.6.4-SHA256SUMS.txt
 ```
 
 A matching checksum verifies consistency with that manifest, not an independent digital signature.
@@ -113,7 +113,7 @@ VITALUX_RENDERER=software bash run.sh
 For an AppImage/FUSE problem:
 
 ```bash
-./Vitalux-v0.9.6.3-x86_64.AppImage --appimage-extract
+./Vitalux-v0.9.6.4-x86_64.AppImage --appimage-extract
 VITALUX_RENDERER=software bash squashfs-root/AppRun --portable
 ```
 

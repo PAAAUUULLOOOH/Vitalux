@@ -85,7 +85,7 @@ with tempfile.TemporaryDirectory() as folder,patch.dict(os.environ,{f'XDG_{k.upp
     m._on_installed('',SimpleNamespace(channel='unstable',version='0.9.6.1-unstable.4',pending_path=str(image),sha256='a'*64))
     with patch.object(updater,'activate_appimage_update') as activate:
         assert not activate.called
-        m.finalize_exit();activate.assert_called_once_with(str(image),relaunch=False)
+        m.finalize_exit();activate.assert_called_once_with(str(image),relaunch=False,sha256='a'*64)
         m.finalize_exit();assert activate.call_count==1
     m._pending_file.unlink(missing_ok=True);m.shutdown()
     # Stable's adoption message appears only after the tested version is caught up.
