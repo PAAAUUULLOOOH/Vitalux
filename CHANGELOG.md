@@ -1,5 +1,10 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.4-unstable.15] - 2026-10-30
+
+- Automatische Neustarts nach Updates, Rendererwechseln und dem Zurücksetzen bleiben nicht mehr an weiterhin geöffneten Spiele-Launchern hängen.
+- Spiele-Launcher werden gezielt und unabhängig geöffnet. Die Overlay-Einrichtung ruft durch übernommene AppImage-Kennungen nicht mehr versehentlich Vitalux erneut auf.
+
 ## [v0.9.6.4-unstable.14] - 2026-10-29
 
 - Steam-Kontoerkennung unterstützt aktuelle Kontodaten ohne MostRecent, einschließlich AutoLogin und Kontonamen aus der Steam-Registry. Gemeinsame Datenordner werden nicht als zusätzliches Konto gezählt.

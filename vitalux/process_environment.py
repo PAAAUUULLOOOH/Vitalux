@@ -23,7 +23,13 @@ def host_environment(source=None):
         for key,previous in renderer._saved_environment.items():
             if previous is None:env.pop(key,None)
             else:env[key]=previous
+    # These identify the launching app, not the desktop session. Forwarding
+    # Vitalux's identity to Steam/URI handlers can reactivate Vitalux instead.
+    origin=('APPDIR','APPIMAGE','APPIMAGE_UUID','TARGET_APPIMAGE','ARGV0','OWD',
+            'PYTHONHOME','PYTHONUSERBASE','GIO_LAUNCHED_DESKTOP_FILE',
+            'GIO_LAUNCHED_DESKTOP_FILE_PID','BAMF_DESKTOP_FILE_HINT',
+            'DESKTOP_STARTUP_ID','XDG_ACTIVATION_TOKEN')
     for key in list(env):
-        if key in ('APPDIR','APPIMAGE','PYTHONHOME','PYTHONUSERBASE') or key.startswith('VITALUX_'):env.pop(key,None)
+        if key in origin or key.startswith('VITALUX_'):env.pop(key,None)
     return env
 

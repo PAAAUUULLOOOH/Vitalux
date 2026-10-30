@@ -338,7 +338,7 @@ if [ ! -f "$staged" ] || [ ! -f "$target" ]; then exit 1; fi
 cp -p -- "$target" "${{backup}}.tmp"
 mv -f -- "${{backup}}.tmp" "$backup"
 mv -f -- "$staged" "$target"
-unset APPDIR APPIMAGE LD_LIBRARY_PATH LD_PRELOAD PYTHONHOME PYTHONPATH PYTHONUSERBASE
+unset APPDIR APPIMAGE TARGET_APPIMAGE ARGV0 OWD APPIMAGE_UUID LD_LIBRARY_PATH LD_PRELOAD PYTHONHOME PYTHONPATH PYTHONUSERBASE
 stamp "Vitalux update activation: old version v$version, launching newly installed AppImage."
 # Record even early loader failures in restart.log, with date and source version.
 if [ {q('yes' if relaunch else 'no')} = yes ]; then
@@ -599,7 +599,7 @@ except Exception as error:
     traceback.print_exc()
 if relaunch=='yes' and process_exited:
     env=os.environ.copy()
-    for key in ('PYTHONHOME','PYTHONPATH','PYTHONUSERBASE','APPDIR','APPIMAGE'):env.pop(key,None)
+    for key in ('PYTHONHOME','PYTHONPATH','PYTHONUSERBASE','APPDIR','APPIMAGE','TARGET_APPIMAGE','ARGV0','OWD','APPIMAGE_UUID'):env.pop(key,None)
     subprocess.Popen(['bash',str(Path(root)/'run.sh')],env=env,start_new_session=True)
 """
     helper.write_text(code);helper.chmod(0o700)

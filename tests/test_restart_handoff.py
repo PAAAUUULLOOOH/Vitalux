@@ -32,6 +32,7 @@ if phase==1:
         for kind in ('CONFIG','STATE','CACHE','DATA'):env['XDG_'+kind+'_HOME']=str(root/kind.lower())
         result=subprocess.run(['bash',str(root/'run.sh')],cwd=root,env=env,capture_output=True,text=True,timeout=12)
         assert result.returncode==(0 if intentional else 139),(result.returncode,result.stdout,result.stderr)
+        if intentional:assert not result.stderr,'Prepared restart leaked an unstamped native-crash diagnostic'
         assert (root/'phase').read_text()==('2' if intentional else '1')
         assert not list((root/'state').rglob('.restart-request.*'))
         logs='\n'.join(path.read_text() for path in (root/'state').rglob('errors.log'))

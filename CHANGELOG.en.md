@@ -1,5 +1,10 @@
 # Vitalux – Changes
 
+## [v0.9.6.4-unstable.15] - 2026-10-30
+
+- Automatic restarts after updates, renderer changes and resets no longer wait for game launchers that remain open.
+- Game launchers open independently through their own commands. Overlay setup no longer reopens Vitalux accidentally through inherited AppImage identity.
+
 ## [v0.9.6.4-unstable.14] - 2026-10-29
 
 - Steam account detection supports current metadata without MostRecent, including AutoLogin and account names from the Steam registry. Shared data folders are excluded from account selection.

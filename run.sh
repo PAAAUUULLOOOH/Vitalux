@@ -91,12 +91,24 @@ LAUNCHER_PID="$BASHPID"
 RESTART_TOKEN="$("$PY" "$HERE/packaging/restart-request.py" init "$RESTART_REQUEST" "$HERE" "$LAUNCHER_PID" "$VERSION")" || exit 1
 export VITALUX_RESTART_REQUEST_FILE="$RESTART_REQUEST" VITALUX_RESTART_TOKEN="$RESTART_TOKEN"
 export VITALUX_LAUNCH_ROOT="$HERE" VITALUX_LAUNCHER_PID="$LAUNCHER_PID" VITALUX_LAUNCH_VERSION="$VERSION"
-# Capture stdout and stderr together to retain the original event ordering.
-# PIPESTATUS[0] is the *app's* exit code, not that of the log writer.
-"$PY" -m vitalux 2>&1 | while IFS= read -r line || [[ -n "$line" ]]; do
+# Wait for the GUI itself, not EOF from every process it may have launched.
+# An older launcher/browser can retain the pipe after the GUI has exited.
+exec {GUI_LOG_FD}> >(exec >/dev/null 2>&1; while IFS= read -r line || [[ -n "$line" ]]; do
   log_line "$line"
+done)
+LOG_READER=$!
+{
+  "$PY" -m vitalux
+  STATUS=$?
+} >&"$GUI_LOG_FD" 2>&1
+exec {GUI_LOG_FD}>&-
+# Usually EOF flushes the final crash diagnostics immediately. Bound this wait
+# so a surviving external program cannot block restart or update activation.
+for ((LOG_DRAIN=0; LOG_DRAIN<40; LOG_DRAIN++)); do
+  kill -0 "$LOG_READER" 2>/dev/null || break
+  sleep .025
 done
-STATUS=${PIPESTATUS[0]}
+if ! kill -0 "$LOG_READER" 2>/dev/null; then wait "$LOG_READER" 2>/dev/null || true; fi
 log_line "=== Vitalux ended (exit code $STATUS) ==="
 case "$STATUS" in
   129|130|143) ;;

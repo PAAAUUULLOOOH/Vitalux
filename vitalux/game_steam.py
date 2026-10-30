@@ -103,8 +103,9 @@ def stop_for_setup(game,cancelled,progress):
     if not command:raise ValueError('Steam konnte für die Overlay-Einrichtung nicht neu gestartet werden.')
     progress('Steam wird für die Overlay-Einrichtung beendet …')
     # This is Steam's own shutdown request, not a signal to its processes.
-    request=subprocess.Popen(command,env=env,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,
-                             start_new_session=True)
+    request=subprocess.Popen(command,env=env,stdin=subprocess.DEVNULL,
+                             stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,
+                             close_fds=True,start_new_session=True)
     deadline=time.monotonic()+45
     while running(game):
         if time.monotonic()>deadline:

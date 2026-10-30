@@ -62,7 +62,7 @@ Partial names such as **Mini**, **MiniH**, **MiniHU** and **MiniHUD** predict th
 
 **Advanced settings** is near the bottom of Settings, and contains the full **Restore defaults** action under Maintenance. Its contents are permanently visible; there is no expand/collapse action. It contains graphics rendering and **Maintenance** (full active-profile reset). Searching for these controls scrolls directly to the matching setting.
 
-Choose **CPU** (the stable default) or **X11 · OpenGL**. A renderer change restarts Vitalux automatically; if an operation is still running, the restart waits for it. X11 requires a working X server or XWayland. CPU rendering also works in a native Wayland session. Removed renderer settings migrate to CPU. Startup failures fall back to CPU. Confirmed **Restore defaults** follows the same controlled restart and keeps the window responsive while background work finishes.
+Choose **CPU** (the stable default) or **X11 · OpenGL**. A renderer change restarts Vitalux automatically; if an operation is still running, the restart waits for it. X11 requires a working X server or XWayland. CPU rendering also works in a native Wayland session. Removed renderer settings migrate to CPU. Startup failures fall back to CPU. Confirmed **Restore defaults** follows the same controlled restart and keeps the window responsive while background work finishes. Open game launchers do not block the next Vitalux process; their startup uses an independent environment and output channels.
 
 Vitalux Overlay for the desktop (formerly MiniHUD) reuses the main sensor stream and offers three layouts and adjustable opacity. Your desktop compositor determines its placement relative to fullscreen applications.
 

@@ -2,8 +2,9 @@
 import os
 from pathlib import Path
 import shutil
+import subprocess
 
-from .process_environment import ROOT, host_environment as environment
+from .process_environment import host_environment as environment
 FLATPAK={'steam':'com.valvesoftware.Steam','heroic':'com.heroicgameslauncher.hgl','lutris':'net.lutris.Lutris'}
 
 
@@ -20,14 +21,14 @@ def command(game, env):
 
 
 def start(game):
-    from PySide6.QtCore import QProcess,QProcessEnvironment,QUrl
-    from PySide6.QtGui import QDesktopServices
     env=environment();args=command(game,env)
-    if not args:return QDesktopServices.openUrl(QUrl(game['launcher_uri']))
-    process=QProcess();process.setProgram(args[0]);process.setArguments(args[1:])
-    process.setWorkingDirectory(str(Path.home()))
-    child=QProcessEnvironment()
-    for key,value in env.items():child.insert(key,value)
-    process.setProcessEnvironment(child)
-    result=process.startDetached()
-    return result[0] if isinstance(result,tuple) else result
+    if not args:
+        # Keep URI-only launcher installations, but give the desktop dispatcher
+        # the same clean environment and disconnected handles as direct starts.
+        opener=shutil.which('xdg-open',path=env.get('PATH',os.defpath))
+        if not opener:return False
+        args=[opener,game['launcher_uri']]
+    subprocess.Popen(args,cwd=Path.home(),env=env,stdin=subprocess.DEVNULL,
+                     stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,
+                     close_fds=True,start_new_session=True)
+    return True

@@ -11,7 +11,7 @@
 
 ![Vitalux running in English with Obsidian Gold and real system measurements](assets/vitalux-dashboard-preview.png)
 
-**Unstable v0.9.6.4-unstable.14.** Download this test build from the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest) for daily use.
+**Unstable v0.9.6.4-unstable.15.** Download this test build from the rolling [Unstable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest) for daily use.
 
 ## Features
 
@@ -75,7 +75,7 @@ Overview captions are centered in a consistent order below equally sized load di
 
 **All specifications** opens a scrollable in-app datasheet for the exact CPU, graphics-card or mainboard model. Data arriving in the background also updates an already open dialog. Available manufacturer data is cached for offline use; **Open manufacturer page** links to the original. Detected local specifications remain available when online data is missing. Graphics groups utilization, video-memory usage and the other live readings under **Current GPU values**, without the duplicate sensor panel.
 
-**CPU** and **X11 · OpenGL** are the available renderers. Renderer changes and confirmed resets restart automatically after current work finishes.
+**CPU** and **X11 · OpenGL** are the available renderers. Renderer changes and confirmed resets restart automatically after current work finishes. External launchers run independently and do not hold up Vitalux restarts or updates.
 
 A startup window follows the saved design and shows the actual preparation stage while hardware discovery, first measurements, cached pictures/specifications and the interface are prepared. Existing data is loaded before the main window opens; missing online data does not hold startup open. Motion-off and Ultra Eco use a static startup view.
 
@@ -134,7 +134,7 @@ python3.12 -m venv .venv
 .venv/bin/python scripts/run-regressions.py
 ```
 
-Release validation also covers native renderers, offline startup, AppImage integration and update/rollback. Versions use four components: `0.9.5.9 → 0.9.6.0`.
+The real AppImage process tests require `mksquashfs` from the existing `squashfs-tools` packaging toolchain. Release validation also covers native renderers, offline startup, AppImage integration and update/rollback. Versions use four components: `0.9.5.9 → 0.9.6.0`.
 
 ## Credits and licenses
 
