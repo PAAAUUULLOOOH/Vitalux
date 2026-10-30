@@ -26,6 +26,17 @@ case "${1:-}" in
     ;;
   --portable|--launch)
     shift
+    # Upgrade only our exact legacy menu wrapper, and only when running the
+    # installed image itself. Portable downloads never rewrite another install.
+    INTEGRATION_ROOT="${VITALUX_INTEGRATION_ROOT:-$HOME}"
+    TARGET="$INTEGRATION_ROOT/.local/opt/vitalux/Vitalux.AppImage"
+    LAUNCHER="$INTEGRATION_ROOT/.local/bin/vitalux"
+    LEGACY_LAUNCHER="$(printf '#!/usr/bin/env bash\nexec %q --launch "$@"\n' "$TARGET")"
+    if [[ -n "${APPIMAGE:-}" && -f "$LAUNCHER" && ! -L "$LAUNCHER" &&
+          "$(realpath "$APPIMAGE")" == "$(realpath -m "$TARGET")" &&
+          "$(cat "$LAUNCHER")" == "$LEGACY_LAUNCHER" ]]; then
+      bash "$INTEGRATOR" --install 2>&1 | stamp_install || true
+    fi
     # The launch owner coordinates intentional restarts, verified updates and
     # recovery using the single previous-version copy when available.
     if [[ -n "${APPIMAGE:-}" && -f "$BASE/packaging/appimage-rollback-watch.sh" ]]; then
@@ -75,6 +86,7 @@ if [[ -n "${APPIMAGE:-}" && -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]] && ! integr
   if [[ "$CHOICE" == 0 ]]; then
     printf '%s\n' "Installing Vitalux into local application menu." | stamp_install
     if bash "$INTEGRATOR" --install 2>&1 | stamp_install && integrated; then
+      unset APPDIR APPIMAGE TARGET_APPIMAGE ARGV0 OWD APPIMAGE_UUID LD_LIBRARY_PATH LD_PRELOAD PYTHONHOME PYTHONPATH PYTHONUSERBASE
       exec "$TARGET" --launch "$@"
     fi
     echo "Vitalux: Desktop-Installation fehlgeschlagen; Log: $STATE/installation.log" >&2

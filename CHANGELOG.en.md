@@ -1,5 +1,24 @@
 # Vitalux – Changes
 
+
+## [v0.9.6.4] - 2026-10-30
+
+- New Games center: discover, search and launch installed Steam, Heroic and Lutris games, with compact cover tiles, live session status and offline artwork.
+- Bundled MangoHud supports 32/64-bit OpenGL and Vulkan games, including Steam's runtime and Flatpak. Configure metrics, position, size, opacity, shortcuts and target FPS per game while preserving existing launch arguments.
+- Overlay setup verifies actual launcher entries and the active Steam account. Necessary Steam restarts happen automatically while protecting running games. Setup and launch failures remain visible.
+- Local post-game reports include average FPS, 1%/0.1% lows, selectable FPS/frametime histories, hardware peaks and session history. Target-based ratings use matching colors; incomplete measurements stay neutral. Long reports remain responsive.
+- A frameless main window adds rounded outer corners, integrated window controls, dragging, resizing and maximizing. Layout editing shares the top control bar.
+- All designs: edge-aligned navigation without repeated distribution/design names, more usable tile space, clean sidebar transitions and scrolling behind fixed controls. Header/sidebar designs use one rounded material surface; Nebula Prism has a floating translucent dock.
+- All designs: smooth interruptible appearance changes without flashing, visible update indicators, clear keyboard focus and consistent search, dialogs and spacing. Settings search follows the content area's center.
+- Crystal Glass returns as Crystal Atrium with the original static Atrium background, preserving saved colors and backgrounds. Aurora Bloom joins the regular design gallery with its own preview and asymmetrically rounded controls.
+- Chart selections and time ranges are saved. Multi-GPU systems can choose a preferred card for the overview, desktop overlay and diagnostics.
+- Refresh individual components, reject incorrect product images or select local pictures. Open specification dialogs update when data arrives. RAM image lookups are removed; manufacturer, part number and specifications remain available.
+- Complete sensor lists distinguish missing and stale values. Diagnostic reports and exports follow the app language; baseline comparisons no longer block the interface.
+- Graphics choices focus on CPU and X11/OpenGL; removed settings migrate to CPU. Initialization remains centered after screen changes.
+- Updates, renderer changes and confirmed resets use a controlled automatic restart. Open game launchers do not block it; App-menu starts clear inherited AppImage identity to select the installed copy. Prepared updates are rechecked before restarting.
+- When Stable fully covers a test build, a normal Unstable update goes directly to Stable, including parity reached during download or preparation. Equal baselines offer no Unstable switch; later tests require an explicit selection.
+- Lower computation and bounded caches for designs, backgrounds, charts, sensor discovery and network details retain animation, rendering quality and measurement intervals. Required desktop libraries are included; separate GLib installation is unnecessary.
+
 ## [v0.9.6.4-unstable.15] - 2026-10-30
 
 - Automatic restarts after updates, renderer changes and resets no longer wait for game launchers that remain open.

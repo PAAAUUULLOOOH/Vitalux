@@ -296,17 +296,19 @@ def queue_appimage_restart():
     return True
 
 
-def activate_appimage_update(staged, relaunch=True):
+def activate_appimage_update(staged, relaunch=True, sha256=None):
     """Queue activation for AppRun, retaining a helper for older unguarded starts."""
     target = os.path.realpath(appimage_path())
     if not os.path.isfile(target) or os.path.dirname(staged) != os.path.dirname(target):
         raise RuntimeError(tr('AppImage-Update konnte nicht sicher vorbereitet werden.'))
+    candidate=Path(staged)
+    if candidate.is_symlink():raise RuntimeError('Unsafe staged AppImage')
+    with candidate.open('rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
+    if sha256 is not None and digest!=sha256.lower():
+        raise RuntimeError(tr('Sicherheitsprüfung fehlgeschlagen: SHA-256 stimmt nicht überein.'))
     path=_appimage_mailbox(target)
     if path is not None:
         # AppRun applies this one-use request after the GUI and launcher exit.
-        candidate=Path(staged)
-        if candidate.is_symlink():raise RuntimeError('Unsafe staged AppImage')
-        with candidate.open('rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
         profiles.atomic_json(path,dict(schema=1,source_version=__version__,source_pid=os.getpid(),
             target=target,staged=str(candidate.resolve()),sha256=digest,relaunch=bool(relaunch)))
         return
@@ -322,6 +324,7 @@ set -eu
 oldpid={os.getpid()}
 target={q(target)}
 staged={q(staged)}
+expected_digest={q(digest)}
 backup={q(target + '.previous')}
 state_dir={q(str(profiles.directory('state')))}
 version={q(__version__)}
@@ -335,6 +338,11 @@ for i in $(seq 1 150); do
 done
 if kill -0 "$oldpid" 2>/dev/null; then exit 1; fi
 if [ ! -f "$staged" ] || [ ! -f "$target" ]; then exit 1; fi
+read -r actual_digest _ < <(sha256sum -- "$staged")
+if [ "$actual_digest" != "$expected_digest" ]; then
+  stamp "Prepared AppImage changed before activation; current version retained."
+  exit 1
+fi
 cp -p -- "$target" "${{backup}}.tmp"
 mv -f -- "${{backup}}.tmp" "$backup"
 mv -f -- "$staged" "$target"

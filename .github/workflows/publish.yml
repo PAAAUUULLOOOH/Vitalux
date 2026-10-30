@@ -19,7 +19,7 @@ jobs:
   build-and-release:
     if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'publish Vitalux v')
     runs-on: ubuntu-24.04
-    timeout-minutes: 50
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,8 +54,9 @@ jobs:
           python -m pip install -r requirements-dev.txt
           printf '%s\n' 'https://archive.ubuntu.com/ubuntu' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
           printf '%s\n' 'https://security.ubuntu.com/ubuntu' | sudo tee /etc/apt/apt-mirrors-security.txt >/dev/null
+          sudo dpkg --add-architecture i386
           sudo apt-get -o Acquire::ForceIPv4=true -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 update
-          sudo apt-get -o Acquire::ForceIPv4=true -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=120 install -y xvfb weston libegl1 libgl1 libopengl0 libgl1-mesa-dri libglx-mesa0 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-util1 libxcb-shape0 curl squashfs-tools unzip file
+          sudo apt-get -o Acquire::ForceIPv4=true -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 -o DPkg::Lock::Timeout=120 install -y --no-install-recommends xvfb weston libegl1 libgl1 libopengl0 libgl1-mesa-dri libglx-mesa0 mesa-vulkan-drivers libvulkan1 libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0 libxcb-xinput0 libxcb-util1 libxcb-shape0 curl squashfs-tools unzip file mesa-utils xdotool flatpak g++-multilib libx11-dev libx11-dev:i386 libgl-dev libgl-dev:i386 libvulkan-dev libvulkan-dev:i386 libgl1-mesa-dri:i386 libglx-mesa0:i386 mesa-vulkan-drivers:i386
           python -m compileall -q vitalux tests scripts packaging
           bash -n run.sh packaging/AppRun packaging/build-appimage.sh packaging/appimage-integration.sh packaging/appimage-rollback-watch.sh
       - uses: actions/cache@v4
@@ -85,6 +86,19 @@ jobs:
           from distribution_tools import extract_release_zip
           extract_release_zip(archive, pathlib.Path('build/baseline'))
           PY
+      - name: Check bundled OpenGL and Vulkan game recording in both architectures
+        timeout-minutes: 6
+        run: |
+          set -euo pipefail
+          xvfb-run -a -s '-screen 0 1280x800x24' python scripts/check-game-recording.py --output build/game-recording
+          xvfb-run -a -s '-screen 0 1280x800x24' python scripts/check-game-start.py --probe build/game-recording/graphics-probe64 --output build/game-start
+      - name: Check bundled overlay inside a real Flatpak sandbox
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          mkdir -p build/flatpak-recording
+          xvfb-run -a -s '-screen 0 1280x800x24' dbus-run-session -- bash scripts/check-flatpak-game-recording.sh build/flatpak-recording
       - name: Assemble the stable portable package
         run: |
           set -euo pipefail
@@ -98,6 +112,21 @@ jobs:
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
           LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-regressions.py --output "$GITHUB_WORKSPACE/build/regressions"
+      - name: Start Qt in a minimal Linux base without extra installed libraries
+        timeout-minutes: 4
+        run: python scripts/check-minimal-runtime.py "build/staged/Vitalux-${TAG}" --output build/minimal-runtime
+      - name: Check the overlay inside Valve's Steam runtime
+        timeout-minutes: 8
+        run: |
+          set -euo pipefail
+          mkdir -p build/steam-recording
+          xvfb-run -a -s '-screen 0 1280x800x24' dbus-run-session -- bash scripts/check-steam-game-recording.sh build/steam-recording
+      - name: Check wide Steam capsules and offline reuse
+        run: python scripts/check-game-artwork-network.py
+      - name: Check native header search, translucent dock and interrupted appearance transitions
+        run: |
+          set -euo pipefail
+          xvfb-run -a -s '-screen 0 1600x1050x24' env QT_QPA_PLATFORM=xcb VITALUX_RENDERER=x11_opengl LIBGL_ALWAYS_SOFTWARE=1 LP_NUM_THREADS=2 python tests/test_navigation_surfaces.py
       - name: Check resource budgets, endurance and reference rendering
         timeout-minutes: 18
         run: |
@@ -107,6 +136,9 @@ jobs:
           git worktree add --detach build/render-reference 5bcc1e90a69f3f58f1de582db0b5eeec5b0e4332
           python scripts/check-render-parity.py --reference build/render-reference --output build/render-parity
           git worktree remove build/render-reference
+          git worktree add --detach build/performance-reference 1a74b85a6ff427ca2e7cf672e26b2efe0f6ca6e8
+          python scripts/check-performance-render.py --reference build/performance-reference --output build/performance-parity
+          git worktree remove build/performance-reference
       - name: Check real component pictures and offline reuse
         run: python scripts/check-product-image-network.py --require-all-components
       - name: Check real manufacturer datasheets and offline reuse
@@ -144,7 +176,7 @@ jobs:
           set -euo pipefail
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
-          for DESIGN in obsidian_gold glass light crystal_atrium nebula_prism quantum_core eclipse_crystal minimal; do
+          for DESIGN in obsidian_gold glass light crystal_atrium nebula_prism quantum_core eclipse_crystal aurora_bloom minimal; do
             LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/capture-release-ui.py --output "$GITHUB_WORKSPACE/build/ui-scale-checks/$DESIGN" --design "$DESIGN" --scales 1,1.25,1.5,2
           done
       - name: Prepare AppImage tooling
@@ -201,6 +233,15 @@ jobs:
             build/source-startup-checks/
             build/ui-scale-checks/
             build/network-kernel.log
+            build/minimal-runtime/
+            build/game-recording/
+            build/game-start/
+            build/flatpak-recording/
+            build/steam-recording/
+            build/game-artwork-check/
+            build/ui-endurance/
+            build/render-parity/results.json
+            build/performance-parity/results.json
           retention-days: 30
       - name: Preserve release packages
         uses: actions/upload-artifact@v4

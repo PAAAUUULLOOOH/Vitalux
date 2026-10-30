@@ -449,7 +449,8 @@ class UpdateManager(QObject):
             try:
                 if self.pending.get('kind','appimage')=='zip':
                     updater.activate_zip_update(self.pending_path,self.pending.get('sha256',''),self._pending_file,relaunch=self._relaunch_on_exit)
-                else:updater.activate_appimage_update(self.pending_path,relaunch=self._relaunch_on_exit)
+                else:updater.activate_appimage_update(self.pending_path,relaunch=self._relaunch_on_exit,
+                                                      sha256=self.pending.get('sha256'))
                 self._activation_started=True
                 self._restart_retrying=False
                 self._restart_event('activation_prepared')
