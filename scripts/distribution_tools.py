@@ -8,6 +8,14 @@ import time
 from zipfile import ZipFile
 
 
+def normalize_permissions(root):
+    """Distribute readable files independently of the builder's UID and umask."""
+    for path in (Path(root), *Path(root).rglob('*')):
+        if path.is_symlink():continue
+        mode=stat.S_IMODE(path.stat().st_mode)
+        path.chmod(mode | 0o444 | (0o111 if path.is_dir() or mode & 0o111 else 0))
+
+
 def extract_release_zip(archive, destination):
     with ZipFile(archive) as source:
         for info in source.infolist():

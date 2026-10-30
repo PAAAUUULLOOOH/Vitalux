@@ -30,6 +30,9 @@ Icon=vitalux
 Terminal=false
 Categories=System;Monitor;
 DESKTOP
+# SquashFS does not assign files to the end user's UID. Normalize the private
+# build copy, including older runtime files that were archived with mode 0700.
+chmod -R a+rX "$DIR"
 (cd "$HERE/runtime" && sha256sum --check SHA256SUMS)
 ARCH=x86_64 "$TOOL" --no-appstream --runtime-file "$HERE/runtime/runtime-x86_64" "$DIR" "$OUT"
 test -s "$OUT"
