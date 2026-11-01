@@ -4,7 +4,7 @@ This inventory describes Vitalux's Linux x86-64 distribution. The application so
 
 | Component | Distributed version / scope | License and notices | Source |
 | --- | --- | --- | --- |
-| CPython | 3.12.7, interpreter and standard library | [PSF and included historical/third-party notices](licenses/runtime/Python-3.12.7.txt), [upstream notices](licenses/upstream/cpython) | [v3.12.7](https://github.com/python/cpython/tree/v3.12.7) |
+| CPython | 3.12.16, interpreter and standard library | [PSF and included historical/third-party notices](licenses/runtime/Python-3.12.16.txt), [upstream notices](licenses/upstream/cpython) | [v3.12.16](https://github.com/python/cpython/tree/v3.12.16) |
 | PySide6 and Shiboken | 6.12.0, dynamically loaded Python bindings | LGPL-3.0 option; [complete upstream license collection](licenses/upstream/pyside-setup/LICENSES) | [v6.12.0](https://github.com/pyside/pyside-setup/tree/v6.12.0) |
 | Qt | 6.12.0, QtBase, QtDeclarative, QtSvg, QtWayland and QtImageFormats runtime modules | LGPL-3.0 option for the included runtime; [Qt licenses and bundled third-party notices](licenses/upstream/qtbase), plus the corresponding module directories | [Qt source repositories](https://github.com/qt), exact archives in [source manifest](third_party/sources.lock.json) |
 | ICU | 73.2, Qt Unicode libraries | Unicode/ICU and included third-party notices in [ICU source notices](licenses/upstream/icu) | [release-73-2](https://github.com/unicode-org/icu/tree/release-73-2) |

@@ -1,0 +1,29 @@
+# syntax=docker/dockerfile:1
+# Keep the Python patch update compatible with the portable Linux base.
+FROM ubuntu:22.04@sha256:e0f80c829509ef4df9e76bd8944eb7b8ec25cbb379b112a7f9448b2c77a77c9b
+ARG DEBIAN_FRONTEND=noninteractive
+RUN --mount=type=secret,id=proxy_ca,required=true,mode=0444 \
+    sed -i 's|http://archive.ubuntu.com|https://archive.ubuntu.com|g; s|http://security.ubuntu.com|https://security.ubuntu.com|g' /etc/apt/sources.list && \
+    apt-get -o Acquire::Retries=3 -o Acquire::https::Timeout=45 -o Acquire::https::CaInfo=/run/secrets/proxy_ca update && \
+    apt-get -o Acquire::Retries=3 -o Acquire::https::Timeout=45 -o Acquire::https::CaInfo=/run/secrets/proxy_ca install -y --no-install-recommends \
+      build-essential ca-certificates unzip patchelf libssl-dev zlib1g-dev \
+      libbz2-dev libreadline-dev libsqlite3-dev libffi-dev liblzma-dev libgdbm-dev libncursesw5-dev uuid-dev && \
+    rm -rf /var/lib/apt/lists/*
+ARG PYTHON_VERSION
+ARG SOURCE_SHA256
+COPY cpython-source.zip /tmp/cpython-source.zip
+RUN --network=none \
+    printf '%s  /tmp/cpython-source.zip\n' "$SOURCE_SHA256" | sha256sum --check && \
+    unzip -q /tmp/cpython-source.zip -d /src && \
+    cd "/src/cpython-$PYTHON_VERSION" && \
+    ./configure --prefix=/runtime --enable-shared --enable-optimizations --with-ensurepip=no && \
+    make -j2 && make DESTDIR=/out install && \
+    patchelf --set-rpath '$ORIGIN/../lib' /out/runtime/bin/python3.12 && \
+    rm -rf /out/runtime/lib/python3.12/test /out/runtime/lib/python3.12/idlelib \
+      /out/runtime/lib/python3.12/ensurepip && \
+    find /out/runtime -name __pycache__ -type d -prune -exec rm -rf '{}' + && \
+    cp LICENSE /out/CPython-LICENSE.txt
+COPY collect-python-libraries.py /tmp/collect-python-libraries.py
+RUN --network=none /out/runtime/bin/python3.12 /tmp/collect-python-libraries.py
+FROM scratch
+COPY --from=0 /out/ /

@@ -53,6 +53,15 @@ jobs:
           echo "PREVIOUS_TAG=$PREVIOUS_TAG" >> "$GITHUB_ENV"
           echo "PREVIOUS_VERSION=${PREVIOUS_TAG#v}" >> "$GITHUB_ENV"
           python scripts/release_notes.py "$VERSION" "$RUNNER_TEMP/vitalux-release-notes.md"
+      - name: Verify runtime dependency currency before Stable publication
+        timeout-minutes: 8
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python scripts/dependency_audit.py --ubuntu --enforce --output build/dependencies/verified.json
+          # Dependency candidates are built and tested on Unstable first.
+          # This check never rewrites or promotes code on Main.
       - name: Verify any packaging-only validation reuse
         id: validation
         env:
@@ -249,6 +258,7 @@ jobs:
         with:
           name: Vitalux-${{ env.TAG }}-Validation
           path: |
+            build/dependencies/*.json
             build/regressions/
             build/graphics-checks/
             build/product-image-check/

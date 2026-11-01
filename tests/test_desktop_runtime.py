@@ -11,7 +11,7 @@ archive=ROOT/'portable-runtime'/meta['archive']
 def check_preference(root):
  for entry in meta['libraries']:
   if 'path' in entry:assert not (root/'lib'/entry['name']).exists(),'Fallback shadows the graphics driver'
- if all(ctypes.util.find_library(name) for name in ('wayland-client','wayland-cursor','drm')):
+ if all(ctypes.util.find_library(name) for name in ('systemd','crypto','ssl','sqlite3','wayland-client','wayland-cursor','drm')):
   selected=subprocess.check_output([sys.executable,str(ROOT/'packaging/runtime-libraries.py'),str(root)],
       env=dict(os.environ,LD_LIBRARY_PATH=str(root/'lib')),text=True).strip()
   assert 'fallback-libraries' not in selected,selected

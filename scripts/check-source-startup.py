@@ -58,6 +58,7 @@ def main():
         env['LD_LIBRARY_PATH'] = str(stage/'lib')
         subprocess.run([str(stage/'runtime/bin/python3.12'), '-c',
                         'from PySide6.QtCore import QCoreApplication; '
+                        'from scripts.runtime_inventory import inspect; inspect("."); '
                         'from vitalux.update_manager import UpdateManager; '
                         'app=QCoreApplication([]); m=UpdateManager(); '
                         'assert m.status=="idle" and m._timer.isActive()'],

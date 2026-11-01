@@ -56,6 +56,11 @@ def main():
         for source in (ROOT/'third_party/sources.lock.json', ROOT/'THIRD-PARTY.md',
                        ROOT/'licenses/README.md'):
             zipped.write(source, name+'/'+source.name)
+        for relative in ('packaging/Dockerfile.cpython','packaging/collect-python-libraries.py',
+                         'packaging/Dockerfile.mangohud','packaging/build-mangohud.sh',
+                         'scripts/build-mangohud-archive.py','scripts/build-desktop-libraries.py',
+                         'scripts/desktop_runtime.py','portable-runtime/README.md'):
+            zipped.write(ROOT/relative,name+'/'+relative)
     with ZipFile(archive) as zipped:
         assert zipped.testzip() is None
     print(f'Verified third-party source package: {archive.name} ({archive.stat().st_size:,} bytes)', flush=True)

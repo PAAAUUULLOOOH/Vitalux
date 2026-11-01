@@ -12,9 +12,11 @@ import tarfile
 def prepare(target):
     import PySide6
     from vitalux import __version__
-    if sys.version_info[:2] != (3, 12) or PySide6.__version__ != '6.12.0':
-        raise RuntimeError('Use Python 3.12 and PySide6==6.12.0')
     source = Path(__file__).resolve().parents[1]
+    from runtime_inventory import expected
+    versions=expected(source)
+    if sys.version_info[:2] != (3, 12) or PySide6.__version__ != versions['PySide6']:
+        raise RuntimeError('Use Python 3.12 and PySide6=='+versions['PySide6'])
     if target.exists():
         raise FileExistsError(target)
     ignore = shutil.ignore_patterns('__pycache__', '*.pyc', '*.pyo')

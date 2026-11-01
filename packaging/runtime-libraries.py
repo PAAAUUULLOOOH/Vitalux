@@ -5,7 +5,8 @@ import os
 from pathlib import Path
 import sys
 
-INTERFACES=('libwayland-client.so.0','libwayland-cursor.so.0','libdrm.so.2')
+INTERFACES=('libsystemd.so.0','libcrypto.so.3','libssl.so.3','libsqlite3.so.0',
+            'libwayland-client.so.0','libwayland-cursor.so.0','libdrm.so.2')
 
 
 def library_path(root):
@@ -13,8 +14,8 @@ def library_path(root):
     root=Path(root)
     for name in INTERFACES:
         try:
-            # The private copy lives outside lib/: modern Mesa may need API
-            # added after the baseline ABI used to build the portable fallback.
+            # Private copies stay outside lib/: COSMIC/system plugins and
+            # modern Mesa can require interfaces newer than our offline base.
             ctypes.CDLL(name)
         except OSError:
             folder=root/'fallback-libraries'/name

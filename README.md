@@ -18,7 +18,7 @@
 
 ![Vitalux running in English with Obsidian Gold and real system measurements](assets/vitalux-dashboard-preview.png)
 
-**Unstable v0.9.6.5-unstable.1.** This branch contains the next test release. Download the [current Unstable build](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). A separate [Unstable build](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable) is offered only when it contains newer application changes.
+**Unstable v0.9.6.5-unstable.2.** This branch contains the next test release. Download the [current Unstable build](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). A separate [Unstable build](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable) is offered only when it contains newer application changes.
 
 ## Features
 
@@ -41,6 +41,8 @@ Missing sensor fields are hidden; real zeroes such as stopped fans remain visibl
 ## Requirements
 
 **Linux x86-64, glibc 2.38 or newer, and an X11 or Wayland desktop.** Release packages include Python 3.12, Qt, GLib and their required desktop libraries: no pip, system Python or separate GLib installation is needed. CPU rendering is the default; the optional X11/OpenGL renderer requires suitable drivers and X11/XWayland. Sensor availability depends on hardware and permissions.
+
+Current desktops, including Pop!OS/COSMIC, use their installed systemd, OpenSSL, SQLite, Wayland and DRM interfaces; verified offline fallbacks cover missing interfaces. Runtime dependencies are delivered together through Vitalux updates, without a separate Python or package installation.
 
 Full app networking additionally requires cgroup v2/BPF, process-fork tracepoints, Polkit (`pkexec`) and `/usr/bin/python3`. Authorization is requested when needed. See the [network guide](USER-GUIDE.md#apps-and-network-connections) for session scope and kernel requirements.
 

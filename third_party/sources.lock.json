@@ -15,10 +15,10 @@
   },
   {
     "name": "cpython",
-    "version": "3.12.7",
-    "url": "https://github.com/python/cpython/archive/refs/tags/v3.12.7.zip",
-    "sha256": "d712e33f225be8d339f7e75bedead19e4d989793b5c642a028c2db4fae530d4a",
-    "filename": "cpython-3.12.7.zip"
+    "version": "3.12.16",
+    "url": "https://github.com/python/cpython/archive/refs/tags/v3.12.16.zip",
+    "sha256": "761bbd4f4d3a6408e35dc651eaf79de284f65c2e05c822b677eb48ba3d7d06b2",
+    "filename": "cpython-3.12.16.zip"
   },
   {
     "name": "psutil",
@@ -126,6 +126,27 @@
     "sha256": "2c57d187ac44d7b42862138fb3dac4426236edea2fcd17ab96407d4209acdeae"
   },
   {
+    "name": "bzip2-bzip2_1.0.8.orig.tar.gz",
+    "version": "1.0.8-5ubuntu0.1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/b/bzip2/bzip2_1.0.8.orig.tar.gz",
+    "filename": "bzip2_1.0.8.orig.tar.gz",
+    "sha256": "ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269"
+  },
+  {
+    "name": "bzip2-bzip2_1.0.8-5ubuntu0.1.debian.tar.bz2",
+    "version": "1.0.8-5ubuntu0.1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/b/bzip2/bzip2_1.0.8-5ubuntu0.1.debian.tar.bz2",
+    "filename": "bzip2_1.0.8-5ubuntu0.1.debian.tar.bz2",
+    "sha256": "bf144c1281e08e7e6690d3cfa60c5167be49a993fa9d17c8ce4a9da3ce68607e"
+  },
+  {
+    "name": "bzip2-bzip2_1.0.8-5ubuntu0.1.dsc",
+    "version": "1.0.8-5ubuntu0.1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/b/bzip2/bzip2_1.0.8-5ubuntu0.1.dsc",
+    "filename": "bzip2_1.0.8-5ubuntu0.1.dsc",
+    "sha256": "1ad3043d238291a40eee40785a7575012986daa2ec957fceaac66ad3be8e3691"
+  },
+  {
     "name": "dbus-dbus_1.12.20.orig.tar.gz",
     "version": "1.12.20-2ubuntu4.1",
     "url": "https://archive.ubuntu.com/ubuntu/pool/main/d/dbus/dbus_1.12.20.orig.tar.gz",
@@ -219,51 +240,79 @@
   {
     "name": "freetype-freetype_2.11.1+dfsg.orig-ft2demos.tar.xz",
     "version": "2.11.1+dfsg-1ubuntu0.4",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/f/freetype/freetype_2.11.1%2bdfsg.orig-ft2demos.tar.xz",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/f/freetype/freetype_2.11.1+dfsg.orig-ft2demos.tar.xz",
     "filename": "freetype_2.11.1+dfsg.orig-ft2demos.tar.xz",
     "sha256": "c60620d49d0f16d95586eb868c01b129569409e6cfdcb87a78e0482a12604672"
   },
   {
     "name": "freetype-freetype_2.11.1+dfsg.orig-ft2demos.tar.xz.asc",
     "version": "2.11.1+dfsg-1ubuntu0.4",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/f/freetype/freetype_2.11.1%2bdfsg.orig-ft2demos.tar.xz.asc",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/f/freetype/freetype_2.11.1+dfsg.orig-ft2demos.tar.xz.asc",
     "filename": "freetype_2.11.1+dfsg.orig-ft2demos.tar.xz.asc",
     "sha256": "d911a95830c50efcf60398e51db4ec307bbf4d24168377b515aded0611e977c0"
   },
   {
     "name": "freetype-freetype_2.11.1+dfsg.orig-ft2docs.tar.xz",
     "version": "2.11.1+dfsg-1ubuntu0.4",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/f/freetype/freetype_2.11.1%2bdfsg.orig-ft2docs.tar.xz",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/f/freetype/freetype_2.11.1+dfsg.orig-ft2docs.tar.xz",
     "filename": "freetype_2.11.1+dfsg.orig-ft2docs.tar.xz",
     "sha256": "755e29908093c19138a38775784b0accf7e838ffa28a25b8722b3dfe651d80fa"
   },
   {
     "name": "freetype-freetype_2.11.1+dfsg.orig-ft2docs.tar.xz.asc",
     "version": "2.11.1+dfsg-1ubuntu0.4",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/f/freetype/freetype_2.11.1%2bdfsg.orig-ft2docs.tar.xz.asc",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/f/freetype/freetype_2.11.1+dfsg.orig-ft2docs.tar.xz.asc",
     "filename": "freetype_2.11.1+dfsg.orig-ft2docs.tar.xz.asc",
     "sha256": "67cbc2f192460dc4d46129e7debe55b40a9fa6e224ffeed70b4cf397ebaccab5"
   },
   {
     "name": "freetype-freetype_2.11.1+dfsg.orig.tar.xz",
     "version": "2.11.1+dfsg-1ubuntu0.4",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/f/freetype/freetype_2.11.1%2bdfsg.orig.tar.xz",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/f/freetype/freetype_2.11.1+dfsg.orig.tar.xz",
     "filename": "freetype_2.11.1+dfsg.orig.tar.xz",
     "sha256": "ef93541237834445eb7ff355e7d4139d48844f9c977a485dea1316df54994473"
   },
   {
     "name": "freetype-freetype_2.11.1+dfsg-1ubuntu0.4.debian.tar.xz",
     "version": "2.11.1+dfsg-1ubuntu0.4",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/f/freetype/freetype_2.11.1%2bdfsg-1ubuntu0.4.debian.tar.xz",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/f/freetype/freetype_2.11.1+dfsg-1ubuntu0.4.debian.tar.xz",
     "filename": "freetype_2.11.1+dfsg-1ubuntu0.4.debian.tar.xz",
     "sha256": "16671da9ac041f3e25fc4b88d8f3a4dbae59dbd1e2565f358362ca62424f67df"
   },
   {
     "name": "freetype-freetype_2.11.1+dfsg-1ubuntu0.4.dsc",
     "version": "2.11.1+dfsg-1ubuntu0.4",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/f/freetype/freetype_2.11.1%2bdfsg-1ubuntu0.4.dsc",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/f/freetype/freetype_2.11.1+dfsg-1ubuntu0.4.dsc",
     "filename": "freetype_2.11.1+dfsg-1ubuntu0.4.dsc",
     "sha256": "502ed7709166f21aea8ffc3b7799fa72138ebdf9c2f0719b103db30f35e4f325"
+  },
+  {
+    "name": "gdbm-gdbm_1.23-1.dsc",
+    "version": "1.23-1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/g/gdbm/gdbm_1.23-1.dsc",
+    "filename": "gdbm_1.23-1.dsc",
+    "sha256": "fae26cb50da1af1d7b152495dbb2bca0301e65973d0a6a6d6d771e7e58a82d72"
+  },
+  {
+    "name": "gdbm-gdbm_1.23.orig.tar.gz",
+    "version": "1.23-1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/g/gdbm/gdbm_1.23.orig.tar.gz",
+    "filename": "gdbm_1.23.orig.tar.gz",
+    "sha256": "74b1081d21fff13ae4bd7c16e5d6e504a4c26f7cde1dca0d963a484174bbcacd"
+  },
+  {
+    "name": "gdbm-gdbm_1.23.orig.tar.gz.asc",
+    "version": "1.23-1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/g/gdbm/gdbm_1.23.orig.tar.gz.asc",
+    "filename": "gdbm_1.23.orig.tar.gz.asc",
+    "sha256": "64ebb68cc68e8915d62cb20ea40323c00b56051f844589ee0a52169fff34cecb"
+  },
+  {
+    "name": "gdbm-gdbm_1.23-1.debian.tar.xz",
+    "version": "1.23-1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/g/gdbm/gdbm_1.23-1.debian.tar.xz",
+    "filename": "gdbm_1.23-1.debian.tar.xz",
+    "sha256": "cc86b10814c2045967d29571ea7bed810fc4ec917d2918d056b8eb3e5622eb1c"
   },
   {
     "name": "glib2.0-glib2.0_2.72.4.orig.tar.xz",
@@ -329,6 +378,34 @@
     "sha256": "8c0af704dea8312f715c750c9f97e257f3c50c969de20818e1eab1e8175bcad1"
   },
   {
+    "name": "libbsd-libbsd_0.11.5-1.dsc",
+    "version": "0.11.5-1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libb/libbsd/libbsd_0.11.5-1.dsc",
+    "filename": "libbsd_0.11.5-1.dsc",
+    "sha256": "51479863a91fc2293da337d926862465e460bf4afdc3c0b362939749bfee6c53"
+  },
+  {
+    "name": "libbsd-libbsd_0.11.5.orig.tar.xz",
+    "version": "0.11.5-1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libb/libbsd/libbsd_0.11.5.orig.tar.xz",
+    "filename": "libbsd_0.11.5.orig.tar.xz",
+    "sha256": "1a9c952525635c1bb6770cb22e969b938d8e6a9d7912362b98ee8370599b0efd"
+  },
+  {
+    "name": "libbsd-libbsd_0.11.5.orig.tar.xz.asc",
+    "version": "0.11.5-1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libb/libbsd/libbsd_0.11.5.orig.tar.xz.asc",
+    "filename": "libbsd_0.11.5.orig.tar.xz.asc",
+    "sha256": "95e418668c1d3f16a63dca24b9149119bdaf5095a3e1f3f84673be1a108a0916"
+  },
+  {
+    "name": "libbsd-libbsd_0.11.5-1.debian.tar.xz",
+    "version": "0.11.5-1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libb/libbsd/libbsd_0.11.5-1.debian.tar.xz",
+    "filename": "libbsd_0.11.5-1.debian.tar.xz",
+    "sha256": "83d6f3205c8e0119de85763831f3e09a8152a695d2cebc5a55069472e97e6d0c"
+  },
+  {
     "name": "libcap2-libcap2_2.44.orig.tar.xz",
     "version": "1:2.44-1ubuntu0.22.04.3",
     "url": "https://archive.ubuntu.com/ubuntu/pool/main/libc/libcap2/libcap2_2.44.orig.tar.xz",
@@ -366,14 +443,14 @@
   {
     "name": "libdrm-libdrm_2.4.113-2~ubuntu0.22.04.1.debian.tar.xz",
     "version": "2.4.113-2~ubuntu0.22.04.1",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libd/libdrm/libdrm_2.4.113-2%7eubuntu0.22.04.1.debian.tar.xz",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libd/libdrm/libdrm_2.4.113-2~ubuntu0.22.04.1.debian.tar.xz",
     "filename": "libdrm_2.4.113-2~ubuntu0.22.04.1.debian.tar.xz",
     "sha256": "cb1ee404ce432906c306a5a2fa8bcadcae42bf1adc91c434dfd7d1e26aa272c0"
   },
   {
     "name": "libdrm-libdrm_2.4.113-2~ubuntu0.22.04.1.dsc",
     "version": "2.4.113-2~ubuntu0.22.04.1",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libd/libdrm/libdrm_2.4.113-2%7eubuntu0.22.04.1.dsc",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libd/libdrm/libdrm_2.4.113-2~ubuntu0.22.04.1.dsc",
     "filename": "libdrm_2.4.113-2~ubuntu0.22.04.1.dsc",
     "sha256": "51aca908b4884d500158077ff66ee0aabbdd1b1ada5271321b25d425eabd1c3e"
   },
@@ -476,6 +553,34 @@
     "sha256": "d9d4efa45fc8d58152cbfa3bbaa68ed1977d8c56b7d59a579ef4feb4ffe7ec83"
   },
   {
+    "name": "libmd-libmd_1.0.4-1build1.dsc",
+    "version": "1.0.4-1build1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libm/libmd/libmd_1.0.4-1build1.dsc",
+    "filename": "libmd_1.0.4-1build1.dsc",
+    "sha256": "0f282b79cd8eac2910677fd1f38a5baa5740df50b4e1da0922d35a6726e88e74"
+  },
+  {
+    "name": "libmd-libmd_1.0.4.orig.tar.xz",
+    "version": "1.0.4-1build1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libm/libmd/libmd_1.0.4.orig.tar.xz",
+    "filename": "libmd_1.0.4.orig.tar.xz",
+    "sha256": "f51c921042e34beddeded4b75557656559cf5b1f2448033b4c1eec11c07e530f"
+  },
+  {
+    "name": "libmd-libmd_1.0.4.orig.tar.xz.asc",
+    "version": "1.0.4-1build1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libm/libmd/libmd_1.0.4.orig.tar.xz.asc",
+    "filename": "libmd_1.0.4.orig.tar.xz.asc",
+    "sha256": "32deebe1cfab127ee69a3e8c8caf439e459b7cdcdd7535fe021cb485adc14057"
+  },
+  {
+    "name": "libmd-libmd_1.0.4-1build1.debian.tar.xz",
+    "version": "1.0.4-1build1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libm/libmd/libmd_1.0.4-1build1.debian.tar.xz",
+    "filename": "libmd_1.0.4-1build1.debian.tar.xz",
+    "sha256": "ea7327ee6adee8ddd1f3b1d6c1780f05acff01666199cecf4342a2a05a7a443e"
+  },
+  {
     "name": "libpng1.6-libpng1.6_1.6.37.orig.tar.gz",
     "version": "1.6.37-3ubuntu0.7",
     "url": "https://archive.ubuntu.com/ubuntu/pool/main/libp/libpng1.6/libpng1.6_1.6.37.orig.tar.gz",
@@ -525,6 +630,34 @@
     "sha256": "8565b89dbdb083fe62a544ac9475ab33dfe83724989d2254d64ee6706fc37aea"
   },
   {
+    "name": "libxau-libxau_1.0.9-1build5.dsc",
+    "version": "1:1.0.9-1build5",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxau/libxau_1.0.9-1build5.dsc",
+    "filename": "libxau_1.0.9-1build5.dsc",
+    "sha256": "1e6f3b420f37e6ed492c009741f784c35ef1c19f11f8c83b4777b2590382b721"
+  },
+  {
+    "name": "libxau-libxau_1.0.9.orig.tar.gz",
+    "version": "1:1.0.9-1build5",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxau/libxau_1.0.9.orig.tar.gz",
+    "filename": "libxau_1.0.9.orig.tar.gz",
+    "sha256": "1f123d8304b082ad63a9e89376400a3b1d4c29e67e3ea07b3f659cccca690eea"
+  },
+  {
+    "name": "libxau-libxau_1.0.9.orig.tar.gz.asc",
+    "version": "1:1.0.9-1build5",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxau/libxau_1.0.9.orig.tar.gz.asc",
+    "filename": "libxau_1.0.9.orig.tar.gz.asc",
+    "sha256": "af6104aaf3c5ede529e381237dd60f49640ec96593a84502fa493b86582b2f04"
+  },
+  {
+    "name": "libxau-libxau_1.0.9-1build5.diff.gz",
+    "version": "1:1.0.9-1build5",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxau/libxau_1.0.9-1build5.diff.gz",
+    "filename": "libxau_1.0.9-1build5.diff.gz",
+    "sha256": "ba43fc817c512c7105865233f31d8ab08a95e71ce3b2b8a5c2568fc0129ab6de"
+  },
+  {
     "name": "libxcb-libxcb_1.14-3ubuntu3.dsc",
     "version": "1.14-3ubuntu3",
     "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxcb/libxcb_1.14-3ubuntu3.dsc",
@@ -567,23 +700,65 @@
     "sha256": "92565f123e1e3bd5ebc53bc6b50dda46dc30e952fd02bb5b081bf9c113b733e8"
   },
   {
+    "name": "libxdmcp-libxdmcp_1.1.3-0ubuntu5.dsc",
+    "version": "1:1.1.3-0ubuntu5",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxdmcp/libxdmcp_1.1.3-0ubuntu5.dsc",
+    "filename": "libxdmcp_1.1.3-0ubuntu5.dsc",
+    "sha256": "205a1610391cf9e2985e5e2080dab36a5471e585eb91970ec1d8c09008e1e5e5"
+  },
+  {
+    "name": "libxdmcp-libxdmcp_1.1.3.orig.tar.gz",
+    "version": "1:1.1.3-0ubuntu5",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxdmcp/libxdmcp_1.1.3.orig.tar.gz",
+    "filename": "libxdmcp_1.1.3.orig.tar.gz",
+    "sha256": "2ef9653d32e09d1bf1b837d0e0311024979653fe755ad3aaada8db1aa6ea180c"
+  },
+  {
+    "name": "libxdmcp-libxdmcp_1.1.3-0ubuntu5.diff.gz",
+    "version": "1:1.1.3-0ubuntu5",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxdmcp/libxdmcp_1.1.3-0ubuntu5.diff.gz",
+    "filename": "libxdmcp_1.1.3-0ubuntu5.diff.gz",
+    "sha256": "5848aea7f2f5abbb50d9841557b07d5fde4500238cf3e316142259656dd1bd7b"
+  },
+  {
+    "name": "libxkbcommon-libxkbcommon_1.4.0-1.dsc",
+    "version": "1.4.0-1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxkbcommon/libxkbcommon_1.4.0-1.dsc",
+    "filename": "libxkbcommon_1.4.0-1.dsc",
+    "sha256": "d3bf81d0ca57558675733bb6f0388592ef61705de204c91a6c0056fe673523b2"
+  },
+  {
+    "name": "libxkbcommon-libxkbcommon_1.4.0.orig.tar.xz",
+    "version": "1.4.0-1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxkbcommon/libxkbcommon_1.4.0.orig.tar.xz",
+    "filename": "libxkbcommon_1.4.0.orig.tar.xz",
+    "sha256": "106cec5263f9100a7e79b5f7220f889bc78e7d7ffc55d2b6fdb1efefb8024031"
+  },
+  {
+    "name": "libxkbcommon-libxkbcommon_1.4.0-1.debian.tar.xz",
+    "version": "1.4.0-1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxkbcommon/libxkbcommon_1.4.0-1.debian.tar.xz",
+    "filename": "libxkbcommon_1.4.0-1.debian.tar.xz",
+    "sha256": "401ae56e00755d1159c8dd0495dabdf39fa1108fa0cfb234f033f3452bf0c5d4"
+  },
+  {
     "name": "libzstd-libzstd_1.4.8+dfsg-3build1.dsc",
     "version": "1.4.8+dfsg-3build1",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libz/libzstd/libzstd_1.4.8%2bdfsg-3build1.dsc",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libz/libzstd/libzstd_1.4.8+dfsg-3build1.dsc",
     "filename": "libzstd_1.4.8+dfsg-3build1.dsc",
     "sha256": "d4f80bb9278967f55a38c50c7e2bb8102328c7d2955bdcd9b7dedc70cd4a8c9e"
   },
   {
     "name": "libzstd-libzstd_1.4.8+dfsg.orig.tar.xz",
     "version": "1.4.8+dfsg-3build1",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libz/libzstd/libzstd_1.4.8%2bdfsg.orig.tar.xz",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libz/libzstd/libzstd_1.4.8+dfsg.orig.tar.xz",
     "filename": "libzstd_1.4.8+dfsg.orig.tar.xz",
     "sha256": "1e8ce5c4880a6d5bd8d3186e4186607dd19b64fc98a3877fc13aeefd566d67c5"
   },
   {
     "name": "libzstd-libzstd_1.4.8+dfsg-3build1.debian.tar.xz",
     "version": "1.4.8+dfsg-3build1",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libz/libzstd/libzstd_1.4.8%2bdfsg-3build1.debian.tar.xz",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libz/libzstd/libzstd_1.4.8+dfsg-3build1.debian.tar.xz",
     "filename": "libzstd_1.4.8+dfsg-3build1.debian.tar.xz",
     "sha256": "60d554776b4fbee2aa81eb9990cbe156636b1ec4e4213b73fd190057680241ba"
   },
@@ -609,6 +784,55 @@
     "sha256": "46e79943d637f60be3a8c1e5edaba8890599e0fdcc2a58462e4eb194f1e56352"
   },
   {
+    "name": "ncurses-ncurses_6.3.orig.tar.gz",
+    "version": "6.3-2ubuntu0.3",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/n/ncurses/ncurses_6.3.orig.tar.gz",
+    "filename": "ncurses_6.3.orig.tar.gz",
+    "sha256": "97fc51ac2b085d4cde31ef4d2c3122c21abc217e9090a43a30fc5ec21684e059"
+  },
+  {
+    "name": "ncurses-ncurses_6.3.orig.tar.gz.asc",
+    "version": "6.3-2ubuntu0.3",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/n/ncurses/ncurses_6.3.orig.tar.gz.asc",
+    "filename": "ncurses_6.3.orig.tar.gz.asc",
+    "sha256": "37b9e80c11fa02fbd8caf42ab9573427f54f2c7212eb4aeec9f455b5d79dee14"
+  },
+  {
+    "name": "ncurses-ncurses_6.3-2ubuntu0.3.debian.tar.xz",
+    "version": "6.3-2ubuntu0.3",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/n/ncurses/ncurses_6.3-2ubuntu0.3.debian.tar.xz",
+    "filename": "ncurses_6.3-2ubuntu0.3.debian.tar.xz",
+    "sha256": "05dbb05d1001c90b8cd30f608f3efd15a77a14ca675ef9e23041d6ebc26c1942"
+  },
+  {
+    "name": "ncurses-ncurses_6.3-2ubuntu0.3.dsc",
+    "version": "6.3-2ubuntu0.3",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/n/ncurses/ncurses_6.3-2ubuntu0.3.dsc",
+    "filename": "ncurses_6.3-2ubuntu0.3.dsc",
+    "sha256": "a0a8bee662ca780de89b728f25d073eebb75ee2ec222698ac9c3f2c8b7c28ec5"
+  },
+  {
+    "name": "openssl-openssl_3.0.2.orig.tar.gz",
+    "version": "3.0.2-0ubuntu1.30",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/o/openssl/openssl_3.0.2.orig.tar.gz",
+    "filename": "openssl_3.0.2.orig.tar.gz",
+    "sha256": "98e91ccead4d4756ae3c9cde5e09191a8e586d9f4d50838e7ec09d6411dfdb63"
+  },
+  {
+    "name": "openssl-openssl_3.0.2-0ubuntu1.30.debian.tar.xz",
+    "version": "3.0.2-0ubuntu1.30",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/o/openssl/openssl_3.0.2-0ubuntu1.30.debian.tar.xz",
+    "filename": "openssl_3.0.2-0ubuntu1.30.debian.tar.xz",
+    "sha256": "b2f4d75e1eba248397d8e4f4a029195ec3bb0e971b2e975594115a1c79b31c47"
+  },
+  {
+    "name": "openssl-openssl_3.0.2-0ubuntu1.30.dsc",
+    "version": "3.0.2-0ubuntu1.30",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/o/openssl/openssl_3.0.2-0ubuntu1.30.dsc",
+    "filename": "openssl_3.0.2-0ubuntu1.30.dsc",
+    "sha256": "22b1c851fb5c229b27f497b1867e994ab2ad2f90d288d2dc3bd6eef15f6307bc"
+  },
+  {
     "name": "pcre3-pcre3_8.39.orig.tar.bz2",
     "version": "2:8.39-13ubuntu0.22.04.1",
     "url": "https://archive.ubuntu.com/ubuntu/pool/main/p/pcre3/pcre3_8.39.orig.tar.bz2",
@@ -628,6 +852,55 @@
     "url": "https://archive.ubuntu.com/ubuntu/pool/main/p/pcre3/pcre3_8.39-13ubuntu0.22.04.1.dsc",
     "filename": "pcre3_8.39-13ubuntu0.22.04.1.dsc",
     "sha256": "f9c1a08a5856eee3644a4f5bbffe62ff04d21940ebd7798e7b15f48463571867"
+  },
+  {
+    "name": "readline-readline_8.1.2-1.dsc",
+    "version": "8.1.2-1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/r/readline/readline_8.1.2-1.dsc",
+    "filename": "readline_8.1.2-1.dsc",
+    "sha256": "8558058b41165ffbbf406e744e726326e649a55c0f2c1490a467c01d314adec2"
+  },
+  {
+    "name": "readline-readline_8.1.2.orig.tar.gz",
+    "version": "8.1.2-1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/r/readline/readline_8.1.2.orig.tar.gz",
+    "filename": "readline_8.1.2.orig.tar.gz",
+    "sha256": "7589a2381a8419e68654a47623ce7dfcb756815c8fee726b98f90bf668af7bc6"
+  },
+  {
+    "name": "readline-readline_8.1.2-1.debian.tar.xz",
+    "version": "8.1.2-1",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/r/readline/readline_8.1.2-1.debian.tar.xz",
+    "filename": "readline_8.1.2-1.debian.tar.xz",
+    "sha256": "0c39840fbed2abd3f93083d75c974e39855fd41aa6df5fa1be06d147e86071ca"
+  },
+  {
+    "name": "sqlite3-sqlite3_3.37.2.orig-www.tar.xz",
+    "version": "3.37.2-2ubuntu0.8",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/s/sqlite3/sqlite3_3.37.2.orig-www.tar.xz",
+    "filename": "sqlite3_3.37.2.orig-www.tar.xz",
+    "sha256": "63dbd1c7abab37ec5beed22dae75bac048efead0f19aa5cad49b4bd690335ebd"
+  },
+  {
+    "name": "sqlite3-sqlite3_3.37.2.orig.tar.xz",
+    "version": "3.37.2-2ubuntu0.8",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/s/sqlite3/sqlite3_3.37.2.orig.tar.xz",
+    "filename": "sqlite3_3.37.2.orig.tar.xz",
+    "sha256": "3157723da779963f7887f29de12289a4890f0c18eb17b570aa2c8d2c96d31d6f"
+  },
+  {
+    "name": "sqlite3-sqlite3_3.37.2-2ubuntu0.8.debian.tar.xz",
+    "version": "3.37.2-2ubuntu0.8",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/s/sqlite3/sqlite3_3.37.2-2ubuntu0.8.debian.tar.xz",
+    "filename": "sqlite3_3.37.2-2ubuntu0.8.debian.tar.xz",
+    "sha256": "6cf7d3db197bd5e76c81876e3a4536c75a322cdbb1c8d6cffc507de5adceb969"
+  },
+  {
+    "name": "sqlite3-sqlite3_3.37.2-2ubuntu0.8.dsc",
+    "version": "3.37.2-2ubuntu0.8",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/s/sqlite3/sqlite3_3.37.2-2ubuntu0.8.dsc",
+    "filename": "sqlite3_3.37.2-2ubuntu0.8.dsc",
+    "sha256": "637d981e996fec129c8b902c36b87910f8b0e6303ff9e00dcb5918df5c54ca78"
   },
   {
     "name": "systemd-systemd_249.11.orig.tar.gz",
@@ -691,181 +964,6 @@
     "url": "https://archive.ubuntu.com/ubuntu/pool/main/w/wayland/wayland_1.20.0-1ubuntu0.1.dsc",
     "filename": "wayland_1.20.0-1ubuntu0.1.dsc",
     "sha256": "bb90c23eea89d2ff74c623f633416be96918e98346c2ec25a31a80440fa7505e"
-  },
-  {
-    "name": "xz-utils-xz-utils_5.2.5.orig.tar.xz",
-    "version": "5.2.5-2ubuntu1.2",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/x/xz-utils/xz-utils_5.2.5.orig.tar.xz",
-    "filename": "xz-utils_5.2.5.orig.tar.xz",
-    "sha256": "3e1e518ffc912f86608a8cb35e4bd41ad1aec210df2a47aaa1f95e7f5576ef56"
-  },
-  {
-    "name": "xz-utils-xz-utils_5.2.5.orig.tar.xz.asc",
-    "version": "5.2.5-2ubuntu1.2",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/x/xz-utils/xz-utils_5.2.5.orig.tar.xz.asc",
-    "filename": "xz-utils_5.2.5.orig.tar.xz.asc",
-    "sha256": "6efc0075a58912e640119d2b52ef7d1518b260d8720fadc73df21ab7fc727624"
-  },
-  {
-    "name": "xz-utils-xz-utils_5.2.5-2ubuntu1.2.debian.tar.xz",
-    "version": "5.2.5-2ubuntu1.2",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/x/xz-utils/xz-utils_5.2.5-2ubuntu1.2.debian.tar.xz",
-    "filename": "xz-utils_5.2.5-2ubuntu1.2.debian.tar.xz",
-    "sha256": "602bf9898bea5ae02284e16c7a2a52cb8e0086b5bea406e7f50999464260c287"
-  },
-  {
-    "name": "xz-utils-xz-utils_5.2.5-2ubuntu1.2.dsc",
-    "version": "5.2.5-2ubuntu1.2",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/x/xz-utils/xz-utils_5.2.5-2ubuntu1.2.dsc",
-    "filename": "xz-utils_5.2.5-2ubuntu1.2.dsc",
-    "sha256": "3c61a0ac421477b976f2b31e5f62d90438c6bf15846f45a850bec4cc1919c6a2"
-  },
-  {
-    "name": "zlib-zlib_1.2.11.dfsg.orig.tar.gz",
-    "version": "1:1.2.11.dfsg-2ubuntu9.2",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/z/zlib/zlib_1.2.11.dfsg.orig.tar.gz",
-    "filename": "zlib_1.2.11.dfsg.orig.tar.gz",
-    "sha256": "80c481411a4fe8463aeb8270149a0e80bb9eaf7da44132b6e16f2b5af01bc899"
-  },
-  {
-    "name": "zlib-zlib_1.2.11.dfsg-2ubuntu9.2.debian.tar.xz",
-    "version": "1:1.2.11.dfsg-2ubuntu9.2",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/z/zlib/zlib_1.2.11.dfsg-2ubuntu9.2.debian.tar.xz",
-    "filename": "zlib_1.2.11.dfsg-2ubuntu9.2.debian.tar.xz",
-    "sha256": "5678d0b3d1e609297e5a3dedfcb3474bab1cafe82c0c29aec2cef01e49a88d39"
-  },
-  {
-    "name": "zlib-zlib_1.2.11.dfsg-2ubuntu9.2.dsc",
-    "version": "1:1.2.11.dfsg-2ubuntu9.2",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/z/zlib/zlib_1.2.11.dfsg-2ubuntu9.2.dsc",
-    "filename": "zlib_1.2.11.dfsg-2ubuntu9.2.dsc",
-    "sha256": "ac50a5e5803c128eaef7eceda71fa13ffab3ed1e949008be244d8754d9c59e47"
-  },
-  {
-    "name": "libbsd-libbsd_0.11.5-1.dsc",
-    "version": "0.11.5-1",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libb/libbsd/libbsd_0.11.5-1.dsc",
-    "filename": "libbsd_0.11.5-1.dsc",
-    "sha256": "51479863a91fc2293da337d926862465e460bf4afdc3c0b362939749bfee6c53"
-  },
-  {
-    "name": "libbsd-libbsd_0.11.5.orig.tar.xz",
-    "version": "0.11.5-1",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libb/libbsd/libbsd_0.11.5.orig.tar.xz",
-    "filename": "libbsd_0.11.5.orig.tar.xz",
-    "sha256": "1a9c952525635c1bb6770cb22e969b938d8e6a9d7912362b98ee8370599b0efd"
-  },
-  {
-    "name": "libbsd-libbsd_0.11.5.orig.tar.xz.asc",
-    "version": "0.11.5-1",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libb/libbsd/libbsd_0.11.5.orig.tar.xz.asc",
-    "filename": "libbsd_0.11.5.orig.tar.xz.asc",
-    "sha256": "95e418668c1d3f16a63dca24b9149119bdaf5095a3e1f3f84673be1a108a0916"
-  },
-  {
-    "name": "libbsd-libbsd_0.11.5-1.debian.tar.xz",
-    "version": "0.11.5-1",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libb/libbsd/libbsd_0.11.5-1.debian.tar.xz",
-    "filename": "libbsd_0.11.5-1.debian.tar.xz",
-    "sha256": "83d6f3205c8e0119de85763831f3e09a8152a695d2cebc5a55069472e97e6d0c"
-  },
-  {
-    "name": "libmd-libmd_1.0.4-1build1.dsc",
-    "version": "1.0.4-1build1",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libm/libmd/libmd_1.0.4-1build1.dsc",
-    "filename": "libmd_1.0.4-1build1.dsc",
-    "sha256": "0f282b79cd8eac2910677fd1f38a5baa5740df50b4e1da0922d35a6726e88e74"
-  },
-  {
-    "name": "libmd-libmd_1.0.4.orig.tar.xz",
-    "version": "1.0.4-1build1",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libm/libmd/libmd_1.0.4.orig.tar.xz",
-    "filename": "libmd_1.0.4.orig.tar.xz",
-    "sha256": "f51c921042e34beddeded4b75557656559cf5b1f2448033b4c1eec11c07e530f"
-  },
-  {
-    "name": "libmd-libmd_1.0.4.orig.tar.xz.asc",
-    "version": "1.0.4-1build1",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libm/libmd/libmd_1.0.4.orig.tar.xz.asc",
-    "filename": "libmd_1.0.4.orig.tar.xz.asc",
-    "sha256": "32deebe1cfab127ee69a3e8c8caf439e459b7cdcdd7535fe021cb485adc14057"
-  },
-  {
-    "name": "libmd-libmd_1.0.4-1build1.debian.tar.xz",
-    "version": "1.0.4-1build1",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libm/libmd/libmd_1.0.4-1build1.debian.tar.xz",
-    "filename": "libmd_1.0.4-1build1.debian.tar.xz",
-    "sha256": "ea7327ee6adee8ddd1f3b1d6c1780f05acff01666199cecf4342a2a05a7a443e"
-  },
-  {
-    "name": "libxau-libxau_1.0.9-1build5.dsc",
-    "version": "1:1.0.9-1build5",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxau/libxau_1.0.9-1build5.dsc",
-    "filename": "libxau_1.0.9-1build5.dsc",
-    "sha256": "1e6f3b420f37e6ed492c009741f784c35ef1c19f11f8c83b4777b2590382b721"
-  },
-  {
-    "name": "libxau-libxau_1.0.9.orig.tar.gz",
-    "version": "1:1.0.9-1build5",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxau/libxau_1.0.9.orig.tar.gz",
-    "filename": "libxau_1.0.9.orig.tar.gz",
-    "sha256": "1f123d8304b082ad63a9e89376400a3b1d4c29e67e3ea07b3f659cccca690eea"
-  },
-  {
-    "name": "libxau-libxau_1.0.9.orig.tar.gz.asc",
-    "version": "1:1.0.9-1build5",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxau/libxau_1.0.9.orig.tar.gz.asc",
-    "filename": "libxau_1.0.9.orig.tar.gz.asc",
-    "sha256": "af6104aaf3c5ede529e381237dd60f49640ec96593a84502fa493b86582b2f04"
-  },
-  {
-    "name": "libxau-libxau_1.0.9-1build5.diff.gz",
-    "version": "1:1.0.9-1build5",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxau/libxau_1.0.9-1build5.diff.gz",
-    "filename": "libxau_1.0.9-1build5.diff.gz",
-    "sha256": "ba43fc817c512c7105865233f31d8ab08a95e71ce3b2b8a5c2568fc0129ab6de"
-  },
-  {
-    "name": "libxdmcp-libxdmcp_1.1.3-0ubuntu5.dsc",
-    "version": "1:1.1.3-0ubuntu5",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxdmcp/libxdmcp_1.1.3-0ubuntu5.dsc",
-    "filename": "libxdmcp_1.1.3-0ubuntu5.dsc",
-    "sha256": "205a1610391cf9e2985e5e2080dab36a5471e585eb91970ec1d8c09008e1e5e5"
-  },
-  {
-    "name": "libxdmcp-libxdmcp_1.1.3.orig.tar.gz",
-    "version": "1:1.1.3-0ubuntu5",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxdmcp/libxdmcp_1.1.3.orig.tar.gz",
-    "filename": "libxdmcp_1.1.3.orig.tar.gz",
-    "sha256": "2ef9653d32e09d1bf1b837d0e0311024979653fe755ad3aaada8db1aa6ea180c"
-  },
-  {
-    "name": "libxdmcp-libxdmcp_1.1.3-0ubuntu5.diff.gz",
-    "version": "1:1.1.3-0ubuntu5",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxdmcp/libxdmcp_1.1.3-0ubuntu5.diff.gz",
-    "filename": "libxdmcp_1.1.3-0ubuntu5.diff.gz",
-    "sha256": "5848aea7f2f5abbb50d9841557b07d5fde4500238cf3e316142259656dd1bd7b"
-  },
-  {
-    "name": "libxkbcommon-libxkbcommon_1.4.0-1.dsc",
-    "version": "1.4.0-1",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxkbcommon/libxkbcommon_1.4.0-1.dsc",
-    "filename": "libxkbcommon_1.4.0-1.dsc",
-    "sha256": "d3bf81d0ca57558675733bb6f0388592ef61705de204c91a6c0056fe673523b2"
-  },
-  {
-    "name": "libxkbcommon-libxkbcommon_1.4.0.orig.tar.xz",
-    "version": "1.4.0-1",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxkbcommon/libxkbcommon_1.4.0.orig.tar.xz",
-    "filename": "libxkbcommon_1.4.0.orig.tar.xz",
-    "sha256": "106cec5263f9100a7e79b5f7220f889bc78e7d7ffc55d2b6fdb1efefb8024031"
-  },
-  {
-    "name": "libxkbcommon-libxkbcommon_1.4.0-1.debian.tar.xz",
-    "version": "1.4.0-1",
-    "url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxkbcommon/libxkbcommon_1.4.0-1.debian.tar.xz",
-    "filename": "libxkbcommon_1.4.0-1.debian.tar.xz",
-    "sha256": "401ae56e00755d1159c8dd0495dabdf39fa1108fa0cfb234f033f3452bf0c5d4"
   },
   {
     "name": "xcb-util-xcb-util_0.4.0-1build2.dsc",
@@ -992,5 +1090,54 @@
     "url": "https://archive.ubuntu.com/ubuntu/pool/main/x/xcb-util-wm/xcb-util-wm_0.4.1-1.1build2.debian.tar.xz",
     "filename": "xcb-util-wm_0.4.1-1.1build2.debian.tar.xz",
     "sha256": "cbf5ce21c783753ad6a783addbefc732e5955ce7f5f81af51b03a258d04befda"
+  },
+  {
+    "name": "xz-utils-xz-utils_5.2.5.orig.tar.xz",
+    "version": "5.2.5-2ubuntu1.2",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/x/xz-utils/xz-utils_5.2.5.orig.tar.xz",
+    "filename": "xz-utils_5.2.5.orig.tar.xz",
+    "sha256": "3e1e518ffc912f86608a8cb35e4bd41ad1aec210df2a47aaa1f95e7f5576ef56"
+  },
+  {
+    "name": "xz-utils-xz-utils_5.2.5.orig.tar.xz.asc",
+    "version": "5.2.5-2ubuntu1.2",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/x/xz-utils/xz-utils_5.2.5.orig.tar.xz.asc",
+    "filename": "xz-utils_5.2.5.orig.tar.xz.asc",
+    "sha256": "6efc0075a58912e640119d2b52ef7d1518b260d8720fadc73df21ab7fc727624"
+  },
+  {
+    "name": "xz-utils-xz-utils_5.2.5-2ubuntu1.2.debian.tar.xz",
+    "version": "5.2.5-2ubuntu1.2",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/x/xz-utils/xz-utils_5.2.5-2ubuntu1.2.debian.tar.xz",
+    "filename": "xz-utils_5.2.5-2ubuntu1.2.debian.tar.xz",
+    "sha256": "602bf9898bea5ae02284e16c7a2a52cb8e0086b5bea406e7f50999464260c287"
+  },
+  {
+    "name": "xz-utils-xz-utils_5.2.5-2ubuntu1.2.dsc",
+    "version": "5.2.5-2ubuntu1.2",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/x/xz-utils/xz-utils_5.2.5-2ubuntu1.2.dsc",
+    "filename": "xz-utils_5.2.5-2ubuntu1.2.dsc",
+    "sha256": "3c61a0ac421477b976f2b31e5f62d90438c6bf15846f45a850bec4cc1919c6a2"
+  },
+  {
+    "name": "zlib-zlib_1.2.11.dfsg.orig.tar.gz",
+    "version": "1:1.2.11.dfsg-2ubuntu9.2",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/z/zlib/zlib_1.2.11.dfsg.orig.tar.gz",
+    "filename": "zlib_1.2.11.dfsg.orig.tar.gz",
+    "sha256": "80c481411a4fe8463aeb8270149a0e80bb9eaf7da44132b6e16f2b5af01bc899"
+  },
+  {
+    "name": "zlib-zlib_1.2.11.dfsg-2ubuntu9.2.debian.tar.xz",
+    "version": "1:1.2.11.dfsg-2ubuntu9.2",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/z/zlib/zlib_1.2.11.dfsg-2ubuntu9.2.debian.tar.xz",
+    "filename": "zlib_1.2.11.dfsg-2ubuntu9.2.debian.tar.xz",
+    "sha256": "5678d0b3d1e609297e5a3dedfcb3474bab1cafe82c0c29aec2cef01e49a88d39"
+  },
+  {
+    "name": "zlib-zlib_1.2.11.dfsg-2ubuntu9.2.dsc",
+    "version": "1:1.2.11.dfsg-2ubuntu9.2",
+    "url": "https://archive.ubuntu.com/ubuntu/pool/main/z/zlib/zlib_1.2.11.dfsg-2ubuntu9.2.dsc",
+    "filename": "zlib_1.2.11.dfsg-2ubuntu9.2.dsc",
+    "sha256": "ac50a5e5803c128eaef7eceda71fa13ffab3ed1e949008be244d8754d9c59e47"
   }
 ]

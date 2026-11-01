@@ -26,6 +26,36 @@ jobs:
           python-version: '3.12'
           cache: pip
           cache-dependency-path: requirements-dev.txt
+      - name: Audit and maintain compatible runtime dependencies
+        timeout-minutes: 25
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p build/setup build/dependencies
+          exec > >(tee build/setup/dependencies.log) 2>&1
+          git config user.name PAAAUUULLOOOH
+          git config user.email PAAAUUULLOOOH@users.noreply.github.com
+          git pull --ff-only origin refs/heads/unstable
+          git fetch origin refs/heads/main:refs/remotes/origin/main
+          if [[ "$(python -c 'import sys; sys.path.insert(0,"scripts"); from channel_metadata import describe; print(str(describe()["has_test_changes"]).lower())')" != true ]]; then
+            exit 0  # An identical Stable mirror must not create a new test offer.
+          fi
+          python scripts/dependency_audit.py --ubuntu --output build/dependencies/before.json
+          python scripts/update_dependencies.py --report build/dependencies/before.json
+          if python -c 'import json; raise SystemExit(not bool(json.load(open("build/dependencies/before.json"))["updates"]))'; then
+            python scripts/dependency_audit.py --ubuntu --enforce --output build/dependencies/verified.json
+          else
+            cp build/dependencies/before.json build/dependencies/verified.json
+            python -c 'import json; r=json.load(open("build/dependencies/verified.json")); assert not r["vulnerabilities"], "Active dependency advisory requires maintenance before publication"'
+          fi
+          # Updates belong to the authorized test branch. All following checks
+          # exercise this complete candidate before any package is published.
+          git add requirements-dev.txt portable-runtime licenses third_party/sources.lock.json THIRD-PARTY.md
+          if ! git diff --cached --quiet; then
+            git commit -m "Maintain verified runtime dependencies for the test build"
+            git push origin HEAD:refs/heads/unstable
+          fi
       - name: Number the test build on the permanent branch
         id: prepare
         env:
@@ -230,6 +260,7 @@ jobs:
           name: Vitalux-Unstable-${{ env.TAG }}
           path: |
             build/setup/
+            build/dependencies/*.json
             build/regressions/
             build/game-recording/
             build/game-start/

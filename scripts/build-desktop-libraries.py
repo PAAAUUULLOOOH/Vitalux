@@ -14,7 +14,7 @@ from desktop_runtime import manifest
 ROOT=Path(__file__).resolve().parents[1]
 
 
-def build(output,cache):
+def build(output,cache,update_lock=False):
     metadata=manifest(ROOT);cache.mkdir(parents=True,exist_ok=True)
     def download(entry):
         path=cache/entry['filename']
@@ -47,7 +47,11 @@ def build(output,cache):
                 info=tarfile.TarInfo(str(path.relative_to(payload)));info.mode=0o644;info.size=path.stat().st_size
                 with path.open('rb') as stream:tar.addfile(info,stream)
     digest=hashlib.sha256(output.read_bytes()).hexdigest()
-    if digest!=metadata['sha256']:raise ValueError('Rebuilt archive differs from the locked payload: '+digest)
+    if update_lock:
+        metadata['sha256']=digest
+        (ROOT/'licenses/system-libraries/desktop-libraries.json').write_text(__import__('json').dumps(metadata,indent=2)+'\n')
+        (ROOT/'portable-runtime/desktop-libraries.SHA256SUMS').write_text(digest+'  '+metadata['archive']+'\n')
+    elif digest!=metadata['sha256']:raise ValueError('Rebuilt archive differs from the locked payload: '+digest)
     print('Reproducible desktop libraries:',digest)
 
 
@@ -55,4 +59,5 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--cache',type=Path,default=ROOT/'build/desktop-library-packages')
-    args=parser.parse_args();build(args.output.resolve(),args.cache.resolve())
+    parser.add_argument('--update-lock',action='store_true',help='Maintenance only: record a deliberately rebuilt dependency payload')
+    args=parser.parse_args();build(args.output.resolve(),args.cache.resolve(),args.update_lock)

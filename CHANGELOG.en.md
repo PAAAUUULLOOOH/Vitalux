@@ -1,5 +1,11 @@
 # Vitalux – Changes
 
+## [v0.9.6.5-unstable.2] - 2026-11-01
+
+- Linux startup fix for Pop!OS/COSMIC and other current desktops: prefer system systemd, OpenSSL and SQLite libraries, avoiding “LIBSYSTEMD_254 not found” conflicts caused by an older private copy. A bundled offline fallback remains available when the system library is absent.
+- The bundled Python runtime is updated to 3.12.16. Its required libraries remain included; no separate Python or package installation is needed.
+- Source editions replace an already extracted runtime when its verified archive changes. Unchanged archives are not extracted again, and a corrupt update does not replace a working runtime.
+
 ## [v0.9.6.5-unstable.1] - 2026-11-01
 
 - Eclipse Crystal joins the regular design gallery with its own preview.

@@ -35,7 +35,8 @@ install_desktop_libraries() (
   mkdir -p lib licenses/system-libraries
   cp --remove-destination -- "$stage"/lib/* lib/
   cp --recursive --remove-destination -- "$stage/fallback-libraries" .
-  rm -f -- lib/libwayland-client.so.0 lib/libwayland-cursor.so.0 lib/libdrm.so.2
+  rm -f -- lib/libsystemd.so.0 lib/libcrypto.so.3 lib/libssl.so.3 lib/libsqlite3.so.0 \
+    lib/libwayland-client.so.0 lib/libwayland-cursor.so.0 lib/libdrm.so.2
   cp --remove-destination -- "$stage"/licenses/system-libraries/* licenses/system-libraries/
   cp -- "$checksum" "$marker"
 )
@@ -44,8 +45,14 @@ remove_retired_renderer_libraries() {
   rm -f -- "$qt/QtOpenGLWidgets.abi3.so" "$qt/Qt/lib/libQt6OpenGLWidgets.so.6" \
     "$qt/Qt/plugins/wayland-graphics-integration-client/libvulkan-server.so"
 }
-# Another launcher may have finished unpacking while this one waited.
-if [ -f runtime/bin/python3.12 ]; then
+# Another launcher may have finished unpacking while this one waited. Source
+# checkouts also replace an expanded core after its locked archive changes.
+VITALUX_CORE_CHECKSUM="$VITALUX_RUNTIME_ROOT/portable-runtime/SHA256SUMS"
+VITALUX_CORE_MARKER="$VITALUX_RUNTIME_ROOT/.runtime/core-runtime.sha256"
+VITALUX_HAD_RUNTIME=false
+if [ -f runtime/bin/python3.12 ]; then VITALUX_HAD_RUNTIME=true; fi
+if [[ "$VITALUX_HAD_RUNTIME" == true ]] &&
+   { [[ ! -f "$VITALUX_RUNTIME_ARCHIVE" ]] || cmp -s "$VITALUX_CORE_CHECKSUM" "$VITALUX_CORE_MARKER"; }; then
   chmod u+x runtime/bin/python3.12
   install_desktop_libraries
   remove_retired_renderer_libraries
@@ -87,12 +94,21 @@ mkdir -p bin
 if [ ! -e bin/fio.real ]; then
   mv -- "$VITALUX_RUNTIME_STAGE/bin/fio.real" bin/fio.real
 fi
-if [ -e runtime ]; then
+if [[ -e runtime && "$VITALUX_HAD_RUNTIME" != true ]]; then
   printf 'Der vorhandene Ordner runtime ist unvollständig. Bitte die ZIP in einen neuen Ordner entpacken.\n' >&2
   exit 1
 fi
-mv -- "$VITALUX_RUNTIME_STAGE/runtime" runtime
-chmod u+x runtime/bin/python3.12 bin/fio bin/fio.real
+# Validate/install the separate supplement before replacing a working core.
+# A damaged desktop archive must not strand an existing source installation.
 install_desktop_libraries
+VITALUX_RUNTIME_PREVIOUS="$VITALUX_RUNTIME_ROOT/.runtime/previous-core.$BASHPID"
+if [[ "$VITALUX_HAD_RUNTIME" == true ]]; then mv -- runtime "$VITALUX_RUNTIME_PREVIOUS"; fi
+if ! mv -- "$VITALUX_RUNTIME_STAGE/runtime" runtime; then
+  if [[ -e "$VITALUX_RUNTIME_PREVIOUS" ]]; then mv -- "$VITALUX_RUNTIME_PREVIOUS" runtime; fi
+  exit 1
+fi
+chmod u+x runtime/bin/python3.12 bin/fio bin/fio.real
 remove_retired_renderer_libraries
+cp -- "$VITALUX_CORE_CHECKSUM" "$VITALUX_CORE_MARKER"
+rm -rf -- "$VITALUX_RUNTIME_PREVIOUS"
 printf 'Python und Qt sind bereit. Vitalux startet.\n'

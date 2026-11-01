@@ -24,12 +24,17 @@ def finalize(root):
     for relative in (
             'tests', 'requirements-dev.txt', 'packaging/build-appimage.sh',
             'packaging/runtime', 'runtime/lib/python3.12/unittest',
+            'packaging/Dockerfile.cpython','packaging/collect-python-libraries.py',
+            'packaging/Dockerfile.mangohud','packaging/build-mangohud.sh',
             'runtime/lib/python3.12/site-packages/PySide6/QtTest.abi3.so',
             'runtime/lib/python3.12/site-packages/PySide6/Qt/lib/libQt6Test.so.6'):
         remove(root / relative)
     for script in (root / 'scripts').iterdir():
         if script.name != 'ensure-runtime.sh':
             remove(script)
+    extensions=root/'runtime/lib/python3.12/lib-dynload'
+    for pattern in ('_test*.so','_ctypes_test*.so','_xxtestfuzz*.so','xxlimited*.so'):
+        for module in extensions.glob(pattern):remove(module)
     for cache in root.rglob('__pycache__'):
         remove(cache)
     return removed

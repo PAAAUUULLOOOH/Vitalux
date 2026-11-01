@@ -1,5 +1,11 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.5-unstable.2] - 2026-11-01
+
+- Linux-Startkorrektur für Pop!OS/COSMIC und andere aktuelle Desktops: Systemeigene systemd-, OpenSSL- und SQLite-Bibliotheken haben Vorrang; der Konflikt mit „LIBSYSTEMD_254 not found“ durch eine ältere private Kopie wird vermieden. Ohne passende Systembibliothek bleibt ein mitgelieferter Offline-Fallback verfügbar.
+- Die enthaltene Python-Laufzeit ist auf 3.12.16 aktualisiert. Ihre benötigten Bibliotheken sind weiterhin enthalten; eine separate Python- oder Paketinstallation ist nicht erforderlich.
+- Quellcode-Versionen ersetzen eine bereits entpackte Laufzeit, wenn sich das geprüfte Laufzeitarchiv ändert. Unveränderte Archive werden nicht erneut entpackt; ein beschädigtes Update ersetzt keine funktionierende Laufzeit.
+
 ## [v0.9.6.5-unstable.1] - 2026-11-01
 
 - Eclipse Crystal ist mit eigener Vorschau regulär in der Designauswahl verfügbar.

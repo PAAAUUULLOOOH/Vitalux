@@ -17,7 +17,7 @@ The files in this directory reproduce upstream notices without rewriting their l
 
 **PySide6/Shiboken 6.12.0:** unpack the matching `pyside-setup` archive and follow its included build instructions, pointing the build at the compatible Qt installation. Replace bindings and libraries together under `runtime/lib/python3.12/site-packages/`; keep applicable notices with them.
 
-**CPython 3.12.7:** the CPython archive includes its configure/Makefile build system and complete license information. A shared Python build uses `./configure --enable-shared`, then `make`; platform dependencies and installation paths must match the intended runtime layout.
+**CPython 3.12.16:** the CPython archive includes its configure/Makefile build system and complete license information. The included Docker build recipe uses the Ubuntu 22.04 baseline, a shared profile-optimized Python build and a relocatable interpreter. Its native dependency closure is recorded alongside the signed desktop-library supplement. The exact recipe and collector are included in the separate source download; platform dependencies and installation paths must match the intended runtime layout.
 
 **fio 3.43:** unpack the preserved build-source archive, read its `README` and `HOWTO`, and use its `configure`/`make` build system. Vitalux invokes fio as a separate process through `bin/fio`; it does not link fio into the Python application.
 

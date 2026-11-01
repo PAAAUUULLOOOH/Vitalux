@@ -20,13 +20,15 @@ def check(root):
     overlay=validate(root/'mangohud-runtime')
     from desktop_runtime import check as desktop_libraries
     desktop_libraries(root,Path(__file__).resolve().parents[1])
+    from runtime_inventory import inspect as inspect_runtime
+    versions=inspect_runtime(root)
     assert set(overlay['architectures'])=={'x86_64','i386'}
     required = ('README.md', 'USER-GUIDE.md', 'THIRD-PARTY.md', 'LICENSE-NOTICE.md',
                 'packaging/logging.sh', 'vitalux/logfiles.py',
                 'packaging/restart-request.py', 'vitalux/restart_protocol.py',
                 'third_party/sources.lock.json', 'licenses/README.md', 'licenses/GPL-2.0.txt',
                 'licenses/GPL-3.0.txt', 'licenses/LGPL-2.1.txt', 'licenses/LGPL-3.0.txt',
-                'licenses/runtime/Python-3.12.7.txt', 'licenses/runtime/psutil-7.2.2.txt',
+                'licenses/runtime/Python-'+versions['python']+'.txt', 'licenses/runtime/psutil-'+versions['psutil']+'.txt',
                 'licenses/upstream/type2-runtime/LICENSE', 'licenses/upstream/pyside-setup/LICENSES/LGPL-3.0-only.txt',
                 'licenses/source/fio-3.43-build-source.tar.gz')
     for name in required:
