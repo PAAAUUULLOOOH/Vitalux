@@ -68,7 +68,8 @@ class InstanceGuard:
 
 def already_running(restarting=False):
     """Show a localized notice without initializing a profile or GPU backend."""
-    from PySide6.QtWidgets import QApplication, QMessageBox
+    from PySide6.QtWidgets import QApplication
+    from .ui_locale import QMessageBox
     from . import APP_NAME, i18n, settings
     app = QApplication.instance() or QApplication([])
     app.setApplicationName(APP_NAME)

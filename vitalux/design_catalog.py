@@ -4,8 +4,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PRESETS = json.loads((ROOT/'assets/design-presets.json').read_text())['presets']
-VISIBLE = ('obsidian_gold','glass','crystal_atrium','nebula_prism','quantum_core','light','aurora_bloom')
-INTERNAL = ('eclipse_crystal','minimal')
+VISIBLE = ('obsidian_gold','glass','crystal_atrium','nebula_prism','quantum_core','light','aurora_bloom','eclipse_crystal')
+INTERNAL = ('minimal',)
 AVAILABLE = (*VISIBLE,*INTERNAL)
 CHOICES = tuple((key,'Aurora Bloom' if key=='aurora_bloom' else PRESETS[key]['title']) for key in VISIBLE)
 RETIRED = {'dark':'obsidian_gold','black_glass':'glass',

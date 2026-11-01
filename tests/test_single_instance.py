@@ -77,7 +77,7 @@ from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication,QMessageBox
 from vitalux import settings
 from vitalux.single_instance import already_running
-settings.get=lambda key:sys.argv[1]
+settings.get=lambda key,default=None:sys.argv[1] if key=='lang' else default
 app=QApplication([])
 expected='Vitalux läuft bereits.' if sys.argv[1]=='de' else 'Vitalux is already running.'
 def accept():

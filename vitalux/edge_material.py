@@ -21,6 +21,7 @@ class HeaderMaterial(QWidget):
         if theme.mode() in ('crystal_atrium','aurora_bloom'):
             region=region.united(QRegion(QRect(w.sidebar.width(),height,22,22)))
         painter.setClipRegion(region)
+        painter.setCompositionMode(QPainter.CompositionMode_SourceAtop)
         painter.drawImage(0,0,self.materials._joined_image('header'))
         painter.end()
 
@@ -50,8 +51,8 @@ class EdgeMaterials(QWidget):
         radius=22 if theme.mode()=='crystal_atrium' else 0
         inner_radius=22 if theme.mode() in ('crystal_atrium','aurora_bloom') else 0
         path=QPainterPath();side=QPainterPath()
-        path.addRoundedRect(QRectF(3,3,w.width()-6,header.height()-3),radius,radius)
-        side.addRoundedRect(QRectF(3,3,w.sidebar.width()-3,w.height()-6),radius,radius)
+        path.addRoundedRect(QRectF(0,0,w.width(),header.height()),radius,radius)
+        side.addRoundedRect(QRectF(0,0,w.sidebar.width(),w.height()),radius,radius)
         path=path.united(side)
         if inner_radius:
             radius=inner_radius
@@ -61,7 +62,7 @@ class EdgeMaterials(QWidget):
             path=path.united(corner.subtracted(inside))
         if not self.frame.expanded:
             outer=QPainterPath()
-            outer.addRoundedRect(QRectF(w.rect()).adjusted(3,3,-3,-3),22,22)
+            outer.addRoundedRect(QRectF(w.rect()).adjusted(.5,.5,-.5,-.5),24,24)
             path=path.intersected(outer)
         return path
 
@@ -82,8 +83,14 @@ class EdgeMaterials(QWidget):
         # Both bounded patches use the same scene coordinates and shader.
         # No full-window material cache or independently shaded overlapping pane.
         premium.paint_sidebar(painter,self,QRectF(scene.rect()).adjusted(-32,-32,32,32))
+        # The window owns its outside contour. Clip only the pane's rim there,
+        # preserving the free inner edges and the rounded inner junction.
+        painter.save()
+        inner=QPainterPath()
+        inner.addRoundedRect(QRectF(w.rect()).adjusted(4,4,-4,-4),20 if not self.frame.expanded else 0,20 if not self.frame.expanded else 0)
+        painter.setClipPath(inner)
         painter.setPen(QPen(QColor(theme.BORDER),1.2));painter.setBrush(Qt.NoBrush)
-        painter.drawPath(self.navigation_path());painter.end()
+        painter.drawPath(self.navigation_path());painter.restore();painter.end()
         mask=QImage(image.size(),QImage.Format_ARGB32_Premultiplied)
         mask.setDevicePixelRatio(ratio);mask.fill(0)
         painter=QPainter(mask);painter.setRenderHint(QPainter.Antialiasing)
@@ -149,6 +156,7 @@ class EdgeMaterials(QWidget):
         if self.joined():
             height=self.frame.window.design_shell.header.height()
             painter.setClipRect(QRect(0,height,sidebar.width(),max(0,self.height()-height)))
+            painter.setCompositionMode(QPainter.CompositionMode_SourceAtop)
             painter.drawImage(0,0,self._joined_image('sidebar'))
         else:
             painter.setCompositionMode(QPainter.CompositionMode_Source)
@@ -164,11 +172,12 @@ class EdgeMaterials(QWidget):
             key=(self.frame.scene.width(),self.frame.scene.height())
             if key!=getattr(self,'_header_clip_key',None):
                 path=QPainterPath()
-                path.addRoundedRect(QRectF(self.frame.scene.rect()).adjusted(3,3,-3,-3),22,22)
+                path.addRoundedRect(QRectF(self.frame.scene.rect()).adjusted(.5,.5,-.5,-.5),24,24)
                 self._header_clip=QRegion(path.toFillPolygon().toPolygon())
                 self._header_clip_key=key
             painter.setClipRegion(self._header_clip)
         painter.setOpacity(.86)
+        painter.setCompositionMode(QPainter.CompositionMode_SourceAtop)
         painter.drawImage(0,0,self._image('header',widget))
         painter.restore()
 

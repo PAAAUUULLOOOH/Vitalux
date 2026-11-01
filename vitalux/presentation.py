@@ -1,6 +1,6 @@
 """Shared spacing, readable content areas and design-aware dialog materials."""
-from PySide6.QtCore import QRectF
-from PySide6.QtGui import QColor, QLinearGradient, QPainter
+from PySide6.QtCore import QRectF,Qt
+from PySide6.QtGui import QColor, QLinearGradient, QPainter,QPen
 from . import theme
 from .paint_geometry import rounded
 
@@ -30,18 +30,24 @@ def paint_content_wash(painter, rect, *, compact=False):
 def paint_dialog(widget):
     from .glass import paint_glass_body
     painter = QPainter(widget)
-    painter.fillRect(widget.rect(), QColor(theme.BG))
-    if theme.mode() != 'minimal':painter.setRenderHint(QPainter.Antialiasing)
-    paint_glass_body(painter, widget, QRectF(widget.rect()).adjusted(5,5,-5,-5), 21, strong=True)
-    paint_content_wash(painter, QRectF(widget.rect()).adjusted(5,5,-5,-5))
+    painter.setCompositionMode(QPainter.CompositionMode_Source)
+    painter.fillRect(widget.rect(),Qt.transparent)
+    painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
+    painter.setRenderHint(QPainter.Antialiasing)
+    area=QRectF(widget.rect()).adjusted(.5,.5,-.5,-.5)
+    path=rounded(area,24)
+    painter.setClipPath(path);painter.fillPath(path,QColor(theme.BG))
+    paint_glass_body(painter, widget, area,24,strong=True)
+    paint_content_wash(painter,area)
+    painter.setPen(QPen(QColor(theme.BORDER),1));painter.setBrush(Qt.NoBrush);painter.drawPath(path)
     painter.end()
 
 
 def prepare_dialog(widget):
-    """Use one safe content gutter while retaining native dialog semantics."""
+    """Reserve the custom title strip without changing modal/keyboard semantics."""
     layout = widget.layout()
     if layout:
-        layout.setContentsMargins(24, 20, 24, 20)
+        layout.setContentsMargins(24, 54, 24, 20)
         layout.setSpacing(14)
     screen = widget.screen()
     if screen:

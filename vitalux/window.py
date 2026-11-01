@@ -130,6 +130,11 @@ class MainWindow(WindowLifecycle, QMainWindow):
         self._update_notice_queued = False
         self._notified_update_version = str(settings.get('last_notified_update_version', ''))
         self._tray_was_maximized = False
+        self._hud_hid_main=False
+        self._hud_initial_show=False
+        self._hud_tray_attempts=0
+        self._hud_tray_timer=QTimer(self);self._hud_tray_timer.setSingleShot(True)
+        self._hud_tray_timer.timeout.connect(self._hide_main_for_hud)
         self.last_render_ms = None
         self._last_refresh_error = None
         # Create the tray icon even when Plasma's StatusNotifier host comes up
@@ -264,6 +269,8 @@ class MainWindow(WindowLifecycle, QMainWindow):
         sl.addWidget(self._brand_gap)
 
         self.stack = QStackedWidget()
+        # Leave the window's resize hit area outside the scroll-bar drag target.
+        self.stack.setContentsMargins(0,0,8,0)
         factories=[
             ('Übersicht',lambda:OverviewPage(distro,logo)),('Prozessor',CpuPage),('Grafik',GpuPage),
             ('Arbeitsspeicher',MemoryPage),('Laufwerke',DiskPage),('Netzwerk',NetworkPage),
@@ -978,12 +985,17 @@ class MainWindow(WindowLifecycle, QMainWindow):
 
 
     def _mini_hud_closed(self):
-        self._tray_hud_action.blockSignals(True)
-        self._tray_hud_action.setChecked(False)
-        self._tray_hud_action.blockSignals(False)
-        pref = next((p for title, p in self.pages if title == 'Einstellungen'), None)
-        if pref is not None:
-            pref.sync_hud_controls()
+        self.set_mini_hud_enabled(False)
+
+    def _hide_main_for_hud(self):
+        if self._shutdown_pending or not settings.get('mini_hud_enabled',False) or not self.isVisible():return
+        if self._hide_to_tray():
+            self._hud_hid_main=True
+            return
+        # Plasma can register its tray host after an autostarted application.
+        # Retry only briefly; never hide the window without a way to reopen it.
+        self._hud_tray_attempts+=1
+        if self._hud_tray_attempts<20:self._hud_tray_timer.start(500)
 
     def set_mini_hud_enabled(self, enabled):
         enabled = bool(enabled)
@@ -995,8 +1007,14 @@ class MainWindow(WindowLifecycle, QMainWindow):
             self._mini_hud.apply_settings()
             self._mini_hud.show()
             self._mini_hud.update_sample(self.last_sample)
+            self._hud_tray_attempts=0
+            self._hide_main_for_hud()
         else:
             self._mini_hud.hide()
+            self._hud_tray_timer.stop()
+            if self._hud_hid_main and not self._shutdown_pending:
+                self._hud_hid_main=False
+                self.show_from_tray()
         pref = next((p for title, p in self.pages if title == 'Einstellungen'), None)
         if pref is not None:
             pref.sync_hud_controls()
@@ -1024,6 +1042,9 @@ class MainWindow(WindowLifecycle, QMainWindow):
 
     def showEvent(self, event):
         super().showEvent(event)
+        if not self._hud_initial_show:
+            self._hud_initial_show=True
+            if settings.get('mini_hud_enabled',False):self._hud_tray_timer.start(0)
         if hasattr(self, '_freshness_timer'):
             self._freshness_timer.start()
             self._check_sample_freshness()

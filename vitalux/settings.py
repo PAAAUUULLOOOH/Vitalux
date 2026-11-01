@@ -77,7 +77,8 @@ def _report_write_error(exc):
     warnings.warn(message, RuntimeWarning, stacklevel=2)
     try:
         # Error dialogs are allowed on the Qt GUI thread only.
-        from PySide6.QtWidgets import QApplication, QMessageBox
+        from PySide6.QtWidgets import QApplication
+        from .ui_locale import QMessageBox
         from PySide6.QtCore import QThread
         app = QApplication.instance()
         if app is not None and QThread.currentThread() == app.thread():

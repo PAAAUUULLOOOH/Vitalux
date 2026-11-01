@@ -13,7 +13,7 @@ app=QApplication([])
 app.setQuitOnLastWindowClosed(False)
 checks=0
 with tempfile.TemporaryDirectory() as directory, patch.object(settings,'PATH',directory+'/settings.json'):
-    for mode in [key for key,_ in theme.CHOICES]+['eclipse_crystal','minimal']:
+    for mode in [key for key,_ in theme.CHOICES]+['minimal']:
         settings.set_many(dict(theme=mode,motion='smooth',ultra_eco=mode=='minimal',accent='design_default'))
         theme.set_mode(mode);app.setStyleSheet(theme.stylesheet())
         for compact in (False,True):

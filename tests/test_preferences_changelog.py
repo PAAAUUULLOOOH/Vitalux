@@ -9,8 +9,8 @@ sys.path.insert(0, os.getcwd())
 
 from PySide6.QtCore import QPoint
 from PySide6.QtGui import QColor, QPalette
-from PySide6.QtWidgets import QApplication, QColorDialog, QInputDialog, QWidget, QFrame
-from vitalux.ui_locale import QMessageBox
+from PySide6.QtWidgets import QApplication, QWidget, QFrame
+from vitalux.ui_locale import QMessageBox, QColorDialog, QInputDialog
 
 from vitalux import __version__, changelog, i18n, settings, theme
 from vitalux import versions as release_versions
@@ -60,7 +60,7 @@ def check_preferences(app):
 
             # Themes are selected solely through the design preview buttons.
             assert not hasattr(page, 'mode')
-            assert len(page.design_tiles) == 7
+            assert len(page.design_tiles) == 8
             assert 150 <= page.accent_combo.width() <= 240
             assert page.accent_combo.toolTip() == page.accent_combo.currentText()
             width_before = page.accent_combo.width()

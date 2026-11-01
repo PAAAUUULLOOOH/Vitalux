@@ -66,7 +66,7 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',folder
         page._history_selected(1,0);assert page.selected_report=='b'*32
         page._report(report);assert page.current_report['id']=='a'*32
         page.selected_report=report['id'];page._report(report)
-        for design in [key for key,_ in theme.CHOICES]+['eclipse_crystal','minimal']:
+        for design in [key for key,_ in theme.CHOICES]+['minimal']:
             settings.set_many(dict(theme='obsidian_gold' if design=='minimal' else design,ultra_eco=design=='minimal'))
             window.apply_appearance();wait(30)
             page._report(report)

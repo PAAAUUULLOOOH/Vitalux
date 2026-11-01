@@ -202,8 +202,8 @@ class OverlayProfile(QDialog):
             self.position.addItem(tr(title), key)
         self.position.setCurrentIndex(self.position.findData(profile['position']))
         choices.addRow(label('Position', 'strong'), self.position)
-        self.size = QSpinBox();self.size.setRange(12, 40);self.size.setValue(profile['font_size'])
-        choices.addRow(label('Schriftgröße', 'strong'), self.size)
+        self.font_size = QSpinBox();self.font_size.setRange(12, 40);self.font_size.setValue(profile['font_size'])
+        choices.addRow(label('Schriftgröße', 'strong'), self.font_size)
         self.opacity = QSpinBox();self.opacity.setRange(0, 100);self.opacity.setSuffix(' %')
         self.opacity.setValue(round(profile['background_alpha']*100))
         choices.addRow(label('Hintergrund-Deckkraft', 'strong'), self.opacity)
@@ -268,7 +268,7 @@ class OverlayProfile(QDialog):
 
     def _save(self,operation='profile'):
         profile = dict(enabled=self.enabled.isChecked(), target_fps=self.target.value(),
-                       position=self.position.currentData(), font_size=self.size.value(),
+                       position=self.position.currentData(), font_size=self.font_size.value(),
                        background_alpha=self.opacity.value()/100, warmup=self.warmup.value(),
                        toggle_hud=self.hud_key.text().strip(), toggle_logging=self.log_key.text().strip(),
                        horizontal=self.horizontal.isChecked(),

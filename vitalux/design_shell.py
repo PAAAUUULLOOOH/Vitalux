@@ -232,6 +232,7 @@ class DesignShell(QObject):
             if index==0:page._frame_top_margin=top
             viewport=w.stack.widget(index).viewport()
             viewport.setProperty('vitaluxTopInset',max(0,inset))
+            w.stack.widget(index).set_navigation_insets(inset,self.footer.height() if self.mode=='eclipse_crystal' else 0)
             if hasattr(page,'search_overlay'):page.search_overlay._position()
             old=page.root.contentsMargins()
             bottom=max(26,self.dock_row.height()+32) if self.mode=='nebula_prism' else (26 if signature else 30)

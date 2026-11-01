@@ -1,8 +1,7 @@
 """Appearance settings and live changes, shared with the settings page."""
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QColorDialog, QInputDialog
-from .ui_locale import QFileDialog, QMessageBox
+from .ui_locale import QFileDialog, QMessageBox,QColorDialog,QInputDialog
 
 from . import settings, theme, motion, user_background, wallpaper_accents, renderer, eco, design_capabilities, design_catalog
 from .i18n import tr

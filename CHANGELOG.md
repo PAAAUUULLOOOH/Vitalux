@@ -1,5 +1,16 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.5-unstable.1] - 2026-11-01
+
+- Eclipse Crystal ist mit eigener Vorschau regulär in der Designauswahl verfügbar.
+- Eclipse Crystal: Die Kopfleiste schließt bei unveränderter Höhe bündig mit dem oberen Fensterrand ab.
+- Designs mit verbundener Kopf- und Seitenleiste verwenden an bündigen Außenkanten die gemeinsame Fensterkontur; freie Innenkanten bleiben erhalten.
+- Scrollbalken lassen sich in allen Designs leichter greifen und bleiben außerhalb fester Kopf- und Fußleisten bedienbar.
+- Das Distributionslogo kann direkt per X beim Darüberfahren ausgeblendet und über das Kontextmenü der Systemkachel wieder eingeblendet werden. Die Layout-Bearbeitung behält Speichern, Verwerfen und Rückgängig.
+- CachyOS und andere Rolling-Distributionen zeigen die gemeldete Build-Kennung an, wenn keine Versionsangabe vorhanden ist.
+- Das Desktop-Overlay blendet das Hauptfenster in die Systemleiste aus. Über das Tray lässt es sich wieder öffnen; ohne erreichbares Tray bleibt das Hauptfenster sichtbar.
+- App-Dialoge einschließlich Datei-, Farb- und Eingabeauswahl verwenden abgerundete designgerechte Rahmen mit eigener Fenstersteuerung statt der Desktop-Fensterdekoration.
+
 
 ## [v0.9.6.4] - 2026-10-30
 

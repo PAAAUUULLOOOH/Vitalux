@@ -1,5 +1,5 @@
 """Overview dashboard and its layout editor."""
-from PySide6.QtCore import Qt, QPoint, QTimer, QPropertyAnimation, QParallelAnimationGroup, QEasingCurve
+from PySide6.QtCore import Qt, QPoint, QTimer, QPropertyAnimation, QParallelAnimationGroup, QEasingCurve, QEvent
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QMenu, QToolButton, QGraphicsOpacityEffect, QStackedWidget
 
 from . import theme, motion
@@ -38,6 +38,8 @@ class OverviewPage(Page):
         # the hero tile: its name and system-information chips stay intact.
         self.distro_logo_host = QWidget(head)
         self.distro_logo_host.setFixedSize(76, 76)
+        self._distro_logo_hovered=False
+        self.distro_logo_host.installEventFilter(self)
         pic = label()
         pic.setParent(self.distro_logo_host)
         self.distro_pic=pic
@@ -76,6 +78,8 @@ class OverviewPage(Page):
         self.chips.grid.setVerticalSpacing(10)
         head.body.addWidget(self.chips)
         self.hero_card = head
+        head.setContextMenuPolicy(Qt.CustomContextMenu)
+        head.customContextMenuRequested.connect(self._distro_logo_menu)
         # Restore the ORIGINAL centered telemetry cards (v0.9.3.29).
         # Wrap the full GPU model; keep all four load instruments the same size.
         self.g_cpu, self.g_gpu = GaugeCard("Prozessor"), GaugeCard("Grafik", compact_caption=True)
@@ -334,7 +338,23 @@ class OverviewPage(Page):
         visible = self.board.distro_logo_visible
         self.distro_logo_host.setVisible(visible)
         self.distro_balance.setVisible(visible)
-        self.distro_logo_remove.setVisible(visible and self.board.editing)
+        if not visible:self._distro_logo_hovered=False
+        self.distro_logo_remove.setVisible(visible and (self.board.editing or self._distro_logo_hovered))
+        if self.distro_logo_remove.isVisible():self.distro_logo_remove.raise_()
+
+    def eventFilter(self,watched,event):
+        if watched is self.distro_logo_host and event.type() in (QEvent.Enter,QEvent.Leave):
+            self._distro_logo_hovered=event.type()==QEvent.Enter
+            if hasattr(self,'board'):self._sync_distro_logo()
+        return super().eventFilter(watched,event)
+
+    def _distro_logo_menu(self,position):
+        menu=QMenu(self)
+        visible=self.board.distro_logo_visible
+        action=menu.addAction(tr('Distributionslogo ausblenden' if visible else 'Distributionslogo anzeigen'))
+        action.triggered.connect(self.board.hide_distro_logo if visible else self.board.show_distro_logo)
+        try:menu.exec(self.hero_card.mapToGlobal(position))
+        finally:menu.deleteLater()
 
     def _refresh_editor_actions(self):
         for key, _icon, _txt, action in self._editor_buttons:

@@ -15,7 +15,7 @@ def paint(p,tile,pal):
         p.save();clip=QPainterPath();clip.addRoundedRect(frame,7,7);p.setClipPath(clip,Qt.IntersectClip)
         p.drawPixmap(frame,tile._background,QRectF(tile._background.rect()));p.restore()
     p.save();p.setClipRect(frame.adjusted(3,3,-3,-3))
-    quantum=tile.key=='quantum_core';nebula=tile.key=='nebula_prism'
+    quantum=tile.key=='quantum_core';nebula=tile.key=='nebula_prism';eclipse=tile.key=='eclipse_crystal'
     def panel(rect):
         p.setPen(QPen(QColor(pal['accent']),.55));p.setBrush(QColor(pal['card']))
         if quantum:
@@ -25,7 +25,7 @@ def paint(p,tile,pal):
             p.drawPath(shape(rect,True,scale=.3))
         else:p.drawRoundedRect(rect,2.5,2.5)
     left=frame.left()+5;right=frame.right()-5;top=frame.top()+5;bottom=frame.bottom()-5
-    if not nebula:
+    if not nebula and not eclipse:
         rail=QRectF(left,top,9,bottom-top);panel(rail)
         for index in range(5):
             p.setPen(QPen(QColor(pal['muted']),.9));p.drawLine(QPointF(left+3,top+6+index*7),QPointF(left+6,top+6+index*7))
@@ -33,6 +33,9 @@ def paint(p,tile,pal):
     else:bottom-=8
     header=QRectF(left,top,right-left,8);panel(header)
     y=top+12;gap=3;width=(right-left-2*gap)/3
+    if eclipse:
+        for index in range(6):panel(QRectF(left+index*(right-left)/6,top+9,(right-left)/6-2,3))
+        y=top+15
     for index in range(3):
         box=QRectF(left+index*(width+gap),y,width,16);panel(box)
         dial=QRectF(box.center().x()-4,box.center().y()-4,8,8)
@@ -49,6 +52,8 @@ def paint(p,tile,pal):
         dock=QRectF(frame.center().x()-18,frame.bottom()-9,36,5);panel(dock)
         for index in range(6):
             p.setPen(QPen(QColor(pal['text']),1));x=dock.left()+4+index*5;p.drawPoint(QPointF(x,dock.center().y()))
+    elif eclipse:
+        panel(QRectF(frame.left()+5,frame.bottom()-7,frame.width()-10,3))
     p.restore()
     p.fillRect(QRectF(0,77,tile.width(),35),QColor(pal['bg']))
     font=QFont(tile.font());font.setPixelSize(11);font.setWeight(QFont.DemiBold)

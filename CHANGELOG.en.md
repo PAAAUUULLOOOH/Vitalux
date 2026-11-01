@@ -1,5 +1,16 @@
 # Vitalux – Changes
 
+## [v0.9.6.5-unstable.1] - 2026-11-01
+
+- Eclipse Crystal joins the regular design gallery with its own preview.
+- Eclipse Crystal: the header meets the upper window edge while retaining its original height.
+- Connected header/sidebar designs share the app outline at adjoining outer edges while preserving free inner edges.
+- Scrollbars are easier to grab across all designs and remain usable outside fixed headers and footers.
+- Hide the distribution logo directly with the hover X and restore it through the system card’s context menu. Layout editing retains save, discard and undo.
+- CachyOS and other rolling distributions display their reported build identifier when no version is available.
+- The desktop overlay hides the main window to the system tray, where it can be reopened. Without a usable tray the main window stays visible.
+- In-app dialogs, including file, color and input pickers, use rounded design-aware frames with their own controls instead of desktop window decorations.
+
 
 ## [v0.9.6.4] - 2026-10-30
 

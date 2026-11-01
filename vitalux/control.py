@@ -119,7 +119,6 @@ class PreferencesPage(AppearancePreferences, Page):
         look.body.addWidget(self.theme_note)
         self.mode_notes = {key: title+' · Akzentfarben und Hintergrund sind anpassbar.'
                            for key,title in design_catalog.CHOICES}
-        self.mode_notes['eclipse_crystal']='Eclipse Crystal'
         self.mode_notes['dark']=''
         self.theme_note.setText(tr(self.mode_notes.get(theme.mode(),'')))
         accent_row = QVBoxLayout()
@@ -362,6 +361,7 @@ class PreferencesPage(AppearancePreferences, Page):
         self.hud_on.setChecked(bool(settings.get('mini_hud_enabled', False)))
         self.hud_on.toggled.connect(self.set_hud_enabled)
         hud.body.addWidget(self.hud_on)
+        hud.body.addWidget(label('Bei eingeschaltetem Desktop-Overlay wird das Hauptfenster in der Systemleiste ausgeblendet. Über das Tray-Symbol kannst du es jederzeit wieder öffnen.','muted',wrap=True))
         size_row = QHBoxLayout()
         size_row.addWidget(label('Größe', 'strong'))
         self.hud_size = QComboBox()
@@ -495,14 +495,6 @@ class PreferencesPage(AppearancePreferences, Page):
 
     def search_settings(self, query):
         """Predict full or partial settings names; never search outside Settings."""
-        hidden_design={'timbooh':'eclipse_crystal'}.get(query.strip().casefold())
-        if hidden_design:
-            if eco.enabled():settings.set('ultra_eco',False)
-            if design_catalog.switch(hidden_design):
-                self.window.apply_appearance()
-                self.refresh_appearance()
-            self.search.clear()
-            return
         from difflib import SequenceMatcher
         self.search_results.clear()
         tokens = self._search_normalize(query).split()

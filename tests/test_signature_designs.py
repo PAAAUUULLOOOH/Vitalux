@@ -36,8 +36,7 @@ def run():
                 assert window.last_sample is not None
                 for mode in ('nebula_prism','eclipse_crystal','quantum_core','glass','crystal_atrium','obsidian_gold'):
                     window.pulse_core._phase=73
-                    if mode=='eclipse_crystal':preferences.search.setText('timbooh')
-                    else:preferences.select_design(mode)
+                    preferences.select_design(mode)
                     app.processEvents()
                     assert window.sampler is sampler and sampler.isRunning()
                     assert window.pulse_core._phase>=73,'Design change reset rotation phase'
@@ -46,7 +45,7 @@ def run():
                     assert window.pages[0][1].design_metric_hosts['cpu'].currentIndex()==int(signature)
                     assert window.sidebar.isHidden()==(mode in ('eclipse_crystal','nebula_prism'))
                     assert not window.grab().isNull()
-                preferences.search.setText('timbooh')
+                preferences.select_design('eclipse_crystal')
                 window.resize(800,560);app.processEvents()
                 assert window.width()==800 and window.height()==560
                 assert window.design_shell.primary_scroll.horizontalScrollBar().maximum()>0

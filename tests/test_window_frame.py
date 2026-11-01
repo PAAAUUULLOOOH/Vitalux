@@ -27,7 +27,7 @@ with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',str
  try:
   assert window.windowFlags() & Qt.FramelessWindowHint
   frame=window.window_frame
-  for design in [key for key,_ in theme.CHOICES]+['eclipse_crystal','minimal']:
+  for design in [key for key,_ in theme.CHOICES]+['minimal']:
    settings.set_many(dict(theme='obsidian_gold' if design=='minimal' else design,ultra_eco=design=='minimal'))
    window.apply_appearance();wait(60)
    assert corners(window)==[0]*4,(design,corners(window))

@@ -7,10 +7,37 @@ this module never changes system display modes or promises compositor FPS.
 """
 import math
 
-from PySide6.QtCore import QElapsedTimer, Qt, QTimer
-from PySide6.QtWidgets import QApplication, QScrollArea
+from PySide6.QtCore import QElapsedTimer, Qt, QTimer, QEvent
+from PySide6.QtGui import QColor,QPainter
+from PySide6.QtWidgets import QApplication, QScrollArea,QScrollBar,QStyle,QStyleOptionSlider
 
 from . import motion
+
+
+class VerticalScrollBar(QScrollBar):
+    """A quiet four-pixel thumb inside a twelve-pixel native drag target."""
+    def __init__(self,parent=None):
+        super().__init__(Qt.Vertical,parent)
+        self.setFixedWidth(12)
+        self.setStyleSheet('''QScrollBar:vertical {width:12px; background:transparent; margin:0px;}
+            QScrollBar::handle:vertical {background:transparent; border:none; min-height:32px;}
+            QScrollBar::add-line:vertical,QScrollBar::sub-line:vertical {height:0px;}
+            QScrollBar::add-page:vertical,QScrollBar::sub-page:vertical {background:transparent;}''')
+
+    def event(self,event):
+        if event.type() in (QEvent.Enter,QEvent.Leave):self.update()
+        return super().event(event)
+
+    def paintEvent(self,event):
+        if self.maximum()<=self.minimum():return
+        from . import theme
+        option=QStyleOptionSlider();self.initStyleOption(option)
+        thumb=self.style().subControlRect(QStyle.CC_ScrollBar,option,QStyle.SC_ScrollBarSlider,self)
+        thumb=thumb.adjusted(4,1,-4,-1)
+        color=QColor(theme.accent() if self.isSliderDown() else theme.BORDER)
+        color.setAlpha(230 if self.isSliderDown() or self.underMouse() else 155)
+        painter=QPainter(self);painter.setRenderHint(QPainter.Antialiasing)
+        painter.setPen(Qt.NoPen);painter.setBrush(color);painter.drawRoundedRect(thumb,2,2);painter.end()
 
 
 def frame_interval_ms(refresh_rate):
@@ -29,6 +56,8 @@ class AdaptiveScrollArea(QScrollArea):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setVerticalScrollBar(VerticalScrollBar(self))
+        self._navigation_insets=(0,0)
         self._scroll_targets = {}
         self._clock = QElapsedTimer()
         self._frame_timer = QTimer(self)
@@ -43,6 +72,25 @@ class AdaptiveScrollArea(QScrollArea):
     def showEvent(self, event):
         super().showEvent(event)
         self._bind_display()
+        self._position_bar()
+
+    def resizeEvent(self,event):
+        super().resizeEvent(event)
+        self._position_bar()
+
+    def set_navigation_insets(self,top=0,bottom=0):
+        self._navigation_insets=(max(0,round(top)),max(0,round(bottom)))
+        self._position_bar()
+
+    def _position_bar(self):
+        if not hasattr(self,'_navigation_insets'):return
+        container=self.verticalScrollBar().parentWidget()
+        layout=container.layout() if container else None
+        if layout is None:return
+        top,bottom=self._navigation_insets
+        top=min(top,max(0,self.height()-48));bottom=min(bottom,max(0,self.height()-top-48))
+        margins=layout.contentsMargins()
+        if (margins.top(),margins.bottom())!=(top,bottom):layout.setContentsMargins(0,top,0,bottom)
 
     def _bind_display(self):
         # QWidget children have no windowHandle; use the top-level QWindow.

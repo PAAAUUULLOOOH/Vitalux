@@ -40,6 +40,8 @@ class WindowLifecycle:
         return True
 
     def show_from_tray(self):
+        self._hud_tray_timer.stop()
+        self._hud_hid_main=False
         self._tray_click_timer.stop()
         if self._tray_was_maximized or self.isMaximized():
             self.showMaximized()
@@ -105,7 +107,7 @@ class WindowLifecycle:
             self._force_quit = False
 
     def _inform_missing_tray(self):
-        from PySide6.QtWidgets import QMessageBox
+        from .ui_locale import QMessageBox
         QMessageBox.information(self, APP_NAME, tr('Die KDE-Systemleiste ist momentan nicht verfügbar. Vitalux bleibt geöffnet. Um es vollständig zu beenden, deaktiviere die Tray-Funktion unter Einstellungen.'))
 
 
@@ -124,6 +126,7 @@ class WindowLifecycle:
                 QTimer.singleShot(0, self._inform_missing_tray)
             return
         if not self._shutdown_pending:
+            self._hud_tray_timer.stop()
             # Save edits before a reset transaction is committed, never after it.
             if self.pages and hasattr(self.pages[0][1], 'board') and self.pages[0][1].board.editing:
                 self.pages[0][1].save_editor()

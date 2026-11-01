@@ -75,7 +75,7 @@ SLIDES = [
     ),
     (
         "Darstellung und Einstellungen",
-        "Sieben Designs stehen zur Auswahl: Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core, Light und Aurora Bloom. Alle unterstützen eigene Akzentfarben und Hintergründe.",
+        "Acht Designs stehen zur Auswahl: Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core, Light, Aurora Bloom und Eclipse Crystal. Alle unterstützen eigene Akzentfarben und Hintergründe.",
         "Originalfarben und Originalhintergrund stellen die Vorgaben des aktiven Designs wieder her. Farben und Hintergründe früherer Designs bleiben als Vorlagen erhalten. Design zurücksetzen betrifft nur das aktuelle Design. Komponentenbilder anzeigen schaltet die Bilder gemeinsam um und behält den Cache.",
         "Alle Designs verwenden klare Messwerte, ruhige Kachelflächen und passende Dialoge. Hover, Suche und Navigation bewegen sich abgestimmt. Ein verfügbares Update wird in jeder Navigation deutlich markiert; bei reduzierten oder ausgeschalteten Animationen bleibt die Markierung statisch sichtbar.",
         "Unter Erweiterte Einstellungen → Wartung setzt „Standardwerte wiederherstellen“ das gesamte aktive Profil zurück. Einstellungen, eigene Farben, Layouts, importierte Bildkopien und Cache werden gelöscht. Originalbilder und das andere Updateprofil bleiben erhalten; Vitalux startet neu und öffnet die Anleitung.",
@@ -85,7 +85,7 @@ SLIDES = [
         "Diagnostic Center und Overlay",
         "Die letzten fünf App-Ereignisse stehen im Diagnosezentrum: Warnwerte, Updatefehler und automatische Renderer-Wechsel.",
         "Im Diagnostic Center kannst du System- und Fehlerberichte lokal als TXT/JSON exportieren. Externer Ping nur per Klick.",
-        "Das Desktop-Overlay lässt sich in den Einstellungen oder über die Systemleiste aktivieren. Drei Größen, Sensoren und 50–100 % Deckkraft sind wählbar.",
+        "Das Desktop-Overlay lässt sich in den Einstellungen oder über die Systemleiste aktivieren. Drei Größen, Sensoren und 50–100 % Deckkraft sind wählbar. Dabei wird das Hauptfenster ins Tray ausgeblendet und kann dort wieder geöffnet werden; ohne erreichbares Tray bleibt es sichtbar.",
         "Das Desktop-Overlay nutzt bestehende Messwerte. Wayland/KWin entscheidet, ob es über einem Vollbildspiel sichtbar bleibt.",
         "diagnostics",
     ),

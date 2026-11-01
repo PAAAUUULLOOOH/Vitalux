@@ -9,15 +9,22 @@
 <p align="center"><strong>Your Linux system, clearly in view.</strong><br>A native desktop monitor with live telemetry, glass interfaces and practical hardware diagnostics.</p>
 <p align="center"><a href="https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest"><strong>Download</strong></a> · <a href="USER-GUIDE.md">User guide</a> · <a href="CHANGELOG.en.md">Changelog</a> · <a href="https://github.com/PAAAUUULLOOOH/Vitalux/issues">Support</a> · <a href="THIRD-PARTY.md">Licenses</a></p>
 
+<p align="center">
+  <a href="https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest"><img src="https://img.shields.io/github/v/release/PAAAUUULLOOOH/Vitalux?style=for-the-badge&amp;label=Latest%20stable&amp;color=53ad55" alt="Latest stable release"></a>
+  <a href="https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest"><img src="https://img.shields.io/badge/AppImage-Available-e97a31?style=for-the-badge&amp;logo=linux&amp;logoColor=white" alt="AppImage available"></a>
+  <a href="https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest"><img src="https://img.shields.io/badge/Portable-ZIP-168fc2?style=for-the-badge" alt="Portable ZIP available"></a>
+  <a href="LICENSE-NOTICE.md"><img src="https://img.shields.io/badge/License-See%20notice-667080?style=for-the-badge" alt="License: see notice"></a>
+</p>
+
 ![Vitalux running in English with Obsidian Gold and real system measurements](assets/vitalux-dashboard-preview.png)
 
-**Stable v0.9.6.4.** Download the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). A separate [Unstable build](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable) is offered only when it contains newer application changes.
+**Unstable v0.9.6.5-unstable.1.** This branch contains the next test release. Download the [current Unstable build](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). A separate [Unstable build](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable) is offered only when it contains newer application changes.
 
 ## Features
 
 - Live CPU, GPU, memory, storage, network and sensor measurements, with saved chart choices, alerts and local history. Multi-GPU systems can select a preferred GPU for the overview, desktop overlay and diagnostics.
 - A rounded, frameless main window with edge-aligned navigation, integrated window controls and native dragging/resizing. Content scrolls behind the fixed controls; designs with a header combine them in one continuous surface.
-- A rearrangeable dashboard, desktop overlay and seven customizable designs, from smoked glass and glass instruments to prismatic space and reactor HUDs. **Obsidian Gold is the default.**
+- A rearrangeable dashboard, desktop overlay and eight customizable designs, from smoked glass and glass instruments to prismatic space and reactor HUDs. **Obsidian Gold is the default.**
 - A Games library with automatic Steam, Heroic and Lutris discovery, compact game tiles with full-cover Steam artwork cached for offline use, per-game MangoHud profiles and local post-game FPS/frametime reports. Saving an enabled profile connects the game; Vitalux handles a necessary Steam restart automatically while protecting running games. The bundled 32/64-bit OpenGL/Vulkan overlay supports Steam’s container runtime and Flatpak; no separate MangoHud installation is needed. Setup supports current and legacy Steam account metadata, validates the active installation/account and checks that launch options survive the restart.
 - Per-app connections, usage warnings and optional, reversible TCP/UDP session blocks.
 - SMART information, drive benchmarks and local diagnostic reports.
@@ -63,19 +70,25 @@ Keep the runtime, libraries, assets and launcher together. **Code → Download Z
 
 ## Appearance and controls
 
-Choose **Obsidian Gold**, **Glass**, **Crystal Atrium**, **Nebula Prism**, **Quantum Core**, **Light** or **Aurora Bloom** in **Settings → Appearance**. Each design supports preset or custom accent colors and independently selectable backgrounds. The original names of retired designs identify their saved background and color presets; these presets do not change the selected design's layout or effects.
+Choose **Obsidian Gold**, **Glass**, **Crystal Atrium**, **Nebula Prism**, **Quantum Core**, **Light**, **Aurora Bloom** or **Eclipse Crystal** in **Settings → Appearance**. Each design supports preset or custom accent colors and independently selectable backgrounds. The original names of retired designs identify their saved background and color presets; these presets do not change the selected design's layout or effects.
 
 Aurora Bloom has a normal design tile, aurora ribbons, petal-shaped controls and a rounded inner header/sidebar junction.
+
+Eclipse Crystal is available in the regular gallery with its own preview. Its header meets the upper window contour without changing height. Connected navigation panes share the app’s outer contour while retaining their free inner edges. Scrollbars have a subtle thumb and a wider drag target below fixed headers.
 
 All designs share readable card interiors, consistent value hierarchy, adaptive content gutters and matching in-app dialogs. Hover, search and navigation use coordinated motion. Available updates have a clearly visible navigation marker; reduced motion, animations off and Ultra Eco retain a static marker. Appearance transitions blend at their original brightness.
 
 **Original colors** and **Original background** restore the active design's factory choices. Customization is remembered separately for each design; **Reset design** resets only its colors and background, keeping imported pictures, saved colors and other designs intact. Rounded preview tiles clip their artwork and keep the selected check inside the upper-right corner.
+
+Hover over the distribution logo in Overview to hide it with **×**. Right-click the system header to show it again; the layout editor also retains hide, restore and undo. Rolling distributions such as CachyOS display their supplied build identifier when no version is provided.
 
 Overview captions are centered in a consistent order below equally sized load displays. The larger system header centers the distribution name across the whole card, with a larger logo and roomier information chips. Long names are shortened; hover over a shortened caption to read its complete text. GPU overview cards omit watts; current GPU power and its limit remain on Graphics. **Show component pictures** in Appearance controls CPU, GPU and mainboard photos globally. Turning it off stops new picture lookups while keeping cached pictures. Component information stays centered with pictures shown, hidden or unavailable.
 
 **All specifications** opens a scrollable in-app datasheet for the exact CPU, graphics-card or mainboard model. Data arriving in the background also updates an already open dialog. Available manufacturer data is cached for offline use; **Open manufacturer page** links to the original. Detected local specifications remain available when online data is missing. Graphics groups utilization, video-memory usage and the other live readings under **Current GPU values**, without the duplicate sensor panel.
 
 **CPU** and **X11 · OpenGL** are the available renderers. Renderer changes and confirmed resets restart automatically after current work finishes. External launchers run independently and do not hold up Vitalux restarts or updates.
+
+Enabling the desktop overlay hides the main window to the system tray, where it can be reopened at any time. If the desktop has no usable tray, the main window remains reachable. In-app dialogs use rounded frames and their own close, move and resize controls.
 
 A startup window follows the saved design and shows the actual preparation stage while hardware discovery, first measurements, cached pictures/specifications and the interface are prepared. Existing data is loaded before the main window opens; missing online data does not hold startup open. Motion-off and Ultra Eco use a static startup view.
 

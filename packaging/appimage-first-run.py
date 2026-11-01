@@ -9,7 +9,7 @@ from vitalux.i18n import tr
 
 
 def create_dialog():
-    from PySide6.QtWidgets import QMessageBox
+    from vitalux.ui_locale import QMessageBox
     msg = QMessageBox()
     msg.setIcon(QMessageBox.Icon.Question)
     msg.setWindowTitle('Vitalux – '+tr('Erster Start'))
@@ -25,7 +25,8 @@ def create_dialog():
 
 def main():
     try:
-        from PySide6.QtWidgets import QApplication, QMessageBox
+        from PySide6.QtWidgets import QApplication
+        from vitalux.ui_locale import QMessageBox
         i18n.set_lang(settings.get('lang') or ('de' if os.environ.get('LANG', '').lower().startswith('de') else 'en'))
         _app = QApplication.instance() or QApplication([])
         if len(sys.argv) > 2 and sys.argv[1] == "--error":

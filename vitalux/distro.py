@@ -60,7 +60,7 @@ def info():
         "like": like,
         "name": name,
         "short": raw.get("NAME", name),
-        "version": raw.get("VERSION") or raw.get("VERSION_ID", ""),
+        "version": raw.get("VERSION") or raw.get("VERSION_ID") or raw.get("BUILD_ID") or raw.get("IMAGE_VERSION", ""),
         "logo": raw.get("LOGO"),
         "color": _color(id_, like, raw.get("ANSI_COLOR")),
     }

@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (QLabel as _QLabel, QPushButton as _QPushButton,
     QCheckBox as _QCheckBox, QComboBox as _QComboBox, QDialog as _QDialog,
     QListView as _QListView, QFrame as _QFrame, QStyleFactory as _QStyleFactory,
     QListWidgetItem as _QListWidgetItem, QMessageBox as _QMessageBox,
-    QFileDialog as _QFileDialog)
+    QFileDialog as _QFileDialog,QColorDialog as _QColorDialog,QInputDialog as _QInputDialog,QLineEdit,QDialogButtonBox)
 from .i18n import tr
 from functools import lru_cache
 from PySide6.QtCore import Qt, QRectF, QSize, QVariantAnimation, QEasingCurve
@@ -351,11 +351,25 @@ class QComboBox(_QComboBox):
                 self.setItemData(i, value, Qt.ToolTipRole)
         self._update_selection_tooltip()
 
-class QDialog(_QDialog):
+class _DialogStyle:
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        from .dialog_chrome import attach_dialog
+        attach_dialog(self)
+
     def showEvent(self, event):
         from .presentation import prepare_dialog
         prepare_dialog(self)
         super().showEvent(event)
+        from .i18n import lang
+        labels={'Ok':('OK','OK'),'Cancel':('Abbrechen','Cancel'),
+                'Open':('Öffnen','Open'),'Save':('Speichern','Save'),
+                'Close':('Schließen','Close'),'Apply':('Anwenden','Apply')}
+        for box in self.findChildren(QDialogButtonBox):
+            for key,texts in labels.items():
+                button=box.button(getattr(QDialogButtonBox,key))
+                if button is not None:button.setText(texts[lang()=='en'])
+        self._vitalux_dialog_frame.sync()
 
     def paintEvent(self, event):
         from .presentation import paint_dialog
@@ -364,26 +378,21 @@ class QDialog(_QDialog):
     def setWindowTitle(self, text):
         return super().setWindowTitle(localized(text))
 
+
+class QDialog(_DialogStyle,_QDialog):
+    pass
+
 class QListWidgetItem(_QListWidgetItem):
     def __init__(self, text='', *args, **kwargs):
         super().__init__(localized(text), *args, **kwargs)
 
-class QMessageBox(_QMessageBox):
+class QMessageBox(_DialogStyle,_QMessageBox):
     """Locale-aware Qt dialogs, including buttons from the application locale.
 
     On some Plasma builds the bundled Qt runtime has no German qm catalog, so
     native QMessageBox.question() falls back to English Yes/No even when the
     application labels are German. Use standard buttons with explicit text.
     """
-
-    def showEvent(self, event):
-        from .presentation import prepare_dialog
-        prepare_dialog(self)
-        super().showEvent(event)
-
-    def paintEvent(self, event):
-        from .presentation import paint_dialog
-        paint_dialog(self)
 
     @staticmethod
     def _localized_dialog(icon, parent, title, message, buttons, default):
@@ -410,6 +419,7 @@ class QMessageBox(_QMessageBox):
         if default != _QMessageBox.NoButton and dialog.button(default):
             dialog.setDefaultButton(default)
         result = dialog.exec()
+        dialog.deleteLater()
         return _QMessageBox.StandardButton(result)
 
     @staticmethod
@@ -437,13 +447,76 @@ class QMessageBox(_QMessageBox):
                                               text, buttons, defaultButton)
 
 
-class QFileDialog(_QFileDialog):
+class QFileDialog(_DialogStyle,_QFileDialog):
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        self.setOption(_QFileDialog.DontUseNativeDialog,True)
+
     @staticmethod
-    def getSaveFileName(parent=None, caption='', *args, **kwargs):
-        return _QFileDialog.getSaveFileName(parent, localized(caption), *args, **kwargs)
+    def _choose(parent,caption,directory,filter,selectedFilter,options,mode,save=False):
+        dialog=QFileDialog(parent,localized(caption),directory,filter)
+        dialog.setOptions(options|_QFileDialog.DontUseNativeDialog)
+        dialog.setFileMode(mode)
+        dialog.setAcceptMode(_QFileDialog.AcceptSave if save else _QFileDialog.AcceptOpen)
+        if selectedFilter:dialog.selectNameFilter(selectedFilter)
+        accepted=dialog.exec()==_QDialog.Accepted
+        files=dialog.selectedFiles() if accepted else []
+        chosen=dialog.selectedNameFilter() if accepted else ''
+        dialog.deleteLater()
+        return files,chosen
+
     @staticmethod
-    def getExistingDirectory(parent=None, caption='', *args, **kwargs):
-        return _QFileDialog.getExistingDirectory(parent, localized(caption), *args, **kwargs)
+    def getSaveFileName(parent=None,caption='',dir='',filter='',selectedFilter='',options=_QFileDialog.Option(0)):
+        files,chosen=QFileDialog._choose(parent,caption,dir,filter,selectedFilter,options,_QFileDialog.AnyFile,True)
+        return (files[0] if files else ''),chosen
+
+    @staticmethod
+    def getOpenFileName(parent=None,caption='',dir='',filter='',selectedFilter='',options=_QFileDialog.Option(0)):
+        files,chosen=QFileDialog._choose(parent,caption,dir,filter,selectedFilter,options,_QFileDialog.ExistingFile)
+        return (files[0] if files else ''),chosen
+
+    @staticmethod
+    def getOpenFileNames(parent=None,caption='',dir='',filter='',selectedFilter='',options=_QFileDialog.Option(0)):
+        return QFileDialog._choose(parent,caption,dir,filter,selectedFilter,options,_QFileDialog.ExistingFiles)
+
+    @staticmethod
+    def getExistingDirectory(parent=None,caption='',dir='',options=_QFileDialog.ShowDirsOnly):
+        files,_=QFileDialog._choose(parent,caption,dir,'','',options,_QFileDialog.Directory)
+        return files[0] if files else ''
+
+
+class QColorDialog(_DialogStyle,_QColorDialog):
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs);self.setOption(_QColorDialog.DontUseNativeDialog,True)
+
+    @staticmethod
+    def getColor(initial=Qt.white,parent=None,title='',options=_QColorDialog.ColorDialogOption(0)):
+        dialog=QColorDialog(QColor(initial),parent);dialog.setWindowTitle(title)
+        dialog.setOptions(options|_QColorDialog.DontUseNativeDialog)
+        color=dialog.currentColor() if dialog.exec()==_QDialog.Accepted else QColor()
+        dialog.deleteLater();return color
+
+
+class QInputDialog(_DialogStyle,_QInputDialog):
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        self.setOkButtonText(tr('OK'));self.setCancelButtonText(tr('Abbrechen'))
+
+    @staticmethod
+    def getText(parent,title,label,echo=QLineEdit.Normal,text='',flags=Qt.WindowFlags(),inputMethodHints=Qt.ImhNone):
+        dialog=QInputDialog(parent,flags);dialog.setWindowTitle(title);dialog.setLabelText(localized(label))
+        dialog.setInputMode(_QInputDialog.TextInput);dialog.setTextEchoMode(echo);dialog.setTextValue(text)
+        dialog.setInputMethodHints(inputMethodHints)
+        accepted=dialog.exec()==_QDialog.Accepted;value=dialog.textValue();dialog.deleteLater()
+        return value,accepted
+
+    @staticmethod
+    def getInt(parent,title,label,value=0,minValue=-2147483647,maxValue=2147483647,step=1,flags=Qt.WindowFlags()):
+        dialog=QInputDialog(parent,flags);dialog.setWindowTitle(title);dialog.setLabelText(localized(label))
+        dialog.setInputMode(_QInputDialog.IntInput);dialog.setIntRange(minValue,maxValue)
+        dialog.setIntStep(step);dialog.setIntValue(value)
+        accepted=dialog.exec()==_QDialog.Accepted;value=dialog.intValue();dialog.deleteLater()
+        return value,accepted
 
 # v0.9.3.10: retranslate existing widgets in place. We deliberately do not
 # reconstruct pages, which would reset scrollbars and destroy running workers.

@@ -20,7 +20,9 @@ Available updates highlight **Updates** in every sidebar, header navigation and 
 
 ## Designs and backgrounds
 
-Choose one of seven rounded preview tiles under **Settings → Appearance → Design**: **Obsidian Gold**, **Glass**, **Crystal Atrium**, **Nebula Prism**, **Quantum Core**, **Light** and **Aurora Bloom**. Obsidian Gold is the default for new profiles. Design changes retain your page, scroll position and running measurements. The selected check stays inside the tile's upper-right edge.
+Choose one of eight rounded preview tiles under **Settings → Appearance → Design**: **Obsidian Gold**, **Glass**, **Crystal Atrium**, **Nebula Prism**, **Quantum Core**, **Light**, **Aurora Bloom** and **Eclipse Crystal**. Obsidian Gold is the default for new profiles. Design changes retain your page, scroll position and running measurements. The selected check stays inside the tile's upper-right edge.
+
+Eclipse Crystal is selectable in the regular gallery; its header keeps its original height and meets the upper window edge. Connected navigation panes use the app’s outer contour without doubling it. Free inner edges remain outlined. Scrollbars have wider mouse targets and stay clear of fixed headers and footers.
 
 Aurora Bloom has a normal design tile, aurora ribbons, petal-shaped controls and a rounded inner header/sidebar junction.
 
@@ -29,6 +31,8 @@ Every retained design supports preset/custom accents and backgrounds. Choose a r
 **Original colors** restores factory accents; **Original background** restores exactly the active design's factory backdrop without changing its accent. Choices are remembered separately for each design. **Reset design** restores only the current design's color/background choices; saved colors, imported images, other designs, motion and dashboard layouts remain intact. Own images still support Fill, Fit, Stretch, Center and Tile. The Sparkle background is animated; archived design backgrounds are static.
 
 Crystal Atrium uses smooth glass surfaces on the shared window background. Its overview supports the same layout editor: move or hide tiles, restore hidden tiles, undo, discard or save changes. Nebula Prism has a translucent floating dock with a continuous rim; cards scroll behind and beside it down to the window edge. Quantum Core retains its sidebar, angular panels and reactor instruments. Crystal Atrium uses its original static Atrium background; Quantum Core also stays static while logos and instruments follow **Animations**. **Ultra Eco** temporarily uses a plain skin, CPU rendering and a ten-second sample interval. Disabling it restores the last design and its saved appearance.
+
+Hover over the distribution logo in the system header and click **×** to hide it immediately. Right-click the system header and choose **Show distribution logo** to restore it. The layout editor also supports hide/restore, undo, save and discard. Your choice is saved. CachyOS and other rolling distributions use their reported build identifier when no version is supplied; missing metadata is never invented.
 
 Overview headings, names and values are centered. The larger top card centers the distribution name relative to its entire width; a larger distro logo and larger system-information chips leave room for their text and move the remaining dashboard down. Component cards follow the same order: heading, load display, available name, details and supported watts. GPU overview omits watts; Graphics retains current watts and the limit. Long names are shortened with an ellipsis; hover over shortened text to read the full name. The load display keeps the same size when power measurements appear or disappear.
 
@@ -64,7 +68,7 @@ Partial names such as **Mini**, **MiniH**, **MiniHU** and **MiniHUD** predict th
 
 Choose **CPU** (the stable default) or **X11 · OpenGL**. A renderer change restarts Vitalux automatically; if an operation is still running, the restart waits for it. X11 requires a working X server or XWayland. CPU rendering also works in a native Wayland session. Removed renderer settings migrate to CPU. Startup failures fall back to CPU. Confirmed **Restore defaults** follows the same controlled restart and keeps the window responsive while background work finishes. Open game launchers do not block the next Vitalux process; their startup uses an independent environment and output channels.
 
-Vitalux Overlay for the desktop (formerly MiniHUD) reuses the main sensor stream and offers three layouts and adjustable opacity. Your desktop compositor determines its placement relative to fullscreen applications.
+Vitalux Overlay for the desktop (formerly MiniHUD) reuses the main sensor stream and offers three layouts and adjustable opacity. Your desktop compositor determines its placement relative to fullscreen applications. Enabling the overlay hides the main window to the system tray; reopening it from the tray leaves the overlay active. Closing the overlay restores a main window that it hid. During desktop startup Vitalux briefly waits for a late tray host; without a usable tray it keeps the main window visible.
 
 
 ## Games and MangoHud
@@ -180,3 +184,5 @@ Game tiles keep their compact height. Suitable covers fill the tile proportional
 **Play game** waits for pending profile work, checks the actual launcher entry and prepares the enabled overlay before opening the detected native or Flatpak launcher. A stale connection backup does not count as a valid link. If Steam must restart for setup, Vitalux handles the restart and then starts the selected game. Activating a profile without a game-start request only reopens Steam. For Heroic and Lutris, close the launcher if setup is needed. Vitalux keeps the profile open after a failed save and does not silently start a game without its enabled overlay.
 
 After a session finishes, its tile, report and history update together. Assessments keep their text and use consistent colors: green for Very good/Good, amber for Adequate and red for Needs improvement. Incomplete or insufficient data remain neutral. Long-session charts retain the recorded values and spikes while using the visible pixel resolution to keep scrolling and hover responsive.
+
+In-app dialogs use a rounded frame matched to the current design, without desktop window decorations. Drag their title area to move them; use their close button or Escape to cancel. Resizable dialogs retain edge/corner resizing. File, color and input pickers remain inside the same app styling.

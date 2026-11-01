@@ -251,6 +251,10 @@ QToolButton#tileMoveHint, QToolButton#tileRemoveHint {
     color: $MUTED; padding: 0px; font-size: 11px; font-weight: 600;
 }
 QToolButton#tileRemoveHint { font-size: 17px; font-weight: 500; }
+QToolButton#tileRemoveHint[distroLogoRemove="true"] {
+    background: $CARD; border: 1px solid $BORDER; border-radius: 6px;
+    color: $TEXT; padding: 0px;
+}
 QToolButton#tileMoveHint:hover, QToolButton#tileRemoveHint:hover { color: $ACCENT; }
 QToolButton#layoutAction {
     background: $BUTTON_BG; border: 1px solid $BORDER;

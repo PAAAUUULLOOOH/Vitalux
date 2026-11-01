@@ -76,7 +76,7 @@ with tempfile.TemporaryDirectory() as folder, \
     window.show()
     wait(70)
     try:
-        for design in [key for key, _ in theme.CHOICES] + ['eclipse_crystal', 'minimal']:
+        for design in [key for key, _ in theme.CHOICES] + ['minimal']:
             print('Checking framed navigation:',design,flush=True)
             settings.set_many(dict(theme='obsidian_gold' if design == 'minimal' else design,
                                    ultra_eco=design == 'minimal'))

@@ -2,11 +2,11 @@
 from PySide6.QtCore import Qt,Signal,QItemSelectionModel
 import ipaddress
 from PySide6.QtNetwork import QDnsLookup
-from PySide6.QtWidgets import (QAbstractItemView,QHeaderView,QHBoxLayout,QInputDialog,
+from PySide6.QtWidgets import (QAbstractItemView,QHeaderView,QHBoxLayout,
     QLineEdit,QTableWidget,QTableWidgetItem,QVBoxLayout,QWidget)
 from . import settings
 from .i18n import tr
-from .ui_locale import QPushButton
+from .ui_locale import QPushButton,QInputDialog
 from .widgets import Card,label
 from .sensors import fmt_bytes,fmt_rate
 from .network_monitor import TrafficLedger,NetworkSampler,HelperClient

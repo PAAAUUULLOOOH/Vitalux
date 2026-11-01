@@ -40,7 +40,7 @@ EN_MORE = {
     'Anschlüsse': 'Outputs',
     'Stable enthält alle Teständerungen. Die App wechselt automatisch zu Stable.': 'Stable includes all test changes. The app is switching to Stable automatically.',
 
-    'Sieben Designs stehen zur Auswahl: Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core, Light und Aurora Bloom. Alle unterstützen eigene Akzentfarben und Hintergründe.': 'Choose from seven designs: Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core, Light and Aurora Bloom. All support custom accent colors and backgrounds.',
+    'Acht Designs stehen zur Auswahl: Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core, Light, Aurora Bloom und Eclipse Crystal. Alle unterstützen eigene Akzentfarben und Hintergründe.': 'Choose from eight designs: Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core, Light, Aurora Bloom and Eclipse Crystal. All support custom accent colors and backgrounds.',
     'Originalfarben und Originalhintergrund stellen die Vorgaben des aktiven Designs wieder her. Farben und Hintergründe früherer Designs bleiben als Vorlagen erhalten. Design zurücksetzen betrifft nur das aktuelle Design. Komponentenbilder anzeigen schaltet die Bilder gemeinsam um und behält den Cache.': 'Original colors and Original background restore the active design’s factory choices. Colors and backgrounds from previous designs remain available as presets. Reset design affects only the current design. Show component pictures toggles all product images while retaining the cache.',
     'Übersichtskacheln zeigen mittige Texte in gleicher Reihenfolge. Lange Namen werden gekürzt; beim Darüberfahren erscheint der volle Name. Im Bearbeitungsmodus bleiben Verschieben und das X sichtbar.': 'Overview captions are centered in a consistent order. Long names are shortened; hover to read the full name. Move and X controls remain visible while editing.',
     'Originalfarben': 'Original colors',
@@ -1140,4 +1140,10 @@ EN_MORE.update({
         'See processor, graphics, memory, system drive and system health. Cards scroll behind fixed window controls and headers; the mouse wheel works there too.',
     'Die Navigation folgt dem gewählten Design. Seitenleisten schließen bündig am Fensterrand ab und docken bei Designs mit Kopfleiste direkt darunter an.':
         'Navigation follows the selected design. Sidebars meet the window contour and join directly below the header in designs that have one.',
+})
+
+EN_MORE.update({
+    'Das Desktop-Overlay lässt sich in den Einstellungen oder über die Systemleiste aktivieren. Drei Größen, Sensoren und 50–100 % Deckkraft sind wählbar. Dabei wird das Hauptfenster ins Tray ausgeblendet und kann dort wieder geöffnet werden; ohne erreichbares Tray bleibt es sichtbar.': 'Enable the desktop overlay in Settings or from the system tray. Choose three layouts, metrics and 50–100% opacity. The main window hides to the tray and can be reopened there; without a usable tray it stays visible.',
+    'Distributionslogo anzeigen': 'Show distribution logo',
+    'Bei eingeschaltetem Desktop-Overlay wird das Hauptfenster in der Systemleiste ausgeblendet. Über das Tray-Symbol kannst du es jederzeit wieder öffnen.': 'Enabling the desktop overlay hides the main window in the system tray. You can reopen it at any time using the tray icon.',
 })

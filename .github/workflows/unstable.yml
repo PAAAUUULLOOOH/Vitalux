@@ -149,6 +149,7 @@ jobs:
         run: |
           set -euo pipefail
           xvfb-run -a -s '-screen 0 1600x1050x24' env QT_QPA_PLATFORM=xcb VITALUX_RENDERER=x11_opengl LIBGL_ALWAYS_SOFTWARE=1 LP_NUM_THREADS=2 python tests/test_navigation_surfaces.py
+          xvfb-run -a -s '-screen 0 1600x1050x24' env QT_QPA_PLATFORM=xcb VITALUX_RENDERER=software python tests/test_navigation_controls.py
       - name: Exercise real kernel and desktop paths
         if: steps.prepare.outputs.changed == 'true'
         id: native

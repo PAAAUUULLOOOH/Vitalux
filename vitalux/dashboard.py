@@ -341,15 +341,17 @@ class DashboardBoard(QWidget):
         self.changed.emit()
 
     def hide_distro_logo(self):
-        if not self.editing or not self.distro_logo_visible:return
+        if not self.distro_logo_visible:return
         self._push_undo()
         self.distro_logo_visible = False
+        if not self.editing:settings.set('dashboard_distro_logo_visible',False)
         self.changed.emit()
 
     def show_distro_logo(self):
-        if not self.editing or self.distro_logo_visible:return
+        if self.distro_logo_visible:return
         self._push_undo()
         self.distro_logo_visible = True
+        if not self.editing:settings.set('dashboard_distro_logo_visible',True)
         self.changed.emit()
 
     def reset(self):
