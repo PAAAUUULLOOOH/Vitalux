@@ -55,6 +55,7 @@ EN_MORE = {
     'Quantum Core · Akzentfarben und Hintergrund sind anpassbar.': 'Quantum Core · Accent colors and background are adjustable.',
     'Light · Akzentfarben und Hintergrund sind anpassbar.': 'Light · Accent colors and background are adjustable.',
     'Aurora Bloom · Akzentfarben und Hintergrund sind anpassbar.': 'Aurora Bloom · Accent colors and background are adjustable.',
+    'Eclipse Crystal · Akzentfarben und Hintergrund sind anpassbar.': 'Eclipse Crystal · Accent colors and background are adjustable.',
 
     'Maximaler Takt': 'Maximum clock',
     'Speichertyp': 'Memory type',

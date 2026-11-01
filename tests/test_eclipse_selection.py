@@ -7,7 +7,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from PySide6.QtWidgets import QApplication,QWidget
 from PySide6.QtCore import Qt
 from PySide6.QtTest import QTest
-from vitalux import settings,theme
+from vitalux import settings,theme,i18n
 from vitalux.control import PreferencesPage
 app=QApplication.instance() or QApplication([])
 class Host(QWidget):
@@ -26,7 +26,8 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',folder
         page.search.setText(text);app.processEvents()
         assert theme.mode()==settings.get('theme')=='glass'
         assert page.search.text()==text
-    page.select_design('eclipse_crystal')
+    i18n.set_lang('en');page.select_design('eclipse_crystal')
+    assert page.theme_note.text()=='Eclipse Crystal · Accent colors and background are adjustable.'
     settings._cache_identity=None;settings._cache_value=None
     assert settings.get('theme')=='eclipse_crystal'
     page.close();host.close()
