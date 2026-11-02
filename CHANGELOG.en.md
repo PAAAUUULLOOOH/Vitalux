@@ -1,6 +1,6 @@
 # Vitalux – Changes
 
-## [v0.9.6.5-unstable.3] - 2026-11-02
+## [v0.9.6.5-unstable.3] - 2026-11-03
 
 - Network: select the automatic route, a named adapter or explicitly all interfaces. Transfer rates and totals belong to the displayed source; removed adapters disappear from the list.
 - Games: compare two sessions of the same game using average FPS, 1% and 0.1% lows, average frametime and long-frame ratio. Different FPS targets and incomplete recordings are identified.

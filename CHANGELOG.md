@@ -1,6 +1,6 @@
 # Vitalux – Änderungen
 
-## [v0.9.6.5-unstable.3] - 2026-11-02
+## [v0.9.6.5-unstable.3] - 2026-11-03
 
 - Netzwerk: Messquelle automatisch, pro Adapter oder ausdrücklich über alle Schnittstellen wählen. Übertragungsraten und Gesamtzähler gehören zur angezeigten Quelle; entfernte Adapter verschwinden aus der Liste.
 - Spiele: Zwei Sitzungen desselben Spiels mit Durchschnitts-FPS, 1%- und 0,1%-Lows, mittlerer Frametime und Anteil langer Frames vergleichen. Unterschiedliche FPS-Ziele und unvollständige Aufnahmen werden gekennzeichnet.
