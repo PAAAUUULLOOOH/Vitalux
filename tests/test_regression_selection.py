@@ -11,11 +11,13 @@ with tempfile.TemporaryDirectory() as folder:
         'tests/test_screen.py':'from vitalux import widget',
         'tests/test_other.py':'from vitalux import other',
         'tests/test_dynamic.py':"import importlib\nname='sensor'\nimportlib.import_module('vitalux.'+name)",
+        'tests/test_inline.py':"import subprocess as sp\nsp.run(['python','-c','import vitalux.sensor'])",
+        'tests/test_launch.py':"from subprocess import run as launch\nlaunch(['python','-m','vitalux'])",
         'tests/test_core_behaviors.py':'pass',
     }.items():
         path=root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text(text)
     result=select(root,['vitalux/sensor.py'])
-    assert set(result['selected'])=={'test_screen.py','test_dynamic.py','test_core_behaviors.py'}
+    assert set(result['selected'])=={'test_screen.py','test_dynamic.py','test_inline.py','test_launch.py','test_core_behaviors.py'}
     assert result['skipped']==['test_other.py'] and not result['full']
     assert select(root,['portable-runtime/SHA256SUMS'])['full']
     assert select(root,['unknown-input'])['full']

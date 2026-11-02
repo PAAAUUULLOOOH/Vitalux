@@ -15,6 +15,7 @@ SMOKE={'test_core_behaviors.py','test_single_instance.py','test_update_catalog.p
 DOC_CHECKS={'test_guide_locale.py','test_preferences_changelog.py','test_changelog_view.py',
             'test_info_credits.py','test_sculpt_design.py'}
 DYNAMIC={'exec','eval','__import__','import_module','spec_from_file_location'}
+PROCESS_CALLS={'run','Popen','call','check_call','check_output','getoutput','getstatusoutput'}
 
 
 def select(root, changed):
@@ -31,6 +32,11 @@ def select(root, changed):
         relative=str(path.relative_to(root));found=set()
         try:tree=ast.parse(path.read_text())
         except (OSError,SyntaxError):return full('Dependency graph unavailable')
+        process_modules={item.asname or item.name for node in ast.walk(tree) if isinstance(node,ast.Import)
+                         for item in node.names if item.name=='subprocess'}
+        process_functions={item.asname or item.name for node in ast.walk(tree)
+                           if isinstance(node,ast.ImportFrom) and node.module=='subprocess'
+                           for item in node.names if item.name in PROCESS_CALLS}
         package=path.relative_to(root).parent.parts
         for node in ast.walk(tree):
             candidates=[]
@@ -41,6 +47,12 @@ def select(root, changed):
                 candidates=[base,*[base+'.'+item.name for item in node.names]]
             elif isinstance(node,ast.Call):
                 name=getattr(node.func,'id',getattr(node.func,'attr',''))
+                # A spawned interpreter/launcher can import code inside a
+                # string or shell script, outside the static Python graph.
+                if (isinstance(node.func,ast.Name) and name in process_functions
+                        or isinstance(node.func,ast.Attribute) and name in PROCESS_CALLS
+                        and isinstance(node.func.value,ast.Name) and node.func.value.id in process_modules):
+                    uncertain.add(relative)
                 if name in ('__import__','import_module') and node.args and isinstance(node.args[0],ast.Constant) and isinstance(node.args[0].value,str):
                     candidates=[node.args[0].value]
                 elif name in DYNAMIC:uncertain.add(relative)
