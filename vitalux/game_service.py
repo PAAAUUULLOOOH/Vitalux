@@ -13,6 +13,7 @@ class GameService(QThread):
     report_ready = Signal(object)
     session_finished = Signal(object)
     activity = Signal(object)
+    recording = Signal(object)
     failed = Signal(str)
     busy = Signal(bool)
     launch_ready = Signal(object)
@@ -159,6 +160,7 @@ class GameService(QThread):
                     pending = sessions.pending()
                     ready, running = sessions.ready(pending)
                     self.activity.emit(running)
+                    self.recording.emit(sorted(sessions.recording_games))
                     for folder, metadata, logs in ready:
                         if self.cancelled.is_set():
                             break

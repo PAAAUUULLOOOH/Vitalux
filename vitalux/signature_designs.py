@@ -21,6 +21,8 @@ COLLECTIONS['nebula_prism'] = nebula_prism.PALETTE
 COLLECTIONS['quantum_core'] = quantum_core.PALETTE
 COLLECTIONS['crystal_atrium'] = crystal_atrium.PALETTE
 COLLECTIONS['aurora_bloom'] = aurora_bloom.PALETTE
+from . import sculpt
+COLLECTIONS[sculpt.KEY] = sculpt.PALETTE
 KEYS = tuple(COLLECTIONS)
 
 
@@ -38,6 +40,7 @@ def color(value, alpha=255):
 
 
 def shape(rect, mode, compact=False):
+    if mode == sculpt.KEY:return sculpt.shape(rect,compact)
     if mode == aurora_bloom.KEY:return aurora_bloom.shape(rect,compact)
     if mode == crystal_atrium.KEY:return crystal_atrium.shape(rect,compact)
     if mode == 'nebula_prism':
@@ -60,6 +63,7 @@ def shape(rect, mode, compact=False):
 
 
 def scene_pixmap(size, mode, phase=0.0):
+    if mode == sculpt.KEY:return sculpt.scene_pixmap(size,phase)
     if mode == aurora_bloom.KEY:return aurora_bloom.scene_pixmap(size)
     if mode == crystal_atrium.KEY:return crystal_atrium.scene_pixmap(size,phase)
     if mode == 'nebula_prism':
@@ -115,6 +119,7 @@ def scene_pixmap(size, mode, phase=0.0):
 
 def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
     from . import theme
+    if theme.mode() == sculpt.KEY:return sculpt.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
     if theme.mode() == aurora_bloom.KEY:return aurora_bloom.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
     if theme.mode() == crystal_atrium.KEY:return crystal_atrium.paint_panel(p,widget,rect,strong=strong,compact=compact,active=active)
     from . import theme
@@ -196,6 +201,7 @@ def paint_panel(p, widget, rect, *, strong=False, compact=False, active=False):
 
 
 def stylesheet(mode):
+    if mode == sculpt.KEY:return sculpt.stylesheet()
     if mode == aurora_bloom.KEY:return aurora_bloom.stylesheet()
     if mode == crystal_atrium.KEY:return crystal_atrium.stylesheet()
     if mode=='nebula_prism':
@@ -231,6 +237,7 @@ def stylesheet(mode):
 
 def paint_navigation(button):
     from . import theme
+    if theme.mode() == sculpt.KEY:return sculpt.paint_navigation(button)
     from .nav_icons import paint_icon
     if theme.mode()==aurora_bloom.KEY:
         return aurora_bloom.paint_navigation(button)
@@ -398,6 +405,8 @@ class Metric(QWidget):
     def paintEvent(self,event):
         from . import theme,premium
         p=QPainter(self);p.setRenderHint(QPainter.Antialiasing)
+        if theme.mode()==sculpt.KEY:
+            sculpt.paint_metric(self,p);p.end();return
         pal=palette(theme.mode())
         side=min(156.0,self.width()-12.0)
         box=QRectF((self.width()-side)/2,3,side,side)

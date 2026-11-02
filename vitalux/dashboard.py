@@ -172,6 +172,14 @@ class DashboardBoard(QWidget):
                 selected=['hero','cpu','gpu','ram','graph_load','graph_net','disk','health','network','drives']
         for key in ('cpu','gpu','ram','disk','health'):
             native=sizes[key];sizes[key]=(*native[:3],10)
+        from . import theme
+        if theme.mode()=='sculpt':
+            sizes.update(hero=(0,0,12,12),cpu=(0,0,3,9),gpu=(0,0,3,9),
+                         ram=(0,0,3,9),disk=(0,0,3,9),health=(0,0,4,7))
+            if self._cols()!=12:
+                for key in ('cpu','gpu','ram','disk'):
+                    sizes[key]=(0,0,6 if self._cols()==6 else 12,9)
+            if self.order==list(ORDER):selected=list(ORDER)
         positions=grid_pack(selected,self.hidden,self._cols(),sizes)
         return positions
 
@@ -302,11 +310,9 @@ class DashboardBoard(QWidget):
         self.refresh_geometry(animate=True)
         self.changed.emit()
         if save:
-            settings.set('dashboard_order',list(self.order))
-            settings.set('dashboard_hidden',sorted(self.hidden))
-            settings.set('dashboard_distro_logo_visible',self.distro_logo_visible)
-            # Retain normalized positions for compatibility with earlier builds.
-            settings.set('dashboard_layout',{k:list(v) for k,v in grid_pack(self.order,(),12).items()})
+            settings.set_many(dict(dashboard_order=list(self.order),
+                dashboard_hidden=sorted(self.hidden),dashboard_distro_logo_visible=self.distro_logo_visible,
+                dashboard_layout={k:list(v) for k,v in grid_pack(self.order,(),12).items()}))
 
     def _push_undo(self):
         if self.editing:

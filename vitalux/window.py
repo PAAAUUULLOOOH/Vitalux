@@ -1,11 +1,10 @@
 from .window_lifecycle import WindowLifecycle
-from collections import deque
-from threading import Event
+from .window_appearance import WindowAppearance
 import time
 
-from PySide6.QtCore import Qt, QThread, QTimer, Signal, QVariantAnimation, QEasingCurve, QPoint, QRect, QEventLoop
-from PySide6.QtGui import QRegion, QAction
-from PySide6.QtWidgets import (QApplication, QButtonGroup, QFrame, QHBoxLayout, QMainWindow, QScrollArea, QStackedWidget, QVBoxLayout, QWidget, QSystemTrayIcon, QGraphicsDropShadowEffect, QMenu, QSizePolicy)
+from PySide6.QtCore import Qt, QTimer, QVariantAnimation, QEasingCurve, QPoint, QRect, QEventLoop
+from PySide6.QtGui import QRegion
+from PySide6.QtWidgets import (QApplication, QButtonGroup, QFrame, QHBoxLayout, QMainWindow, QScrollArea, QStackedWidget, QVBoxLayout, QWidget, QSystemTrayIcon, QGraphicsDropShadowEffect, QSizePolicy)
 from .ui_locale import QPushButton, retranslate_widgets
 
 from . import APP_NAME, __version__, i18n, sensors, settings, theme, motion, eco
@@ -17,71 +16,22 @@ from .pages import OverviewPage
 from .pages_extra import InfoPage, UpdatePage
 from .sensor_page import SensorsPage
 from .control import PreferencesPage
-from .brand import PulseCore, TrayPulse, Wordmark, app_icon, sync_installed_icon
-from .widgets import NavButton, SidebarToggle, Gauge, label
-from .charts import ChartPanel
+from .brand import PulseCore, Wordmark
+from .widgets import NavButton, SidebarToggle, label
 from .glass import GlassSidebar, GlassSurface, create_ambient_scene
 from .sidebar_transition import SidebarTransition, SidebarFreeze
 from .smooth_scroll import AdaptiveScrollArea
 from .alerts import AlertMonitor, readings_from_sample
 from .tray_tooltip import tray_tooltip
-from .wallpaper_accents import resolve_accent
-from .monitoring import GpuHistory, SessionExtrema
 from .diagnostics import log_exception
 from .diagnostic_center import DiagnosticCenter
 from .diagnostic_engine import BlackboxRecorder
 from .desktop_overlay import DesktopOverlay
-from .sample_clock import sampling_gap
+from .telemetry import Sampler, HistoryStore
 from .games_page import GamesPage
 
 
-class Sampler(QThread):
-    sample = Signal(object)
-    failed = Signal(str)
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.interval = eco.interval()
-        self._last_error = None
-        self._stopped = Event()
-        self._sample_clock = None
-        self._missed = False
-
-    def start(self, *args):
-        self._stopped.clear()
-        super().start(*args)
-
-    def stop(self):
-        self.requestInterruption()
-        self._stopped.set()
-
-    def run(self):
-        while not self.isInterruptionRequested():
-            try:
-                gap = sampling_gap(self._sample_clock, (time.time(), time.monotonic()), self.interval)
-                if gap:
-                    sensors.prime()
-                data = sensors.collect()
-                self._sample_clock = (time.time(), time.monotonic())
-                data['timestamp'] = self._sample_clock[0]
-                data['_gap_before'] = gap or self._missed
-                self._missed = False
-                if not self.isInterruptionRequested():
-                    self.sample.emit(data)
-                self._last_error = None
-            except Exception as exc:
-                self._missed = True
-                self.failed.emit(str(exc))
-                # Retain one timestamped, versioned traceback per distinct
-                # failure instead of flooding logs at one-second intervals.
-                error = (type(exc), str(exc))
-                if error != self._last_error:
-                    log_exception(type(exc), exc, exc.__traceback__)
-                    self._last_error = error
-            self._stopped.wait(max(1, self.interval))
-
-
-class MainWindow(WindowLifecycle, QMainWindow):
+class MainWindow(WindowAppearance, WindowLifecycle, QMainWindow):
     def __init__(self, distro, logo, manager, *, startup_sample=None, startup_games=None, preparing=None):
         super().__init__()
         self.setWindowFlag(Qt.FramelessWindowHint, True)
@@ -103,11 +53,10 @@ class MainWindow(WindowLifecycle, QMainWindow):
                         max(560, min(900, available.height() - 32)))
         else:
             self.resize(1380, 900)
-        self.hist = {k: deque(maxlen=900) for k in (
-            "cpu", "ram", "gpu", "net_down", "net_up", "io_read", "io_write",
-            "cpu_temp", "cpu_clock", "time")}
-        self._extrema = SessionExtrema()
-        self.gpu_history=GpuHistory()
+        self.telemetry = HistoryStore()
+        self.hist = self.telemetry.series
+        self._extrema = self.telemetry.extrema
+        self.gpu_history = self.telemetry.gpu_history
         self._mini_hud = DesktopOverlay()
         self._mini_hud.hidden_by_user.connect(self._mini_hud_closed)
         self._blackbox = BlackboxRecorder()
@@ -137,38 +86,8 @@ class MainWindow(WindowLifecycle, QMainWindow):
         self._hud_tray_timer.timeout.connect(self._hide_main_for_hud)
         self.last_render_ms = None
         self._last_refresh_error = None
-        # Create the tray icon even when Plasma's StatusNotifier host comes up
-        # after Vitalux. Qt automatically registers a visible icon when a host
-        # becomes available. Checking isSystemTrayAvailable() here loses that.
-        self._tray = QSystemTrayIcon(app_icon(), self)
-        self._tray.setToolTip(tray_tooltip(None))
-        self._tray_glow = TrayPulse(self._tray, self)
-        self._tray_menu = QMenu(self)
-        self._tray_open_action = QAction(tr('Vitalux öffnen'), self._tray_menu)
-        self._tray_quit_action = QAction(tr('Beenden'), self._tray_menu)
-        self._tray_open_action.triggered.connect(self.show_from_tray)
-        self._tray_quit_action.triggered.connect(self.quit_from_tray)
-        self._tray_menu.addAction(self._tray_open_action)
-        self._tray_hud_action = QAction(tr('Desktop-Overlay anzeigen'), self._tray_menu)
-        self._tray_hud_action.setCheckable(True)
-        self._tray_hud_action.setChecked(bool(settings.get('mini_hud_enabled', False)))
-        self._tray_hud_action.toggled.connect(self.set_mini_hud_enabled)
-        self._tray_menu.addAction(self._tray_hud_action)
-        self._tray_update_action = QAction('', self._tray_menu)
-        self._tray_update_action.setVisible(False)
-        self._tray_update_action.triggered.connect(self._open_updates_from_tray)
-        self._tray_menu.addAction(self._tray_update_action)
-        self._tray_menu.addSeparator()
-        self._tray_menu.addAction(self._tray_quit_action)
-        self._tray.setContextMenu(self._tray_menu)
-        self._tray.activated.connect(self._on_tray_activated)
-        # A single click normally produces Trigger. A double click may first
-        # produce Trigger, so debounce it to avoid hiding an opened window.
-        self._tray_click_timer = QTimer(self)
-        self._tray_click_timer.setSingleShot(True)
-        self._tray_click_timer.setInterval(190)
-        self._tray_click_timer.timeout.connect(self._toggle_tray_window)
-        self._tray.show()
+        from .tray_controls import setup as setup_tray
+        setup_tray(self)
         manager.changed.connect(self._sync_glow)
         manager.restart.connect(self._restart_after_update)
         self._build(0)
@@ -819,15 +738,6 @@ class MainWindow(WindowLifecycle, QMainWindow):
         if hasattr(self, 'design_shell'):self.design_shell.sync_window_geometry()
         self.sidebar_layout.activate()
 
-    @staticmethod
-    def _is_scrolling_card(widget):
-        """Qt drop shadows require expensive offscreen redraws on each scroll."""
-        parent = widget.parentWidget()
-        while parent is not None:
-            if isinstance(parent, QScrollArea):
-                return True
-            parent = parent.parentWidget()
-        return False
 
     def _optimize_scroll_surfaces(self):
         """Keep frosted cards but avoid offscreen effects within scrolling pages."""
@@ -857,108 +767,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
                 log_exception(type(exc), exc, exc.__traceback__)
                 self._last_refresh_error = signature
 
-    @staticmethod
-    def _appearance_signature():
-        return tuple(settings.get_many(dict(theme=theme.DEFAULT_THEME, accent='#4f8cff',
-            background_style='theme_default', custom_background_selected='',
-            custom_background_fit='cover', ultra_eco=False)).values())
 
-    def apply_appearance(self, *, before=None):
-        """Restyle in-place; keep selected page, benchmark worker and scroll intact."""
-        if self._sidebar_motion is not None:
-            self._sidebar_finish()
-        from . import design_catalog
-        design_catalog.remember()
-        next_key = self._appearance_signature()
-        if (self.isVisible() and not self.isMinimized() and motion.duration(300)
-                and getattr(self, '_appearance_key', next_key) != next_key):
-            if before is None:before = self.grab()
-        else:before=None
-        overlay = getattr(self, '_appearance_overlay', None)
-        transition = None
-        changed = getattr(self, '_appearance_key', next_key) != next_key
-        if before is not None:
-            from .appearance_transition import AppearanceTransition
-            # Cover the visible window BEFORE any material/layout mutation.
-            # This child of MainWindow is deliberately outside the scene, so
-            # the destination scene can be captured without hiding the cover.
-            transition = AppearanceTransition(self, before, before)
-            self._appearance_overlay = transition
-            transition.show()
-            transition.raise_()
-            def clear_overlay():
-                if self._appearance_overlay is transition:
-                    self._appearance_overlay = None
-            transition.finished.connect(clear_overlay)
-        if overlay is not None and (changed or not motion.duration(300) or not self.isVisible()):
-            overlay.finish()
-            if transition is None:self._appearance_overlay = None
-        theme.set_mode(eco.theme_name())
-        user_accent = settings.get('accent', '#4f8cff')
-        theme.set_accent('#4f8cff' if eco.enabled() else resolve_accent(user_accent, self.distro['color']))
-        stylesheet = theme.stylesheet()
-        if QApplication.instance().styleSheet() != stylesheet:
-            QApplication.instance().setStyleSheet(stylesheet)
-        self.design_shell.sync()
-        self.brand_mark.sync_theme()
-        self.pulse_core.sync_theme()
-        current_icon = app_icon()
-        QApplication.instance().setWindowIcon(current_icon)
-        self.setWindowIcon(current_icon)
-        if not self._tray_glow.active:
-            self._tray.setIcon(current_icon)
-        self._sync_glow()  # Stop/restart all logo, sidebar and tray pulses.
-        self._tray_glow.refresh()
-        self.refresh_mini_hud()
-        sync_installed_icon()
-        minimal = theme.mode() == 'minimal'
-        self.centralWidget().set_low_power(minimal)
-        # _build may call apply_appearance before Sampler has been created.
-        if hasattr(self, 'sampler'):
-            self.set_interval(eco.interval())
-        # Disabling graphics effects (rather than removing them) retains the
-        # original glass shadows when switching back to Glass/Dark/Light.
-        for card in self.findChildren(GlassSurface):
-            fx = card.graphicsEffect()
-            if isinstance(fx, QGraphicsDropShadowEffect):
-                fx.setEnabled(not minimal and not self._is_scrolling_card(card))
-        for gauge in self.findChildren(Gauge):
-            if minimal:
-                gauge._animate.stop()
-                gauge._render_value = gauge.value
-        for nav in self.nav_buttons:
-            nav._sync_notice_animation()
-        for graph in self.findChildren(ChartPanel):
-            graph.retheme()
-        for _,page in self.pages:
-            if isinstance(page,GamesPage):page.retranslate()
-        disk = next((p for name, p in self.pages if name == 'Laufwerke'), None)
-        if disk is not None and hasattr(disk, 'refresh_appearance'):
-            disk.refresh_appearance()
-        # Keep the linked credit in sync with the active theme accent.
-        info_page = next((page for title, page in self.pages if title == 'Info'), None)
-        if info_page is not None:
-            info_page.support_credit.retranslate()
-            info_page.author_credit.retranslate()
-        # QPainter-based glass/rings/navigation read colors directly from theme.
-        self.centralWidget().update()
-        for widget in self.centralWidget().findChildren(QWidget):
-            widget.update()
-        pref = next((page for title, page in self.pages if title == 'Einstellungen'), None)
-        if pref is not None and hasattr(pref, 'refresh_appearance'):
-            pref.refresh_appearance()
-        self._appearance_key = next_key
-        if transition is not None:
-            self.layout().activate()
-            scene = self.centralWidget()
-            # Deferred Qt layout changes settle under the frozen source frame.
-            QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
-            self.layout().activate()
-            if hasattr(scene, 'finish_background_frame'):
-                scene.finish_background_frame()
-            if self._appearance_overlay is transition:
-                transition.after = scene.grab()
-                transition.start()
 
     def _network_alert(self,title,message):
         self.statusBar().showMessage(title+' · '+message,16000)
@@ -1097,29 +906,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
         cpu_pct = d.get("cpu", {}).get("usage", 0.0)
         if not eco.enabled():
             self.pulse_core.set_cpu_load(cpu_pct)
-        h = self.hist
-        stamp = d.get('timestamp', time.time())
-        if d.get('_gap_before') and h['time']:
-            missing = min(stamp-.001, h['time'][-1]+max(1, self.sampler.interval))
-            for key, history in h.items():
-                history.append(missing if key == 'time' else None)
-        h['time'].append(stamp)
-        g = d["gpus"][0] if d["gpus"] else None
-        h["cpu"].append(d["cpu"]["usage"])
-        h["ram"].append(d["ram"]["percent"])
-        h["gpu"].append(g.get("usage") if g else None)
-        h["cpu_temp"].append(d.get("cpu", {}).get("temp"))
-        h['cpu_clock'].append(d['cpu'].get('freq'))
-        h["net_down"].append(d["net"]["down"])
-        h["net_up"].append(d["net"]["up"])
-        h['io_read'].append(d['io']['read'])
-        h['io_write'].append(d['io']['write'])
-        self.gpu_history.update(d['gpus'],gap=bool(d.get('_gap_before')))
-        primary = self.gpu_history.identity(g) if g else ''
-        if primary != getattr(self, '_primary_identity', None):
-            self._primary_identity = primary
-            h['gpu'].clear()
-            h['gpu'].extend((self.gpu_history.get(g) or {}).get('gpu', ()) if g else ())
+        self.telemetry.append(d, self.sampler.interval)
         # History is populated above; repaint only the selected page.
         # Switching pages immediately uses the latest sample and all history.
         if self._sidebar_motion is None:
@@ -1136,7 +923,7 @@ class MainWindow(WindowLifecycle, QMainWindow):
         self.last_sample['session_extrema'] = self._extrema.snapshot()
         self.hist['gpu'].clear()
         self.hist['gpu'].extend((self.gpu_history.get(gpu) or {}).get('gpu', ()))
-        self._primary_identity = self.gpu_history.identity(gpu)
+        self.telemetry.primary = self.gpu_history.identity(gpu)
         self._refresh_visible_page()
         self._mini_hud.update_sample(self.last_sample)
         if self._tray is not None:

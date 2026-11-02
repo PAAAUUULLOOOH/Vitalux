@@ -42,8 +42,7 @@ install_desktop_libraries() (
 )
 remove_retired_renderer_libraries() {
   local qt="$VITALUX_RUNTIME_ROOT/runtime/lib/python3.12/site-packages/PySide6"
-  rm -f -- "$qt/QtOpenGLWidgets.abi3.so" "$qt/Qt/lib/libQt6OpenGLWidgets.so.6" \
-    "$qt/Qt/plugins/wayland-graphics-integration-client/libvulkan-server.so"
+  rm -f -- "$qt/Qt/plugins/wayland-graphics-integration-client/libvulkan-server.so"
 }
 # Another launcher may have finished unpacking while this one waited. Source
 # checkouts also replace an expanded core after its locked archive changes.

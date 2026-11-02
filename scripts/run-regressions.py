@@ -22,11 +22,30 @@ def main():
     parser.add_argument('--jobs', type=int, default=2)
     parser.add_argument('--output', type=Path, default=Path('build/regressions'))
     parser.add_argument('--only',nargs='+',help='Explicit scripts for focused local verification')
+    parser.add_argument('--changed-since',help='Conservatively select affected tests from a known Git base')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     tests = sorted((root/'tests').glob('test_*.py'))
+    if args.changed_since and not args.only:
+        from regression_selection import select
+        try:
+            changes=subprocess.check_output(['git','diff','--name-only','--no-renames',args.changed_since],cwd=root,text=True).splitlines()
+            changes+=subprocess.check_output(['git','ls-files','--others','--exclude-standard'],cwd=root,text=True).splitlines()
+            if 'vitalux/__init__.py' in changes:
+                import re
+                before=subprocess.check_output(['git','show',args.changed_since+':vitalux/__init__.py'],cwd=root,text=True)
+                after=(root/'vitalux/__init__.py').read_text()
+                version_line=r'^__version__ = "\d+\.\d+\.\d+\.\d+(?:-unstable\.\d+)?"\n'
+                if re.sub(version_line,'',before,flags=re.M)==re.sub(version_line,'',after,flags=re.M):
+                    changes.remove('vitalux/__init__.py')
+            plan=select(root,changes)
+        except (subprocess.CalledProcessError,OSError):
+            plan=dict(full=True,reason='Git baseline unavailable',selected=[p.name for p in tests],skipped=[])
+        (output/'selection.json').write_text(json.dumps(plan,indent=2)+'\n')
+        print('Regression selection:',len(plan['selected']),'of',len(tests),plan['reason'],flush=True)
+        tests=[p for p in tests if p.name in plan['selected']]
     if args.only:
         requested=set(args.only)
         unknown=requested-{test.name for test in tests}

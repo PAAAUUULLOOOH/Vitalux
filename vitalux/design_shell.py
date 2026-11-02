@@ -195,6 +195,8 @@ class DesignShell(QObject):
             w._outer_layout.setSpacing(0)
             w._apply_sidebar_state()
         self.retranslate()
+        from .sculpt import configure_shell
+        configure_shell(w,self)
         self._footer_compact=None
         self._responsive()
         if w.window_frame.scene is not None:w.window_frame.sync_controls()

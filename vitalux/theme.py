@@ -61,7 +61,7 @@ def mode():
 
 
 def is_light():
-    return _mode == 'light'
+    return _mode in ('light','sculpt')
 
 
 def source_accent():
@@ -94,7 +94,7 @@ def accent():
 def _resolved_accent(selected_mode, selected_accent, selected):
     original=design_catalog.factory(selected_mode)['accent']
     c = QColor(original if selected=='design_default' else selected_accent)
-    if selected_mode == 'light':
+    if selected_mode in ('light','sculpt'):
         for _ in range(12):
             if (1.05 / (_luminance(c) + .05)) >= 4.0:
                 break

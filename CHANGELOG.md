@@ -1,5 +1,14 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.5-unstable.3] - 2026-11-02
+
+- Netzwerk: Messquelle automatisch, pro Adapter oder ausdrücklich über alle Schnittstellen wählen. Übertragungsraten und Gesamtzähler gehören zur angezeigten Quelle; entfernte Adapter verschwinden aus der Liste.
+- Spiele: Zwei Sitzungen desselben Spiels mit Durchschnitts-FPS, 1%- und 0,1%-Lows, mittlerer Frametime und Anteil langer Frames vergleichen. Unterschiedliche FPS-Ziele und unvollständige Aufnahmen werden gekennzeichnet.
+- Overlay-Einrichtung, Spielstart und Empfang tatsächlicher MangoHud-Messdaten werden getrennt angezeigt.
+- Große Hintergrundbildimporte laufen im Hintergrund. Zusammengehörige Einstellungsänderungen werden gesammelt gespeichert; Warnwerte bleiben direkt bedienbar.
+- Binär berechnete Speichergrößen und Übertragungsraten verwenden passende KiB-/MiB-/GiB-Einheiten.
+- Das X am Distributionslogo erscheint ausschließlich während „Layout bearbeiten“. CPU-, GPU- und Mainboard-Karten haben einen sichtbaren Zugang zu ihren Komponentenaktionen.
+
 ## [v0.9.6.5-unstable.2] - 2026-11-01
 
 - Linux-Startkorrektur für Pop!OS/COSMIC und andere aktuelle Desktops: Systemeigene systemd-, OpenSSL- und SQLite-Bibliotheken haben Vorrang; der Konflikt mit „LIBSYSTEMD_254 not found“ durch eine ältere private Kopie wird vermieden. Ohne passende Systembibliothek bleibt ein mitgelieferter Offline-Fallback verfügbar.

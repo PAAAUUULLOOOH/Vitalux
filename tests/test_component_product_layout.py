@@ -42,7 +42,7 @@ assert len(memory.module_cards)==2
 assert [item[2].text() for item in memory.module_cards]==['KF560C30-16','CMK16GX5']
 assert all(item[1].picture.isHidden() for item in memory.module_cards)
 assert all(item[1].row.spacing()==0 and not item[1].retry.isActive() for item in memory.module_cards)
-assert all(('Kapazität','1 × 16.0 GB') in item[1]._spec_values for item in memory.module_cards)
+assert all(('Kapazität','1 × 16.0 GiB') in item[1]._spec_values for item in memory.module_cards)
 ram['modules']=[];memory.refresh(sample,history)
 assert all(item[0].isHidden() for item in memory.module_cards)
 with tempfile.TemporaryDirectory() as directory:

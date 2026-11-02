@@ -18,7 +18,7 @@
 
 ![Vitalux running in English with Obsidian Gold and real system measurements](assets/vitalux-dashboard-preview.png)
 
-**Unstable v0.9.6.5-unstable.2.** This branch contains the next test release. Download the [current Unstable build](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). A separate [Unstable build](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable) is offered only when it contains newer application changes.
+**Unstable v0.9.6.5-unstable.3.** This branch contains the next test release. Download the [current Unstable build](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). A separate [Unstable build](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable) is offered only when it contains newer application changes.
 
 ## Features
 
@@ -82,7 +82,7 @@ All designs share readable card interiors, consistent value hierarchy, adaptive 
 
 **Original colors** and **Original background** restore the active design's factory choices. Customization is remembered separately for each design; **Reset design** resets only its colors and background, keeping imported pictures, saved colors and other designs intact. Rounded preview tiles clip their artwork and keep the selected check inside the upper-right corner.
 
-Hover over the distribution logo in Overview to hide it with **×**. Right-click the system header to show it again; the layout editor also retains hide, restore and undo. Rolling distributions such as CachyOS display their supplied build identifier when no version is provided.
+Enable **Dashboard layout** to hide the distribution logo with **×**. The removal control appears only while editing. Right-click the system header to restore a hidden logo; the layout editor retains save, discard and undo. Rolling distributions such as CachyOS display their supplied build identifier when no version is provided.
 
 Overview captions are centered in a consistent order below equally sized load displays. The larger system header centers the distribution name across the whole card, with a larger logo and roomier information chips. Long names are shortened; hover over a shortened caption to read its complete text. GPU overview cards omit watts; current GPU power and its limit remain on Graphics. **Show component pictures** in Appearance controls CPU, GPU and mainboard photos globally. Turning it off stops new picture lookups while keeping cached pictures. Component information stays centered with pictures shown, hidden or unavailable.
 
@@ -97,6 +97,8 @@ A startup window follows the saved design and shows the actual preparation stage
 **Ultra Eco** temporarily uses a plain skin, CPU rendering and a ten-second sample interval. Turning it off restores the last design and its saved appearance. Quantum Core and Crystal Atrium retain static factory backgrounds; logo and instrument motion follow the animation setting.
 
 
+
+Network Overview lets you measure the automatically selected route, one named adapter or all interfaces explicitly. Aggregate mode identifies possible VPN/virtual-adapter double counting; an unavailable selected adapter stays unavailable. Binary storage and transfer quantities use KiB/MiB/GiB. Game reports can compare two sessions of the same game, including FPS, lows, average frametime and long frames; different targets and incomplete recordings are disclosed. Overlay setup, game startup and reception of actual frame measurements are separate states.
 
 ## Updates and channels
 
@@ -148,6 +150,8 @@ python3.12 -m venv .venv
 .venv/bin/python -m vitalux
 .venv/bin/python scripts/run-regressions.py
 ```
+
+For a focused developer check, add `--changed-since <known-commit>` to select direct/transitive dependencies and mandatory smoke tests. Uncertain dependencies, launchers, shared UI and runtime changes retain full regression coverage. Each check runs in its isolated profile.
 
 The real AppImage process tests require `mksquashfs` from the existing `squashfs-tools` packaging toolchain. Release validation also covers native renderers, offline startup, AppImage integration and update/rollback. Versions use four components: `0.9.5.9 → 0.9.6.0`.
 

@@ -1,6 +1,27 @@
 """Keep decoded images within a byte budget without changing their resolution."""
 from collections import OrderedDict, namedtuple
 from functools import wraps
+import weakref
+from itertools import count
+
+_caches = weakref.WeakValueDictionary()
+_clock = count()
+TOTAL_BYTES = 48*1024*1024
+
+
+def memory_usage():
+    return sum(cache.bytes for cache in list(_caches.values()))
+
+
+def trim():
+    while memory_usage() > TOTAL_BYTES:
+        candidates = [(cache._touched[key], id(cache), key, cache)
+                      for cache in list(_caches.values()) for key in cache]
+        if not candidates:break
+        _, _, key, cache = min(candidates, key=lambda row:row[:2])
+        image = OrderedDict.pop(cache, key)
+        cache.bytes -= cache.cost(image)
+        cache._touched.pop(key, None)
 
 
 class ImageCache(OrderedDict):
@@ -8,6 +29,8 @@ class ImageCache(OrderedDict):
         super().__init__()
         self.max_bytes, self.max_entries = max_bytes, max_entries
         self.bytes = 0
+        self._touched = {}
+        _caches[id(self)] = self
 
     @staticmethod
     def cost(image):
@@ -16,20 +39,28 @@ class ImageCache(OrderedDict):
     def get(self, key, default=None):
         if key not in self:return default
         self.move_to_end(key)
+        self._touched[key] = next(_clock)
         return super().__getitem__(key)
 
     def __setitem__(self, key, image):
-        if key in self:self.bytes -= self.cost(super().pop(key))
+        if key in self:
+            self.bytes -= self.cost(super().pop(key))
+            self._touched.pop(key, None)
         size = self.cost(image)
         if size > self.max_bytes:return
         while self and (self.bytes+size > self.max_bytes or len(self) >= self.max_entries):
-            self.bytes -= self.cost(super().popitem(last=False)[1])
+            removed, value = super().popitem(last=False)
+            self.bytes -= self.cost(value)
+            self._touched.pop(removed, None)
         super().__setitem__(key, image)
         self.bytes += size
+        self._touched[key] = next(_clock)
+        trim()
 
     def clear(self):
         super().clear()
         self.bytes = 0
+        self._touched.clear()
 
 
 def cached_images(max_bytes, max_entries=6):

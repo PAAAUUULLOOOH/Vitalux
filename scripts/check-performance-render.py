@@ -15,6 +15,18 @@ def capture(source, output):
     sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tests'))
     from sensor_fixture import load_fixture
     app,sample=load_fixture()
+    # The approved change is the label for binary units. Normalize only that
+    # spelling in the historical source; every layout and curve pixel remains
+    # subject to the original strict comparison.
+    from vitalux import sensors
+    original_bytes=sensors.fmt_bytes
+    def binary_labels(value,base=1024):
+        result=original_bytes(value,base)
+        if base==1024:
+            for old,new in ((' KB',' KiB'),(' MB',' MiB'),(' GB',' GiB'),(' TB',' TiB'),(' PB',' PiB')):
+                result=result.replace(old,new)
+        return result
+    sensors.fmt_bytes=binary_labels
     from PySide6.QtCore import Qt, QTimer
     from PySide6.QtGui import QPixmap
     from vitalux import settings, theme, i18n

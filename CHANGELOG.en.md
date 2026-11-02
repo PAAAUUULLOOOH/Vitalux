@@ -1,5 +1,14 @@
 # Vitalux – Changes
 
+## [v0.9.6.5-unstable.3] - 2026-11-02
+
+- Network: select the automatic route, a named adapter or explicitly all interfaces. Transfer rates and totals belong to the displayed source; removed adapters disappear from the list.
+- Games: compare two sessions of the same game using average FPS, 1% and 0.1% lows, average frametime and long-frame ratio. Different FPS targets and incomplete recordings are identified.
+- Overlay configuration, game startup and reception of actual MangoHud frame measurements are shown separately.
+- Large background-picture imports run in the background. Related preference changes are saved together while warning thresholds remain immediately responsive.
+- Binary storage quantities and transfer rates use matching KiB/MiB/GiB units.
+- The distribution-logo X appears only during dashboard editing. CPU, GPU and mainboard cards have a visible entry to their component actions.
+
 ## [v0.9.6.5-unstable.2] - 2026-11-01
 
 - Linux startup fix for Pop!OS/COSMIC and other current desktops: prefer system systemd, OpenSSL and SQLite libraries, avoiding “LIBSYSTEMD_254 not found” conflicts caused by an older private copy. A bundled offline fallback remains available when the system library is absent.

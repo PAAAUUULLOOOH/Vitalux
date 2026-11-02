@@ -15,7 +15,7 @@ import time
 import psutil
 
 from .i18n import tr
-from . import extended, monitor_extra, hardware_sensors, hardware_identity, cpu_topology, hardware_inventory
+from . import extended, monitor_extra, hardware_sensors, hardware_identity, cpu_topology, hardware_inventory, settings
 
 _last = {}
 _hardware = hardware_sensors.HardwareMonitor()
@@ -373,6 +373,22 @@ def network_info(total=None):
     addrs = psutil.net_if_addrs()
     pernic = psutil.net_io_counters(pernic=True)
     primary = _pick_primary_iface(stats, addrs)
+    requested = settings.get('network_interface', 'auto')
+    if not isinstance(requested,str):requested='auto'
+    source = primary if requested == 'auto' else requested
+    # Explicit aggregate mode is useful for host-wide accounting, but is never
+    # labelled as the traffic of one physical adapter (VPN/bridges can overlap).
+    aggregate = requested == 'all'
+    selected = total if aggregate else pernic.get(source)
+    rates = {}
+    for name, counters in pernic.items():
+        rates[name] = (_rate('rx:'+name, counters.bytes_recv),
+                       _rate('tx:'+name, counters.bytes_sent))
+    aggregate_rates = (_rate('rx:all', total.bytes_recv), _rate('tx:all', total.bytes_sent)) if total else (None, None)
+    down, up = aggregate_rates if aggregate else rates.get(source, (None, None))
+    for key in list(_last):
+        if key.startswith(('rx:', 'tx:')) and key.split(':', 1)[1] not in {*pernic, 'all'}:
+            del _last[key]
     route = extended.net_static_details()
     interfaces = []
     for name in sorted(stats):
@@ -396,12 +412,12 @@ def network_info(total=None):
             "bytes_recv": ctr.bytes_recv if ctr else 0,
             "bytes_sent": ctr.bytes_sent if ctr else 0,
         })
-    active = next((x for x in interfaces if x["name"] == primary), interfaces[0] if interfaces else None)
+    active = next((x for x in interfaces if x["name"] == source), None)
     return {
-        "down": _rate("rx", total.bytes_recv if total else 0),
-        "up": _rate("tx", total.bytes_sent if total else 0),
-        "total_down": total.bytes_recv if total else 0,
-        "total_up": total.bytes_sent if total else 0,
+        "down": down, "up": up,
+        "total_down": selected.bytes_recv if selected else None,
+        "total_up": selected.bytes_sent if selected else None,
+        "source": 'all' if aggregate else source, "requested_source": requested,
         "interfaces": interfaces,
         "primary": active,
         "gateway": route["gateway"],
@@ -491,7 +507,8 @@ def system_static():
 def fmt_bytes(n, base=1024):
     if n is None:
         return "–"
-    units = ("B", "KB", "MB", "GB", "TB", "PB")
+    units = (("B", "KiB", "MiB", "GiB", "TiB", "PiB") if base == 1024
+             else ("B", "KB", "MB", "GB", "TB", "PB"))
     for i, u in enumerate(units):
         if n < base or i == len(units) - 1:
             return f"{int(n)} B" if i == 0 else f"{n:.1f} {u}"

@@ -307,19 +307,25 @@ class AppearancePreferences:
         names, _ = QFileDialog.getOpenFileNames(self, tr('Bilder auswählen'), '', 'Bilder (*.png *.jpg *.jpeg *.webp *.bmp)')
         if not names:
             return
-        entries = user_background.images()
-        failures = []
-        new = None
-        for name in names:
-            try:
-                new = user_background.import_image(name)
-                entries.append(new)
-            except (ValueError, OSError) as exc:
-                failures.append(f'{name}: {exc}')
+        if getattr(self, '_background_import', None) is not None and self._background_import.isRunning():return
+        from .background_import import BackgroundImport
+        self._background_import = BackgroundImport(names, self)
+        self._background_import.completed.connect(self._background_imported)
+        self._background_import.start()
+
+    def _background_imported(self, imported, failures):
+        if getattr(self.window, '_shutdown_pending', False):
+            for row in imported:
+                (self._background_import.destination/row['file']).unlink(missing_ok=True)
+            return
+        entries = user_background.images()+imported
+        new = imported[-1] if imported else None
         if new:
-            settings.set('custom_backgrounds', entries)
-            settings.set('custom_background_selected', new['file'])
-            settings.set('background_style', 'custom_image')
+            if not settings.set_many(dict(custom_backgrounds=entries,
+                                   custom_background_selected=new['file'], background_style='custom_image')):
+                for row in imported:
+                    (self._background_import.destination/row['file']).unlink(missing_ok=True)
+                return
             self.background_combo.blockSignals(True)
             self.background_combo.setCurrentIndex(self.background_combo.findData('custom_image'))
             self.background_combo.blockSignals(False)
@@ -352,10 +358,11 @@ class AppearancePreferences:
         except OSError as exc:
             QMessageBox.warning(self, 'Vitalux', str(exc))
             return
-        settings.set('custom_backgrounds', remaining)
-        settings.set('custom_background_selected', remaining[0]['file'] if remaining else '')
+        changes = dict(custom_backgrounds=remaining,
+                       custom_background_selected=remaining[0]['file'] if remaining else '')
+        if not remaining:changes['background_style'] = 'theme_default'
+        settings.set_many(changes)
         if not remaining:
-            settings.set('background_style', 'theme_default')
             self.background_combo.blockSignals(True)
             self.background_combo.setCurrentIndex(self.background_combo.findData('theme_default'))
             self.background_combo.blockSignals(False)

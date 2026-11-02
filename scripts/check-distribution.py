@@ -50,8 +50,8 @@ def check(root):
     for pattern in ('libQt6Lottie*', 'libQt6QmlCompiler*', 'libQt6QuickVector*', 'libQt6QuickTimeline*'):
         assert not list((qt/'lib').glob(pattern)), 'Unused runtime component: '+pattern
     assert not (qt/'plugins/imageformats/libqpdf.so').exists()
-    assert not (qt.parent/'QtOpenGLWidgets.abi3.so').exists()
-    assert not (qt/'lib/libQt6OpenGLWidgets.so.6').exists()
+    assert (qt.parent/'QtOpenGLWidgets.abi3.so').is_file()
+    assert (qt/'lib/libQt6OpenGLWidgets.so.6').is_file()
     assert not (qt/'plugins/wayland-graphics-integration-client/libvulkan-server.so').exists()
     for name in ('run.sh', 'runtime/bin/python3.12', 'bin/fio.real'):
         assert (root/name).stat().st_mode & 0o111, 'Missing executable bits: '+name

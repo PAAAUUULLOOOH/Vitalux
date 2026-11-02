@@ -2,7 +2,6 @@
 from pathlib import Path
 from .image_cache import cached_images
 from uuid import uuid4
-import shutil
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QColor, QImageReader, QPainter, QPixmap
 from . import settings, theme
@@ -39,7 +38,7 @@ def images():
     return result
 
 
-def import_image(filename):
+def import_image(filename, *, destination=None, cancelled=None):
     source = Path(filename)
     if source.suffix.lower() not in FORMATS or not source.is_file():
         raise ValueError('Ungültiges Bildformat.')
@@ -49,9 +48,18 @@ def import_image(filename):
     dimensions = reader.size()
     if not reader.canRead() or not dimensions.isValid() or dimensions.width() * dimensions.height() > 60_000_000:
         raise ValueError('Bild kann nicht gelesen werden oder ist zu groß.')
-    folder().mkdir(parents=True, exist_ok=True)
+    destination = Path(destination) if destination is not None else folder()
+    destination.mkdir(parents=True, exist_ok=True)
     dest = uuid4().hex + source.suffix.lower()
-    shutil.copyfile(source, folder() / dest)
+    target = destination/dest
+    try:
+        with source.open('rb') as stream, target.open('xb') as output:
+            while chunk := stream.read(1024*1024):
+                if cancelled and cancelled():raise InterruptedError()
+                output.write(chunk)
+    except BaseException:
+        target.unlink(missing_ok=True)
+        raise
     return {'name': source.stem[:80], 'file': dest}
 
 

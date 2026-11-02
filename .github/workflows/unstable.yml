@@ -159,7 +159,7 @@ jobs:
           python scripts/check-distribution.py "build/staged/Vitalux-${TAG}"
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
-          LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-regressions.py --output "$GITHUB_WORKSPACE/build/regressions"
+          LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/run-regressions.py --changed-since refs/tags/unstable --output "$GITHUB_WORKSPACE/build/regressions"
       - name: Start Qt in a minimal Linux base without extra installed libraries
         if: steps.prepare.outputs.changed == 'true'
         timeout-minutes: 4

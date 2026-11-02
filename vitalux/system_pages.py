@@ -5,7 +5,8 @@ import PySide6
 from PySide6.QtCore import qVersion
 from PySide6.QtWidgets import QVBoxLayout, QWidget, QTabWidget
 
-from . import theme
+from . import theme, settings
+from .choice_combo import ChoiceComboBox
 from .ui_locale import QPushButton
 from .i18n import tr
 from .sensors import fmt_bytes, fmt_duration, fmt_rate, system_static
@@ -29,12 +30,19 @@ class NetworkPage(Page):
         self.content.setContentsMargins(0,12,0,0)
         self.content.setSpacing(14)
         top = Card(hero=True)
-        self.primary = KeyValue("Aktive Schnittstelle")
+        self.source = ChoiceComboBox()
+        self.source.setAccessibleName(tr('Messquelle'))
+        self.source.currentIndexChanged.connect(self._source_changed)
+        top.body.addWidget(label('Messquelle', 'strong'))
+        top.body.addWidget(self.source)
+        self.source_note = label('', 'muted', wrap=True)
+        top.body.addWidget(self.source_note)
+        self.primary = KeyValue("Gemessene Schnittstelle")
         self.addr = KeyValue("IPv4")
         self.total = KeyValue("Daten gesamt")
         self.speed = KeyValue("Link-Geschwindigkeit")
-        self.gateway = KeyValue('Gateway')
-        self.dns = KeyValue('DNS-Server')
+        self.gateway = KeyValue('Standard-Gateway')
+        self.dns = KeyValue('System-DNS')
         self.mac = KeyValue('MAC-Adresse')
         top.body.addWidget(self.primary)
         top.body.addWidget(self.addr)
@@ -72,15 +80,41 @@ class NetworkPage(Page):
         self.tabs.setTabText(0,tr('Übersicht'))
         self.tabs.setTabText(1,tr('Programme & Verbindungen').replace('&','&&'))
         self.watcher.retranslate()
+        self._source_choices = None
+
+    def _source_changed(self, index):
+        if index >= 0:
+            settings.set('network_interface', self.source.itemData(index))
+
+    def _sync_sources(self, net):
+        requested = net.get('requested_source', settings.get('network_interface', 'auto'))
+        if not isinstance(requested,str):requested='auto'
+        names = tuple(row['name'] for row in net.get('interfaces', []))
+        signature = (names, requested, tr('Automatisch'))
+        if signature != getattr(self, '_source_choices', None):
+            self._source_choices = signature
+            self.source.blockSignals(True)
+            self.source.clear()
+            self.source.addItem(tr('Automatisch'), 'auto')
+            self.source.addItem(tr('Alle Schnittstellen'), 'all')
+            for name in names:self.source.addItem(name, name)
+            if requested not in ('auto', 'all', *names):
+                self.source.addItem(requested+' · '+tr('Nicht verfügbar'), requested)
+            self.source.setCurrentIndex(self.source.findData(requested))
+            self.source.blockSignals(False)
+        self.source_note.setText(tr('Virtuelle Adapter und VPNs können denselben Datenverkehr mehrfach zählen.')
+                                 if requested == 'all' else '')
+        self.source_note.setVisible(requested == 'all')
 
     def shutdown(self):
         return self.watcher.shutdown()
 
     def refresh(self, d, h):
         net = d["net"]
+        self._sync_sources(net)
         self.hardware.sync([r for r in d.get('hardware',[]) if r['component']=='network'])
         p = net.get("primary") or {}
-        self.primary.set(p.get("name", "–"))
+        self.primary.set(tr('Alle Schnittstellen') if net.get('source') == 'all' else p.get("name", "–"))
         self.addr.set(p.get("ipv4") or "–")
         self.total.set(f"↓ {fmt_bytes(net['total_down'])}   ·   ↑ {fmt_bytes(net['total_up'])}")
         self.speed.set(f"{p.get('speed', 0)} Mbit/s" if p.get("speed") else "–")
@@ -90,6 +124,11 @@ class NetworkPage(Page):
         self.down.set(fmt_rate(net["down"]))
         self.up.set(fmt_rate(net["up"]))
         self.graph.set_series([(h['net_down'],theme.accent()),(h['net_up'],theme.secondary_accent())])
+        present = {row['name'] for row in net.get('interfaces', [])}
+        for name in set(self.iface_rows)-present:
+            row = self.iface_rows.pop(name)
+            self.ifaces_card.body.removeWidget(row)
+            row.deleteLater()
         for iface in net.get("interfaces", []):
             row = self.iface_rows.get(iface["name"])
             if row is None:

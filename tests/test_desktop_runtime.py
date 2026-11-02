@@ -33,7 +33,7 @@ with tempfile.TemporaryDirectory(prefix='vitalux-offline-desktop-') as folder:
  checksum=root/'portable-runtime/desktop-libraries.SHA256SUMS'
  shutil.copyfile(ROOT/'portable-runtime/desktop-libraries.SHA256SUMS',checksum)
  (root/'runtime/bin/python3.12').write_text('# Existing Python must not skip desktop-library repair\n')
- retired=root/'runtime/lib/python3.12/site-packages/PySide6/QtOpenGLWidgets.abi3.so'
+ retired=root/'runtime/lib/python3.12/site-packages/PySide6/Qt/plugins/wayland-graphics-integration-client/libvulkan-server.so'
  retired.parent.mkdir(parents=True);retired.write_bytes(b'obsolete renderer binding')
  result=subprocess.run(['bash',str(root/'scripts/ensure-runtime.sh')],capture_output=True,text=True)
  assert result.returncode==0,result.stderr

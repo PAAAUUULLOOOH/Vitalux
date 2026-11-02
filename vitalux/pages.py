@@ -221,9 +221,40 @@ class OverviewPage(Page):
             chip.layout().setContentsMargins(14,10,14,10)
         self.chips.grid.setVerticalSpacing(10)
         self.board.refresh_geometry(animate=False)
+        self._sync_sculpt()
         for panel in (self.graph_load,self.graph_net):
             panel.graph.setMinimumHeight(110 if selected else 185)
             panel.graph.updateGeometry()
+
+    def _sync_sculpt(self):
+        enabled=theme.mode()=='sculpt'
+        if not hasattr(self,'sculpt_host') and not enabled:return
+        if not hasattr(self,'sculpt_host'):
+            from .sculpt_host import SculptHost
+            self.sculpt_host=SculptHost(self.hero_card)
+            self.sculpt_row=QWidget(self.hero_card)
+            self.sculpt_layout=QHBoxLayout(self.sculpt_row)
+            self.sculpt_layout.setContentsMargins(0,0,0,0)
+            self.hero_card.body.addWidget(self.sculpt_row)
+        if enabled:
+            self.hero_card.body.removeWidget(self.chips)
+            self.sculpt_layout.addWidget(self.chips,1)
+            self.sculpt_layout.addWidget(self.sculpt_host,1)
+            self.sculpt_row.show()
+        else:
+            self.sculpt_layout.removeWidget(self.chips)
+            self.hero_card.body.addWidget(self.chips)
+            self.sculpt_row.hide()
+        columns=2 if enabled else 4
+        for index,chip in enumerate(self.chips.chips.values()):
+            self.chips.grid.addWidget(chip,index//columns,index%columns)
+        self.sculpt_host.enable(enabled)
+
+    def shutdown(self):
+        return self.sculpt_host.shutdown() if hasattr(self,'sculpt_host') else True
+
+    def resume_after_shutdown(self):
+        if hasattr(self,'sculpt_host'):self.sculpt_host.enable(theme.mode()=='sculpt')
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -339,7 +370,7 @@ class OverviewPage(Page):
         self.distro_logo_host.setVisible(visible)
         self.distro_balance.setVisible(visible)
         if not visible:self._distro_logo_hovered=False
-        self.distro_logo_remove.setVisible(visible and (self.board.editing or self._distro_logo_hovered))
+        self.distro_logo_remove.setVisible(visible and self.board.editing)
         if self.distro_logo_remove.isVisible():self.distro_logo_remove.raise_()
 
     def eventFilter(self,watched,event):
@@ -349,6 +380,7 @@ class OverviewPage(Page):
         return super().eventFilter(watched,event)
 
     def _distro_logo_menu(self,position):
+        if self.board.distro_logo_visible and not self.board.editing:return
         menu=QMenu(self)
         visible=self.board.distro_logo_visible
         action=menu.addAction(tr('Distributionslogo ausblenden' if visible else 'Distributionslogo anzeigen'))
@@ -429,6 +461,7 @@ class OverviewPage(Page):
 
 
     def refresh(self, d, h, _variant=None):
+        if hasattr(self,'sculpt_host'):self.sculpt_host.set_load(d.get('cpu',{}).get('usage'))
         initial=not hasattr(self,'_last_overview_sample')
         self._last_overview_sample=(d,h)
         variant=next(iter(self.design_metric_hosts.values())).currentIndex() if _variant is None else _variant

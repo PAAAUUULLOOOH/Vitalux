@@ -1,5 +1,7 @@
 """Private game catalog, bounded session reports and tracked MangoHud log files."""
 import hashlib
+import csv
+import io
 import os
 from pathlib import Path
 import time
@@ -29,6 +31,21 @@ def _pid_active(session):
         return root.joinpath('stat').read_text().rsplit(')', 1)[1].split()[19] == before
     except (OSError, ValueError, IndexError):
         return False
+
+
+def has_frame_data(path):
+    try:
+        with path.open('rb') as stream:prefix=stream.read(8192)
+        header=None
+        for row in csv.reader(io.StringIO(prefix.decode('utf-8-sig','replace'))):
+            names=[value.strip().casefold() for value in row]
+            if 'fps' in names and 'frametime' in names:header=names;continue
+            if header and len(row)==len(header):
+                duration=game_reports.number(row[header.index('frametime')])
+                fps=game_reports.number(row[header.index('fps')])
+                if duration is not None and 0<duration<=60000 and fps is not None and fps>0:return True
+    except (OSError,csv.Error):pass
+    return False
 
 
 def active_environments(wanted):
@@ -69,6 +86,9 @@ class GameSessions:
                           and all(char in '0123456789abcdef' for char in row['id'])
                           and isinstance(row.get('game_id'),str)][:MAX_REPORTS]
         self._changed_files = {}
+        self._session_roots = {}
+        self._session_metadata = {}
+        self.recording_games = set()
 
     def _save_catalog(self):
         game_files.write_json(self.root/'catalog.json', dict(schema=1, games=self.games, connections=self.connections))
@@ -123,27 +143,52 @@ class GameSessions:
 
     def pending(self):
         result = []
+        roots = set()
         for game_id, connection in list(self.connections.items())[:4096]:
             root = Path(connection['root'])/'sessions'
-            if not root.is_dir():
+            roots.add(root)
+            try:
+                info = root.stat()
+            except OSError:
+                self._session_roots.pop(root, None)
                 continue
-            for session in sorted(root.glob('session.*'))[-1024:]:
+            identity = (info.st_ino, info.st_mtime_ns)
+            previous = self._session_roots.get(root)
+            if previous is None or previous[0] != identity:
+                candidates = set(sorted(root.glob('session.*'))[-1024:])
+                self._session_roots[root] = identity, candidates
+            else:
+                candidates = previous[1]
+            for session in list(candidates):
                 if session.is_symlink() or not session.is_dir() or (session/'processed').exists():
+                    candidates.discard(session)
+                    self._session_metadata.pop(session, None)
                     continue
-                metadata = _read(session/'game.json')
+                metadata = self._session_metadata.get(session) or _read(session/'game.json')
                 if (not isinstance(metadata.get('game'),dict) or metadata['game'].get('id') != game_id
                         or not isinstance(metadata.get('profile'),dict)):
                     continue
+                self._session_metadata[session] = metadata
                 result.append((session, metadata))
+        for root in set(self._session_roots)-roots:self._session_roots.pop(root, None)
+        present = {path for path, _ in result}
+        for path in set(self._session_metadata)-present:self._session_metadata.pop(path, None)
         return result
 
     def ready(self, pending, now=None, active=None):
         now = time.monotonic() if now is None else now
         active = active_environments({str(path) for path, _ in pending}) if active is None else active
         ready, running = [], []
+        self.recording_games.clear()
         for session, metadata in pending:
             if _pid_active(session) or str(session) in active:
                 running.append(metadata['game']['id'])
+                # A launcher connection/owner process is not proof of data.
+                # Require actual header + frame bytes in a MangoHud CSV.
+                for path in session.glob('*.csv'):
+                    if path.is_symlink() or path.name.endswith('_summary.csv'):continue
+                    if has_frame_data(path):
+                        self.recording_games.add(metadata['game']['id']);break
                 self._changed_files.pop(str(session), None)
                 continue
             logs = sorted(path for path in session.glob('*.csv')
@@ -214,3 +259,23 @@ class GameSessions:
                 break
             path.unlink(missing_ok=True)
             total -= size
+        # Remove only obsolete, recognised metadata after its CSVs are gone.
+        # Retained reports and unknown files are never deleted by this cleanup.
+        retained = {row['id'] for row in self.summaries}
+        known = {'processed','game.json','started','finished','exit-code','owner.pid','owner.stat'}
+        for connection in self.connections.values():
+            for folder in (Path(connection['root'])/'sessions').glob('session.*'):
+                try:
+                    if folder.is_symlink() or time.time()-folder.stat().st_mtime < 30*86400:continue
+                    marker = folder/'processed'
+                    if not marker.is_file():continue
+                    report_id=marker.read_text().strip()
+                    expected_id=hashlib.sha256(str(folder.resolve()).encode()).hexdigest()[:32]
+                    if report_id!=expected_id or report_id in retained:continue
+                    entries = list(folder.iterdir())
+                    if folder.stat().st_uid!=os.getuid():continue
+                    if any(p.is_symlink() or not p.is_file() or p.name not in known
+                           or p.stat().st_uid!=os.getuid() or time.time()-p.stat().st_mtime<30*86400 for p in entries):continue
+                    for path in entries:path.unlink()
+                    folder.rmdir()
+                except OSError:continue

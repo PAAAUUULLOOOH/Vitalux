@@ -96,6 +96,7 @@ def check_preferences(app):
             threshold = page.alert_boxes["cpu_temp"]
             threshold.number.setText("97")
             assert threshold.value() == 97
+            threshold.number.editingFinished.emit()
             assert settings.get("cpu_temp") == 97
             threshold.number.setText("9")
             threshold.commit()

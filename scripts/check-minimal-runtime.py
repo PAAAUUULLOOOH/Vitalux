@@ -14,6 +14,7 @@ def main():
 from PySide6.QtWidgets import QApplication,QLabel
 from PySide6.QtNetwork import QNetworkAccessManager
 from PySide6.QtSvg import QSvgRenderer
+from PySide6.QtOpenGLWidgets import QOpenGLWidget
 import psutil,ssl,sqlite3
 app=QApplication([]);label=QLabel('Vitalux portable startup');label.show();app.processEvents()
 assert not label.grab().isNull()

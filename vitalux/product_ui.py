@@ -172,6 +172,15 @@ class ProductHeader(QWidget):
         self.set_specs([])
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self._context_menu)
+        self.actions_button = QPushButton('⋯', self)
+        self.actions_button.setObjectName('ghostBtn')
+        self.actions_button.setFixedSize(32, 28)
+        from .i18n import tr
+        self.actions_button.setToolTip(tr('Komponentenaktionen'))
+        self.actions_button.setAccessibleName(tr('Komponentenaktionen'))
+        self.actions_button.clicked.connect(lambda: self._context_menu(
+            self.actions_button.geometry().bottomRight()))
+        details.addWidget(self.actions_button, 0, Qt.AlignHCenter)
 
     def _context_menu(self, position):
         if not self.key:return

@@ -12,11 +12,12 @@ import zipfile
 
 BINDINGS = {
     'QtQuick.abi3.so', 'QtQuickWidgets.abi3.so',
-    'QtQml.abi3.so', 'QtNetwork.abi3.so', 'QtOpenGL.abi3.so',
+    'QtQml.abi3.so', 'QtNetwork.abi3.so', 'QtOpenGL.abi3.so', 'QtOpenGLWidgets.abi3.so',
 }
 LIBRARIES = {
     'libQt6Quick.so.6',
     'libQt6QuickWidgets.so.6',
+    'libQt6OpenGLWidgets.so.6',
     'libQt6Qml.so.6',
     'libQt6QmlModels.so.6',
     'libQt6QmlWorkerScript.so.6',

@@ -49,7 +49,7 @@ class PreferencesPage(AppearancePreferences, Page):
         'mini_hud_opacity': 90,
         'mini_hud_metrics': list(DEFAULT_KEYS),
         'network_app_limits': {},
-        'primary_gpu': '', 'chart_preferences': {}, 'component_picture_customized': False,
+        'primary_gpu': '', 'network_interface': 'auto', 'chart_preferences': {}, 'component_picture_customized': False,
     }
     SECTION_DEFAULTS = {
         'appearance': design_catalog.FIELDS,
@@ -120,6 +120,7 @@ class PreferencesPage(AppearancePreferences, Page):
         self.mode_notes = {key: title+' · Akzentfarben und Hintergrund sind anpassbar.'
                            for key,title in design_catalog.CHOICES}
         self.mode_notes['dark']=''
+        self.mode_notes['sculpt']='Keramik und Titan · Dreidimensionale Materialien und gefräste Konturen.'
         self.theme_note.setText(tr(self.mode_notes.get(theme.mode(),'')))
         accent_row = QVBoxLayout()
         accent_selector = QHBoxLayout()
@@ -424,6 +425,7 @@ class PreferencesPage(AppearancePreferences, Page):
         )):
             value = AlertThresholdField(lo, hi, unit, settings.get(key, default))
             value.valueChanged.connect(lambda v, k=key: self._set_preference(k, v))
+            value.number.editingFinished.connect(self._flush_preferences)
             text = label(title, 'strong')
             threshold_grid.addWidget(text, row_index, 0, Qt.AlignLeft | Qt.AlignVCenter)
             threshold_grid.addWidget(value, row_index, 1, Qt.AlignLeft | Qt.AlignVCenter)
@@ -495,6 +497,13 @@ class PreferencesPage(AppearancePreferences, Page):
 
     def search_settings(self, query):
         """Predict full or partial settings names; never search outside Settings."""
+        if query.strip().casefold() == 'td':
+            from .sculpt import activate
+            activate(self)
+            self.search.blockSignals(True);self.search.clear();self.search.blockSignals(False)
+            self.search_results.clear();self.search_results.hide()
+            self.search_navigation.cancel();self.search_overlay.suggestions_changed()
+            return
         from difflib import SequenceMatcher
         self.search_results.clear()
         tokens = self._search_normalize(query).split()
@@ -612,6 +621,7 @@ class PreferencesPage(AppearancePreferences, Page):
         changes = design_catalog.defaults() if section=='appearance' else {key: self.DEFAULTS[key] for key in keys}
         if not settings.set_many(changes):
             return
+        for key in changes:getattr(self, '_pending_preferences', {}).pop(key,None)
         if section == 'appearance':
             self._select_without_signal(self.accent_combo, self.DEFAULTS['accent'])
             self._select_without_signal(self.background_combo, self.DEFAULTS['background_style'])
@@ -777,8 +787,35 @@ class PreferencesPage(AppearancePreferences, Page):
         self._refresh_restore_button()
 
     def _set_preference(self, key, value):
-        settings.set(key, value)
+        # Arrow keys and typing can emit several intermediate thresholds.
+        # Commit the final group once, and flush before any shutdown/reset.
+        if not hasattr(self, '_pending_preferences'):
+            self._pending_preferences = {}
+            self._preference_timer = QTimer(self)
+            self._preference_timer.setSingleShot(True)
+            self._preference_timer.setInterval(200)
+            self._preference_timer.timeout.connect(self._flush_preferences)
+        self._pending_preferences[key] = value
+        self._preference_timer.start()
         self._refresh_restore_button()
+
+    def _flush_preferences(self):
+        if not getattr(self, '_pending_preferences', None):return
+        changes = self._pending_preferences
+        if settings.set_many(changes):self._pending_preferences = {}
+        self._refresh_restore_button()
+
+    def hideEvent(self, event):
+        self._flush_preferences()
+        super().hideEvent(event)
+
+    def shutdown(self):
+        self._flush_preferences()
+        task = getattr(self, '_background_import', None)
+        if task is not None and task.isRunning():
+            task.requestInterruption()
+            return False
+        return not bool(getattr(self, '_pending_preferences', None))
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -786,11 +823,13 @@ class PreferencesPage(AppearancePreferences, Page):
 
     def _refresh_restore_button(self):
         values = settings.get_many(self.DEFAULTS)
+        pending=getattr(self,'_pending_preferences',{})
+        values.update(pending)
         for section, keys in self.SECTION_DEFAULTS.items():
             button = self._reset_buttons.get(section)
             if button is not None:
                 defaults=design_catalog.defaults() if section=='appearance' else self.DEFAULTS
-                self._reset_reveals[section].setRevealed(any(settings.get(key,defaults[key]) != defaults[key] for key in keys))
+                self._reset_reveals[section].setRevealed(any(pending.get(key,settings.get(key,defaults[key])) != defaults[key] for key in keys))
         changed=(any(values[key] != default for key, default in self.DEFAULTS.items()) or
                  any(settings.get(key) for key in ('custom_accents','custom_backgrounds','dashboard_order',
                      'dashboard_hidden','dashboard_layout','lang')))
@@ -799,6 +838,7 @@ class PreferencesPage(AppearancePreferences, Page):
         self.restore_button.setEnabled(bool(changed) and not getattr(self,'_restart_pending',False))
 
     def restore_defaults(self):
+        self._flush_preferences()
         answer = QMessageBox.question(
             self, 'Vitalux',
             tr('Alle Einstellungen dieses Profils zurücksetzen und eigene Farben, Layouts, '

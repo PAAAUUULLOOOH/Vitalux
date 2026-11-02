@@ -53,8 +53,11 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',folder
                 folder=Path(os.environ['VITALUX_CONTROL_EVIDENCE']);folder.mkdir(parents=True,exist_ok=True)
                 window.grab().save(str(folder/(mode+'.png')))
             QTest.mouseMove(page.distro_logo_host,page.distro_logo_host.rect().center());wait()
-            assert page.distro_logo_remove.isVisible(),mode
+            assert not page.distro_logo_remove.isVisible(),mode
+            page.toggle_editor();wait()
+            assert page.board.editing and page.distro_logo_remove.isVisible(),mode
             QTest.mouseClick(page.distro_logo_remove,Qt.LeftButton);wait()
+            page.save_editor();wait()
             assert not page.distro_logo_host.isVisible() and not settings.get('dashboard_distro_logo_visible'),mode
             # Exercise the actual popup and its restore action.
             def choose():

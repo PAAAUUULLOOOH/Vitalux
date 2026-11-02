@@ -315,6 +315,8 @@ class GamesPage(Page):
         self._operation_error=''
         self._operation_game_id=''
         self._covers = {}
+        self._running_games = set()
+        self._recording_games = set()
         self._tile_viewport = None
         self.service = GameService(self, initial_games=startup_games)
         self.service.catalog_ready.connect(self._catalog)
@@ -324,6 +326,7 @@ class GamesPage(Page):
         self.service.report_ready.connect(self._report)
         self.service.session_finished.connect(self._finished)
         self.service.activity.connect(self._activity)
+        self.service.recording.connect(self._recording)
         self.service.failed.connect(self._error)
         self.service.busy.connect(self._busy)
         self.service.launch_ready.connect(self._launch_ready)
@@ -397,6 +400,10 @@ class GamesPage(Page):
         self.reason = label('', 'strong', wrap=True);self.details.body.addWidget(self.reason)
         self.criteria = QPushButton('Bewertung erklären');self.criteria.setObjectName('ghostBtn')
         self.criteria.clicked.connect(self._explain);self.details.body.addWidget(self.criteria, 0, Qt.AlignLeft)
+        self.compare_button = QPushButton('Sitzungen vergleichen')
+        self.compare_button.setObjectName('ghostBtn')
+        self.compare_button.clicked.connect(self.compare_sessions)
+        self.details.body.addWidget(self.compare_button, 0, Qt.AlignLeft)
         plot = Card('Spielverlauf')
         self.plot_card = plot
         self.chart = ChartPanel(['FPS', 'Frametime'], [theme.accent(), theme.secondary_accent()],
@@ -512,12 +519,10 @@ class GamesPage(Page):
         self.details.setVisible(game is not None)
         if not game:return
         self.game_name.setText(game['name'])
-        self.overlay_state.setText(tr('Overlay aktiviert und mit dem Spiel verbunden.'
-            if game.get('connected') and game.get('overlay_enabled') else
-            'Overlay ist deaktiviert.' if game.get('connected') else
-            'Overlay noch nicht mit dem Spiel verbunden.'))
+        self._sync_overlay_state()
         self.start_button.setEnabled(bool(game.get('installed')) and not self._operation_busy and not self._launch_requested)
         history = [row for row in self.summaries if row['game_id']==self.selected_id]
+        self.compare_button.setVisible(len(history) >= 2)
         self._history_table(history)
         if history and not self.selected_report:
             self.selected_report = history[0]['id']
@@ -651,11 +656,37 @@ class GamesPage(Page):
         self._explanation = show_details(self, 'Bewertung erklären', text)
 
     def _activity(self, active):
+        self._running_games = set(active)
         if active:
-            self.status.setText(tr('MangoHud · Spielsitzung aktiv'))
+            self.status.setText(tr('Spiel gestartet · warte auf Messdaten'))
         else:
             self.status.setText(tr('MangoHud · Bereit') if game_profiles.available({})
                                 else tr('MangoHud · Nicht eingerichtet'))
+        self._sync_overlay_state()
+
+    def _recording(self, games):
+        self._recording_games = set(games)
+        if games:self.status.setText(tr('MangoHud · Messdaten werden empfangen'))
+        self._sync_overlay_state()
+
+    def _sync_overlay_state(self):
+        game = next((row for row in self.games if row['id'] == self.selected_id), {})
+        if self.selected_id in self._recording_games:
+            text = 'MangoHud · Messdaten werden empfangen'
+        elif self.selected_id in self._running_games:
+            text = 'Spiel gestartet · warte auf Messdaten'
+        elif game.get('connected') and game.get('overlay_enabled'):
+            text = 'Overlay eingerichtet · noch keine laufende Aufnahme bestätigt'
+        else:
+            text = 'Overlay ist deaktiviert.' if game.get('connected') else 'Overlay noch nicht mit dem Spiel verbunden.'
+        self.overlay_state.setText(tr(text))
+
+    def compare_sessions(self):
+        from .session_comparison import SessionComparison
+        rows = [row for row in self.summaries if row['game_id'] == self.selected_id]
+        if len(rows) < 2:return
+        self._comparison = SessionComparison(rows, self)
+        self._comparison.show()
 
     def _finished(self, report):
         if self._closing:return
