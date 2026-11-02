@@ -71,9 +71,12 @@ def main():
                     pref.search.setText('td');app.processEvents()
                     assert overview.sculpt_host.view is None and overview.sculpt_host.notice.isVisible()
                     pref.select_design('obsidian_gold')
+                pref.search.setText('td')
+                wait_until(lambda:overview.sculpt_host.view is not None and overview.sculpt_host.view.ready)
             finally:
                 window.quit_from_tray()
                 wait_until(lambda:not window.isVisible())
+                assert overview.sculpt_host.view is None,'Native surface survived orderly app shutdown'
                 from vitalux.lifecycle import stop_product_workers,product_workers
                 stop_product_workers()
                 for worker in product_workers():worker.pool.waitForDone()

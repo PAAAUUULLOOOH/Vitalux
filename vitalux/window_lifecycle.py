@@ -91,7 +91,7 @@ class WindowLifecycle:
         if not self.sampler.isRunning():self.sampler.start()
         for _title,page in self.pages:
             if isinstance(page,NetworkPage):page.watcher.resume_after_shutdown()
-            elif hasattr(page,'service') and hasattr(page,'resume_after_shutdown'):page.resume_after_shutdown()
+            elif hasattr(page,'resume_after_shutdown'):page.resume_after_shutdown()
         self.manager.resume_after_shutdown()
         from .lifecycle import resume_product_workers
         resume_product_workers()
@@ -134,22 +134,22 @@ class WindowLifecycle:
             self.sampler.stop()
             self.manager.shutdown()
             for _title, page in self.pages:
-                if hasattr(page,'service') and hasattr(page,'shutdown'):
-                    page.shutdown()
-                if isinstance(page,NetworkPage):
-                    page.shutdown()
                 if isinstance(page, DiskPage):
                     worker = page.benchmark.thread
                     if worker is not None and worker.isRunning():
                         worker.stop()
             self.centralWidget().setEnabled(False)
             self.statusBar().showMessage(tr('Vitalux wird neu gestartet …' if self.restart_requested else 'Vitalux wird beendet …'))
+        # Every page owns its shutdown contract, including batched preferences,
+        # background imports and independent native rendering surfaces. Evaluate
+        # all contracts so an earlier busy page cannot skip later cancellations.
+        page_states=[page.shutdown() for _title,page in self.pages if hasattr(page,'shutdown')]
+        pages_ready=all(state is not False for state in page_states)
         workers_running = any(worker.isRunning() for worker in self.findChildren(QThread))
-        network_ready=all(page.shutdown() for _title,page in self.pages if isinstance(page,NetworkPage))
         manager_ready = self.manager.shutdown() is not False
         from .lifecycle import stop_product_workers
         products_ready=stop_product_workers()
-        if workers_running or not network_ready or not manager_ready or not products_ready or time.monotonic() < self._shutdown_not_before:
+        if workers_running or not pages_ready or not manager_ready or not products_ready or time.monotonic() < self._shutdown_not_before:
             event.ignore()
             self._close_retry.start(25)
             return

@@ -28,13 +28,18 @@ with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',str
  assert page.restore_reveal.revealed
  page._set_preference('interval',1);app.processEvents();assert not page._maintenance_card.isHidden() and not page.restore_button.isEnabled()
  entered,release=Event(),Event();commits=[]
+ page._set_preference('cpu_temp',71)
+ def reset():
+  assert settings.get('cpu_temp')==71 and not page._pending_preferences,'Pending edits were not committed before reset'
+  assert settings.set_many(PreferencesPage.DEFAULTS)
+  commits.append('reset');return True
  def slow(*args,**kwargs):entered.set();release.wait(8);return None
  worker=product_ui.loader()
  with patch.object(product_ui,'resolve',slow):
   worker.request(dict(kind='cpu',vendor='Intel',model='Core i5-14600KF',exact=True))
   assert entered.wait(2)
   try:
-   assert window.restart_for_renderer(commit=lambda:commits.append('reset') or True)
+   assert window.restart_for_renderer(commit=reset)
    assert not commits and window._close_retry.isActive(),'Reset deleted caches while image work was running'
    assert worker.cancelled.is_set()
   finally:release.set()
@@ -42,4 +47,7 @@ with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',str
   while not commits and time.monotonic()<deadline:app.processEvents();time.sleep(.01)
   assert commits==['reset'] and worker.pool.activeThreadCount()==0
   assert window.isHidden() and not window._close_retry.isActive()
+  deadline=time.monotonic()+.3
+  while time.monotonic()<deadline:app.processEvents();time.sleep(.01)
+  assert settings.get('cpu_temp')==90,'A delayed preference write overwrote the reset'
 print('Fresh/reset maintenance visibility and nonblocking reset waiting for product-thread completion PASS')
