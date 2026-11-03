@@ -70,7 +70,12 @@ with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',str
   assert window.width()==old.width()+40 and window.height()==old.height()+25
   window.set_language('en');assert frame.buttons['close'].accessibleName()=='Close window'
   window.set_language('de');assert frame.buttons['close'].accessibleName()=='Fenster schließen'
-  frame.buttons['close'].click();wait(20);assert window.isHidden()
+  frame.buttons['close'].click()
+  # Close finishes asynchronously after worker cancellation; its retry timer
+  # alone is 25 ms. Assert completion, rather than a shared-runner 20 ms race.
+  close_deadline=time.monotonic()+3
+  while not window.isHidden() and time.monotonic()<close_deadline:wait(10)
+  assert window.isHidden(),'Close control did not finish orderly shutdown'
   splash=StartupWindow();splash.show();wait(20)
   assert splash.windowType()==Qt.Dialog
   splash.move(10,10);wait(220)
