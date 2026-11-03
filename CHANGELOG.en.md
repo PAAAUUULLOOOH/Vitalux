@@ -1,5 +1,10 @@
 # Vitalux – Changes
 
+## [v0.9.6.5-unstable.4] - 2026-11-03
+
+- Designs: Sculpt is selectable through its own tile and matching preview, replacing Light. Ceramic/titanium surfaces, machined contours and a native 3D scene give it a distinct appearance.
+- Existing Light profiles move to Sculpt. Personal preferences are retained; the Light background and color preset remain available.
+
 ## [v0.9.6.5-unstable.3] - 2026-11-03
 
 - Network: select the automatic route, a named adapter or explicitly all interfaces. Transfer rates and totals belong to the displayed source; removed adapters disappear from the list.

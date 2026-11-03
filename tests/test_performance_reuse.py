@@ -92,5 +92,5 @@ with tempfile.TemporaryDirectory() as directory,patch.object(settings,'PATH',dir
     settings.set('accent','design_default')
     from vitalux import design_catalog
     assert theme.palette_for(theme.mode())==design_catalog.factory(theme.mode())
-    theme.set_mode('light');assert theme.palette_for('light')==design_catalog.factory('light')
+    theme.set_mode('sculpt');assert theme.palette_for('sculpt')==design_catalog.factory('sculpt')
 print('Freed menus, active overview, caption/vector caches, dynamic chart registry, hotplug/live sensors and image value ownership PASS')

@@ -54,6 +54,9 @@ def scene_pixmap(size,phase=0.):
 
 
 def stylesheet():
+    from . import theme
+    accent=theme.accent()
+    border='#80321e' if accent==PALETTE['accent'] else QColor(accent).darker(130).name()
     return '''
     QLabel#heroTitle {font-size:22px;font-weight:650;}
     QLabel#cardTitle {font-size:10px;font-weight:750;letter-spacing:1.5px;}
@@ -70,7 +73,7 @@ def stylesheet():
     QScrollBar::handle:vertical {background:#8d8c80;border-radius:3px;}
     QProgressBar {background:#d7cfc1;border:1px solid #aaa394;border-radius:5px;}
     QProgressBar::chunk {background:#a94426;border-radius:4px;}
-    '''
+    '''.replace('#a94426',accent).replace('#80321e',border)
 
 
 def paint_navigation(button):
@@ -157,12 +160,3 @@ def configure_shell(window,shell):
     for index,button in enumerate(window.nav_buttons):
         window.nav_host.layout().insertWidget(index,button)
         button.setMinimumHeight(39)
-
-
-def activate(page):
-    from . import design_catalog,eco,motion
-    if eco.enabled():return
-    before=page.window.grab() if motion.enabled() and page.window.isVisible() else None
-    if design_catalog.switch(KEY):
-        page.window.apply_appearance(before=before)
-        page.refresh_appearance()

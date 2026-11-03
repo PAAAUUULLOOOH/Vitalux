@@ -3,7 +3,7 @@
 import argparse,json,os,subprocess,sys,tempfile
 from pathlib import Path
 
-def capture(source, output):
+def capture(source, output, designs):
     sys.path.insert(0,str(source))
     from PySide6.QtCore import QTimer
     from PySide6.QtWidgets import QApplication,QWidget,QVBoxLayout
@@ -12,7 +12,7 @@ def capture(source, output):
     from vitalux.glass import AmbientScene,GlassSidebar
     app=QApplication([])
     output.mkdir(parents=True,exist_ok=True)
-    for key,_ in theme.CHOICES:
+    for key in designs:
         settings.set_many(dict(theme=key,accent='design_default',motion='smooth',background_style='theme_default'))
         theme.set_mode(key);theme.set_accent('#4f8cff');app.setStyleSheet(theme.stylesheet())
         host=QWidget();layout=QVBoxLayout(host);pulse=PulseCore(152);layout.addWidget(pulse)
@@ -33,11 +33,15 @@ def main():
     parser.add_argument('--reference',type=Path)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--capture',action='store_true')
+    parser.add_argument('--designs',default='')
     args=parser.parse_args()
     if args.capture:
-        capture(args.source.resolve(),args.output.resolve());return
+        capture(args.source.resolve(),args.output.resolve(),args.designs.split(','));return
     if not args.reference:parser.error('--reference is required for comparison')
     from PySide6.QtGui import QImage
+    sys.path.insert(0,str(args.source.resolve()))
+    from vitalux import theme
+    designs=args.designs or ','.join(key for key,_ in theme.CHOICES)
     results=[]
     for scale in ('1','1.5','2'):
         paths=[]
@@ -46,7 +50,7 @@ def main():
             with tempfile.TemporaryDirectory(prefix='vitalux-render-') as directory:
                 env=dict(os.environ,QT_QPA_PLATFORM='offscreen',QT_SCALE_FACTOR=scale,VITALUX_SPEC_OFFLINE='1')
                 for kind in ('CONFIG','STATE','CACHE','DATA'):env['XDG_'+kind+'_HOME']=str(Path(directory)/kind)
-                subprocess.run([sys.executable,__file__,'--capture','--source',str(root.resolve()),'--output',str(output.resolve())],env=env,check=True,timeout=90)
+                subprocess.run([sys.executable,__file__,'--capture','--source',str(root.resolve()),'--output',str(output.resolve()),'--designs',designs],env=env,check=True,timeout=90)
         for before in sorted(paths[0].glob('*.png')):
             after=paths[1]/before.name
             a=QImage(str(before)).convertToFormat(QImage.Format_RGBA8888)

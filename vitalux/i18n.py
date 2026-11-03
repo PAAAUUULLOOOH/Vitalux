@@ -157,6 +157,7 @@ EN_MORE.update({
     'Standard-Gateway': 'Default gateway',
     'System-DNS': 'System DNS',
     'Keramik und Titan · Dreidimensionale Materialien und gefräste Konturen.': 'Ceramic and titanium · Three-dimensional materials and machined contours.',
+    'Räumliches Vitalux-Emblem · Mausgesteuerte Kamera und technische Tiefenebenen.': 'Dimensional Vitalux emblem · Mouse-controlled camera and technical depth layers.',
     'Nicht verfügbar': 'Unavailable',
     'Alle Schnittstellen': 'All interfaces',
     'Virtuelle Adapter und VPNs können denselben Datenverkehr mehrfach zählen.': 'Virtual adapters and VPNs can count the same traffic more than once.',

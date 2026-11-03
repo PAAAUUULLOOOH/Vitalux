@@ -407,4 +407,5 @@ class AppearancePreferences:
         profile = self.motion_combo.currentData()
         if profile in motion.MODES:
             self._set_preference('motion', profile)
+            self._flush_preferences()
             self.window.apply_appearance()

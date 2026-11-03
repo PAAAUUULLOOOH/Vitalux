@@ -10,7 +10,7 @@ def paint(p,tile,pal):
     frame=QRectF(13,13,max(50,tile.width()-55),59)
     p.setPen(QPen(QColor(pal['border']),.7));p.setBrush(QColor(pal['bg']))
     p.drawRoundedRect(frame,7,7)
-    bloom=tile.key=='aurora_bloom'
+    bloom=tile.key=='aurora_bloom';sculpt=tile.key=='sculpt'
     if bloom:
         p.save();clip=QPainterPath();clip.addRoundedRect(frame,7,7);p.setClipPath(clip,Qt.IntersectClip)
         p.drawPixmap(frame,tile._background,QRectF(tile._background.rect()));p.restore()
@@ -23,6 +23,10 @@ def paint(p,tile,pal):
         elif bloom:
             from .aurora_bloom import shape
             p.drawPath(shape(rect,True,scale=.3))
+        elif sculpt:
+            from .sculpt import shape
+            p.setPen(QPen(QColor(pal['border']),.6))
+            p.drawPath(shape(rect,True))
         else:p.drawRoundedRect(rect,2.5,2.5)
     left=frame.left()+5;right=frame.right()-5;top=frame.top()+5;bottom=frame.bottom()-5
     if not nebula and not eclipse:
@@ -31,16 +35,26 @@ def paint(p,tile,pal):
             p.setPen(QPen(QColor(pal['muted']),.9));p.drawLine(QPointF(left+3,top+6+index*7),QPointF(left+6,top+6+index*7))
         left+=13
     else:bottom-=8
-    header=QRectF(left,top,right-left,8);panel(header)
-    y=top+12;gap=3;width=(right-left-2*gap)/3
+    header=QRectF(left,top,right-left,17 if sculpt else 8);panel(header)
+    if sculpt:
+        # Same split hero as the actual design: chips beside its metal sculpture.
+        for column in range(2):
+            for row in range(2):panel(QRectF(left+3+column*(header.width()*.27),top+3+row*6,header.width()*.23,4))
+        for offset,tone in ((-2,'#a94426'),(2,'#8b9698'),(0,'#eee9dd')):
+            loop=QPainterPath();loop.addEllipse(QRectF(header.right()-22+offset,top+3,14,10))
+            p.setPen(QPen(QColor(tone),1.5));p.setBrush(Qt.NoBrush);p.drawPath(loop)
+    y=top+(21 if sculpt else 12);gap=3;count=4 if sculpt else 3;width=(right-left-(count-1)*gap)/count
     if eclipse:
         for index in range(6):panel(QRectF(left+index*(right-left)/6,top+9,(right-left)/6-2,3))
         y=top+15
-    for index in range(3):
-        box=QRectF(left+index*(width+gap),y,width,16);panel(box)
+    for index in range(count):
+        box=QRectF(left+index*(width+gap),y,width,12 if sculpt else 16);panel(box)
         dial=QRectF(box.center().x()-4,box.center().y()-4,8,8)
-        p.setPen(QPen(QColor(pal['accent'] if index!=1 else pal['secondary']),1));p.setBrush(Qt.NoBrush);p.drawArc(dial,225*16,-220*16)
-    plot=QRectF(left,y+20,right-left,max(8,bottom-y-20));panel(plot)
+        p.setPen(QPen(QColor(pal['accent'] if index!=1 else pal['secondary']),1));p.setBrush(Qt.NoBrush)
+        if sculpt:p.drawLine(QPointF(box.left()+2,box.bottom()-3),QPointF(box.right()-2,box.bottom()-3))
+        else:p.drawArc(dial,225*16,-220*16)
+    plot_y=y+(16 if sculpt else 20)
+    plot=QRectF(left,plot_y,right-left,max(8,bottom-plot_y));panel(plot)
     p.setBrush(Qt.NoBrush)
     for index,tone in enumerate((pal['accent'],pal['secondary'])):
         path=QPainterPath()

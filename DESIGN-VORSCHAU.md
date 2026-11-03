@@ -9,7 +9,7 @@ bash Designs-testen.sh obsidian_gold
 bash Quantum-Core.sh
 ```
 
-Eight complete designs are available in **Settings → Appearance → Design**: Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core, Light, Aurora Bloom and Eclipse Crystal. All support custom accents and backgrounds. Choices are remembered separately for each design. Original colors, Original background and Reset design restore the active design's factory choices. Retired design names remain available as color/background presets without transferring their effects or layouts.
+Eight complete designs are available in **Settings → Appearance → Design**: Obsidian Gold, Glass, Crystal Atrium, Nebula Prism, Quantum Core, Sculpt, Aurora Bloom and Eclipse Crystal. All support custom accents and backgrounds. Choices are remembered separately for each design. Original colors, Original background and Reset design restore the active design's factory choices. Retired design names remain available as color/background presets without transferring their effects or layouts.
 
 Preview shortcuts use `design-test-data/` beside the extracted app. Normal Stable and Unstable profiles remain separate. Preview mode disables update checks and installation. Keep the complete runtime, libraries and assets together.
 

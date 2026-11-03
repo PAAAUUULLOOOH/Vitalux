@@ -50,6 +50,12 @@ class _AmbientSceneCore:
         self._composed_key = None
         style = backdrops.resolve(settings.observed('background_style', 'theme_default'),
                                   theme.mode())
+        native=theme.mode()=='nexus' and style=='original:nexus'
+        if native and not hasattr(self,'native_background'):
+            from .native_scene import SceneHost
+            self.native_background=SceneHost(self,module='vitalux.nexus_scene',view_class='NexusView',background=True)
+            self.native_background.frame_changed.connect(self._native_frame_changed)
+        if hasattr(self,'native_background'):self.native_background.enable(native)
         # Only designs with moving backgrounds participate in this timer.
         # Quantum Core uses a cached static image; its logos stay independent.
         active = style in backdrops.ANIMATED_PRESETS and self.isVisible()
@@ -59,6 +65,18 @@ class _AmbientSceneCore:
             self._wallpaper_timer.stop()
             if style not in backdrops.ANIMATED_PRESETS:self._phase = 0.0
         self.update()
+
+    def _native_frame_changed(self):
+        self._composed_key=None
+        self.update()
+        upload=getattr(self,'_schedule_upload',None)
+        if upload:upload()
+        for kind in (GlassSurface,GlassSidebar):
+            for card in self.findChildren(kind):
+                if card.isVisible():card.update()
+
+    def shutdown_native(self):
+        return self.native_background.shutdown() if hasattr(self,'native_background') else True
 
     def showEvent(self,event):
         super().showEvent(event)
@@ -127,6 +145,13 @@ class _AmbientSceneCore:
 
     def _ensure_composed(self):
         style=backdrops.resolve(settings.observed('background_style','theme_default'),theme.mode())
+        native=getattr(self,'native_background',None)
+        if style=='original:nexus' and theme.mode()=='nexus' and native is not None and not native._frame.isNull():
+            if self._composed_key is None:
+                self._composed_sharp=QPixmap.fromImage(native._frame)
+                self._composed_soft=self._composed_sharp
+                self._composed_key=('native',self.size())
+            return
         if style=='minimal' and theme.mode()=='minimal':
             self._composed_sharp=QPixmap();self._composed_soft=QPixmap();self._composed_key=None;return
         self._ensure_cache()

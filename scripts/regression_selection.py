@@ -7,13 +7,13 @@ CRITICAL=('portable-runtime/','packaging/','requirements','.github/','assets/',
           'scripts/run-regressions.py','scripts/regression_selection.py',
           'vitalux/__main__.py','vitalux/settings.py','vitalux/profiles.py',
           'vitalux/lifecycle.py','vitalux/window_lifecycle.py','vitalux/window.py',
-          'vitalux/telemetry.py','vitalux/renderer.py','vitalux/single_instance.py',
+          'vitalux/telemetry.py','vitalux/native_scene.py','vitalux/renderer.py','vitalux/single_instance.py',
           'vitalux/window_appearance.py','vitalux/tray_controls.py','vitalux/widgets.py',
           'vitalux/charts.py','vitalux/page_base.py',
           'vitalux/restart_protocol.py','vitalux/startup.py','vitalux/theme.py','vitalux/ui_locale.py')
 SMOKE={'test_core_behaviors.py','test_single_instance.py','test_update_catalog.py','test_versioning.py'}
 DOC_CHECKS={'test_guide_locale.py','test_preferences_changelog.py','test_changelog_view.py',
-            'test_info_credits.py','test_sculpt_design.py'}
+            'test_info_credits.py','test_design_visibility.py'}
 DYNAMIC={'exec','eval','__import__','import_module','spec_from_file_location'}
 PROCESS_CALLS={'run','Popen','call','check_call','check_output','getoutput','getstatusoutput'}
 

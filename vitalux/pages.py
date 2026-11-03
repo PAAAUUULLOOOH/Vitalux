@@ -230,8 +230,8 @@ class OverviewPage(Page):
         enabled=theme.mode()=='sculpt'
         if not hasattr(self,'sculpt_host') and not enabled:return
         if not hasattr(self,'sculpt_host'):
-            from .sculpt_host import SculptHost
-            self.sculpt_host=SculptHost(self.hero_card)
+            from .native_scene import SceneHost
+            self.sculpt_host=SceneHost(self.hero_card)
             self.sculpt_row=QWidget(self.hero_card)
             self.sculpt_layout=QHBoxLayout(self.sculpt_row)
             self.sculpt_layout.setContentsMargins(0,0,0,0)

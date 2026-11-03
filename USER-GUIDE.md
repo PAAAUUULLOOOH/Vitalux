@@ -20,7 +20,9 @@ Available updates highlight **Updates** in every sidebar, header navigation and 
 
 ## Designs and backgrounds
 
-Choose one of eight rounded preview tiles under **Settings → Appearance → Design**: **Obsidian Gold**, **Glass**, **Crystal Atrium**, **Nebula Prism**, **Quantum Core**, **Light**, **Aurora Bloom** and **Eclipse Crystal**. Obsidian Gold is the default for new profiles. Design changes retain your page, scroll position and running measurements. The selected check stays inside the tile's upper-right edge.
+Choose one of eight rounded preview tiles under **Settings → Appearance → Design**: **Obsidian Gold**, **Glass**, **Crystal Atrium**, **Nebula Prism**, **Quantum Core**, **Sculpt**, **Aurora Bloom** and **Eclipse Crystal**. Obsidian Gold is the default for new profiles. Design changes retain your page, scroll position and running measurements. The selected check stays inside the tile's upper-right edge.
+
+Sculpt is selectable through its own rounded preview tile. It combines ceramic/titanium panels, slim bar instruments and a native 3D studio. Existing Light profiles use Sculpt; personal colors/backgrounds are retained, and the Light background/color presets remain selectable. Unsupported 3D drivers leave the rest of the page available.
 
 Eclipse Crystal is selectable in the regular gallery; its header keeps its original height and meets the upper window edge. Connected navigation panes use the app’s outer contour without doubling it. Free inner edges remain outlined. Scrollbars have wider mouse targets and stay clear of fixed headers and footers.
 

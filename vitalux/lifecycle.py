@@ -35,6 +35,9 @@ def dispose_gui(controller):
     window=controller.window
     if window is not None and shiboken6.isValid(window):
         window.sampler.stop();window.sampler.wait()
+        window.centralWidget().shutdown_native()
+        native=getattr(window.centralWidget(),'native_background',None)
+        if native is not None and native.worker is not None:native.worker.wait()
         stop_gui_activity(window)
         # Dialogs, tool windows and the scene are owned by the main window.
         # The independent MiniHUD must also die before QApplication.

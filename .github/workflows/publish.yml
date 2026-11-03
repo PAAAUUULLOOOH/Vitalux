@@ -159,10 +159,10 @@ jobs:
           set -euo pipefail
           python scripts/check-resource-budgets.py
           python scripts/check-ui-endurance.py --cycles 180 --output build/ui-endurance
-          git worktree add --detach build/render-reference 5bcc1e90a69f3f58f1de582db0b5eeec5b0e4332
+          git worktree add --detach build/render-reference bd377d1fd67bda6bbaf68ad6e646b6e4fa7b2a6b
           python scripts/check-render-parity.py --reference build/render-reference --output build/render-parity
           git worktree remove build/render-reference
-          git worktree add --detach build/performance-reference 1a74b85a6ff427ca2e7cf672e26b2efe0f6ca6e8
+          git worktree add --detach build/performance-reference bd377d1fd67bda6bbaf68ad6e646b6e4fa7b2a6b
           python scripts/check-performance-render.py --reference build/performance-reference --output build/performance-parity
           git worktree remove build/performance-reference
       - name: Check real component pictures and offline reuse
@@ -209,7 +209,7 @@ jobs:
           set -euo pipefail
           STAGED="$PWD/build/staged/Vitalux-${TAG}"
           cd "$STAGED"
-          for DESIGN in obsidian_gold glass light crystal_atrium nebula_prism quantum_core eclipse_crystal aurora_bloom minimal; do
+          for DESIGN in obsidian_gold glass sculpt crystal_atrium nebula_prism quantum_core eclipse_crystal aurora_bloom minimal nexus; do
             LD_LIBRARY_PATH="$STAGED/lib" "$STAGED/runtime/bin/python3.12" scripts/capture-release-ui.py --output "$GITHUB_WORKSPACE/build/ui-scale-checks/$DESIGN" --design "$DESIGN" --scales 1,1.25,1.5,2
           done
       - name: Prepare AppImage tooling

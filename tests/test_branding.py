@@ -50,7 +50,7 @@ def run():
                 assert _brand_asset(True) == f'brand/vitalux-pulse-{variant}.svg'
                 suffix = '-light' if config['variants'][variant].get('light_lens') else ''
                 assert _brand_asset(False) == f'brand/vitalux-wordmark-{variant}{suffix}.svg'
-            theme.set_mode('light')
+            theme.set_mode('sculpt')
             for key in ('blue', 'cyan', 'violet', 'green', 'orange', 'yellow', 'red', 'pink'):
                 theme.set_accent(config['variants'][key]['accent'])
                 assert _brand_asset(False) == f'brand/vitalux-wordmark-{key}-light.svg'

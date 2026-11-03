@@ -14,6 +14,8 @@ from .sculpt_geometry import mesh
 
 
 class SculptView(QOpenGLWidget):
+    ASSET_FOLDER='sculpt'
+
     def __init__(self, parent=None):
         super().__init__(parent)
         fmt=QSurfaceFormat();fmt.setVersion(3,3)
@@ -34,7 +36,7 @@ class SculptView(QOpenGLWidget):
             self.gl.initializeOpenGLFunctions()
             self.context().aboutToBeDestroyed.connect(self.cleanup,Qt.DirectConnection)
             self.program=QOpenGLShaderProgram(self)
-            assets=Path(__file__).resolve().parents[1]/'assets/sculpt'
+            assets=Path(__file__).resolve().parents[1]/'assets'/self.ASSET_FOLDER
             for kind,name in ((QOpenGLShader.Vertex,'material.vert'),(QOpenGLShader.Fragment,'material.frag')):
                 if not self.program.addShaderFromSourceFile(kind,str(assets/name)):
                     raise RuntimeError(self.program.log())
@@ -42,11 +44,7 @@ class SculptView(QOpenGLWidget):
             self.program.bind()
             self.locations={name:self.program.uniformLocation(name) for name in
                 ('viewProjection','cameraPosition','time','model','normalMatrix','baseColor','metalness','roughness','ground','lightViewProjection','shadowMap')}
-            for variant in range(3):self._upload(*mesh(variant))
-            plane=array('f')
-            for x,z in ((-1000,-1000),(-1000,1000),(1000,-1000),(1000,-1000),(-1000,1000),(1000,1000)):
-                plane.extend((x,-102,z,0,1,0,0,0))
-            self._upload(plane.tobytes(),6)
+            self.build_geometry()
             self.program.release()
             self.shadow_program=QOpenGLShaderProgram(self)
             for kind,name in ((QOpenGLShader.Vertex,'material.vert'),(QOpenGLShader.Fragment,'shadow.frag')):
@@ -62,6 +60,13 @@ class SculptView(QOpenGLWidget):
         except Exception as exc:
             self.error=str(exc);self.ready=False
             print('Vitalux: 3D surface unavailable:',self.error,flush=True)
+
+    def build_geometry(self):
+        for variant in range(3):self._upload(*mesh(variant))
+        plane=array('f')
+        for x,z in ((-1000,-1000),(-1000,1000),(1000,-1000),(1000,-1000),(-1000,1000),(1000,1000)):
+            plane.extend((x,-102,z,0,1,0,0,0))
+        self._upload(plane.tobytes(),6)
 
     def _upload(self, data, count):
         vao=QOpenGLVertexArrayObject(self);vao.create();vao.bind()

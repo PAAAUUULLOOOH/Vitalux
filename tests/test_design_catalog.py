@@ -32,6 +32,14 @@ with tempfile.TemporaryDirectory() as folder,patch.object(settings,'PATH',str(Pa
         assert all(after[k]==v for k,v in personal.items())
         assert appearance.migrate(after)==after
     assert catalog.migrate(dict(theme='crystal_glass'))['theme']=='crystal_atrium'
+    for revision in (1,2,3,4):
+        original=dict(personal,theme='light',accent='#c04264',background_style='custom_image',
+                      custom_background_selected='own.png',_design_catalog_revision=revision)
+        migrated=catalog.migrate(original)
+        assert migrated['theme']=='sculpt' and migrated['accent']=='#c04264'
+        assert migrated['custom_background_selected']=='own.png' and migrated['background_style']=='custom_image'
+        assert all(migrated[key]==value for key,value in personal.items())
+        assert catalog.migrate(migrated)==migrated
     for revision in (1,2):
         before=dict(theme='glass',accent='palette:crystal_atrium',_design_catalog_revision=revision,
                     design_settings={'glass':dict(accent='palette:crystal_atrium')})

@@ -18,7 +18,7 @@
 
 ![Vitalux running in English with Obsidian Gold and real system measurements](assets/vitalux-dashboard-preview.png)
 
-**Unstable v0.9.6.5-unstable.3.** This branch contains the next test release. Download the [current Unstable build](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). A separate [Unstable build](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable) is offered only when it contains newer application changes.
+**Unstable v0.9.6.5-unstable.4.** This branch contains the next test release. Download the [current Unstable build](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable), or use the current [Stable release](https://github.com/PAAAUUULLOOOH/Vitalux/releases/latest). A separate [Unstable build](https://github.com/PAAAUUULLOOOH/Vitalux/releases/tag/unstable) is offered only when it contains newer application changes.
 
 ## Features
 
@@ -72,7 +72,9 @@ Keep the runtime, libraries, assets and launcher together. **Code → Download Z
 
 ## Appearance and controls
 
-Choose **Obsidian Gold**, **Glass**, **Crystal Atrium**, **Nebula Prism**, **Quantum Core**, **Light**, **Aurora Bloom** or **Eclipse Crystal** in **Settings → Appearance**. Each design supports preset or custom accent colors and independently selectable backgrounds. The original names of retired designs identify their saved background and color presets; these presets do not change the selected design's layout or effects.
+Choose **Obsidian Gold**, **Glass**, **Crystal Atrium**, **Nebula Prism**, **Quantum Core**, **Sculpt**, **Aurora Bloom** or **Eclipse Crystal** in **Settings → Appearance**. Each design supports preset or custom accent colors and independently selectable backgrounds. The original names of retired designs identify their saved background and color presets; these presets do not change the selected design's layout or effects.
+
+Sculpt brings ceramic and titanium surfaces, machined contours and a native 3D studio to the regular gallery, with a matching preview. It replaces Light; saved preferences remain intact, and Light's background and color presets remain available.
 
 Aurora Bloom has a normal design tile, aurora ribbons, petal-shaped controls and a rounded inner header/sidebar junction.
 

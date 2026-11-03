@@ -159,7 +159,7 @@ def check_preferences(app):
             smart = SmartPane()
             smart.show()
             app.processEvents()
-            for scheme in ("obsidian_gold", "light", "glass", "minimal"):
+            for scheme in ("obsidian_gold", "sculpt", "glass", "minimal"):
                 theme.set_mode(scheme)
                 page.setStyleSheet(theme.stylesheet())
                 css = theme.stylesheet()

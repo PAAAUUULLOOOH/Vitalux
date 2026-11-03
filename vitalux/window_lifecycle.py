@@ -88,6 +88,7 @@ class WindowLifecycle:
     def _cancel_shutdown(self,message):
         self._shutdown_pending = self.restart_requested = self._force_quit = False
         self.centralWidget().setEnabled(True)
+        self.centralWidget().sync_background()
         if not self.sampler.isRunning():self.sampler.start()
         for _title,page in self.pages:
             if isinstance(page,NetworkPage):page.watcher.resume_after_shutdown()
@@ -144,6 +145,7 @@ class WindowLifecycle:
         # background imports and independent native rendering surfaces. Evaluate
         # all contracts so an earlier busy page cannot skip later cancellations.
         page_states=[page.shutdown() for _title,page in self.pages if hasattr(page,'shutdown')]
+        page_states.append(self.centralWidget().shutdown_native())
         pages_ready=all(state is not False for state in page_states)
         workers_running = any(worker.isRunning() for worker in self.findChildren(QThread))
         manager_ready = self.manager.shutdown() is not False

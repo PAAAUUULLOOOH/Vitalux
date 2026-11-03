@@ -197,6 +197,8 @@ class DesignShell(QObject):
         self.retranslate()
         from .sculpt import configure_shell
         configure_shell(w,self)
+        from .nexus import configure_shell as configure_nexus
+        configure_nexus(w,self)
         self._footer_compact=None
         self._responsive()
         if w.window_frame.scene is not None:w.window_frame.sync_controls()

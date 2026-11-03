@@ -120,9 +120,9 @@ def main():
                         private_env=dict(env,QT_QPA_PLATFORM=platform or renderer.display_api(mode) or 'xcb',
                                          VITALUX_RENDERER=mode)
                         private_output=case_output/('native-private-'+case)
-                        command=[sys.executable,str(Path(__file__).with_name('check-sculpt-graphics.py')),
+                        command=[sys.executable,str(Path(__file__).with_name('check-native-designs.py')),
                                  '--output',str(private_output)]
-                        private_check=subprocess.run(command,env=private_env,capture_output=True,text=True,timeout=75)
+                        private_check=subprocess.run(command,env=private_env,capture_output=True,text=True,timeout=110)
                         (case_output/('native-private-'+case+'.log')).write_text(private_check.stdout+private_check.stderr)
                         private_check.check_returncode()
                 finally:

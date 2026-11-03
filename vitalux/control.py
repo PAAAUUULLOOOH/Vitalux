@@ -121,6 +121,7 @@ class PreferencesPage(AppearancePreferences, Page):
                            for key,title in design_catalog.CHOICES}
         self.mode_notes['dark']=''
         self.mode_notes['sculpt']='Keramik und Titan · Dreidimensionale Materialien und gefräste Konturen.'
+        self.mode_notes['nexus']='Räumliches Vitalux-Emblem · Mausgesteuerte Kamera und technische Tiefenebenen.'
         self.theme_note.setText(tr(self.mode_notes.get(theme.mode(),'')))
         accent_row = QVBoxLayout()
         accent_selector = QHBoxLayout()
@@ -498,7 +499,7 @@ class PreferencesPage(AppearancePreferences, Page):
     def search_settings(self, query):
         """Predict full or partial settings names; never search outside Settings."""
         if query.strip().casefold() == 'td':
-            from .sculpt import activate
+            from .nexus import activate
             activate(self)
             self.search.blockSignals(True);self.search.clear();self.search.blockSignals(False)
             self.search_results.clear();self.search_results.hide()

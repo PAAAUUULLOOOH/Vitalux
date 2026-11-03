@@ -112,7 +112,7 @@ with tempfile.TemporaryDirectory() as temporary,patch.object(settings,'PATH',tem
         assert current.before.toImage()==visible,'Interrupted fade jumped to an endpoint'
         current.finish();current.finish();wait()
         assert window._appearance_overlay is None
-        settings.set('motion','off');page.select_design('light')
+        settings.set('motion','off');page.select_design('sculpt')
         assert window._appearance_overlay is None
     finally:
         window._force_quit=True;window.close();wait(100)

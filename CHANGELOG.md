@@ -1,5 +1,10 @@
 # Vitalux – Änderungen
 
+## [v0.9.6.5-unstable.4] - 2026-11-03
+
+- Designs: Sculpt ist mit eigener Kachel und passender Vorschau regulär auswählbar und ersetzt Light. Keramik-/Titan-Flächen, gefräste Konturen und eine native 3D-Szene geben ihm eine eigenständige Gestaltung.
+- Bisherige Light-Profile wechseln zu Sculpt. Persönliche Einstellungen bleiben erhalten; Light-Hintergrund und -Farbpreset sind weiterhin auswählbar.
+
 ## [v0.9.6.5-unstable.3] - 2026-11-03
 
 - Netzwerk: Messquelle automatisch, pro Adapter oder ausdrücklich über alle Schnittstellen wählen. Übertragungsraten und Gesamtzähler gehören zur angezeigten Quelle; entfernte Adapter verschwinden aus der Liste.

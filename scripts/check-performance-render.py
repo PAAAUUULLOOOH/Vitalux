@@ -9,7 +9,7 @@ import sys
 import tempfile
 
 
-def capture(source, output):
+def capture(source, output, designs):
     sys.path.insert(0, str(source))
     # Use one deterministic fixture for both checkouts, independent of test layout.
     sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tests'))
@@ -40,8 +40,8 @@ def capture(source, output):
                      for i in range(900)]
                for index, key in enumerate(('cpu','gpu','ram','net_down','net_up'))}
     output.mkdir(parents=True, exist_ok=True)
-    # Preserve the eight existing published layouts; Bloom's controls change by request.
-    for design in ('obsidian_gold','glass','crystal_atrium','nebula_prism','quantum_core','light','eclipse_crystal','minimal'):
+    # Compare every retained public layout plus the Eco surface against the published baseline.
+    for design in designs:
         settings.set_many(dict(theme=design,motion='off',component_images=False))
         theme.set_mode(design)
         app.setStyleSheet(theme.stylesheet())
@@ -77,15 +77,19 @@ def main():
     parser.add_argument('--reference',type=Path)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--capture',action='store_true')
+    parser.add_argument('--designs',default='')
     parser.add_argument('--scales',default='1,1.25,1.5,2')
     parser.add_argument('--compare-only',action='store_true')
     parser.add_argument('--appearance-refresh',action='store_true',
                         help='Keep overview captures for review; compare unchanged chart pixels exactly. The all-design overview layout regression validates the approved card and typography refresh.')
     args=parser.parse_args()
     if args.capture:
-        capture(args.source.resolve(),args.output.resolve());return
+        capture(args.source.resolve(),args.output.resolve(),args.designs.split(','));return
     if not args.reference:parser.error('--reference is required')
     from PySide6.QtGui import QImage
+    sys.path.insert(0,str(args.source.resolve()))
+    from vitalux import theme
+    designs=args.designs or ','.join([key for key,_ in theme.CHOICES]+['minimal'])
     results=[];refreshed=[]
     for scale in args.scales.split(','):
         paths=[]
@@ -96,9 +100,9 @@ def main():
                 env=dict(os.environ,QT_QPA_PLATFORM='offscreen',QT_SCALE_FACTOR=scale,VITALUX_SPEC_OFFLINE='1')
                 for kind in ('CONFIG','STATE','CACHE','DATA'):env['XDG_'+kind+'_HOME']=str(Path(directory)/kind)
                 subprocess.run([sys.executable,__file__,'--capture','--source',str(root.resolve()),
-                                '--output',str(output.resolve())],env=env,check=True,timeout=240)
+                                '--output',str(output.resolve()),'--designs',designs],env=env,check=True,timeout=240)
         before_files=sorted(paths[0].glob('*.png'))
-        assert len(before_files)==56 and {p.name for p in before_files}=={p.name for p in paths[1].glob('*.png')}
+        assert len(before_files)==len(designs.split(','))*7 and {p.name for p in before_files}=={p.name for p in paths[1].glob('*.png')}
         for before in before_files:
             if args.appearance_refresh and before.name.endswith('-overview.png'):
                 # The user-approved material, typography and gutter changes

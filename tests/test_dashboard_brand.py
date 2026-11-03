@@ -128,7 +128,7 @@ def assert_brand(app):
     for name, color in presets.items():
         settings.set("accent", color)
         theme.set_accent(color)
-        for scheme in ("obsidian_gold", "light", "glass", "minimal"):
+        for scheme in ("obsidian_gold", "sculpt", "glass", "minimal"):
             theme.set_mode(scheme)
             icon = themed_icon_pixmap(152)
             word = wordmark_pixmap(205, 44)
@@ -137,7 +137,7 @@ def assert_brand(app):
             if scheme == "obsidian_gold":
                 icons.add(fingerprint(icon))
                 dark_words.add(fingerprint(word))
-            elif scheme == "light":
+            elif scheme == "sculpt":
                 light_words.add(fingerprint(word))
             pulse = PulseCore(size=152)
             pulse.show()
@@ -155,7 +155,7 @@ def assert_brand(app):
     for color in ('#d13d8f', '#14b8a6', '#aabbcc'):
         settings.set('accent', color)
         theme.set_accent(color)
-        for scheme in ('obsidian_gold', 'light', 'glass', 'minimal'):
+        for scheme in ('obsidian_gold', 'sculpt', 'glass', 'minimal'):
             theme.set_mode(scheme)
             icon = themed_icon_pixmap(152)
             word = wordmark_pixmap(205, 44)
